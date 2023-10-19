@@ -10,7 +10,7 @@ export default async function Page() {
 			<Container className="flex-auto flex flex-row gap-10 w-full">
 				<SideNav></SideNav>
 				<main className="overflow-hidden">
-					<div>Hello world!</div>
+					<div>Transactions page</div>
 				</main>
 			</Container>
 			<Footer />
