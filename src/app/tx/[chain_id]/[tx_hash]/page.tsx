@@ -4,6 +4,8 @@ import { SideNav } from '@/components/side-nav'
 import Transaction from '@/components/transaction'
 import { Container } from '@/components/ui/container'
 
+export const runtime = 'edge'
+
 export default async function Page({ params }: { params: { chain_id: number; tx_hash: string } }) {
 	return (
 		<>
