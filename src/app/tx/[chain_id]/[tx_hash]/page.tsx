@@ -12,7 +12,7 @@ export default async function Page({ params }: { params: { chain_id: number; tx_
 			<Header />
 			<Container className="flex-auto flex flex-row gap-10 w-full pb-10">
 				<SideNav></SideNav>
-				<main className="overflow-hidden">
+				<main className="overflow-hidden flex-auto">
 					<Transaction chainId={params.chain_id} txHash={params.tx_hash}></Transaction>
 				</main>
 			</Container>
