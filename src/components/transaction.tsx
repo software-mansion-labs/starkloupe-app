@@ -77,8 +77,8 @@ function CallElements(calls: Call[]) {
 }
 
 async function getData(chainId: number, txHash: string) {
-	// const res = await fetch(`https://xyz.joinwido.com/${chainId}/tx/${txHash}`)
-	const res = await fetch(`http://127.0.0.1:8080/${chainId}/tx/${txHash}`)
+	const res = await fetch(`https://xyz.joinwido.com/${chainId}/tx/${txHash}`)
+	// const res = await fetch(`http://127.0.0.1:8080/${chainId}/tx/${txHash}`)
 
 	if (!res.ok) {
 		// This will activate the closest `error.js` Error Boundary
