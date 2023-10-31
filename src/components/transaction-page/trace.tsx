@@ -1,5 +1,6 @@
-import { Call, CallInput } from '@/lib/transaction';
+import { Call, CallIo } from '@/lib/transaction';
 import { copyToClipboard, shortenHash } from '@/lib/utils';
+import { ArrowLongRightIcon } from '@heroicons/react/20/solid';
 
 export function Trace({ executeInvocation }: { executeInvocation: Call }) {
 	return (
@@ -24,7 +25,18 @@ function CallElements(calls: Call[]) {
 				</div>
 				<div className="bg-neutral-50 border-neutral-200 border rounded-sm inline-block text-xs font-medium px-2.5 py-0.5">
 					{call.function_name ?? shortenHash(call.entry_point_selector, 13)}({' '}
-					{CallInputs(call.inputs)} )
+					{CallInputs(call.inputs)} )<ArrowLongRightIcon className="h-3 w-3 inline mx-1" />
+					{call.outputs && call.outputs.length > 0 ? (
+						<>
+							{'{ '}
+							{CallInputs(call.outputs)}
+							{' }'}
+						</>
+					) : call.outputs ? (
+						'void'
+					) : (
+						'undefined'
+					)}
 				</div>
 			</div>
 			<div className="pl-8">{CallElements(call.calls)}</div>
@@ -32,14 +44,16 @@ function CallElements(calls: Call[]) {
 	));
 }
 
-function CallInputs(inputs?: CallInput[]) {
+function CallInputs(inputs?: CallIo[]) {
 	return inputs?.map((i, index) => (
 		<span key={i.name}>
-			<span>{i.name}=</span>
+			{i.name && <span>{i.name}=</span>}
 			{typeof i.value === 'string' ? (
 				<span className="cursor-pointer hover:bg-neutral-200 rounded-sm px-0.5">
 					{shortenHash(i.value)}
 				</span>
+			) : i.type && i.type.slice(-1) === '*' ? (
+				<span>[{CallInputs(i.value)}]</span>
 			) : (
 				<span>
 					{'{ '}
