@@ -1,9 +1,15 @@
 import { API_URL } from '@/lib/config';
 
-export interface CallIo {
+export interface CallIoDecoded {
 	name?: string;
 	type?: string;
-	value: string | CallIo[];
+	value: string | CallIoDecoded[];
+}
+
+export interface CallEventDecoded {
+	name: string;
+	order?: number;
+	data: CallIoDecoded[];
 }
 
 export interface Call {
@@ -11,10 +17,11 @@ export interface Call {
 	contract_address: string;
 	class_hash: string;
 	function_name?: string;
-	inputs?: CallIo[];
-	outputs?: CallIo[];
+	inputs_decoded?: CallIoDecoded[];
+	outputs_decoded?: CallIoDecoded[];
 	calls: Call[];
 	class_alias?: string;
+	events_decoded?: CallEventDecoded[];
 }
 
 export interface Trace {

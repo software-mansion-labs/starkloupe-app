@@ -1,4 +1,4 @@
-import { Call, CallIo } from '@/lib/transaction';
+import { Call, CallIoDecoded } from '@/lib/transaction';
 import { copyToClipboard, shortenHash } from '@/lib/utils';
 import { ArrowLongRightIcon } from '@heroicons/react/20/solid';
 
@@ -25,26 +25,41 @@ function CallElements(calls: Call[]) {
 				</div>
 				<div className="bg-neutral-50 border-neutral-200 border rounded-sm inline-block text-xs font-medium px-2.5 py-0.5">
 					{call.function_name ?? shortenHash(call.entry_point_selector, 13)}({' '}
-					{CallInputs(call.inputs)} )<ArrowLongRightIcon className="h-3 w-3 inline mx-1" />
-					{call.outputs && call.outputs.length > 0 ? (
+					{CallInputs(call.inputs_decoded)} )<ArrowLongRightIcon className="h-3 w-3 inline mx-1" />
+					{call.outputs_decoded && call.outputs_decoded.length > 0 ? (
 						<>
 							{'{ '}
-							{CallInputs(call.outputs)}
+							{CallInputs(call.outputs_decoded)}
 							{' }'}
 						</>
-					) : call.outputs ? (
+					) : call.outputs_decoded ? (
 						'void'
 					) : (
 						'undefined'
 					)}
 				</div>
 			</div>
+			{call.events_decoded && (
+				<div className="ml-8">
+					{call.events_decoded.map((event_decoded, j) => (
+						<div
+							key={j}
+							className="bg-neutral-50 border-neutral-200 border rounded-sm inline-block text-xs font-medium px-2.5 py-0.5 cursor-pointer mr-1"
+						>
+							{event_decoded.name} event order={event_decoded.order}{' '}
+							<ArrowLongRightIcon className="h-3 w-3 inline mx-1" />{' '}
+							{CallInputs(event_decoded.data)}
+						</div>
+					))}
+				</div>
+			)}
+
 			<div className="pl-8">{CallElements(call.calls)}</div>
 		</div>
 	));
 }
 
-function CallInputs(inputs?: CallIo[]) {
+function CallInputs(inputs?: CallIoDecoded[]) {
 	return inputs?.map((i, index) => (
 		<span key={i.name}>
 			{i.name && <span>{i.name}=</span>}
