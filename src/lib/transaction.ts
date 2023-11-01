@@ -22,14 +22,21 @@ export interface Call {
 	calls: Call[];
 	class_alias?: string;
 	events_decoded?: CallEventDecoded[];
+	error_message?: string;
 }
 
 export interface Trace {
 	execute_invocation: Call;
 }
 
+interface Status {
+	finality_status: string;
+	execution_status: string;
+}
+
 export interface Transaction {
 	trace: Trace;
+	status: Status;
 }
 
 export async function fetchTransaction(chainId: number, txHash: string) {

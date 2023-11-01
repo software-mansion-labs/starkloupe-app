@@ -26,7 +26,9 @@ function CallElements(calls: Call[]) {
 				<div className="bg-neutral-50 border-neutral-200 border rounded-sm inline-block text-xs font-medium px-2.5 py-0.5">
 					{call.function_name ?? shortenHash(call.entry_point_selector, 13)}({' '}
 					{CallInputs(call.inputs_decoded)} )<ArrowLongRightIcon className="h-3 w-3 inline mx-1" />
-					{call.outputs_decoded && call.outputs_decoded.length > 0 ? (
+					{call.error_message ? (
+						<span className="text-red-500">{call.error_message}</span>
+					) : call.outputs_decoded && call.outputs_decoded.length > 0 ? (
 						<>
 							{'{ '}
 							{CallInputs(call.outputs_decoded)}
@@ -46,7 +48,7 @@ function CallElements(calls: Call[]) {
 							key={j}
 							className="bg-neutral-50 border-neutral-200 border rounded-sm inline-block text-xs font-medium px-2.5 py-0.5 cursor-pointer mr-1"
 						>
-							{event_decoded.name} event order={event_decoded.order}{' '}
+							{event_decoded.name} event {event_decoded.order ? `order=${event_decoded.order}` : ''}
 							<ArrowLongRightIcon className="h-3 w-3 inline mx-1" />{' '}
 							{CallInputs(event_decoded.data)}
 						</div>

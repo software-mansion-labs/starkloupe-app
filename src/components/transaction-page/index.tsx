@@ -49,7 +49,7 @@ function TransactionInfo({ txData }: { txData: Transaction }) {
 	const info = [
 		{
 			name: 'Status',
-			value: 'success'
+			value: txData.status.execution_status
 		},
 		{
 			name: 'Chain',
