@@ -1,12 +1,12 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Transaction, fetchTransaction } from '@/lib/transaction';
+import { ExecutionStatus, Transaction, fetchTransaction } from '@/lib/transaction';
 import { Header } from '../header';
 import { Container } from '../ui/container';
 import { Footer } from '../footer';
 import { Trace } from './trace';
-import { copyToClipboard } from '@/lib/utils';
+import { copyToClipboard, hexToNumber, shortenHash } from '@/lib/utils';
 
 export function TransactionPage({ chainId, txHash }: { chainId: number; txHash: string }) {
 	const [txData, setTxData] = useState<Transaction>();
@@ -48,51 +48,79 @@ export function TransactionPage({ chainId, txHash }: { chainId: number; txHash: 
 function TransactionInfo({ txData }: { txData: Transaction }) {
 	const info = [
 		{
-			name: 'Status',
-			value: txData.status.execution_status
+			name: 'Execution status',
+			value: (
+				<span
+					className={` ${
+						txData.status.execution_status === ExecutionStatus.REVERTED
+							? 'text-red-600'
+							: 'text-lime-600'
+					}`}
+				>
+					{txData.status.execution_status}
+				</span>
+			)
+		},
+		{
+			name: 'Finality status',
+			value: txData.status.finality_status
 		},
 		{
 			name: 'Chain',
 			value: 'mainnet'
 		},
 		{
-			name: 'Sender',
-			value: '0x0000...0000',
-			isCopyable: true,
-			valueToCopy: '0x0000000000000000000000000000000000000000000000000000000000000000'
-		},
-		{
-			name: 'Receiver',
-			value: '0x0000...0000',
-			isCopyable: true,
-			valueToCopy: '0x0000000000000000000000000000000000000000000000000000000000000000'
-		},
-		{
-			name: 'Timestamp',
-			value: '0 sec ago'
-		},
-		{
-			name: 'Value',
-			value: '0 ETH'
-		},
-		{
-			name: 'Block',
-			value: '000000',
-			isCopyable: true
-		},
-		{
-			name: 'Index',
-			value: '0'
+			name: 'Type',
+			value: txData.data.type
 		},
 		{
 			name: 'Nonce',
-			value: '0'
+			value: hexToNumber(txData.data.nonce)
 		},
 		{
-			name: 'Input raw',
-			value: '0x000000000...000000000',
+			name: 'Max fee',
+			value: hexToNumber(txData.data.max_fee)
+		},
+		{
+			name: 'Version',
+			value: hexToNumber(txData.data.version)
+		},
+		{
+			name: 'Timestamp',
+			value: 'undefined'
+		},
+		{
+			name: 'Value',
+			value: 'undefined'
+		},
+		{
+			name: 'Block',
+			value: 'undefined',
+			isCopyable: true
+		},
+		{
+			name: 'Receiver',
+			value: 'undefined',
 			isCopyable: true,
-			valueToCopy: '0x0000000000000000000000000000000000000000000000000000000000000000'
+			valueToCopy: 'undefined'
+		},
+		{
+			name: 'Sender',
+			value: txData.data.sender_address,
+			isCopyable: true,
+			valueToCopy: txData.data.sender_address
+		},
+		{
+			name: 'Calldata',
+			value: shortenHash(txData.data.calldata, 35),
+			isCopyable: true,
+			valueToCopy: txData.data.calldata
+		},
+		{
+			name: 'Signature',
+			value: shortenHash(txData.data.signature, 35),
+			isCopyable: true,
+			valueToCopy: txData.data.signature
 		}
 	];
 	return (
@@ -101,7 +129,7 @@ function TransactionInfo({ txData }: { txData: Transaction }) {
 				<span key={name} className="whitespace-nowrap">
 					<span className="text-neutral-500">{name}:</span>{' '}
 					<span
-						onClick={() => copyToClipboard(valueToCopy ?? value)}
+						onClick={() => isCopyable && copyToClipboard(valueToCopy ?? value)}
 						className={`rounded-sm px-1 ${isCopyable ? 'cursor-pointer hover:bg-black/10' : ''}`}
 					>
 						{value}

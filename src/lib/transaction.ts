@@ -29,14 +29,37 @@ export interface Trace {
 	execute_invocation: Call;
 }
 
-interface Status {
-	finality_status: string;
-	execution_status: string;
+export enum FinalityStatus {
+	RECEIVED = 'RECEIVED',
+	REJECTED = 'REJECTED',
+	ACCEPTED_ON_L2 = 'ACCEPTED_ON_L2',
+	ACCEPTED_ON_L1 = 'ACCEPTED_ON_L1'
+}
+
+export enum ExecutionStatus {
+	SUCCEEDED = 'SUCCEEDED',
+	REVERTED = 'REVERTED'
+}
+
+export interface Status {
+	finality_status: FinalityStatus;
+	execution_status: ExecutionStatus;
+}
+
+export interface TransactionData {
+	type: string;
+	nonce: string;
+	sender_address: string;
+	version: string;
+	max_fee: string;
+	calldata: string;
+	signature: string;
 }
 
 export interface Transaction {
 	trace: Trace;
 	status: Status;
+	data: TransactionData;
 }
 
 export async function fetchTransaction(chainId: number, txHash: string) {
