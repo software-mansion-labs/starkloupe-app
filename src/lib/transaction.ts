@@ -1,9 +1,15 @@
 import { API_URL } from '@/lib/config';
 
+export enum ValueFormatType {
+	DECIMAL = 'DECIMAL',
+	TEXT = 'TEXT'
+}
+
 export interface CallIoDecoded {
 	name?: string;
 	type?: string;
 	value: string | CallIoDecoded[];
+	value_formats?: Record<ValueFormatType, string | number>;
 }
 
 export interface CallEventDecoded {

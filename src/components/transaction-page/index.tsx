@@ -102,16 +102,16 @@ function TransactionInfo({ txData }: { txData: Transaction }) {
 			name: 'Timestamp',
 			value: 'undefined'
 		},
-		{
-			name: 'Value',
-			value: 'undefined'
-		},
-		{
-			name: 'Receiver',
-			value: 'undefined',
-			isCopyable: true,
-			valueToCopy: 'undefined'
-		},
+		// {
+		// 	name: 'Value',
+		// 	value: 'undefined'
+		// },
+		// {
+		// 	name: 'Receiver',
+		// 	value: 'undefined',
+		// 	isCopyable: true,
+		// 	valueToCopy: 'undefined'
+		// },
 		{
 			name: 'Sender',
 			value: txData.data.sender_address,

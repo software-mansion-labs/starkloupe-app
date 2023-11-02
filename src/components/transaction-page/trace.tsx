@@ -71,6 +71,8 @@ function CallInputs(inputs?: CallIoDecoded[]) {
 				</span>
 			) : i.type && i.type.slice(-1) === '*' ? (
 				<span>[{CallInputs(i.value)}]</span>
+			) : i.value_formats && i.value_formats.DECIMAL ? (
+				<span>{i.value_formats.DECIMAL}</span>
 			) : (
 				<span>
 					{'{ '}
