@@ -95,7 +95,7 @@ function TransactionInfo({ txData }: { txData: Transaction }) {
 		},
 		{
 			name: 'Block',
-			value: txData.receipt.block_number,
+			value: txData.receipt.block_number.toString(),
 			isCopyable: true
 		},
 		{
