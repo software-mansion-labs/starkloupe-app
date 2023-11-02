@@ -56,10 +56,16 @@ export interface TransactionData {
 	signature: string;
 }
 
+export interface TransactionReceipt {
+	actual_fee: string;
+	block_hash: string;
+	block_number: number;
+}
 export interface Transaction {
 	trace: Trace;
 	status: Status;
 	data: TransactionData;
+	receipt: TransactionReceipt;
 }
 
 export async function fetchTransaction(chainId: number, txHash: string) {

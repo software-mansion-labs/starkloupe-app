@@ -82,8 +82,21 @@ function TransactionInfo({ txData }: { txData: Transaction }) {
 			value: hexToNumber(txData.data.max_fee)
 		},
 		{
+			name: 'Actual fee',
+			value: hexToNumber(txData.receipt.actual_fee)
+		},
+		{
 			name: 'Version',
 			value: hexToNumber(txData.data.version)
+		},
+		{
+			name: 'Block hash',
+			value: shortenHash(txData.receipt.block_hash)
+		},
+		{
+			name: 'Block',
+			value: txData.receipt.block_number,
+			isCopyable: true
 		},
 		{
 			name: 'Timestamp',
@@ -92,11 +105,6 @@ function TransactionInfo({ txData }: { txData: Transaction }) {
 		{
 			name: 'Value',
 			value: 'undefined'
-		},
-		{
-			name: 'Block',
-			value: 'undefined',
-			isCopyable: true
 		},
 		{
 			name: 'Receiver',
