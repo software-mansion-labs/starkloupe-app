@@ -21,7 +21,15 @@ function CallElements(calls: Call[]) {
 					className="bg-neutral-50 border-neutral-300 border hover:bg-neutral-100 hover:border-neutral-400 rounded-sm inline-block text-xs font-medium px-2.5 py-0.5 cursor-pointer mr-1"
 					onClick={() => copyToClipboard(call.contract_address)}
 				>
-					{call.class_alias ?? shortenHash(call.contract_address, 13)}
+					{call.class_alias || call.contract_data?.contract_alias ? (
+						<>
+							{call.class_alias} {call.contract_data?.contract_alias}
+						</>
+					) : (
+						shortenHash(call.contract_address, 13)
+					)}
+					{call.contract_data?.token_name &&
+						` (${call.contract_data?.token_name} - ${call.contract_data?.token_symbol})`}
 				</div>
 				<div className="bg-neutral-50 border-neutral-200 border rounded-sm inline-block text-xs font-medium px-2.5 py-0.5">
 					{call.call_type} {call.function_name ?? shortenHash(call.entry_point_selector, 13)}({' '}

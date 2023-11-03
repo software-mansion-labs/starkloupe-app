@@ -30,6 +30,7 @@ export interface Call {
 	class_alias?: string;
 	events_decoded?: CallEventDecoded[];
 	error_message?: string;
+	contract_data?: ContractData;
 }
 
 export interface Trace {
@@ -62,7 +63,22 @@ export interface TransactionData {
 	calldata: string;
 	signature: string;
 }
-
+export interface ContractData {
+	address: string;
+	block_number: number;
+	block_hash: string;
+	is_account: boolean;
+	type: number;
+	creation_timestamp: number;
+	class_hash: string;
+	nonce?: number;
+	version?: string;
+	token_name?: string;
+	token_symbol?: string;
+	class_alias?: string;
+	contract_alias?: string;
+	verified_timestamp?: number;
+}
 export interface TransactionReceipt {
 	actual_fee: string;
 	block_hash: string;
