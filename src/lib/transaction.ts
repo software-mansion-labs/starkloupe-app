@@ -22,6 +22,7 @@ export interface Call {
 	entry_point_selector: string;
 	contract_address: string;
 	class_hash: string;
+	call_type: string;
 	function_name?: string;
 	inputs_decoded?: CallIoDecoded[];
 	outputs_decoded?: CallIoDecoded[];

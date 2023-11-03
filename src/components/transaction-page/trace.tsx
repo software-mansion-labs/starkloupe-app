@@ -24,7 +24,7 @@ function CallElements(calls: Call[]) {
 					{call.class_alias ?? shortenHash(call.contract_address, 13)}
 				</div>
 				<div className="bg-neutral-50 border-neutral-200 border rounded-sm inline-block text-xs font-medium px-2.5 py-0.5">
-					{call.function_name ?? shortenHash(call.entry_point_selector, 13)}({' '}
+					{call.call_type} {call.function_name ?? shortenHash(call.entry_point_selector, 13)}({' '}
 					{CallInputs(call.inputs_decoded)} )<ArrowLongRightIcon className="h-3 w-3 inline mx-1" />
 					{call.error_message ? (
 						<span className="text-red-500">{call.error_message}</span>
