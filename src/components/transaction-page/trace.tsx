@@ -247,14 +247,6 @@ function CallElements(
 					</div>
 				</TraceLine>
 				{expandedCalls[callIdentifier] && <CallDetails />}
-				{call.error_message && !(collapsedCalls?.[callIdentifier] == true) && (
-					<TraceLine>
-						{CallTypeChip('ERROR')}
-						<CallChip style={{ marginLeft: (nesting_level + 2.5) * CALL_NESTING_SPACE_BUMP }}>
-							{call.error_message}
-						</CallChip>
-					</TraceLine>
-				)}
 				{showEvents == true &&
 					!(collapsedCalls?.[callIdentifier] == true) &&
 					call.events_decoded &&
@@ -283,6 +275,14 @@ function CallElements(
 						expandedCalls,
 						callExpandHandler
 					)
+				)}
+				{call.error_message && !(collapsedCalls?.[callIdentifier] == true) && (
+					<TraceLine>
+						{CallTypeChip('ERROR')}
+						<CallChip style={{ marginLeft: (nesting_level + 2.5) * CALL_NESTING_SPACE_BUMP }}>
+							{call.error_message}
+						</CallChip>
+					</TraceLine>
 				)}
 			</React.Fragment>
 		);
