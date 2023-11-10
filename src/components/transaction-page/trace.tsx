@@ -95,7 +95,7 @@ function CallChip({ className, ...props }: React.ComponentPropsWithoutRef<'span'
 
 function CallDetailsIo(io?: CallIoDecoded[]) {
 	return (
-		<div className="w-fit min-w-[30rem]">
+		<div className="w-fit min-w-[30rem] border border-neutral-300 rounded-sm">
 			<Table>
 				<TableHeader>
 					<TableRow>
@@ -148,8 +148,8 @@ function CallElements(
 
 		function CallDetails() {
 			return (
-				<div className="flex flex-col border border-pink-100 bg-pink-50 rounded-sm p-2 m-1 text-sm shadow-inner">
-					<div className="w-fit">
+				<div className="flex flex-col border border-neutral-100 bg-neutral-50 rounded-sm p-2 m-1 text-sm shadow-inner">
+					<div className="w-fit border border-neutral-300 rounded-sm mb-6">
 						<Table>
 							<TableBody>
 								<TableRow>
