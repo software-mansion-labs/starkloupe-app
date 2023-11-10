@@ -6,6 +6,15 @@ import { Button } from '@/components/ui/button';
 import { ToggleButton } from '@/components/ui/toggle-button';
 import React from 'react';
 import clsx from 'clsx';
+import {
+	Table,
+	TableBody,
+	TableCaption,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow
+} from '@/components/ui/table';
 
 const CALL_NESTING_SPACE_BUMP: number = 16; // in pixels
 
@@ -13,12 +22,21 @@ interface collapsedCallsDic {
 	[key: string]: boolean;
 }
 
+interface ExpandedCallsDict {
+	[key: string]: boolean;
+}
+
 export function Trace({ executeInvocation }: { executeInvocation: Call }) {
 	const [collapsedCalls, setCollapsedCalls] = useState<collapsedCallsDic>({});
+	const [expandedCalls, setExpandedCalls] = useState<ExpandedCallsDict>({});
 	const [showEvents, setShowEvents] = useState<boolean>(true);
 
 	let handleCallCollapse = function (collapsedCallsData: collapsedCallsDic) {
 		setCollapsedCalls(collapsedCallsData);
+	};
+
+	let handleCallExpand = function (expandedCallsData: ExpandedCallsDict) {
+		setExpandedCalls(expandedCallsData);
 	};
 
 	return (
@@ -35,7 +53,17 @@ export function Trace({ executeInvocation }: { executeInvocation: Call }) {
 				/>
 			</div>
 			<div className="overflow-x-auto whitespace-nowrap min-h-[20rem]">
-				{CallElements([executeInvocation], 0, showEvents, collapsedCalls, handleCallCollapse)}
+				<div className="min-w-fit">
+					{CallElements(
+						[executeInvocation],
+						0,
+						showEvents,
+						collapsedCalls,
+						handleCallCollapse,
+						expandedCalls,
+						handleCallExpand
+					)}
+				</div>
 			</div>
 		</div>
 	);
@@ -65,16 +93,104 @@ function CallChip({ className, ...props }: React.ComponentPropsWithoutRef<'span'
 	);
 }
 
+function CallDetailsIo(io?: CallIoDecoded[]) {
+	return (
+		<div className="w-fit min-w-[30rem]">
+			<Table>
+				<TableHeader>
+					<TableRow>
+						<TableHead>Input</TableHead>
+						<TableHead>Type</TableHead>
+						<TableHead>Value</TableHead>
+					</TableRow>
+				</TableHeader>
+				<TableBody>
+					{io?.map((i, index) => (
+						<TableRow key={index}>
+							<TableCell>{i.name}</TableCell>
+							<TableCell>{i.type}</TableCell>
+							<TableCell>
+								{typeof i.value === 'string' ? (
+									<span>{shortenHash(i.value)}</span>
+								) : i.type && i.type.slice(-1) === '*' ? (
+									<span>[{CallInputs(i.value)}]</span>
+								) : i.value_formats && i.value_formats.DECIMAL ? (
+									<span>{i.value_formats.DECIMAL}</span>
+								) : (
+									<span>
+										{'{ '}
+										{CallInputs(i.value)}
+										{' }'}
+									</span>
+								)}
+							</TableCell>
+						</TableRow>
+					))}
+				</TableBody>
+			</Table>
+		</div>
+	);
+}
+
 function CallElements(
 	calls: Call[],
 	nesting_level: number,
 	showEvents: boolean,
 	collapsedCalls: collapsedCallsDic,
-	callCollapseHandler: (data: collapsedCallsDic) => void
+	callCollapseHandler: (data: collapsedCallsDic) => void,
+	expandedCalls: ExpandedCallsDict,
+	callExpandHandler: (data: ExpandedCallsDict) => void
 ) {
 	return calls.map((call, index) => {
+		// const [isExpanded, setIsExpanded] = useState(false);
 		const callIdentifier =
 			call.entry_point_selector + call.class_hash + call.contract_address + index + nesting_level;
+
+		function CallDetails() {
+			return (
+				<div className="flex flex-col border border-pink-100 bg-pink-50 rounded-sm p-2 m-1 text-sm shadow-inner">
+					<div className="w-fit">
+						<Table>
+							<TableBody>
+								<TableRow>
+									<TableCell>Contract name</TableCell>
+									<TableCell>{call.contract_display_name}</TableCell>
+								</TableRow>
+								<TableRow>
+									<TableCell>Contract address</TableCell>
+									<TableCell>{call.contract_address}</TableCell>
+								</TableRow>
+								<TableRow>
+									<TableCell>Class hash</TableCell>
+									<TableCell>{call.class_hash}</TableCell>
+								</TableRow>
+								<TableRow>
+									<TableCell>Entrypoint selector</TableCell>
+									<TableCell>{call.entry_point_selector}</TableCell>
+								</TableRow>
+								<TableRow>
+									<TableCell>Function name</TableCell>
+									<TableCell>{call.function_name}</TableCell>
+								</TableRow>
+								<TableRow>
+									<TableCell>Token name</TableCell>
+									<TableCell>{call.contract_data?.token_name}</TableCell>
+								</TableRow>
+								<TableRow>
+									<TableCell>Token symbol</TableCell>
+									<TableCell>{call.contract_data?.token_symbol}</TableCell>
+								</TableRow>
+								<TableRow>
+									<TableCell>Contract version</TableCell>
+									<TableCell>{call.contract_data?.version}</TableCell>
+								</TableRow>
+							</TableBody>
+						</Table>
+					</div>
+					{CallDetailsIo(call.inputs_decoded)}
+				</div>
+			);
+		}
 
 		return (
 			<React.Fragment key={callIdentifier}>
@@ -103,7 +219,15 @@ function CallElements(
 								''
 							)}
 						</div>
-						<CallChip onClick={() => copyToClipboard(call.contract_address)}>
+						<CallChip
+							className="cursor-pointer"
+							onClick={() =>
+								callExpandHandler({
+									...expandedCalls,
+									[callIdentifier]: !expandedCalls[callIdentifier]
+								})
+							}
+						>
 							{call.contract_display_name}
 							{call.contract_data?.token_name &&
 								` (${call.contract_data?.token_name} - ${call.contract_data?.token_symbol})`}
@@ -122,6 +246,7 @@ function CallElements(
 						</CallChip>
 					</div>
 				</TraceLine>
+				{expandedCalls[callIdentifier] && <CallDetails />}
 				{call.error_message && !(collapsedCalls?.[callIdentifier] == true) && (
 					<TraceLine>
 						{CallTypeChip('ERROR')}
@@ -154,7 +279,9 @@ function CallElements(
 						nesting_level + 1,
 						showEvents,
 						collapsedCalls,
-						callCollapseHandler
+						callCollapseHandler,
+						expandedCalls,
+						callExpandHandler
 					)
 				)}
 			</React.Fragment>
