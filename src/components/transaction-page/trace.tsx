@@ -111,7 +111,7 @@ function CallDetailsIo(io?: CallIoDecoded[]) {
 							<TableCell>{i.type}</TableCell>
 							<TableCell>
 								{typeof i.value === 'string' ? (
-									<span>{shortenHash(i.value)}</span>
+									<span>{i.value}</span>
 								) : i.type && i.type.slice(-1) === '*' ? (
 									<span>[{CallInputs(i.value)}]</span>
 								) : i.value_formats && i.value_formats.DECIMAL ? (
