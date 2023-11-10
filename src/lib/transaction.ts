@@ -31,6 +31,7 @@ export interface Call {
 	events_decoded?: CallEventDecoded[];
 	error_message?: string;
 	contract_data?: ContractData;
+	contract_display_name: string;
 }
 
 export interface Trace {
@@ -52,6 +53,7 @@ export enum ExecutionStatus {
 export interface Status {
 	finality_status: FinalityStatus;
 	execution_status: ExecutionStatus;
+	error_reason: string;
 }
 
 export interface TransactionData {

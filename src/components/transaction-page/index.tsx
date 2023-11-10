@@ -1,12 +1,104 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ExecutionStatus, Transaction, fetchTransaction } from '@/lib/transaction';
+import { ExecutionStatus, Call, Transaction, fetchTransaction } from '@/lib/transaction';
 import { Header } from '../header';
 import { Container } from '../ui/container';
 import { Footer } from '../footer';
 import { Trace } from './trace';
 import { copyToClipboard, hexToNumber, shortenHash } from '@/lib/utils';
+
+function processTraceData(raw_call: Call): Call {
+	console.log(raw_call);
+
+	let processedCall: Call = processCallsData([raw_call])[0];
+	return processedCall;
+}
+
+function processCallsData(raw_calls: Call[]): Call[] {
+	let processedCalls: Call[] = [];
+
+	for (let raw_call of raw_calls) {
+		let processed_call: Call = {
+			entry_point_selector: raw_call.entry_point_selector,
+			contract_address: raw_call.contract_address,
+			class_hash: raw_call.class_hash,
+			call_type: raw_call.call_type,
+			function_name: raw_call.function_name,
+			inputs_decoded: raw_call.inputs_decoded,
+			outputs_decoded: raw_call.outputs_decoded,
+			calls: [...raw_call.calls],
+			class_alias: raw_call.class_alias,
+			events_decoded: raw_call.events_decoded,
+			error_message: raw_call.error_message,
+			contract_data: raw_call.contract_data,
+			contract_display_name: getContractDisplayName(
+				raw_call.contract_address,
+				raw_call.class_alias,
+				raw_call.contract_data?.contract_alias
+			)
+		};
+
+		if (checkForCallDelegateDuplicate(raw_call)) {
+			processed_call.call_type = 'CALL DELEGATE';
+
+			/**
+			 * We can skip the delegate call level
+			 * but we want to preserve it's events
+			 * and also it's children calls
+			 */
+
+			// Expand my level events with the DELEGATE level events
+			processed_call.events_decoded = [
+				...(processed_call.events_decoded ?? []),
+				...(raw_call.calls[0].events_decoded ?? [])
+			];
+
+			// Expand my calls with the DELEGATE subcalls
+			processed_call.calls = [
+				...raw_call.calls[0].calls, // first take DELEGATE subcalls
+				...raw_call.calls.slice(1) // and the rest of my calls (skip DELEGATE)
+			];
+
+			processed_call.error_message = raw_call.calls[0].error_message;
+		}
+
+		if (processed_call.calls.length > 0) {
+			processed_call.calls = processCallsData(processed_call.calls);
+		}
+
+		processedCalls.push(processed_call);
+	}
+
+	return processedCalls;
+}
+
+function checkForCallDelegateDuplicate(call: Call): boolean {
+	if (
+		call.call_type == 'CALL' &&
+		call.calls[0]?.call_type == 'DELEGATE' &&
+		call.contract_address == call.calls[0].contract_address &&
+		call.entry_point_selector == call.calls[0].entry_point_selector &&
+		call.inputs_decoded?.toString() == call.calls[0].inputs_decoded?.toString() &&
+		call.calls.length == 1
+	) {
+		return true;
+	}
+
+	return false;
+}
+
+function getContractDisplayName(
+	contract_address: string,
+	class_alias?: string,
+	contract_alias?: string
+): string {
+	if (class_alias || contract_alias) {
+		return [class_alias, contract_alias].join('');
+	}
+
+	return shortenHash(contract_address);
+}
 
 export function TransactionPage({ chainId, txHash }: { chainId: number; txHash: string }) {
 	const [txData, setTxData] = useState<Transaction>();
@@ -34,7 +126,7 @@ export function TransactionPage({ chainId, txHash }: { chainId: number; txHash: 
 					</div>
 					{txData && <TransactionInfo txData={txData} />}
 					{txData?.trace.execute_invocation ? (
-						<Trace executeInvocation={txData.trace.execute_invocation} />
+						<Trace executeInvocation={processTraceData(txData.trace.execute_invocation)} />
 					) : (
 						<div>{error ? error : 'Loading...'}</div>
 					)}
@@ -60,6 +152,10 @@ function TransactionInfo({ txData }: { txData: Transaction }) {
 					{txData.status.execution_status}
 				</span>
 			)
+		},
+		{
+			name: 'Error Reason',
+			value: <span className="text-red-600">{txData.status.error_reason}</span>
 		},
 		{
 			name: 'Finality status',
@@ -98,10 +194,10 @@ function TransactionInfo({ txData }: { txData: Transaction }) {
 			value: txData.receipt.block_number.toString(),
 			isCopyable: true
 		},
-		{
-			name: 'Timestamp',
-			value: 'undefined'
-		},
+		// {
+		// 	name: 'Timestamp',
+		// 	value: 'undefined'
+		// },
 		// {
 		// 	name: 'Value',
 		// 	value: 'undefined'
@@ -118,12 +214,12 @@ function TransactionInfo({ txData }: { txData: Transaction }) {
 			isCopyable: true,
 			valueToCopy: txData.data.sender_address
 		},
-		{
-			name: 'Calldata',
-			value: shortenHash(txData.data.calldata, 35),
-			isCopyable: true,
-			valueToCopy: txData.data.calldata
-		},
+		// {
+		// 	name: 'Calldata',
+		// 	value: shortenHash(txData.data.calldata, 35),
+		// 	isCopyable: true,
+		// 	valueToCopy: txData.data.calldata
+		// },
 		{
 			name: 'Signature',
 			value: shortenHash(txData.data.signature, 35),
@@ -133,17 +229,22 @@ function TransactionInfo({ txData }: { txData: Transaction }) {
 	];
 	return (
 		<div className="mt-4 bg-neutral-100 rounded py-1 px-2 text-xs flex flex-row gap-x-3 flex-wrap leading-loose">
-			{info.map(({ name, value, isCopyable, valueToCopy }) => (
-				<span key={name} className="whitespace-nowrap">
-					<span className="text-neutral-500">{name}:</span>{' '}
-					<span
-						onClick={() => isCopyable && copyToClipboard(valueToCopy ?? value)}
-						className={`rounded-sm px-1 ${isCopyable ? 'cursor-pointer hover:bg-black/10' : ''}`}
-					>
-						{value}
-					</span>
-				</span>
-			))}
+			{info.map(
+				({ name, value, isCopyable, valueToCopy }) =>
+					value && (
+						<span key={name} className="whitespace-nowrap">
+							<span className="text-neutral-500">{name}:</span>{' '}
+							<span
+								onClick={() => isCopyable && copyToClipboard(valueToCopy ?? value)}
+								className={`rounded-sm px-1 ${
+									isCopyable ? 'cursor-pointer hover:bg-black/10' : ''
+								}`}
+							>
+								{value}
+							</span>
+						</span>
+					)
+			)}
 		</div>
 	);
 }
