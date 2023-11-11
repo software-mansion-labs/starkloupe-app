@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { ReactNode, useEffect, useState } from 'react';
 import { ExecutionStatus, Call, Transaction, fetchTransaction } from '@/lib/transaction';
 import { Header } from '../header';
 import { Container } from '../ui/container';
@@ -137,6 +137,37 @@ export function TransactionPage({ chainId, txHash }: { chainId: number; txHash: 
 	);
 }
 
+export function Details(
+	info: { name: string; value: ReactNode | string; isCopyable?: boolean; valueToCopy?: string }[]
+) {
+	return (
+		<div className="rounded text-xs flex flex-row gap-x-3 flex-wrap leading-loose">
+			{info.map(
+				({ name, value, isCopyable, valueToCopy }) =>
+					value && (
+						<span key={name} className="whitespace-nowrap">
+							<span className="text-neutral-500">{name}:</span>{' '}
+							<span
+								onClick={() =>
+									isCopyable && valueToCopy
+										? copyToClipboard(valueToCopy)
+										: typeof value === 'string'
+										? copyToClipboard(value)
+										: () => {}
+								}
+								className={`rounded-sm px-1 ${
+									isCopyable ? 'cursor-pointer hover:bg-black/10' : ''
+								}`}
+							>
+								{value}
+							</span>
+						</span>
+					)
+			)}
+		</div>
+	);
+}
+
 function TransactionInfo({ txData }: { txData: Transaction }) {
 	const info = [
 		{
@@ -227,24 +258,5 @@ function TransactionInfo({ txData }: { txData: Transaction }) {
 			valueToCopy: txData.data.signature
 		}
 	];
-	return (
-		<div className="mt-4 bg-neutral-100 rounded py-1 px-2 text-xs flex flex-row gap-x-3 flex-wrap leading-loose">
-			{info.map(
-				({ name, value, isCopyable, valueToCopy }) =>
-					value && (
-						<span key={name} className="whitespace-nowrap">
-							<span className="text-neutral-500">{name}:</span>{' '}
-							<span
-								onClick={() => isCopyable && copyToClipboard(valueToCopy ?? value)}
-								className={`rounded-sm px-1 ${
-									isCopyable ? 'cursor-pointer hover:bg-black/10' : ''
-								}`}
-							>
-								{value}
-							</span>
-						</span>
-					)
-			)}
-		</div>
-	);
+	return <div className="mt-4 py-1 px-2 bg-neutral-100">{Details(info)}</div>;
 }

@@ -15,6 +15,7 @@ import {
 	TableHeader,
 	TableRow
 } from '@/components/ui/table';
+import { Details } from '.';
 
 const CALL_NESTING_SPACE_BUMP: number = 16; // in pixels
 
@@ -73,7 +74,7 @@ function TraceLine({ className, ...props }: React.ComponentPropsWithoutRef<'div'
 	return (
 		<div
 			className={clsx(
-				'p-1 pr-4 flex flex-row items-center hover:bg-neutral-100 w-min rounded-sm',
+				'p-1 pr-4 flex flex-row items-center hover:bg-neutral-100 rounded-sm',
 				className
 			)}
 			{...props}
@@ -146,55 +147,55 @@ function CallElements(
 		const callIdentifier =
 			call.entry_point_selector + call.class_hash + call.contract_address + index + nesting_level;
 
+		const callDetailsInfo = [
+			{ name: 'Contract name', value: call.contract_display_name },
+			{
+				name: 'Contract address',
+				value: call.contract_address
+			},
+			{
+				name: 'Class hash',
+				value: call.class_hash
+			},
+			{
+				name: 'Entrypoint selector',
+				value: call.entry_point_selector
+			},
+			{ name: 'Function name', value: call.function_name },
+			{
+				name: 'Token name',
+				value: call.contract_data?.token_name
+			},
+			{
+				name: 'Token symbol',
+				value: call.contract_data?.token_symbol
+			},
+			{
+				name: 'Contract version',
+				value: call.contract_data?.version
+			}
+		];
+
 		function CallDetails() {
 			return (
-				<div className="flex flex-col border border-neutral-100 bg-neutral-50 rounded-sm p-2 m-1 text-sm shadow-inner">
-					<div className="w-fit border border-neutral-300 rounded-sm mb-6">
-						<Table>
-							<TableBody>
-								<TableRow>
-									<TableCell>Contract name</TableCell>
-									<TableCell>{call.contract_display_name}</TableCell>
-								</TableRow>
-								<TableRow>
-									<TableCell>Contract address</TableCell>
-									<TableCell>{call.contract_address}</TableCell>
-								</TableRow>
-								<TableRow>
-									<TableCell>Class hash</TableCell>
-									<TableCell>{call.class_hash}</TableCell>
-								</TableRow>
-								<TableRow>
-									<TableCell>Entrypoint selector</TableCell>
-									<TableCell>{call.entry_point_selector}</TableCell>
-								</TableRow>
-								<TableRow>
-									<TableCell>Function name</TableCell>
-									<TableCell>{call.function_name}</TableCell>
-								</TableRow>
-								<TableRow>
-									<TableCell>Token name</TableCell>
-									<TableCell>{call.contract_data?.token_name}</TableCell>
-								</TableRow>
-								<TableRow>
-									<TableCell>Token symbol</TableCell>
-									<TableCell>{call.contract_data?.token_symbol}</TableCell>
-								</TableRow>
-								<TableRow>
-									<TableCell>Contract version</TableCell>
-									<TableCell>{call.contract_data?.version}</TableCell>
-								</TableRow>
-							</TableBody>
-						</Table>
-					</div>
-					{CallDetailsIo(call.inputs_decoded)}
+				<div className="flex flex-col bg-neutral-100 rounded-b-sm border-b border-x border-neutral-200 py-1 px-2 text-sm">
+					<div className="max-w-[90vw]">{Details(callDetailsInfo)}</div>
+					{call.inputs_decoded &&
+						call.inputs_decoded.length > 0 &&
+						CallDetailsIo(call.inputs_decoded)}
 				</div>
 			);
 		}
 
 		return (
 			<React.Fragment key={callIdentifier}>
-				<TraceLine>
+				<TraceLine
+					className={`border-t border-x ${
+						expandedCalls[callIdentifier]
+							? 'rounded-t-sm rounded-b-none bg-neutral-100 border-neutral-200'
+							: 'border-transparent'
+					}`}
+				>
 					{CallTypeChip(call.call_type)}
 					<div
 						style={{ marginLeft: nesting_level * CALL_NESTING_SPACE_BUMP }}
