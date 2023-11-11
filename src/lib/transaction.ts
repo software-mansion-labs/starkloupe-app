@@ -93,7 +93,7 @@ export interface Transaction {
 	receipt: TransactionReceipt;
 }
 
-export async function fetchTransaction(chainId: number, txHash: string) {
+export async function fetchTransaction(chainId: string, txHash: string) {
 	const res = await fetch(`${API_URL}/${chainId}/tx/${txHash}`);
 	if (!res.ok) throw new Error('Failed to fetch data');
 	return (await res.json()) as Transaction;

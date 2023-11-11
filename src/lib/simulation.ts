@@ -13,8 +13,25 @@ export interface SimulationsResponse {
 	simulations: SimulationListItem[];
 }
 
+export interface Simulation {
+	id: string;
+	team_id: number;
+	chain_id: string;
+	block_at: number;
+	transaction_version: number;
+	nonce: number;
+	max_fee: string;
+	cairo_version: string;
+	wallet_address: string;
+	calldata: string[];
+	created_at: number;
+	updated_at: number;
+	status: string;
+}
+
 export interface SimulationResponse {
 	trace: { execute_invocation: Call };
+	simulation: Simulation;
 }
 
 export async function fetchSimulations(teamId?: number, walletAddress?: string) {

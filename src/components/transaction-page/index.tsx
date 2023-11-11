@@ -7,7 +7,12 @@ import { Container } from '../ui/container';
 import { Footer } from '../footer';
 import { Trace } from './trace';
 import { copyToClipboard, hexToNumber, shortenHash } from '@/lib/utils';
-import { SimulationResponse, SimulationsResponse, fetchSimulation } from '@/lib/simulation';
+import {
+	Simulation,
+	SimulationResponse,
+	SimulationsResponse,
+	fetchSimulation
+} from '@/lib/simulation';
 
 function processTraceData(raw_call: Call): Call {
 	console.log(raw_call);
@@ -104,13 +109,11 @@ function getContractDisplayName(
 export function SimulationPage({ simulationId }: { simulationId: string }) {
 	const [simulationData, setSimulationData] = useState<SimulationResponse>();
 	const [error, setError] = useState<string | undefined>();
-	const [status, setStatus] = useState<string | null>('');
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				setSimulationData(await fetchSimulation(simulationId));
-				setStatus(readCookie('status'));
 			} catch (error) {
 				setError('Error fetching data');
 			}
@@ -127,7 +130,7 @@ export function SimulationPage({ simulationId }: { simulationId: string }) {
 					<div className="font-medium text-lg mr-2 flex flex-row flex-wrap items-baseline break-all">
 						<span className="text-xl mr-6">Simulation</span> <span>{simulationId}</span>
 					</div>
-					{simulationData && <SimulationInfo status={status ?? ''} />}
+					{simulationData && <SimulationInfo simulation={simulationData.simulation} />}
 					{simulationData?.trace.execute_invocation ? (
 						<Trace executeInvocation={processTraceData(simulationData.trace.execute_invocation)} />
 					) : (
@@ -140,7 +143,7 @@ export function SimulationPage({ simulationId }: { simulationId: string }) {
 	);
 }
 
-export function TransactionPage({ chainId, txHash }: { chainId: number; txHash: string }) {
+export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: string }) {
 	const [txData, setTxData] = useState<Transaction>();
 	const [error, setError] = useState<string | undefined>();
 
@@ -301,21 +304,21 @@ function TransactionInfo({ txData }: { txData: Transaction }) {
 	return <div className="mt-4 py-1 px-2 bg-neutral-100">{Details(info)}</div>;
 }
 
-function SimulationInfo({ status }: { status: string }) {
+function SimulationInfo({ simulation }: { simulation: Simulation }) {
 	const info = [
 		{
 			name: 'Execution status',
 			value: (
 				<span
 					className={` ${
-						status === 'success'
+						simulation.status === 'success'
 							? 'text-lime-600'
-							: status === 'simulating'
+							: simulation.status === 'simulating'
 							? 'text-blue-600'
 							: 'text-red-600'
 					}`}
 				>
-					{(status ?? '').toUpperCase()}
+					{(simulation.status ?? '').toUpperCase()}
 				</span>
 			)
 		}
@@ -325,16 +328,4 @@ function SimulationInfo({ status }: { status: string }) {
 		// }
 	];
 	return <div className="mt-4 py-1 px-2 bg-neutral-100">{Details(info)}</div>;
-}
-
-function readCookie(name: string): string | null {
-	let nameEQ = name + '=';
-	let ca = document.cookie.split(';');
-
-	for (let i = 0; i < ca.length; i++) {
-		let c = ca[i];
-		while (c.charAt(0) == ' ') c = c.substring(1, c.length);
-		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
-	}
-	return null;
 }
