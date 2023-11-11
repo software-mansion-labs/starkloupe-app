@@ -27,7 +27,15 @@ interface ExpandedCallsDict {
 	[key: string]: boolean;
 }
 
-export function Trace({ executeInvocation }: { executeInvocation: Call }) {
+type Classes = { [key: string]: { code: string } };
+
+export function Trace({
+	executeInvocation,
+	classes
+}: {
+	executeInvocation: Call;
+	classes: Classes;
+}) {
 	const [collapsedCalls, setCollapsedCalls] = useState<collapsedCallsDic>({});
 	const [expandedCalls, setExpandedCalls] = useState<ExpandedCallsDict>({});
 	const [showEvents, setShowEvents] = useState<boolean>(true);
@@ -62,7 +70,8 @@ export function Trace({ executeInvocation }: { executeInvocation: Call }) {
 						collapsedCalls,
 						handleCallCollapse,
 						expandedCalls,
-						handleCallExpand
+						handleCallExpand,
+						classes
 					)}
 				</div>
 			</div>
@@ -140,7 +149,8 @@ function CallElements(
 	collapsedCalls: collapsedCallsDic,
 	callCollapseHandler: (data: collapsedCallsDic) => void,
 	expandedCalls: ExpandedCallsDict,
-	callExpandHandler: (data: ExpandedCallsDict) => void
+	callExpandHandler: (data: ExpandedCallsDict) => void,
+	classes: Classes
 ) {
 	return calls.map((call, index) => {
 		// const [isExpanded, setIsExpanded] = useState(false);
@@ -183,6 +193,7 @@ function CallElements(
 					{call.inputs_decoded &&
 						call.inputs_decoded.length > 0 &&
 						CallDetailsIo(call.inputs_decoded)}
+					{classes[call.class_hash].code}
 				</div>
 			);
 		}
@@ -274,7 +285,8 @@ function CallElements(
 						collapsedCalls,
 						callCollapseHandler,
 						expandedCalls,
-						callExpandHandler
+						callExpandHandler,
+						classes
 					)
 				)}
 				{call.error_message && !(collapsedCalls?.[callIdentifier] == true) && (

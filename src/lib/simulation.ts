@@ -32,6 +32,7 @@ export interface Simulation {
 export interface SimulationResponse {
 	trace: { execute_invocation: Call };
 	simulation: Simulation;
+	classes: { [key: string]: { code: string } };
 }
 
 export async function fetchSimulations(teamId?: number, walletAddress?: string) {

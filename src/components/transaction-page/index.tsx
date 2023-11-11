@@ -132,7 +132,10 @@ export function SimulationPage({ simulationId }: { simulationId: string }) {
 					</div>
 					{simulationData && <SimulationInfo simulation={simulationData.simulation} />}
 					{simulationData?.trace.execute_invocation ? (
-						<Trace executeInvocation={processTraceData(simulationData.trace.execute_invocation)} />
+						<Trace
+							executeInvocation={processTraceData(simulationData.trace.execute_invocation)}
+							classes={simulationData.classes}
+						/>
 					) : (
 						<div>{error ? error : 'Loading...'}</div>
 					)}
@@ -169,7 +172,10 @@ export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: 
 					</div>
 					{txData && <TransactionInfo txData={txData} />}
 					{txData?.trace.execute_invocation ? (
-						<Trace executeInvocation={processTraceData(txData.trace.execute_invocation)} />
+						<Trace
+							executeInvocation={processTraceData(txData.trace.execute_invocation)}
+							classes={txData.classes}
+						/>
 					) : (
 						<div>{error ? error : 'Loading...'}</div>
 					)}
