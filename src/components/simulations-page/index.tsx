@@ -101,7 +101,11 @@ export function SimulationsPage({
 												<TableCell>{hexToText(simulation.chain_id)}</TableCell>
 												<TableCell
 													className={`${
-														simulation.status === 'success' ? 'text-lime-600' : 'text-red-600'
+														simulation.status === 'success'
+															? 'text-lime-600'
+															: simulation.status === 'simulating'
+															? 'text-blue-600'
+															: 'text-red-600'
 													}`}
 												>
 													{simulation.status}

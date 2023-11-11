@@ -7,6 +7,7 @@ import { Container } from '../ui/container';
 import { Footer } from '../footer';
 import { Trace } from './trace';
 import { copyToClipboard, hexToNumber, shortenHash } from '@/lib/utils';
+import { SimulationResponse, SimulationsResponse, fetchSimulation } from '@/lib/simulation';
 
 function processTraceData(raw_call: Call): Call {
 	console.log(raw_call);
@@ -101,20 +102,20 @@ function getContractDisplayName(
 }
 
 export function SimulationPage({ simulationId }: { simulationId: string }) {
-	const [txData, setTxData] = useState<Transaction>();
+	const [simulationData, setSimulationData] = useState<SimulationResponse>();
 	const [error, setError] = useState<string | undefined>();
 
-	// useEffect(() => {
-	// 	const fetchData = async () => {
-	// 		try {
-	// 			setTxData(await fetchTransaction(chainId, txHash));
-	// 		} catch (error) {
-	// 			setError('Error fetching data');
-	// 		}
-	// 	};
+	useEffect(() => {
+		const fetchData = async () => {
+			try {
+				setSimulationData(await fetchSimulation(simulationId));
+			} catch (error) {
+				setError('Error fetching data');
+			}
+		};
 
-	// 	fetchData();
-	// }, [chainId, txHash]);
+		fetchData();
+	}, [simulationId]);
 
 	return (
 		<>
@@ -124,12 +125,12 @@ export function SimulationPage({ simulationId }: { simulationId: string }) {
 					<div className="font-medium text-lg mr-2 flex flex-row flex-wrap items-baseline break-all">
 						<span className="text-xl mr-6">Simulation</span> <span>{simulationId}</span>
 					</div>
-					{/* {txData && <TransactionInfo txData={txData} />}
-					{txData?.trace.execute_invocation ? (
-						<Trace executeInvocation={processTraceData(txData.trace.execute_invocation)} />
+					{/* {simulationData && <TransactionInfo txData={txData} />} */}
+					{simulationData?.trace.execute_invocation ? (
+						<Trace executeInvocation={processTraceData(simulationData.trace.execute_invocation)} />
 					) : (
 						<div>{error ? error : 'Loading...'}</div>
-					)} */}
+					)}
 				</Container>
 			</main>
 			<Footer />
