@@ -85,7 +85,7 @@ function MobileNavigation() {
 	);
 }
 
-export function Header() {
+export function Header({ hideCopyLink }: { hideCopyLink?: boolean }) {
 	return (
 		<header className="py-10">
 			<Container>
@@ -103,9 +103,11 @@ export function Header() {
 					</div>
 					<div className="flex items-center gap-x-5 md:gap-x-8 flex-auto md:flex-none">
 						<div className="relative z-10 hidden md:flex md:gap-x-6">
-							<Button variant="outline" onClick={() => copyToClipboard(window.location.href)}>
-								<LinkIcon className="w-4 h-4 mr-1" /> Copy Link
-							</Button>
+							{!hideCopyLink && (
+								<Button variant="outline" onClick={() => copyToClipboard(window.location.href)}>
+									<LinkIcon className="w-4 h-4 mr-1" /> Copy Link
+								</Button>
+							)}
 						</div>
 						<div className="-mr-1 md:hidden flex-auto">
 							<Search className="w-full" placeholder="Search for transaction"></Search>

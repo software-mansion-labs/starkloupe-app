@@ -100,6 +100,43 @@ function getContractDisplayName(
 	return shortenHash(contract_address);
 }
 
+export function SimulationPage({ simulationId }: { simulationId: string }) {
+	const [txData, setTxData] = useState<Transaction>();
+	const [error, setError] = useState<string | undefined>();
+
+	// useEffect(() => {
+	// 	const fetchData = async () => {
+	// 		try {
+	// 			setTxData(await fetchTransaction(chainId, txHash));
+	// 		} catch (error) {
+	// 			setError('Error fetching data');
+	// 		}
+	// 	};
+
+	// 	fetchData();
+	// }, [chainId, txHash]);
+
+	return (
+		<>
+			<Header />
+			<main className="flex-auto flex w-full pt-5 pb-10">
+				<Container className="overflow-hidden flex-auto">
+					<div className="font-medium text-lg mr-2 flex flex-row flex-wrap items-baseline break-all">
+						<span className="text-xl mr-6">Simulation</span> <span>{simulationId}</span>
+					</div>
+					{/* {txData && <TransactionInfo txData={txData} />}
+					{txData?.trace.execute_invocation ? (
+						<Trace executeInvocation={processTraceData(txData.trace.execute_invocation)} />
+					) : (
+						<div>{error ? error : 'Loading...'}</div>
+					)} */}
+				</Container>
+			</main>
+			<Footer />
+		</>
+	);
+}
+
 export function TransactionPage({ chainId, txHash }: { chainId: number; txHash: string }) {
 	const [txData, setTxData] = useState<Transaction>();
 	const [error, setError] = useState<string | undefined>();

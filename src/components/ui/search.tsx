@@ -21,7 +21,7 @@ export function Search({
 
 	function onEnter() {
 		if (props.onEnter) props.onEnter(searchValue);
-		if (searchValue && searchValue.trim().length > 0) router.push(`/tx/1/${searchValue}`);
+		if (searchValue && searchValue.trim().length > 0) router.push(`/tx/SN_MAIN/${searchValue}`);
 	}
 
 	return (
