@@ -89,7 +89,10 @@ export function SimulationsPage({
 											<TableRow
 												key={simulation.created_at}
 												className="cursor-pointer"
-												onClick={() => router.push(`/simulation/${simulation.id}`)}
+												onClick={() => {
+													writeCookie('status', simulation.status, 1);
+													router.push(`/simulation/${simulation.id}`);
+												}}
 											>
 												<TableCell className="whitespace-nowrap">
 													{formatTimestamp(simulation.created_at)}
@@ -148,4 +151,14 @@ function hexToText(hex: string): string {
 		text += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
 	}
 	return text;
+}
+function writeCookie(name: string, value: string, days: number): void {
+	let expires = '';
+
+	if (days) {
+		let date = new Date();
+		date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000);
+		expires = '; expires=' + date.toUTCString();
+	}
+	document.cookie = name + '=' + (value || '') + expires + '; path=/';
 }

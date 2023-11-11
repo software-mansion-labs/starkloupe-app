@@ -104,11 +104,13 @@ function getContractDisplayName(
 export function SimulationPage({ simulationId }: { simulationId: string }) {
 	const [simulationData, setSimulationData] = useState<SimulationResponse>();
 	const [error, setError] = useState<string | undefined>();
+	const [status, setStatus] = useState<string | null>('');
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				setSimulationData(await fetchSimulation(simulationId));
+				setStatus(readCookie('status'));
 			} catch (error) {
 				setError('Error fetching data');
 			}
@@ -125,7 +127,7 @@ export function SimulationPage({ simulationId }: { simulationId: string }) {
 					<div className="font-medium text-lg mr-2 flex flex-row flex-wrap items-baseline break-all">
 						<span className="text-xl mr-6">Simulation</span> <span>{simulationId}</span>
 					</div>
-					{/* {simulationData && <TransactionInfo txData={txData} />} */}
+					{simulationData && <SimulationInfo status={status ?? ''} />}
 					{simulationData?.trace.execute_invocation ? (
 						<Trace executeInvocation={processTraceData(simulationData.trace.execute_invocation)} />
 					) : (
@@ -297,4 +299,42 @@ function TransactionInfo({ txData }: { txData: Transaction }) {
 		}
 	];
 	return <div className="mt-4 py-1 px-2 bg-neutral-100">{Details(info)}</div>;
+}
+
+function SimulationInfo({ status }: { status: string }) {
+	const info = [
+		{
+			name: 'Execution status',
+			value: (
+				<span
+					className={` ${
+						status === 'success'
+							? 'text-lime-600'
+							: status === 'simulating'
+							? 'text-blue-600'
+							: 'text-red-600'
+					}`}
+				>
+					{(status ?? '').toUpperCase()}
+				</span>
+			)
+		}
+		// {
+		// 	name: 'Error reason',
+		// 	value: <span className="text-red-600"></span>
+		// }
+	];
+	return <div className="mt-4 py-1 px-2 bg-neutral-100">{Details(info)}</div>;
+}
+
+function readCookie(name: string): string | null {
+	let nameEQ = name + '=';
+	let ca = document.cookie.split(';');
+
+	for (let i = 0; i < ca.length; i++) {
+		let c = ca[i];
+		while (c.charAt(0) == ' ') c = c.substring(1, c.length);
+		if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length, c.length);
+	}
+	return null;
 }
