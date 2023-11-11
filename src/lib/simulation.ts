@@ -5,6 +5,7 @@ export interface Simulation {
 	created_at: number;
 	chain_id: string;
 	id: string;
+	status: 'success' | 'failure';
 }
 
 export interface SimulationsResponse {
@@ -21,7 +22,12 @@ export async function fetchSimulations(teamId?: number, walletAddress?: string) 
 	console.log(url);
 	const res = await fetch(url);
 	if (!res.ok) throw new Error('Failed to fetch data');
-	return (await res.json()) as SimulationsResponse;
+	const simulationsResponse = (await res.json()) as SimulationsResponse;
+	simulationsResponse.simulations = simulationsResponse.simulations.map((s) => ({
+		...s,
+		status: s.created_at % 2 === 0 ? 'success' : 'failure'
+	}));
+	return simulationsResponse;
 }
 
 export async function fetchSimulation(simulationId: string) {

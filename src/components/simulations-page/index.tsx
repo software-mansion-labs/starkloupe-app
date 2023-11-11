@@ -83,23 +83,31 @@ export function SimulationsPage({
 									</TableRow>
 								</TableHeader>
 								<TableBody className="font-mono">
-									{simulationsData?.simulations.map((simulation) => (
-										<TableRow
-											key={simulation.created_at}
-											className="cursor-pointer"
-											onClick={() => router.push(`/simulation/${simulation.id}`)}
-										>
-											<TableCell className="whitespace-nowrap">
-												{formatTimestamp(simulation.created_at)}
-											</TableCell>
-											<TableCell className="flex flex-row items-center">
-												{simulation.wallet_address}{' '}
-												{/* <DocumentDuplicateIcon className="w-3 h-3 ml-2 cursor-pointer" /> */}
-											</TableCell>
-											<TableCell>{hexToText(simulation.chain_id)}</TableCell>
-											<TableCell>undefined</TableCell>
-										</TableRow>
-									))}
+									{simulationsData?.simulations
+										.filter((s) => isAllVisible || s.status === 'failure')
+										.map((simulation) => (
+											<TableRow
+												key={simulation.created_at}
+												className="cursor-pointer"
+												onClick={() => router.push(`/simulation/${simulation.id}`)}
+											>
+												<TableCell className="whitespace-nowrap">
+													{formatTimestamp(simulation.created_at)}
+												</TableCell>
+												<TableCell className="flex flex-row items-center">
+													{simulation.wallet_address}{' '}
+													{/* <DocumentDuplicateIcon className="w-3 h-3 ml-2 cursor-pointer" /> */}
+												</TableCell>
+												<TableCell>{hexToText(simulation.chain_id)}</TableCell>
+												<TableCell
+													className={`${
+														simulation.status === 'success' ? 'text-lime-600' : 'text-red-600'
+													}`}
+												>
+													{simulation.status}
+												</TableCell>
+											</TableRow>
+										))}
 								</TableBody>
 							</Table>
 						</div>
