@@ -104,39 +104,85 @@ function CallChip({ className, ...props }: React.ComponentPropsWithoutRef<'span'
 	);
 }
 
-function CallDetailsIo({ io, isOutput }: { io?: CallIoDecoded[]; isOutput: boolean }) {
+function CallDetailsIo({
+	inputs,
+	outputs
+}: {
+	inputs?: CallIoDecoded[];
+	outputs?: CallIoDecoded[];
+}) {
+	if ((!inputs || inputs.length <= 0) && (!outputs || outputs.length <= 0)) return '';
 	return (
-		<div className="border border-neutral-300 rounded-sm my-2">
+		<div className="border border-neutral-300 rounded-sm my-2 overflow-hidden">
 			<Table>
-				<TableHeader>
-					<TableRow>
-						<TableHead>{isOutput ? 'Output' : 'Input'} name</TableHead>
-						<TableHead>Type</TableHead>
-						<TableHead>Value</TableHead>
-					</TableRow>
-				</TableHeader>
 				<TableBody>
-					{io?.map((i, index) => (
-						<TableRow key={index}>
-							<TableCell>{i.name}</TableCell>
-							<TableCell>{i.type}</TableCell>
-							<TableCell>
-								{typeof i.value === 'string' ? (
-									<span>{i.value}</span>
-								) : i.type && i.type.slice(-1) === '*' ? (
-									<span>[{CallInputs(i.value)}]</span>
-								) : i.value_formats && i.value_formats.DECIMAL ? (
-									<span>{i.value_formats.DECIMAL}</span>
-								) : (
-									<span>
-										{'{ '}
-										{CallInputs(i.value)}
-										{' }'}
-									</span>
-								)}
-							</TableCell>
+					{inputs && inputs.length > 0 && (
+						<>
+							<TableRow className="bg-neutral-100">
+								<TableHead>Input name</TableHead>
+								<TableHead>Type</TableHead>
+								<TableHead>Value</TableHead>
+							</TableRow>
+							{inputs.map((i, index) => (
+								<TableRow key={index}>
+									<TableCell>{i.name}</TableCell>
+									<TableCell>{i.type}</TableCell>
+									<TableCell>
+										{typeof i.value === 'string' ? (
+											<span>{i.value}</span>
+										) : i.type && i.type.slice(-1) === '*' ? (
+											<span>[{CallInputs(i.value)}]</span>
+										) : i.value_formats && i.value_formats.DECIMAL ? (
+											<span>{i.value_formats.DECIMAL}</span>
+										) : (
+											<span>
+												{'{ '}
+												{CallInputs(i.value)}
+												{' }'}
+											</span>
+										)}
+									</TableCell>
+								</TableRow>
+							))}
+						</>
+					)}
+					{outputs && outputs.length > 0 && inputs && inputs.length > 0 && (
+						<TableRow className="border-0">
+							<TableCell></TableCell>
+							<TableCell></TableCell>
+							<TableCell></TableCell>
 						</TableRow>
-					))}
+					)}
+					{outputs && outputs.length > 0 && (
+						<>
+							<TableRow className="bg-neutral-100">
+								<TableHead>Output name</TableHead>
+								<TableHead>Type</TableHead>
+								<TableHead>Value</TableHead>
+							</TableRow>{' '}
+							{outputs.map((i, index) => (
+								<TableRow key={index}>
+									<TableCell>{i.name}</TableCell>
+									<TableCell>{i.type}</TableCell>
+									<TableCell>
+										{typeof i.value === 'string' ? (
+											<span>{i.value}</span>
+										) : i.type && i.type.slice(-1) === '*' ? (
+											<span>[{CallInputs(i.value)}]</span>
+										) : i.value_formats && i.value_formats.DECIMAL ? (
+											<span>{i.value_formats.DECIMAL}</span>
+										) : (
+											<span>
+												{'{ '}
+												{CallInputs(i.value)}
+												{' }'}
+											</span>
+										)}
+									</TableCell>
+								</TableRow>
+							))}
+						</>
+					)}
 				</TableBody>
 			</Table>
 		</div>
@@ -227,12 +273,10 @@ function CallElements(
 				<div className="flex flex-col bg-neutral-50 rounded-b-sm border-b border-x border-neutral-200 py-1 px-2 text-sm">
 					<div className="max-w-[90vw]">{Details(callDetailsInfo)}</div>
 					<div className="w-fit min-w-[30rem]">
-						{call.inputs_decoded &&
-							call.inputs_decoded.length > 0 &&
-							CallDetailsIo({ io: call.inputs_decoded, isOutput: false })}
-						{call.outputs_decoded &&
+						{CallDetailsIo({ inputs: call.inputs_decoded, outputs: call.outputs_decoded })}
+						{/* {call.outputs_decoded &&
 							call.outputs_decoded.length > 0 &&
-							CallDetailsIo({ io: call.outputs_decoded, isOutput: true })}
+							CallDetailsIo({ io: call.outputs_decoded, isOutput: true })} */}
 					</div>
 					<div
 						className={`h-[30rem] my-2 ${classes[call.class_hash].code ? '' : 'hidden'}`}
