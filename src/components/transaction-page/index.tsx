@@ -21,6 +21,16 @@ function processTraceData(raw_call: Call): Call {
 	return processedCall;
 }
 
+function findContractName(classHash: string): string | undefined {
+	const names: { [key: string]: string } = {
+		'0x6ae5d4dfb51d3939e409808022f35415e60dc3c298926b9c998543cce3f835c': 'BriqFactory',
+		'0x25e33883f34b7b2ce1adc3e3cf0640d389ccfeca742c11d3d3cf55362153b19': 'World',
+		'0x3a489ebfa6f17a07e5a5523f128c894a272080aaa9d9339a5ef3ab046cb5105': 'BriqToken',
+		'0x625617e4a14b5672e2626d0c1330835bc35f7d40be8e6105dae99438befe07b': 'Briq SetNFT'
+	};
+	return names[classHash];
+}
+
 function processCallsData(raw_calls: Call[]): Call[] {
 	let processedCalls: Call[] = [];
 
@@ -38,11 +48,13 @@ function processCallsData(raw_calls: Call[]): Call[] {
 			events_decoded: raw_call.events_decoded,
 			error_message: raw_call.error_message,
 			contract_data: raw_call.contract_data,
-			contract_display_name: getContractDisplayName(
-				raw_call.contract_address,
-				raw_call.class_alias,
-				raw_call.contract_data?.contract_alias
-			)
+			contract_display_name:
+				findContractName(raw_call.class_hash) ??
+				getContractDisplayName(
+					raw_call.contract_address,
+					raw_call.class_alias,
+					raw_call.contract_data?.contract_alias
+				)
 		};
 
 		if (checkForCallDelegateDuplicate(raw_call)) {
