@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ToggleButton } from '@/components/ui/toggle-button';
 import React from 'react';
 import clsx from 'clsx';
-import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
+import * as monaco from 'monaco-editor';
 import {
 	Table,
 	TableBody,
@@ -290,11 +290,10 @@ function CallElements(
 		return (
 			<React.Fragment key={callIdentifier}>
 				<TraceLine
-					className={`border-t border-x ${
-						expandedCalls[callIdentifier]
+					className={`border-t border-x ${expandedCalls[callIdentifier]
 							? 'rounded-t-sm rounded-b-none bg-neutral-50 border-neutral-200'
 							: 'border-transparent'
-					}`}
+						}`}
 				>
 					{CallTypeChip(call.call_type)}
 					<div
