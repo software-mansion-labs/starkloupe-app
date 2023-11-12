@@ -26,3 +26,28 @@ export function shortenHash(hash: string, length = 13) {
 export function hexToNumber(hexString: string): number {
 	return parseInt(hexString, 16);
 }
+
+export function hexToText(hex: string): string {
+	let text = '';
+	for (let i = 0; i < hex.length; i += 2) {
+		text += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
+	}
+	return text;
+}
+
+export function formatTimestamp(timestamp: number): string {
+	let dateObject = new Date(timestamp * 1000);
+
+	let formatDate =
+		dateObject.getFullYear() +
+		'-' +
+		('0' + (dateObject.getMonth() + 1)).slice(-2) +
+		'-' +
+		('0' + dateObject.getDate()).slice(-2) +
+		' ' +
+		('0' + dateObject.getHours()).slice(-2) +
+		':' +
+		('0' + dateObject.getMinutes()).slice(-2);
+
+	return formatDate;
+}

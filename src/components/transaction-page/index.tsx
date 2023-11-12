@@ -6,7 +6,7 @@ import { Header } from '../header';
 import { Container } from '../ui/container';
 import { Footer } from '../footer';
 import { Trace } from './trace';
-import { copyToClipboard, hexToNumber, shortenHash } from '@/lib/utils';
+import { copyToClipboard, formatTimestamp, hexToNumber, hexToText, shortenHash } from '@/lib/utils';
 import {
 	Simulation,
 	SimulationResponse,
@@ -128,7 +128,19 @@ export function SimulationPage({ simulationId }: { simulationId: string }) {
 			<main className="flex-auto flex w-full pt-5 pb-10">
 				<Container className="overflow-hidden flex-auto">
 					<div className="font-medium text-lg mr-2 flex flex-row flex-wrap items-baseline break-all">
-						<span className="text-xl mr-6">Simulation</span> <span>{simulationId}</span>
+						<span className="text-xl mr-6">Simulation</span>{' '}
+						<span>
+							{simulationId} from{' '}
+							{simulationData?.simulation.team_id === 2 ? (
+								<> Briq [staging]</>
+							) : simulationData?.simulation.team_id === 1 ? (
+								<>
+									Wido — <a href="https://joinwido.com">joinwido.com</a>
+								</>
+							) : (
+								''
+							)}
+						</span>
 					</div>
 					{simulationData && <SimulationInfo simulation={simulationData.simulation} />}
 					{simulationData?.trace.execute_invocation ? (
@@ -307,7 +319,7 @@ function TransactionInfo({ txData }: { txData: Transaction }) {
 			valueToCopy: txData.data.signature
 		}
 	];
-	return <div className="mt-4 py-1 px-2 bg-neutral-100">{Details(info)}</div>;
+	return <div className="mt-4 py-1 px-2 bg-neutral-100 rounded-sm">{Details(info)}</div>;
 }
 
 function SimulationInfo({ simulation }: { simulation: Simulation }) {
@@ -327,11 +339,19 @@ function SimulationInfo({ simulation }: { simulation: Simulation }) {
 					{(simulation.status ?? '').toUpperCase()}
 				</span>
 			)
+		},
+		{
+			name: 'Chain id',
+			value: hexToText(simulation.chain_id)
+		},
+		{
+			name: 'Timestamp',
+			value: formatTimestamp(simulation.created_at)
+		},
+		{
+			name: 'Wallet address',
+			value: simulation.wallet_address
 		}
-		// {
-		// 	name: 'Error reason',
-		// 	value: <span className="text-red-600"></span>
-		// }
 	];
-	return <div className="mt-4 py-1 px-2 bg-neutral-100">{Details(info)}</div>;
+	return <div className="mt-4 py-1 px-2 bg-neutral-100 rounded-sm">{Details(info)}</div>;
 }

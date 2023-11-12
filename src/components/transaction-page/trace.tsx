@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Call, CallIoDecoded } from '@/lib/transaction';
 import { copyToClipboard, shortenHash } from '@/lib/utils';
 import { ArrowLongRightIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { ToggleButton } from '@/components/ui/toggle-button';
 import React from 'react';
 import clsx from 'clsx';
+import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import {
 	Table,
 	TableBody,
@@ -103,13 +104,13 @@ function CallChip({ className, ...props }: React.ComponentPropsWithoutRef<'span'
 	);
 }
 
-function CallDetailsIo(io?: CallIoDecoded[]) {
+function CallDetailsIo({ io, isOutput }: { io?: CallIoDecoded[]; isOutput: boolean }) {
 	return (
-		<div className="w-fit min-w-[30rem] border border-neutral-300 rounded-sm">
+		<div className="border border-neutral-300 rounded-sm my-2">
 			<Table>
 				<TableHeader>
 					<TableRow>
-						<TableHead>Input</TableHead>
+						<TableHead>{isOutput ? 'Output' : 'Input'} name</TableHead>
 						<TableHead>Type</TableHead>
 						<TableHead>Value</TableHead>
 					</TableRow>
@@ -187,13 +188,57 @@ function CallElements(
 		];
 
 		function CallDetails() {
+			const [editor, setEditor] = useState<monaco.editor.IStandaloneCodeEditor | null>(null);
+			const monacoEl = useRef(null);
+
+			useEffect(() => {
+				if (monacoEl) {
+					setEditor((editor) => {
+						if (editor) return editor;
+						const edi = monaco.editor.create(monacoEl.current!, {
+							value: classes[call.class_hash].code,
+							language: 'rust',
+							readOnly: true,
+							minimap: { enabled: false }
+						});
+
+						if (classes[call.class_hash].code) {
+							let x = classes[call.class_hash].code.split('\n');
+							// Find the index of the first line of the function
+							let i = 0;
+							let scrollTo = 0;
+							for (; i < x.length; i++) {
+								if (x[i].includes(`fn ${call.function_name}(`)) {
+									scrollTo = i;
+								}
+							}
+
+							edi.revealLineInCenter(scrollTo + 1);
+						}
+
+						return edi;
+					});
+				}
+
+				return () => editor?.dispose();
+			}, [monacoEl.current]);
+
 			return (
-				<div className="flex flex-col bg-neutral-100 rounded-b-sm border-b border-x border-neutral-200 py-1 px-2 text-sm">
+				<div className="flex flex-col bg-neutral-50 rounded-b-sm border-b border-x border-neutral-200 py-1 px-2 text-sm">
 					<div className="max-w-[90vw]">{Details(callDetailsInfo)}</div>
-					{call.inputs_decoded &&
-						call.inputs_decoded.length > 0 &&
-						CallDetailsIo(call.inputs_decoded)}
-					{classes[call.class_hash].code}
+					<div className="w-fit min-w-[30rem]">
+						{call.inputs_decoded &&
+							call.inputs_decoded.length > 0 &&
+							CallDetailsIo({ io: call.inputs_decoded, isOutput: false })}
+						{call.outputs_decoded &&
+							call.outputs_decoded.length > 0 &&
+							CallDetailsIo({ io: call.outputs_decoded, isOutput: true })}
+					</div>
+					<div
+						className={`h-[30rem] my-2 ${classes[call.class_hash].code ? '' : 'hidden'}`}
+						style={{ width: 'calc(100vw - 4rem)' }}
+						ref={monacoEl}
+					></div>
 				</div>
 			);
 		}
@@ -203,7 +248,7 @@ function CallElements(
 				<TraceLine
 					className={`border-t border-x ${
 						expandedCalls[callIdentifier]
-							? 'rounded-t-sm rounded-b-none bg-neutral-100 border-neutral-200'
+							? 'rounded-t-sm rounded-b-none bg-neutral-50 border-neutral-200'
 							: 'border-transparent'
 					}`}
 				>

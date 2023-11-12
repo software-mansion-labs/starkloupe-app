@@ -17,6 +17,7 @@ import { SimulationsResponse, fetchSimulations } from '@/lib/simulation';
 import { Button } from '../ui/button';
 import { ToggleButton } from '../ui/toggle-button';
 import { useRouter } from 'next/navigation';
+import { formatTimestamp, hexToText } from '@/lib/utils';
 
 export function SimulationsPage({
 	teamId,
@@ -49,13 +50,10 @@ export function SimulationsPage({
 				<Container className="overflow-hidden flex-auto">
 					<div className="text-xl font-medium my-4">
 						{teamId === 2 ? (
-							<>
-								Latest transactions from Briq —{' '}
-								<a href="https://test.sltech.company">test.sltech.company</a>
-							</>
+							<>Latest simulations from Briq [staging]</>
 						) : teamId === 1 ? (
 							<>
-								Latest transactions from Wido — <a href="https://joinwido.com">joinwido.com</a>
+								Latest simulations from Wido — <a href="https://joinwido.com">joinwido.com</a>
 							</>
 						) : (
 							''
@@ -67,8 +65,8 @@ export function SimulationsPage({
 							onToggleChange={() => {
 								setIsAllVisible(!isAllVisible);
 							}}
-							onCopy={'All transactions visible'}
-							offCopy={'Only failed transactions visible'}
+							onCopy={'All simulations visible'}
+							offCopy={'Only failed simulations visible'}
 						/>
 					</div>
 					{simulationsData?.simulations ? (
@@ -123,29 +121,4 @@ export function SimulationsPage({
 			<Footer />
 		</>
 	);
-}
-
-function formatTimestamp(timestamp: number): string {
-	let dateObject = new Date(timestamp * 1000);
-
-	let formatDate =
-		dateObject.getFullYear() +
-		'-' +
-		('0' + (dateObject.getMonth() + 1)).slice(-2) +
-		'-' +
-		('0' + dateObject.getDate()).slice(-2) +
-		' ' +
-		('0' + dateObject.getHours()).slice(-2) +
-		':' +
-		('0' + dateObject.getMinutes()).slice(-2);
-
-	return formatDate;
-}
-
-function hexToText(hex: string): string {
-	let text = '';
-	for (let i = 0; i < hex.length; i += 2) {
-		text += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
-	}
-	return text;
 }
