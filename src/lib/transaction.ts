@@ -81,19 +81,22 @@ export interface ContractData {
 	contract_alias?: string;
 	verified_timestamp?: number;
 }
+
 export interface TransactionReceipt {
 	actual_fee: string;
 	block_hash: string;
 	block_number: number;
 }
+
 export interface Transaction {
 	trace: Trace;
 	status: Status;
 	data: TransactionData;
 	receipt: TransactionReceipt;
+	classes: { [key: string]: { code: string } };
 }
 
-export async function fetchTransaction(chainId: number, txHash: string) {
+export async function fetchTransaction(chainId: string, txHash: string) {
 	const res = await fetch(`${API_URL}/${chainId}/tx/${txHash}`);
 	if (!res.ok) throw new Error('Failed to fetch data');
 	return (await res.json()) as Transaction;
