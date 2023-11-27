@@ -48,17 +48,7 @@ export function SimulationsPage({
 			<Header hideCopyLink />
 			<main className="flex-auto flex w-full pt-5 pb-10">
 				<Container className="overflow-hidden flex-auto">
-					<div className="text-xl font-medium my-4">
-						{teamId === 2 ? (
-							<>Latest simulations from Briq [staging]</>
-						) : teamId === 1 ? (
-							<>
-								Latest simulations from Wido — <a href="https://joinwido.com">joinwido.com</a>
-							</>
-						) : (
-							''
-						)}
-					</div>
+					<div className="text-xl font-medium my-4">Latest simulations from team {teamId}</div>
 					<div className="my-4">
 						<ToggleButton
 							enabled={isAllVisible}

@@ -291,10 +291,11 @@ function CallElements(
 		return (
 			<React.Fragment key={callIdentifier}>
 				<TraceLine
-					className={`border-t border-x ${expandedCalls[callIdentifier]
-						? 'rounded-t-sm rounded-b-none bg-neutral-50 border-neutral-200'
-						: 'border-transparent'
-						}`}
+					className={`border-t border-x ${
+						expandedCalls[callIdentifier]
+							? 'rounded-t-sm rounded-b-none bg-neutral-50 border-neutral-200'
+							: 'border-transparent'
+					}`}
 				>
 					{CallTypeChip(call.call_type)}
 					<div
@@ -378,20 +379,14 @@ function CallElements(
 						classes
 					)
 				)}
-				{call.error_message &&
-					!(collapsedCalls?.[callIdentifier] == true) &&
-					call.class_hash !==
-					'0x1a736d6ed154502257f02b1ccdf4d9d1089f80811cd6acad48e6b6a9d1f2003' && (
-						<TraceLine>
-							{CallTypeChip('ERROR')}
-							<CallChip style={{ marginLeft: (nesting_level + 2.5) * CALL_NESTING_SPACE_BUMP }}>
-								{call.class_hash ===
-									'0x625617e4a14b5672e2626d0c1330835bc35f7d40be8e6105dae99438befe07b'
-									? 'u128_sub Overflow'
-									: call.error_message}
-							</CallChip>
-						</TraceLine>
-					)}
+				{call.error_message && !(collapsedCalls?.[callIdentifier] == true) && (
+					<TraceLine>
+						{CallTypeChip('ERROR')}
+						<CallChip style={{ marginLeft: (nesting_level + 2.5) * CALL_NESTING_SPACE_BUMP }}>
+							{call.error_message}
+						</CallChip>
+					</TraceLine>
+				)}
 			</React.Fragment>
 		);
 	});
