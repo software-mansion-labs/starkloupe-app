@@ -279,7 +279,13 @@ function CallElements(
 						style={{ marginLeft: nesting_level * CALL_NESTING_SPACE_BUMP }}
 						className="flex flex-row items-center"
 					>
-						<div className="w-5 h-5 p-1 mr-1 cursor-pointer rounded-sm hover:bg-neutral-200">
+						<div
+							className={`w-5 h-5 p-1 mr-1  rounded-sm  ${
+								call.calls.length > 0 || (call.events_decoded && call.events_decoded.length > 0)
+									? 'cursor-pointer hover:bg-neutral-200'
+									: ''
+							}`}
+						>
 							{call.calls.length > 0 || (call.events_decoded && call.events_decoded.length > 0) ? (
 								collapsedCalls?.[callIdentifier] == true ? (
 									<ChevronRightIcon
