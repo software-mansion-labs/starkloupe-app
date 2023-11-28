@@ -21,7 +21,7 @@ export function ToggleButton(props: ToggleButtonProps) {
 				checked={props.enabled}
 				onChange={props.onToggleChange}
 				className={classNames(
-					props.enabled ? 'bg-blue-600' : 'bg-gray-200',
+					props.enabled ? 'bg-blue-500' : 'bg-gray-200',
 					'relative inline-flex h-4 w-8 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2'
 				)}
 			>
@@ -34,7 +34,7 @@ export function ToggleButton(props: ToggleButtonProps) {
 				/>
 			</Switch>
 			<Switch.Label as="span" className="ml-3 text-sm">
-				<span className="font-medium text-gray-900">
+				<span className="font-normal text-gray-900">
 					{props.enabled ? props.onCopy : props.offCopy}
 				</span>
 			</Switch.Label>
