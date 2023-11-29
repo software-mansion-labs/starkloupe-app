@@ -52,18 +52,20 @@ export function Trace({
 
 	return (
 		<div className="pt-16">
-			<div className="mb-3 flex items-baseline">
-				<div className="mr-8 font-medium">Execute Invocation</div>
-				<ToggleButton
-					enabled={showEvents}
-					onToggleChange={() => {
-						setShowEvents(!showEvents);
-					}}
-					onCopy={'Events visible'}
-					offCopy={'Events hidden'}
-				/>
+			<div className="pb-3 sm:flex sm:items-center">
+				<h3 className="text-xs uppercase font-semibold text-gray-900 mr-8">Execute Invocation</h3>
+				<div className="mt-3 sm:ml-4 sm:mt-0">
+					<ToggleButton
+						enabled={showEvents}
+						onToggleChange={() => {
+							setShowEvents(!showEvents);
+						}}
+						onCopy={'Events visible'}
+						offCopy={'Events hidden'}
+					/>
+				</div>
 			</div>
-			<div className="overflow-x-auto whitespace-nowrap min-h-[20rem] -mx-4">
+			<div className="overflow-x-auto whitespace-nowrap min-h-[20rem] -mx-4 text-xs">
 				<div className="min-w-fit">
 					{CallElements(
 						[executeInvocation],
@@ -84,14 +86,17 @@ export function Trace({
 function TraceLine({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
 	return (
 		<div
-			className={clsx('py-0.5 px-4 flex flex-row items-center hover:bg-neutral-100', className)}
+			className={clsx(
+				'py-0.5 px-4 flex flex-row items-center hover:bg-neutral-100 font-mono',
+				className
+			)}
 			{...props}
 		/>
 	);
 }
 
 function CallChip({ className, ...props }: React.ComponentPropsWithoutRef<'span'>) {
-	return <span className={clsx('inline-block text-xs py-0.5 mr-1', className)} {...props} />;
+	return <span className={clsx('inline-block py-0.5 mr-1', className)} {...props} />;
 }
 
 function CallDetailsIo(tables: { name: string; io: CallIoDecoded[] }[]) {
@@ -101,9 +106,9 @@ function CallDetailsIo(tables: { name: string; io: CallIoDecoded[] }[]) {
 				<Table className="text-xs">
 					<TableBody>
 						{tables.map(
-							(t) =>
+							(t, index) =>
 								t.io.length > 0 && (
-									<>
+									<React.Fragment key={index}>
 										<TableRow className="bg-neutral-100">
 											<TableHead>{t.name}</TableHead>
 											<TableHead>Type</TableHead>
@@ -130,7 +135,7 @@ function CallDetailsIo(tables: { name: string; io: CallIoDecoded[] }[]) {
 												</TableCell>
 											</TableRow>
 										))}
-									</>
+									</React.Fragment>
 								)
 						)}
 					</TableBody>
@@ -289,23 +294,22 @@ function CallElements(
 								''
 							)}
 						</div>
-						<CallChip>
-							<span className="text-amber-600">{call.contract_display_name}</span>
-							{call.contract_data?.token_name &&
-								` (${call.contract_data?.token_name} - ${call.contract_data?.token_symbol})`}
-						</CallChip>
-						<CallChip>
-							{call.function_name ?? shortenHash(call.entry_point_selector, 13)}({' '}
-							{CallInputs(call.inputs_decoded, true)} )
-							{call.outputs_decoded && call.outputs_decoded.length > 0 && (
-								<>
-									<ArrowLongRightIcon className="h-3 w-3 inline mx-1" />
-									{'{ '}
-									{CallInputs(call.outputs_decoded, true)}
-									{' }'}
-								</>
-							)}
-						</CallChip>
+						<span className="text-blue-600">{call.contract_display_name}</span>
+						{'.'}
+						<span className="text-pink-500">
+							{call.function_name ?? shortenHash(call.entry_point_selector, 13)}
+						</span>
+						<span className="text-yellow-900">{'('}</span>
+						{CallInputs(call.inputs_decoded, true)}
+						<span className="text-yellow-900">{')'}</span>
+						{call.outputs_decoded && call.outputs_decoded.length > 0 && (
+							<>
+								<ArrowLongRightIcon className="h-3 w-3 inline mx-1" />
+								{'{ '}
+								{CallInputs(call.outputs_decoded, true)}
+								{' }'}
+							</>
+						)}
 					</div>
 				</TraceLine>
 				{expandedCalls[callIdentifier] && <CallDetails />}
@@ -314,7 +318,7 @@ function CallElements(
 					call.events_decoded &&
 					call.events_decoded.length > 0 &&
 					call.events_decoded.map((event_decoded, j) => (
-						<>
+						<div key={j}>
 							<TraceLine
 								key={j}
 								onClick={() =>
@@ -344,7 +348,7 @@ function CallElements(
 							{expandedCalls[callIdentifier + event_decoded.name] && (
 								<EventDetails eventDecoded={event_decoded} />
 							)}
-						</>
+						</div>
 					))}
 
 				{collapsedCalls?.[callIdentifier] == true ? (
@@ -374,22 +378,25 @@ function CallElements(
 	});
 }
 
-function CallInputs(inputs?: CallIoDecoded[], isShorten = false) {
+const BRACKETS_COLORS = ['text-lime-600', 'text-red-500', 'text-purple-500'];
+function CallInputs(inputs?: CallIoDecoded[], isShorten = false, nestingLevel = 0) {
+	const BRACKETS_COLOR = BRACKETS_COLORS.at(nestingLevel % BRACKETS_COLORS.length);
+
 	return inputs?.map((i, index) => (
 		<span key={index}>
-			{i.name && <span>{i.name}=</span>}
+			{i.name && <span className="text-sky-900">{i.name}=</span>}
 			{typeof i.value === 'string' ? (
-				<span>{isShorten ? shortenHash(i.value) : i.value}</span>
+				<span className="text-orange-800">{isShorten ? shortenHash(i.value) : i.value}</span>
 			) : i.value_formats && i.value_formats.DECIMAL ? (
-				<span>{i.value_formats.DECIMAL}</span>
+				<span className="text-green-700">{i.value_formats.DECIMAL}</span>
 			) : (
 				<span>
-					{'{ '}
-					{CallInputs(i.value, isShorten)}
-					{' }'}
+					<span className={BRACKETS_COLOR}>{'{'}</span>
+					{CallInputs(i.value, isShorten, ++nestingLevel)}
+					<span className={BRACKETS_COLOR}>{'}'}</span>
 				</span>
 			)}
-			{index + 1 < inputs.length ? ', ' : ''}
+			{index + 1 < inputs.length ? ',\u00A0' : ''}
 		</span>
 	));
 }
@@ -407,7 +414,7 @@ function CallTypeChip(callType: string) {
 		<div className="w-20 flex-none flex">
 			<div
 				key={callType}
-				className={`${callTypeCellClass[callType]} flex-auto border text-center rounded-sm inline-block text-xs font-medium px-1.5 py-0.5 mr-1`}
+				className={`${callTypeCellClass[callType]} flex-auto border text-center rounded-sm inline-block px-1.5 py-0.5 mr-1`}
 			>
 				{callType == 'CALL DELEGATE' ? 'D-CALL' : callType}
 			</div>

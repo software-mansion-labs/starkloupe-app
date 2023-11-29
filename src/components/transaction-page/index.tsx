@@ -126,17 +126,16 @@ export function SimulationPage({ simulationId }: { simulationId: string }) {
 			<main className="flex-auto flex w-full pt-5 pb-10">
 				<Container className="overflow-hidden flex-auto">
 					<div className="bg-white border border-neutral-200 p-4">
-						<div className="border-b border-gray-200 pb-5">
-							<div className="-ml-2 -mt-2 flex flex-wrap items-baseline">
-								<h3 className="ml-2 mt-2 text-base font-semibold leading-6 text-gray-900">
-									Simulation {simulationId}
-								</h3>
-								<p className="ml-2 mt-1 truncate text-sm text-gray-500">
-									{simulationData?.simulation.team_id &&
-										`in project ${simulationData?.simulation.team_id}`}
-								</p>
-							</div>
+						<div className="-ml-2 -mt-2 flex flex-wrap items-baseline">
+							<h3 className="ml-2 mt-2 text-base font-semibold leading-6 text-gray-900">
+								Simulation {simulationId}
+							</h3>
+							<p className="ml-2 mt-1 truncate text-sm text-gray-500">
+								{simulationData?.simulation.team_id &&
+									`in project ${simulationData?.simulation.team_id}`}
+							</p>
 						</div>
+
 						{simulationData && <SimulationInfo simulation={simulationData.simulation} />}
 						{simulationData?.trace.execute_invocation ? (
 							<Trace
@@ -212,7 +211,7 @@ export function Details(
 										? copyToClipboard(value)
 										: () => {}
 								}
-								className={`rounded-sm px-1 ${
+								className={`rounded-sm font-mono px-1 ${
 									isCopyable ? 'cursor-pointer hover:bg-black/10' : ''
 								}`}
 							>

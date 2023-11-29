@@ -43,6 +43,7 @@
 	"devDependencies": {
 		"@cloudflare/next-on-pages": "^1.6.3",
 		"eslint-plugin-next-on-pages": "^1.6.3",
+		"postcss-import": "^15.1.0",
 		"vercel": "^32.4.1"
 	}
 }
