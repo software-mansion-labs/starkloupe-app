@@ -52,18 +52,20 @@ export function Trace({
 
 	return (
 		<div className="pt-16">
-			<div className="mb-3 flex items-baseline">
-				<div className="mr-8 font-medium">Execute Invocation</div>
-				<ToggleButton
-					enabled={showEvents}
-					onToggleChange={() => {
-						setShowEvents(!showEvents);
-					}}
-					onCopy={'Events visible'}
-					offCopy={'Events hidden'}
-				/>
+			<div className="pb-3 sm:flex sm:items-center">
+				<h3 className="text-xs uppercase font-semibold text-gray-900 mr-8">Execute Invocation</h3>
+				<div className="mt-3 sm:ml-4 sm:mt-0">
+					<ToggleButton
+						enabled={showEvents}
+						onToggleChange={() => {
+							setShowEvents(!showEvents);
+						}}
+						onCopy={'Events visible'}
+						offCopy={'Events hidden'}
+					/>
+				</div>
 			</div>
-			<div className="overflow-x-auto whitespace-nowrap min-h-[20rem]">
+			<div className="overflow-x-auto whitespace-nowrap min-h-[20rem] -mx-4 text-xs">
 				<div className="min-w-fit">
 					{CallElements(
 						[executeInvocation],
@@ -85,7 +87,7 @@ function TraceLine({ className, ...props }: React.ComponentPropsWithoutRef<'div'
 	return (
 		<div
 			className={clsx(
-				'p-1 pr-4 flex flex-row items-center hover:bg-neutral-100 rounded-sm',
+				'py-0.5 px-4 flex flex-row items-center hover:bg-neutral-100 font-mono',
 				className
 			)}
 			{...props}
@@ -94,27 +96,19 @@ function TraceLine({ className, ...props }: React.ComponentPropsWithoutRef<'div'
 }
 
 function CallChip({ className, ...props }: React.ComponentPropsWithoutRef<'span'>) {
-	return (
-		<span
-			className={clsx(
-				'bg-neutral-50 border-neutral-200 border rounded-sm inline-block text-xs font-medium px-2.5 py-0.5 mr-1',
-				className
-			)}
-			{...props}
-		/>
-	);
+	return <span className={clsx('inline-block py-0.5 mr-1', className)} {...props} />;
 }
 
 function CallDetailsIo(tables: { name: string; io: CallIoDecoded[] }[]) {
 	return (
 		tables.some((t) => t.io.length > 0) && (
 			<div className="border border-neutral-300 rounded-sm my-2 overflow-hidden">
-				<Table>
+				<Table className="text-xs">
 					<TableBody>
 						{tables.map(
-							(t) =>
+							(t, index) =>
 								t.io.length > 0 && (
-									<>
+									<React.Fragment key={index}>
 										<TableRow className="bg-neutral-100">
 											<TableHead>{t.name}</TableHead>
 											<TableHead>Type</TableHead>
@@ -141,7 +135,7 @@ function CallDetailsIo(tables: { name: string; io: CallIoDecoded[] }[]) {
 												</TableCell>
 											</TableRow>
 										))}
-									</>
+									</React.Fragment>
 								)
 						)}
 					</TableBody>
@@ -232,7 +226,7 @@ function CallElements(
 			}, [monacoEl.current]);
 
 			return (
-				<div className="flex flex-col bg-neutral-50 rounded-b-sm border-b border-x border-neutral-200 py-1 px-2 text-sm">
+				<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4 mb-2">
 					<div className="max-w-[90vw]">{Details(callDetailsInfo)}</div>
 					<div className="w-fit min-w-[30rem]">
 						{CallDetailsIo([
@@ -251,7 +245,7 @@ function CallElements(
 
 		function EventDetails({ eventDecoded }: { eventDecoded: CallEventDecoded }) {
 			return (
-				<div className="flex flex-col bg-neutral-50 rounded-b-sm border-b border-x border-neutral-200 py-1 px-2 text-sm">
+				<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4 mb-2">
 					<div className="w-fit min-w-[30rem]">
 						{CallDetailsIo([{ io: eventDecoded.data ?? [], name: 'Event argument' }])}
 					</div>
@@ -262,9 +256,9 @@ function CallElements(
 		return (
 			<React.Fragment key={callIdentifier}>
 				<TraceLine
-					className={`border-t border-x cursor-pointer ${
+					className={`border-y-2 cursor-pointer ${
 						expandedCalls[callIdentifier]
-							? 'rounded-t-sm rounded-b-none bg-neutral-50 border-neutral-200'
+							? 'border-neutral-300 trace-line--selected'
 							: 'border-transparent'
 					}`}
 					onClick={() =>
@@ -277,7 +271,7 @@ function CallElements(
 					{CallTypeChip(call.call_type)}
 					<div
 						style={{ marginLeft: nesting_level * CALL_NESTING_SPACE_BUMP }}
-						className="flex flex-row items-center"
+						className="flex flex-row items-center trace-line_content"
 					>
 						<div
 							className={`w-5 h-5 p-1 mr-1  rounded-sm  ${
@@ -306,23 +300,22 @@ function CallElements(
 								''
 							)}
 						</div>
-						<CallChip>
-							{call.contract_display_name}
-							{call.contract_data?.token_name &&
-								` (${call.contract_data?.token_name} - ${call.contract_data?.token_symbol})`}
-						</CallChip>
-						<CallChip>
-							{call.function_name ?? shortenHash(call.entry_point_selector, 13)}({' '}
-							{CallInputs(call.inputs_decoded, true)} )
-							{call.outputs_decoded && call.outputs_decoded.length > 0 && (
-								<>
-									<ArrowLongRightIcon className="h-3 w-3 inline mx-1" />
-									{'{ '}
-									{CallInputs(call.outputs_decoded, true)}
-									{' }'}
-								</>
-							)}
-						</CallChip>
+						<span className="text-blue-600">{call.contract_display_name}</span>
+						{'.'}
+						<span className="text-pink-500">
+							{call.function_name ?? shortenHash(call.entry_point_selector, 13)}
+						</span>
+						<span className="text-yellow-900">{'('}</span>
+						{CallInputs(call.inputs_decoded, true)}
+						<span className="text-yellow-900">{')'}</span>
+						{call.outputs_decoded && call.outputs_decoded.length > 0 && (
+							<>
+								<ArrowLongRightIcon className="h-3 w-3 inline mx-1" />
+								{'{ '}
+								{CallInputs(call.outputs_decoded, true)}
+								{' }'}
+							</>
+						)}
 					</div>
 				</TraceLine>
 				{expandedCalls[callIdentifier] && <CallDetails />}
@@ -331,7 +324,7 @@ function CallElements(
 					call.events_decoded &&
 					call.events_decoded.length > 0 &&
 					call.events_decoded.map((event_decoded, j) => (
-						<>
+						<div key={j}>
 							<TraceLine
 								key={j}
 								onClick={() =>
@@ -341,14 +334,17 @@ function CallElements(
 											!expandedCalls[callIdentifier + event_decoded.name]
 									})
 								}
-								className={`border-t border-x cursor-pointer ${
+								className={`border-y-2 cursor-pointer ${
 									expandedCalls[callIdentifier + event_decoded.name]
-										? 'rounded-t-sm rounded-b-none bg-neutral-50 border-neutral-200'
+										? 'border-neutral-300 trace-line--selected'
 										: 'border-transparent'
 								}`}
 							>
 								{CallTypeChip('EVENT')}
-								<CallChip style={{ marginLeft: (nesting_level + 2.5) * CALL_NESTING_SPACE_BUMP }}>
+								<CallChip
+									style={{ marginLeft: (nesting_level + 2.5) * CALL_NESTING_SPACE_BUMP }}
+									className="trace-line_content"
+								>
 									{event_decoded.name}
 									{event_decoded.order ? `order=${event_decoded.order}` : ''}
 									<ArrowLongRightIcon className="h-3 w-3 inline mx-1" />{' '}
@@ -358,7 +354,7 @@ function CallElements(
 							{expandedCalls[callIdentifier + event_decoded.name] && (
 								<EventDetails eventDecoded={event_decoded} />
 							)}
-						</>
+						</div>
 					))}
 
 				{collapsedCalls?.[callIdentifier] == true ? (
@@ -388,37 +384,33 @@ function CallElements(
 	});
 }
 
-function CallInputs(inputs?: CallIoDecoded[], isShorten = false) {
+const BRACKETS_COLORS = ['text-lime-600', 'text-red-500', 'text-purple-500'];
+function CallInputs(inputs?: CallIoDecoded[], isShorten = false, nestingLevel = 0) {
+	const BRACKETS_COLOR = BRACKETS_COLORS.at(nestingLevel % BRACKETS_COLORS.length);
+
 	return inputs?.map((i, index) => (
 		<span key={index}>
-			{i.name && <span>{i.name}=</span>}
+			{i.name && <span className="text-sky-900">{i.name}=</span>}
 			{typeof i.value === 'string' ? (
-				<span>{isShorten ? shortenHash(i.value) : i.value}</span>
+				<span className="text-orange-800">{isShorten ? shortenHash(i.value) : i.value}</span>
 			) : i.value_formats && i.value_formats.DECIMAL ? (
-				<span>{i.value_formats.DECIMAL}</span>
+				<span className="text-green-700">{i.value_formats.DECIMAL}</span>
 			) : (
 				<span>
-					{'{ '}
-					{CallInputs(i.value, isShorten)}
-					{' }'}
+					<span className={BRACKETS_COLOR}>{'{'}</span>
+					{CallInputs(i.value, isShorten, ++nestingLevel)}
+					<span className={BRACKETS_COLOR}>{'}'}</span>
 				</span>
 			)}
-			{index + 1 < inputs.length ? ', ' : ''}
+			{index + 1 < inputs.length ? ',\u00A0' : ''}
 		</span>
 	));
 }
 
 function CallTypeChip(callType: string) {
-	let callTypes: string[];
-
-	if (callType == 'CALL DELEGATE') {
-		callTypes = ['CALL', 'DELEGATE'];
-	} else {
-		callTypes = [callType];
-	}
-
 	let callTypeCellClass: { [key: string]: string } = {
 		['CALL']: 'bg-green-100 border-green-400 text-green-900',
+		['CALL DELEGATE']: 'bg-green-100 border-green-400 text-green-900',
 		['DELEGATE']: 'bg-blue-100 border-blue-400 text-blue-900',
 		['EVENT']: 'bg-purple-100 border-purple-400 text-purple-900',
 		['ERROR']: 'bg-red-100 border-red-400 text-red-900'
@@ -426,14 +418,12 @@ function CallTypeChip(callType: string) {
 
 	return (
 		<div className="w-20 flex-none flex">
-			{callTypes.map((callType) => (
-				<div
-					key={callType}
-					className={`${callTypeCellClass[callType]} flex-auto border text-center rounded-sm inline-block text-xs font-medium px-1.5 py-0.5 mr-1`}
-				>
-					{callType == 'DELEGATE' ? 'D' : callType}
-				</div>
-			))}
+			<div
+				key={callType}
+				className={`${callTypeCellClass[callType]} flex-auto border text-center rounded-sm inline-block px-1.5 py-0.5 mr-1`}
+			>
+				{callType == 'CALL DELEGATE' ? 'D-CALL' : callType}
+			</div>
 		</div>
 	);
 }
