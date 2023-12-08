@@ -15,10 +15,10 @@ const { handlers } = NextAuth({
 				? { httpOnly: false, sameSite: 'Lax', path: '/', secure: false }
 				: {
 						httpOnly: true,
-						sameSite: 'None', // Changed from 'Lax' to 'None' to allow cross-origin requests
+						sameSite: 'Lax',
 						path: '/',
-						secure: true, // This must be set to true if sameSite is 'None'
-						domain: '.walnut.dev' // Optionally specify the domain to include subdomains
+						// secure: true,
+						domain: '.walnut.dev'
 				  }
 		}
 	},
