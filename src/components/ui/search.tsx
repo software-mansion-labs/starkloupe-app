@@ -1,6 +1,5 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { Input } from './input';
 import { useState } from 'react';
@@ -25,9 +24,9 @@ export function Search({
 	}
 
 	return (
-		<div className={cn('mx-auto max-w-7xl', className)} {...props}>
+		<div className={className} {...props}>
 			<label htmlFor="search" className="sr-only">
-				Search
+				Search by tx hash
 			</label>
 			<div className="relative">
 				<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">

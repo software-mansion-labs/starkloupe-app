@@ -3,21 +3,20 @@
 import {
 	Table,
 	TableBody,
-	TableCaption,
 	TableCell,
 	TableHead,
 	TableHeader,
 	TableRow
 } from '@/components/ui/table';
-import { Header } from '../header';
+import { HeaderNav } from '../header';
 import { Container } from '../ui/container';
 import { Footer } from '../footer';
 import { useEffect, useState } from 'react';
 import { SimulationsResponse, fetchSimulations } from '@/lib/simulation';
-import { Button } from '../ui/button';
 import { ToggleButton } from '../ui/toggle-button';
 import { useRouter } from 'next/navigation';
 import { formatTimestamp, hexToText } from '@/lib/utils';
+import { Loader } from '../ui/loader';
 
 export function SimulationsPage({
 	teamId,
@@ -45,22 +44,28 @@ export function SimulationsPage({
 
 	return (
 		<>
-			<Header hideCopyLink />
-			<main className="flex-auto flex w-full pt-5 pb-10">
-				<Container className="overflow-hidden flex-auto">
-					<div className="text-xl font-medium my-4">Latest simulations from team {teamId}</div>
-					<div className="my-4">
-						<ToggleButton
-							enabled={isAllVisible}
-							onToggleChange={() => {
-								setIsAllVisible(!isAllVisible);
-							}}
-							onCopy={'All simulations visible'}
-							offCopy={'Only failed simulations visible'}
-						/>
+			<HeaderNav />
+			<header>
+				<Container>
+					<div className="bg-white border-x shadow-sm border-neutral-200 p-4">
+						<h1 className="text-l font-medium leading-6 my-4">Latest simulations</h1>
+						<div className="my-4">
+							<ToggleButton
+								enabled={isAllVisible}
+								onToggleChange={() => {
+									setIsAllVisible(!isAllVisible);
+								}}
+								onCopy={'All simulations visible'}
+								offCopy={'Only failed simulations visible'}
+							/>
+						</div>
 					</div>
-					{simulationsData?.simulations ? (
-						<div className="border border-neutral-200 rounded-sm">
+				</Container>
+			</header>
+			<main>
+				<Container>
+					<div className="bg-white border-x border-b shadow-sm border-neutral-200 rounded-b-sm p-4">
+						{simulationsData?.simulations ? (
 							<Table>
 								<TableHeader>
 									<TableRow>
@@ -75,7 +80,7 @@ export function SimulationsPage({
 										.filter((s) => isAllVisible || s.status === 'failure')
 										.map((simulation) => (
 											<TableRow
-												key={simulation.created_at}
+												key={simulation.id}
 												className="cursor-pointer"
 												onClick={() => router.push(`/simulation/${simulation.id}`)}
 											>
@@ -102,10 +107,10 @@ export function SimulationsPage({
 										))}
 								</TableBody>
 							</Table>
-						</div>
-					) : (
-						'Loading...'
-					)}
+						) : (
+							<Loader />
+						)}
+					</div>
 				</Container>
 			</main>
 			<Footer />

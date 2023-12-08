@@ -2,17 +2,13 @@
 
 import { ReactNode, useEffect, useState } from 'react';
 import { ExecutionStatus, Call, Transaction, fetchTransaction } from '@/lib/transaction';
-import { Header } from '../header';
+import { HeaderNav } from '../header';
 import { Container } from '../ui/container';
 import { Footer } from '../footer';
 import { Trace } from './trace';
 import { copyToClipboard, formatTimestamp, hexToNumber, hexToText, shortenHash } from '@/lib/utils';
-import {
-	Simulation,
-	SimulationResponse,
-	SimulationsResponse,
-	fetchSimulation
-} from '@/lib/simulation';
+import { Simulation, SimulationResponse, fetchSimulation } from '@/lib/simulation';
+import { Loader } from '../ui/loader';
 
 function processTraceData(raw_call: Call): Call {
 	let processedCall: Call = processCallsData([raw_call])[0];
@@ -122,28 +118,27 @@ export function SimulationPage({ simulationId }: { simulationId: string }) {
 
 	return (
 		<>
-			<Header />
-			<main className="flex-auto flex w-full pt-5 pb-10">
-				<Container className="overflow-hidden flex-auto">
-					<div className="bg-white border border-neutral-200 p-4">
-						<div className="-ml-2 -mt-2 flex flex-wrap items-baseline">
-							<h3 className="ml-2 mt-2 text-base font-semibold leading-6 text-gray-900">
-								Simulation {simulationId}
-							</h3>
+			<HeaderNav />
+			<main>
+				<Container>
+					<div className="bg-white border-x border-b shadow-sm border-neutral-200 p-4">
+						<div className="flex items-baseline">
+							<h1 className="text-l font-medium leading-6 mt-4 mb-2">Simulation {simulationId}</h1>
 							<p className="ml-2 mt-1 truncate text-sm text-gray-500">
 								{simulationData?.simulation.team_id &&
 									`in project ${simulationData?.simulation.team_id}`}
 							</p>
 						</div>
-
 						{simulationData && <SimulationInfo simulation={simulationData.simulation} />}
 						{simulationData?.trace.execute_invocation ? (
 							<Trace
 								executeInvocation={processTraceData(simulationData.trace.execute_invocation)}
 								classes={simulationData.classes}
 							/>
+						) : error ? (
+							error
 						) : (
-							<div>{error ? error : 'Loading...'}</div>
+							<Loader />
 						)}
 					</div>
 				</Container>
@@ -171,21 +166,23 @@ export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: 
 
 	return (
 		<>
-			<Header />
-			<main className="flex-auto flex w-full pt-5 pb-10">
-				<Container className="overflow-hidden flex-auto">
-					<div className="font-medium text-lg mr-2 flex flex-row flex-wrap items-baseline break-all">
-						<span className="text-xl mr-6">Transaction</span> <span>{txHash}</span>
+			<HeaderNav />
+			<main>
+				<Container>
+					<div className="bg-white border-x border-b shadow-sm border-neutral-200 p-4">
+						<h1 className="text-l font-medium leading-6 mt-4 mb-2">Transaction {txHash}</h1>
+						{txData && <TransactionInfo txData={txData} />}
+						{txData?.trace.execute_invocation ? (
+							<Trace
+								executeInvocation={processTraceData(txData.trace.execute_invocation)}
+								classes={txData.classes}
+							/>
+						) : error ? (
+							error
+						) : (
+							<Loader />
+						)}
 					</div>
-					{txData && <TransactionInfo txData={txData} />}
-					{txData?.trace.execute_invocation ? (
-						<Trace
-							executeInvocation={processTraceData(txData.trace.execute_invocation)}
-							classes={txData.classes}
-						/>
-					) : (
-						<div>{error ? error : 'Loading...'}</div>
-					)}
 				</Container>
 			</main>
 			<Footer />

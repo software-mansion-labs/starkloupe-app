@@ -1,120 +1,118 @@
+'use client';
+
 import Image from 'next/image';
 import Link from 'next/link';
-import { Fragment } from 'react';
-import clsx from 'clsx';
-import { Popover, Transition } from '@headlessui/react';
-import { Container } from '@/components/ui/container';
+import { Disclosure } from '@headlessui/react';
 import { Search } from '@/components/ui/search';
 import { Button } from '@/components/ui/button';
-import { LinkIcon } from '@heroicons/react/20/solid';
-import { copyToClipboard } from '@/lib/utils';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import logoWalnut from '@/assets/walnut.svg';
+import { useSession, signOut, signIn } from 'next-auth/react';
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '@/components/ui/dropdown-menu';
+import { UserAvatar } from './user-avatar';
 
-function MobileNavLink({ href, children }: { href: string; children: React.ReactNode }) {
+export function HeaderNav() {
+	const session = useSession();
+	console.log('session', session);
 	return (
-		<Popover.Button as={Link} href={href} className="block w-full p-2">
-			{children}
-		</Popover.Button>
-	);
-}
-
-function MobileNavIcon({ open }: { open: boolean }) {
-	return (
-		<svg
-			aria-hidden="true"
-			className="h-3.5 w-3.5 overflow-visible stroke-slate-700"
-			fill="none"
-			strokeWidth={2}
-			strokeLinecap="round"
-		>
-			<path
-				d="M0 1H14M0 7H14M0 13H14"
-				className={clsx('origin-center transition', open && 'scale-90 opacity-0')}
-			/>
-			<path
-				d="M2 2L12 12M12 2L2 12"
-				className={clsx('origin-center transition', !open && 'scale-90 opacity-0')}
-			/>
-		</svg>
-	);
-}
-
-function MobileNavigation() {
-	return (
-		<Popover>
-			<Popover.Button
-				className="relative z-10 flex h-8 w-8 items-center justify-center ui-not-focus-visible:outline-none"
-				aria-label="Toggle Navigation"
-			>
-				{({ open }) => <MobileNavIcon open={open} />}
-			</Popover.Button>
-			<Transition.Root>
-				<Transition.Child
-					as={Fragment}
-					enter="duration-150 ease-out"
-					enterFrom="opacity-0"
-					enterTo="opacity-100"
-					leave="duration-150 ease-in"
-					leaveFrom="opacity-100"
-					leaveTo="opacity-0"
-				>
-					<Popover.Overlay className="fixed inset-0 bg-slate-300/50" />
-				</Transition.Child>
-				<Transition.Child
-					as={Fragment}
-					enter="duration-150 ease-out"
-					enterFrom="opacity-0 scale-95"
-					enterTo="opacity-100 scale-100"
-					leave="duration-100 ease-in"
-					leaveFrom="opacity-100 scale-100"
-					leaveTo="opacity-0 scale-95"
-				>
-					<Popover.Panel
-						as="div"
-						className="absolute inset-x-0 top-full mt-4 flex origin-top flex-col rounded-2xl bg-white p-4 text-lg tracking-tight text-slate-900 shadow-xl ring-1 ring-slate-900/5"
-					>
-						<MobileNavLink href="#features">Features</MobileNavLink>
-						<MobileNavLink href="#testimonials">Testimonials</MobileNavLink>
-						<MobileNavLink href="#pricing">Pricing</MobileNavLink>
-						<hr className="m-2 border-slate-300/40" />
-						<MobileNavLink href="/login">Sign in</MobileNavLink>
-					</Popover.Panel>
-				</Transition.Child>
-			</Transition.Root>
-		</Popover>
-	);
-}
-
-export function Header({ hideCopyLink }: { hideCopyLink?: boolean }) {
-	return (
-		<header className="py-10">
-			<Container>
-				<nav className="relative z-50 flex justify-between gap-6">
-					<div className="flex items-center md:gap-x-12 relative z-50">
-						<Link href="/" aria-label="Home">
-							<Image src={logoWalnut} alt="Walnut logo" unoptimized className="h-10 w-auto" />
-						</Link>
+		<Disclosure as="nav" className="bg-neutral-50 border-b border-neutral-200">
+			{({ open }) => (
+				<>
+					<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+						<div className="flex h-16 items-center justify-between">
+							<div className="flex items-center">
+								<div className="flex-shrink-0">
+									<Link href="/">
+										<Image src={logoWalnut} alt="Walnut logo" unoptimized className="h-8 w-auto" />
+									</Link>
+								</div>
+								<div className="hidden md:block">
+									<nav className="ml-10 flex items-center space-x-4 lg:space-x-6">
+										{session.status === 'authenticated' ? (
+											<Link href="/simulations">
+												<Button variant="outline">Monitoring</Button>
+											</Link>
+										) : (
+											<></>
+										)}
+									</nav>
+								</div>
+							</div>
+							<div className="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end">
+								<div className="w-full max-w-lg lg:max-w-xs">
+									<Search className="w-full" placeholder="Search for transaction"></Search>
+								</div>
+							</div>
+							<div className="hidden md:block">
+								<div className="ml-4 flex items-center md:ml-6">
+									<div className="flex flex-row items-center ml-3">
+										<UserAvatar />
+									</div>
+								</div>
+							</div>
+							<div className="-mr-2 flex md:hidden">
+								{/* Mobile menu button */}
+								<Disclosure.Button>
+									{open ? (
+										<XMarkIcon className="block h-6 w-6" aria-hidden="true" />
+									) : (
+										<Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+									)}
+								</Disclosure.Button>
+							</div>
+						</div>
 					</div>
-					<div className="relative z-0 md:flex-1 items-center justify-center md:px-2 md:absolute md:inset-0 hidden md:flex">
-						<Search
-							className="lg:w-[38rem] md:w-[28rem] w-full"
-							placeholder="Search for any starknet transaction"
-						></Search>
-					</div>
-					<div className="flex items-center gap-x-5 md:gap-x-8 flex-auto md:flex-none">
-						<div className="relative z-10 hidden md:flex md:gap-x-6">
-							{!hideCopyLink && (
-								<Button variant="outline" onClick={() => copyToClipboard(window.location.href)}>
-									<LinkIcon className="w-4 h-4 mr-1" /> Copy Link
-								</Button>
+
+					<Disclosure.Panel className="md:hidden fixed bg-neutral-50 inset-x-0 z-50 border-b border-neutral-200">
+						<div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
+							{session.status === 'authenticated' ? (
+								<Link href="/simulations">
+									<Button variant="ghost">Monitoring</Button>
+								</Link>
+							) : (
+								<></>
 							)}
 						</div>
-						<div className="-mr-1 md:hidden flex-auto">
-							<Search className="w-full" placeholder="Search for transaction"></Search>
+						<div className="border-t border-neutral-100 pb-3 pt-4">
+							{session.status === 'authenticated' ? (
+								<div className="flex items-center px-5 justify-between">
+									<div className="flex flex-row items-center">
+										<div className="flex-shrink-0">
+											<Avatar>
+												{session.data.user?.image && <AvatarImage src={session.data.user.image} />}
+												<AvatarFallback>AA</AvatarFallback>
+											</Avatar>
+										</div>
+										<div className="ml-3">
+											<div className="text-base font-medium">{session.data.user?.name}</div>
+											<div className="text-sm font-medium text-secondary-foreground/80">
+												{session.data.user?.email}
+											</div>
+										</div>
+									</div>
+									<Disclosure.Button className="ml-2">
+										<Button variant="outline" onClick={() => signOut()}>
+											Sign out
+										</Button>
+									</Disclosure.Button>
+								</div>
+							) : session.status === 'unauthenticated' ? (
+								<Button onClick={() => signIn('cognito')} className="mx-5">
+									Sign in
+								</Button>
+							) : (
+								<></>
+							)}
 						</div>
-					</div>
-				</nav>
-			</Container>
-		</header>
+					</Disclosure.Panel>
+				</>
+			)}
+		</Disclosure>
 	);
 }
