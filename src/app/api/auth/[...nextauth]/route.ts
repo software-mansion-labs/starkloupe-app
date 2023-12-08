@@ -11,15 +11,16 @@ const { handlers } = NextAuth({
 	cookies: {
 		sessionToken: {
 			name: 'session-token',
-			options: dev
-				? { httpOnly: false, sameSite: 'Lax', path: '/', secure: false }
-				: {
-						httpOnly: true,
-						sameSite: 'Lax',
-						path: '/',
-						// secure: true,
-						domain: '.walnut.dev'
-				  }
+			options:
+				// dev ?
+				{ httpOnly: false, sameSite: 'Lax', path: '/', secure: false }
+			// : {
+			// 		httpOnly: true,
+			// 		sameSite: 'Lax',
+			// 		path: '/',
+			// 		// secure: true,
+			// 		domain: '.walnut.dev'
+			//   }
 		}
 	},
 	session: { strategy: 'jwt' },
