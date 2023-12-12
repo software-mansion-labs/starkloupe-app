@@ -10,13 +10,15 @@ export interface SimulationListItem {
 	status: 'success' | 'failure' | 'simulating';
 }
 
+export interface Stats {
+	failure_simulations: number;
+	total_simulations: number;
+	unique_wallet_count: number;
+}
+
 export interface SimulationsResponse {
 	simulations: SimulationListItem[];
-	stats: {
-		failure_simulations: number;
-		total_simulations: number;
-		unique_wallet_count: number;
-	};
+	stats: Stats;
 	project: { id: number; name: string };
 }
 

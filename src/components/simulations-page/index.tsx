@@ -17,6 +17,7 @@ import { ToggleButton } from '../ui/toggle-button';
 import { useRouter } from 'next/navigation';
 import { formatTimestamp, hexToText } from '@/lib/utils';
 import { Loader } from '../ui/loader';
+import { Stats } from '../stats';
 
 export function SimulationsPage({
 	teamId,
@@ -48,6 +49,9 @@ export function SimulationsPage({
 			<header>
 				<Container>
 					<div className="bg-white border-x shadow-sm border-neutral-200 p-4">
+						{simulationsData && simulationsData.simulations.length > 0 && (
+							<Stats stats={simulationsData.stats} />
+						)}
 						<h1 className="text-l font-medium leading-6 my-4">
 							Latest simulations from {simulationsData?.project.name}
 						</h1>
