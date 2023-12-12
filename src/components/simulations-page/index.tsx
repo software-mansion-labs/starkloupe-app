@@ -26,7 +26,7 @@ export function SimulationsPage({
 	walletAddress?: string;
 }) {
 	const router = useRouter();
-	const [simulationsData, setSimulationsData] = useState<SimulationsResponse>();
+	const [simulationsData, setSimulationsData] = useState<SimulationsResponse | null>();
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -48,17 +48,21 @@ export function SimulationsPage({
 			<header>
 				<Container>
 					<div className="bg-white border-x shadow-sm border-neutral-200 p-4">
-						<h1 className="text-l font-medium leading-6 my-4">Latest simulations</h1>
-						<div className="my-4">
-							<ToggleButton
-								enabled={isAllVisible}
-								onToggleChange={() => {
-									setIsAllVisible(!isAllVisible);
-								}}
-								onCopy={'All simulations visible'}
-								offCopy={'Only failed simulations visible'}
-							/>
-						</div>
+						<h1 className="text-l font-medium leading-6 my-4">
+							Latest simulations from {simulationsData?.project.name}
+						</h1>
+						{simulationsData && simulationsData.simulations.length > 0 && (
+							<div className="my-4">
+								<ToggleButton
+									enabled={isAllVisible}
+									onToggleChange={() => {
+										setIsAllVisible(!isAllVisible);
+									}}
+									onCopy={'All simulations visible'}
+									offCopy={'Only failed simulations visible'}
+								/>
+							</div>
+						)}
 					</div>
 				</Container>
 			</header>
@@ -66,47 +70,53 @@ export function SimulationsPage({
 				<Container>
 					<div className="bg-white border-x border-b shadow-sm border-neutral-200 rounded-b-sm p-4">
 						{simulationsData?.simulations ? (
-							<Table>
-								<TableHeader>
-									<TableRow>
-										<TableHead className="w-[100px]">Timestamp</TableHead>
-										<TableHead>Wallet address</TableHead>
-										<TableHead>Chain</TableHead>
-										<TableHead>Status</TableHead>
-									</TableRow>
-								</TableHeader>
-								<TableBody className="font-mono">
-									{simulationsData?.simulations
-										.filter((s) => isAllVisible || s.status === 'failure')
-										.map((simulation) => (
-											<TableRow
-												key={simulation.id}
-												className="cursor-pointer"
-												onClick={() => router.push(`/simulation/${simulation.id}`)}
-											>
-												<TableCell className="whitespace-nowrap">
-													{formatTimestamp(simulation.created_at)}
-												</TableCell>
-												<TableCell className="flex flex-row items-center">
-													{simulation.wallet_address}{' '}
-													{/* <DocumentDuplicateIcon className="w-3 h-3 ml-2 cursor-pointer" /> */}
-												</TableCell>
-												<TableCell>{hexToText(simulation.chain_id)}</TableCell>
-												<TableCell
-													className={`${
-														simulation.status === 'success'
-															? 'text-lime-600'
-															: simulation.status === 'simulating'
-															? 'text-blue-600'
-															: 'text-red-600'
-													}`}
+							simulationsData.simulations.length <= 0 ? (
+								<>No simulations found</>
+							) : (
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead className="w-[100px]">Timestamp</TableHead>
+											<TableHead>Wallet address</TableHead>
+											<TableHead>Chain</TableHead>
+											<TableHead>Status</TableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody className="font-mono">
+										{simulationsData?.simulations
+											.filter((s) => isAllVisible || s.status === 'failure')
+											.map((simulation) => (
+												<TableRow
+													key={simulation.id}
+													className="cursor-pointer"
+													onClick={() => router.push(`/simulation/${simulation.id}`)}
 												>
-													{simulation.status}
-												</TableCell>
-											</TableRow>
-										))}
-								</TableBody>
-							</Table>
+													<TableCell className="whitespace-nowrap">
+														{formatTimestamp(simulation.created_at)}
+													</TableCell>
+													<TableCell className="flex flex-row items-center">
+														{simulation.wallet_address}{' '}
+														{/* <DocumentDuplicateIcon className="w-3 h-3 ml-2 cursor-pointer" /> */}
+													</TableCell>
+													<TableCell>{hexToText(simulation.chain_id)}</TableCell>
+													<TableCell
+														className={`${
+															simulation.status === 'success'
+																? 'text-lime-600'
+																: simulation.status === 'simulating'
+																? 'text-blue-600'
+																: 'text-red-600'
+														}`}
+													>
+														{simulation.status}
+													</TableCell>
+												</TableRow>
+											))}
+									</TableBody>
+								</Table>
+							)
+						) : simulationsData === null ? (
+							<>Your account is not associated with any project</>
 						) : (
 							<Loader />
 						)}

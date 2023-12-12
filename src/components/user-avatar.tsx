@@ -28,11 +28,12 @@ export function UserAvatar() {
 						<DropdownMenuItem onClick={() => signOut()}>Sign out</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
-			) : session.status === 'unauthenticated' ? (
-				<Button onClick={() => signIn('cognito')} variant="outline">
-					Sign in
-				</Button>
 			) : (
+				// )
+				// : session.status === 'unauthenticated' ? (
+				// 	<Button onClick={() => signIn('cognito')} variant="outline">
+				// 		Sign in
+				// 	</Button>
 				<></>
 			)}
 		</>

@@ -12,6 +12,12 @@ export interface SimulationListItem {
 
 export interface SimulationsResponse {
 	simulations: SimulationListItem[];
+	stats: {
+		failure_simulations: number;
+		total_simulations: number;
+		unique_wallet_count: number;
+	};
+	project: { id: number; name: string };
 }
 
 export interface Simulation {
@@ -40,7 +46,7 @@ export function fetchSimulations(teamId?: number, walletAddress?: string) {
 	const queryParams: { team_id?: string; wallet_address?: string } = {};
 	// if (teamId) queryParams.team_id = teamId.toString();
 	if (walletAddress) queryParams.wallet_address = walletAddress;
-	return fetchApi<SimulationsResponse>('/v1/simulations', { queryParams });
+	return fetchApi<SimulationsResponse | null>('/v1/simulations', { queryParams });
 }
 
 export async function fetchSimulation(simulationId: string) {
