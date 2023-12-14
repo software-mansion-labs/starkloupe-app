@@ -48,7 +48,7 @@ export function fetchSimulations(teamId?: number, walletAddress?: string) {
 	const queryParams: { team_id?: string; wallet_address?: string } = {};
 	// if (teamId) queryParams.team_id = teamId.toString();
 	if (walletAddress) queryParams.wallet_address = walletAddress;
-	return fetchApi<SimulationsResponse | null>('/v1/simulations', { queryParams });
+	return fetchApi<SimulationsResponse | null>('/v1/simulations');
 }
 
 export async function fetchSimulation(simulationId: string) {

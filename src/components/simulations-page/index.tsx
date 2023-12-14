@@ -49,12 +49,14 @@ export function SimulationsPage({
 			<header>
 				<Container>
 					<div className="bg-white border-x shadow-sm border-neutral-200 p-4">
+						<h1 className="text-xl font-medium leading-6 my-4">{simulationsData?.project.name}</h1>
 						{simulationsData && simulationsData.simulations.length > 0 && (
-							<Stats stats={simulationsData.stats} />
+							<>
+								<h2 className="text-l font-medium leading-6 my-4">Recent 7-Day Overview</h2>
+								<Stats stats={simulationsData.stats} />
+							</>
 						)}
-						<h1 className="text-l font-medium leading-6 my-4">
-							Latest simulations from {simulationsData?.project.name}
-						</h1>
+						<h2 className="text-l font-medium leading-6 my-4">Latest simulations</h2>
 						{simulationsData && simulationsData.simulations.length > 0 && (
 							<div className="my-4">
 								<ToggleButton
