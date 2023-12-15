@@ -14,18 +14,10 @@ export default function Page({ params }: { params: { team_id: string } }) {
 	useEffect(() => {
 		if (status === 'authenticated') {
 			router.push('/simulations');
+		} else if (status === 'unauthenticated') {
+			signIn('cognito');
 		}
 	}, [status, router]);
 
-	return (
-		<div className="text-center pt-20">
-			{status === 'unauthenticated' ? (
-				<Button onClick={() => signIn('cognito')}>Sign in</Button>
-			) : status === 'loading' ? (
-				<>Loading...</>
-			) : (
-				<></>
-			)}
-		</div>
-	);
+	return <div className="text-center pt-20">Loading...</div>;
 }
