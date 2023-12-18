@@ -25,15 +25,14 @@ export function UserAvatar() {
 						</Avatar>
 					</DropdownMenuTrigger>
 					<DropdownMenuContent>
-						<DropdownMenuItem onClick={() => signOut()}>Sign out</DropdownMenuItem>
+						<DropdownMenuItem onClick={() => signOut()}>Log out</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>
+			) : session.status === 'unauthenticated' ? (
+				<Button onClick={() => signIn('cognito')} variant="outline">
+					Log in
+				</Button>
 			) : (
-				// )
-				// : session.status === 'unauthenticated' ? (
-				// 	<Button onClick={() => signIn('cognito')} variant="outline">
-				// 		Sign in
-				// 	</Button>
 				<></>
 			)}
 		</>

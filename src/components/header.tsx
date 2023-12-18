@@ -98,13 +98,13 @@ export function HeaderNav() {
 									</div>
 									<Disclosure.Button className="ml-2">
 										<Button variant="outline" onClick={() => signOut()}>
-											Sign out
+											Log out
 										</Button>
 									</Disclosure.Button>
 								</div>
 							) : session.status === 'unauthenticated' ? (
 								<Button onClick={() => signIn('cognito')} className="mx-5">
-									Sign in
+									Log in
 								</Button>
 							) : (
 								<></>
