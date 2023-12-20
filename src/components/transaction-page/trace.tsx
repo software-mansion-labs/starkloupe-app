@@ -194,7 +194,7 @@ function CallElements(
 			const monacoEl = useRef(null);
 
 			useEffect(() => {
-				if (monacoEl) {
+				if (monacoEl && classes[call.class_hash]) {
 					setEditor((editor) => {
 						if (editor) return editor;
 						const edi = monaco.editor.create(monacoEl.current!, {
@@ -235,7 +235,9 @@ function CallElements(
 						])}
 					</div>
 					<div
-						className={`h-[30rem] my-2 ${classes[call.class_hash].code ? '' : 'hidden'}`}
+						className={`h-[30rem] my-2 ${
+							classes[call.class_hash] && classes[call.class_hash].code ? '' : 'hidden'
+						}`}
 						style={{ width: 'calc(100vw - 4rem)' }}
 						ref={monacoEl}
 					></div>
