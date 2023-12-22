@@ -17,7 +17,7 @@ export function IndexNav() {
 	return (
 		<div className="absolute top-4 right-4 gap-2 flex flex-row">
 			{session.status === 'authenticated' ? (
-				<a href="/simulations">
+				<a href="/monitoring">
 					<Button variant="link">Monitoring</Button>
 				</a>
 			) : (

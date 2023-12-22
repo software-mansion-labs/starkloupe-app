@@ -19,7 +19,7 @@ export interface Stats {
 export interface SimulationsResponse {
 	simulations: SimulationListItem[];
 	stats: Stats;
-	project: { id: number; name: string };
+	project: { id: number; name: string; slug: string };
 }
 
 export interface Simulation {
@@ -44,11 +44,10 @@ export interface SimulationResponse {
 	classes: { [key: string]: { code: string } };
 }
 
-export function fetchSimulations(teamId?: number, walletAddress?: string) {
-	const queryParams: { team_id?: string; wallet_address?: string } = {};
-	// if (teamId) queryParams.team_id = teamId.toString();
-	if (walletAddress) queryParams.wallet_address = walletAddress;
-	return fetchApi<SimulationsResponse | null>('/v1/simulations');
+export function fetchSimulations(projectSlug?: string) {
+	const queryParams: { project_slug?: string } = {};
+	if (projectSlug) queryParams.project_slug = projectSlug;
+	return fetchApi<SimulationsResponse | null>('/v1/simulations', { queryParams });
 }
 
 export async function fetchSimulation(simulationId: string) {

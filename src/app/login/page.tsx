@@ -13,7 +13,7 @@ export default function Page({ params }: { params: { team_id: string } }) {
 
 	useEffect(() => {
 		if (status === 'authenticated') {
-			router.push('/simulations');
+			router.push('/monitoring');
 		} else if (status === 'unauthenticated') {
 			signIn('cognito');
 		}

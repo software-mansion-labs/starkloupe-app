@@ -35,7 +35,7 @@ export function HeaderNav() {
 								<div className="hidden md:block">
 									<nav className="ml-10 flex items-center space-x-4 lg:space-x-6">
 										{session.status === 'authenticated' ? (
-											<Link href="/simulations">
+											<Link href="/monitoring">
 												<Button variant="outline">Monitoring</Button>
 											</Link>
 										) : (
@@ -72,7 +72,7 @@ export function HeaderNav() {
 					<Disclosure.Panel className="md:hidden fixed bg-neutral-50 inset-x-0 z-50 border-b border-neutral-200">
 						<div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
 							{session.status === 'authenticated' ? (
-								<Link href="/simulations">
+								<Link href="/monitoring">
 									<Button variant="ghost">Monitoring</Button>
 								</Link>
 							) : (

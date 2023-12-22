@@ -20,10 +20,10 @@ import { Loader } from '../ui/loader';
 import { Stats } from '../stats';
 
 export function SimulationsPage({
-	teamId,
+	projectSlug,
 	walletAddress
 }: {
-	teamId?: number;
+	projectSlug?: string;
 	walletAddress?: string;
 }) {
 	const router = useRouter();
@@ -32,16 +32,23 @@ export function SimulationsPage({
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				setSimulationsData(await fetchSimulations(teamId, walletAddress));
+				setSimulationsData(await fetchSimulations(projectSlug));
 			} catch (error) {
 				console.log('Error fetching data');
 			}
 		};
 
 		fetchData();
-	}, [teamId, walletAddress]);
+	}, [projectSlug]);
 
 	const [isAllVisible, setIsAllVisible] = useState<boolean>(true);
+
+	useEffect(() => {
+		if (!projectSlug && simulationsData?.project?.slug) {
+			const newUrl = `/monitoring/project/${simulationsData.project.slug}`;
+			window.history.pushState(null, '', newUrl);
+		}
+	}, [projectSlug, simulationsData]);
 
 	return (
 		<>
