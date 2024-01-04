@@ -14,9 +14,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
 		<html lang="en" className="h-full ">
-			<LayoutClientContainer />
 			<body className={`${inter.className} h-full`}>
 				<NextAuthProvider>
+					<LayoutClientContainer />
 					<div className="min-h-full">{children}</div>
 				</NextAuthProvider>
 			</body>
