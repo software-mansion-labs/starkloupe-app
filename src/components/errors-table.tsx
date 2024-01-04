@@ -1,7 +1,7 @@
 import { CommonError } from '@/lib/types';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { useRouter } from 'next/navigation';
-import CryptoJS from 'crypto-js';
+import { md5 } from 'js-md5';
 import Link from 'next/link';
 
 export default function CommonErrorsTable({
@@ -25,9 +25,7 @@ export default function CommonErrorsTable({
 				{commonErrors.map((error) => (
 					<Link
 						key={error.error_message}
-						href={`/monitoring/project/${projectSlug}/error/${CryptoJS.MD5(
-							error.error_message
-						).toString()}`}
+						href={`/monitoring/project/${projectSlug}/error/${md5(error.error_message)}`}
 						className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted table-row"
 					>
 						<TableCell className="whitespace-nowrap">{error.error_count}</TableCell>
