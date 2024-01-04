@@ -1,4 +1,57 @@
-import { API_URL } from '@/lib/config';
+export interface CommonError {
+	error_message: string;
+	error_count: number;
+}
+
+export interface SimulationListItem {
+	wallet_address: string;
+	created_at: number;
+	chain_id: string;
+	id: string;
+	status: 'success' | 'failure' | 'simulating';
+	error_message: string;
+}
+
+export interface Stats {
+	failure_simulations: number;
+	total_simulations: number;
+	unique_wallet_count: number;
+	common_errors: { error_message: string; error_count: number }[];
+}
+
+export interface Project {
+	id: number;
+	name: string;
+	slug: string;
+}
+
+export interface SimulationsResponse {
+	simulations: SimulationListItem[];
+	stats: Stats;
+	project: Project;
+}
+
+export interface Simulation {
+	id: string;
+	team_id: number;
+	chain_id: string;
+	block_at: number;
+	transaction_version: number;
+	nonce: number;
+	max_fee: string;
+	cairo_version: string;
+	wallet_address: string;
+	calldata: string[];
+	created_at: number;
+	updated_at: number;
+	status: string;
+}
+
+export interface SimulationResponse {
+	trace: { execute_invocation: Call };
+	simulation: Simulation;
+	classes: { [key: string]: { code: string } };
+}
 
 export enum ValueFormatType {
 	DECIMAL = 'DECIMAL',
@@ -94,10 +147,4 @@ export interface Transaction {
 	data: TransactionData;
 	receipt: TransactionReceipt;
 	classes: { [key: string]: { code: string } };
-}
-
-export async function fetchTransaction(chainId: string, txHash: string) {
-	const res = await fetch(`${API_URL}/${chainId}/tx/${txHash}`);
-	if (!res.ok) throw new Error('Failed to fetch data');
-	return (await res.json()) as Transaction;
 }

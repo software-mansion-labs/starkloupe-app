@@ -1,4 +1,5 @@
 import { type ClassValue, clsx } from 'clsx';
+import { usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
 export * from './fetch';
 
@@ -51,4 +52,13 @@ export function formatTimestamp(timestamp: number): string {
 		('0' + dateObject.getMinutes()).slice(-2);
 
 	return formatDate;
+}
+
+type ChainId = 'SN_MAIN' | 'SN_GOERLI';
+
+export function useChain(): { chainId: ChainId; chainName: string } {
+	const path = usePathname();
+	const isGoerli = path.includes('SN_GOERLI');
+	const chainId = isGoerli ? 'SN_GOERLI' : 'SN_MAIN';
+	return { chainId, chainName: isGoerli ? 'Testnet' : 'Mainnet' };
 }

@@ -1,14 +1,14 @@
 'use client';
 
 import { ReactNode, useEffect, useState } from 'react';
-import { ExecutionStatus, Call, Transaction, fetchTransaction } from '@/lib/transaction';
-import { HeaderNav } from '../header';
-import { Container } from '../ui/container';
-import { Footer } from '../footer';
-import { Trace } from './trace';
+import { ExecutionStatus, Call, Transaction, Simulation, SimulationResponse } from '@/lib/types';
+import { fetchTransaction, fetchSimulation } from '@/lib/api';
+import { HeaderNav } from '@/components/header';
+import { Container } from '@/components/ui/container';
+import { Footer } from '@/components/footer';
 import { copyToClipboard, formatTimestamp, hexToNumber, hexToText, shortenHash } from '@/lib/utils';
-import { Simulation, SimulationResponse, fetchSimulation } from '@/lib/simulation';
-import { Loader } from '../ui/loader';
+import { Loader } from '@/components/ui/loader';
+import { Trace } from './trace';
 
 function processTraceData(raw_call: Call): Call {
 	let processedCall: Call = processCallsData([raw_call])[0];
@@ -121,7 +121,11 @@ export function SimulationPage({ simulationId }: { simulationId: string }) {
 			<HeaderNav />
 			<main>
 				<Container>
-					<div className="bg-white border-x border-b shadow-sm border-neutral-200 p-4">
+					<div
+						className={`bg-white border-x border-b shadow-sm border-neutral-200 ${
+							simulationData?.trace.execute_invocation ? 'pt-4 px-4' : 'p-4'
+						}`}
+					>
 						<div className="flex items-baseline">
 							<h1 className="text-l font-medium leading-6 mt-4 mb-2">Simulation {simulationId}</h1>
 							<p className="ml-2 mt-1 truncate text-sm text-gray-500">
@@ -169,7 +173,11 @@ export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: 
 			<HeaderNav />
 			<main>
 				<Container>
-					<div className="bg-white border-x border-b shadow-sm border-neutral-200 p-4">
+					<div
+						className={`bg-white border-x border-b shadow-sm border-neutral-200 ${
+							txData?.trace.execute_invocation ? 'pt-4 px-4' : 'p-4'
+						}`}
+					>
 						<h1 className="text-l font-medium leading-6 mt-4 mb-2">Transaction {txHash}</h1>
 						{txData && <TransactionInfo txData={txData} />}
 						{txData?.trace.execute_invocation ? (

@@ -3,24 +3,34 @@
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { Input } from './input';
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { Button } from './button';
+
+function getChainIdFromPathname(pathname: string) {
+	const chainId = pathname.split('/')[2];
+	return chainId ?? 'SN_MAIN';
+}
 
 export function Search({
 	className,
 	placeholder,
 	isTxSearch,
+	isSearchButton,
 	...props
 }: React.ComponentPropsWithoutRef<'div'> & {
 	isTxSearch?: boolean;
-	onEnter?: (value: string) => void;
+	onSearch?: (value: string) => void;
+	isSearchButton?: boolean;
 }) {
 	const router = useRouter();
+	const pathname = usePathname();
 
 	const [searchValue, setSearchValue] = useState('');
 
-	function onEnter() {
-		if (props.onEnter) props.onEnter(searchValue);
-		if (searchValue && searchValue.trim().length > 0) router.push(`/tx/SN_MAIN/${searchValue}`);
+	function onSearch() {
+		if (props.onSearch) props.onSearch(searchValue);
+		else if (searchValue && searchValue.trim().length > 0)
+			router.push(`/transactions/${getChainIdFromPathname(pathname)}/${searchValue}`);
 	}
 
 	return (
@@ -39,8 +49,13 @@ export function Search({
 					name="search"
 					value={searchValue}
 					onInput={(e) => setSearchValue(e.currentTarget.value)}
-					onKeyDown={(e) => e.key === 'Enter' && onEnter()}
+					onKeyDown={(e) => e.key === 'Enter' && onSearch()}
 				/>
+				{isSearchButton && searchValue.trim().length > 0 && (
+					<Button size="sm" className="absolute inset-y-1 right-1 h-auto" onClick={onSearch}>
+						Search
+					</Button>
+				)}
 			</div>
 		</div>
 	);

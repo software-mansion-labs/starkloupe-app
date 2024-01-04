@@ -5,21 +5,34 @@ import Link from 'next/link';
 import { Disclosure } from '@headlessui/react';
 import { Search } from '@/components/ui/search';
 import { Button } from '@/components/ui/button';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, ChevronUpDownIcon } from '@heroicons/react/24/outline';
 import logoWalnut from '@/assets/walnut.svg';
 import { useSession, signOut, signIn } from 'next-auth/react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { UserAvatar } from './user-avatar';
+import { usePathname } from 'next/navigation';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
-	DropdownMenuItem,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
 	DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import { UserAvatar } from './user-avatar';
+} from './ui/dropdown-menu';
+import { useRouter } from 'next/navigation';
+import { useChain } from '@/lib/utils';
 
 export function HeaderNav() {
 	const session = useSession();
-	console.log('session', session);
+	const pathname = usePathname();
+	const router = useRouter();
+
+	const { chainId, chainName } = useChain();
+
+	function changeChainId(id: string) {
+		if (id === chainId) return;
+		router.push(`/transactions/${id}`);
+	}
+
 	return (
 		<Disclosure as="nav" className="bg-neutral-50 border-b border-neutral-200">
 			{({ open }) => (
@@ -28,26 +41,52 @@ export function HeaderNav() {
 						<div className="flex h-16 items-center justify-between">
 							<div className="flex items-center">
 								<div className="flex-shrink-0">
-									<Link href="/">
-										<Image src={logoWalnut} alt="Walnut logo" unoptimized className="h-8 w-auto" />
-									</Link>
+									{/* <Link href="/"> */}
+									<Image src={logoWalnut} alt="Walnut logo" unoptimized className="h-8 w-auto" />
+									{/* </Link> */}
 								</div>
 								<div className="hidden md:block">
 									<nav className="ml-10 flex items-center space-x-4 lg:space-x-6">
 										{session.status === 'authenticated' ? (
-											<Link href="/monitoring">
-												<Button variant="outline">Monitoring</Button>
+											<Link
+												href="/monitoring"
+												className={`text-sm font-medium transition-colors hover:text-primary ${
+													pathname.startsWith('/monitoring') ? '' : 'text-muted-foreground'
+												}`}
+											>
+												Monitoring
 											</Link>
 										) : (
 											<></>
 										)}
+										<Link
+											href="/transactions/SN_MAIN"
+											className={`text-sm font-medium transition-colors hover:text-primary ${
+												pathname.startsWith('/transactions') ? '' : 'text-muted-foreground'
+											}`}
+										>
+											Transactions
+										</Link>
 									</nav>
 								</div>
 							</div>
-							<div className="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end">
+							<div className="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end gap-2">
 								<div className="w-full max-w-lg lg:max-w-xs">
 									<Search className="w-full" placeholder="Search for transaction"></Search>
 								</div>
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
+										<Button variant="outline" className="relative pr-10 min-w-[7rem]">
+											{chainName} <ChevronUpDownIcon className="w-5 h-5 absolute right-2" />
+										</Button>
+									</DropdownMenuTrigger>
+									<DropdownMenuContent className="w-56">
+										<DropdownMenuRadioGroup value={chainId} onValueChange={changeChainId}>
+											<DropdownMenuRadioItem value="SN_MAIN">Mainnet</DropdownMenuRadioItem>
+											<DropdownMenuRadioItem value="SN_GOERLI">Testnet</DropdownMenuRadioItem>
+										</DropdownMenuRadioGroup>
+									</DropdownMenuContent>
+								</DropdownMenu>
 							</div>
 							<div className="hidden md:block">
 								<div className="ml-4 flex items-center md:ml-6">
