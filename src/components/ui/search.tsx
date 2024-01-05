@@ -5,6 +5,15 @@ import { Input } from './input';
 import { useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from './button';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
+	DropdownMenuTrigger
+} from './dropdown-menu';
+import { ChevronUpDownIcon } from '@heroicons/react/24/outline';
+import { cn, useChain } from '@/lib/utils';
 
 function getChainIdFromPathname(pathname: string) {
 	const chainId = pathname.split('/')[2];
@@ -16,16 +25,25 @@ export function Search({
 	placeholder,
 	isTxSearch,
 	isSearchButton,
+	isChainSelector,
 	...props
 }: React.ComponentPropsWithoutRef<'div'> & {
 	isTxSearch?: boolean;
 	onSearch?: (value: string) => void;
 	isSearchButton?: boolean;
+	isChainSelector?: boolean;
 }) {
 	const router = useRouter();
 	const pathname = usePathname();
 
 	const [searchValue, setSearchValue] = useState('');
+
+	const { chainId, chainName } = useChain();
+
+	function changeChainId(id: string) {
+		if (id === chainId) return;
+		router.push(`/transactions/${id}`);
+	}
 
 	function onSearch() {
 		if (props.onSearch) props.onSearch(searchValue);
@@ -34,16 +52,16 @@ export function Search({
 	}
 
 	return (
-		<div className={className} {...props}>
+		<div className={cn('flex flex-row', className)} {...props}>
 			<label htmlFor="search" className="sr-only">
 				Search by tx hash
 			</label>
-			<div className="relative">
+			<div className="relative flex-1">
 				<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 					<MagnifyingGlassIcon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
 				</div>
 				<Input
-					className="pl-10"
+					className={`pl-10 ${isChainSelector ? 'rounded-r-none' : ''}`}
 					placeholder={placeholder}
 					type="search"
 					name="search"
@@ -57,6 +75,24 @@ export function Search({
 					</Button>
 				)}
 			</div>
+			{isChainSelector && (
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button
+							variant="outline"
+							className="relative pr-10 min-w-[7rem] rounded-l-none border-l-0"
+						>
+							{chainName} <ChevronUpDownIcon className="w-5 h-5 absolute right-2" />
+						</Button>
+					</DropdownMenuTrigger>
+					<DropdownMenuContent className="w-56">
+						<DropdownMenuRadioGroup value={chainId} onValueChange={changeChainId}>
+							<DropdownMenuRadioItem value="SN_MAIN">Mainnet</DropdownMenuRadioItem>
+							<DropdownMenuRadioItem value="SN_GOERLI">Testnet</DropdownMenuRadioItem>
+						</DropdownMenuRadioGroup>
+					</DropdownMenuContent>
+				</DropdownMenu>
+			)}
 		</div>
 	);
 }

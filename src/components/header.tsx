@@ -70,23 +70,14 @@ export function HeaderNav() {
 									</nav>
 								</div>
 							</div>
-							<div className="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end gap-2">
-								<div className="w-full max-w-lg lg:max-w-xs">
-									<Search className="w-full" placeholder="Search for transaction"></Search>
+							<div className="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end">
+								<div className="w-full max-w-lg lg:max-w-sm">
+									<Search
+										className="w-full"
+										placeholder="Search for transaction"
+										isChainSelector
+									></Search>
 								</div>
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<Button variant="outline" className="relative pr-10 min-w-[7rem]">
-											{chainName} <ChevronUpDownIcon className="w-5 h-5 absolute right-2" />
-										</Button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent className="w-56">
-										<DropdownMenuRadioGroup value={chainId} onValueChange={changeChainId}>
-											<DropdownMenuRadioItem value="SN_MAIN">Mainnet</DropdownMenuRadioItem>
-											<DropdownMenuRadioItem value="SN_GOERLI">Testnet</DropdownMenuRadioItem>
-										</DropdownMenuRadioGroup>
-									</DropdownMenuContent>
-								</DropdownMenu>
 							</div>
 							<div className="hidden md:block">
 								<div className="ml-4 flex items-center md:ml-6">
