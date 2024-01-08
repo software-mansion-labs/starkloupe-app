@@ -1,6 +1,7 @@
 export interface CommonError {
 	error_message: string;
 	error_count: number;
+	error_contract_address: string;
 }
 
 export interface SimulationListItem {
@@ -16,7 +17,7 @@ export interface Stats {
 	failure_simulations: number;
 	total_simulations: number;
 	unique_wallet_count: number;
-	common_errors: { error_message: string; error_count: number }[];
+	common_errors: CommonError[];
 }
 
 export interface Project {
