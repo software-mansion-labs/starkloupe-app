@@ -30,7 +30,7 @@ export default function CommonErrorsTable({
 						className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted table-row"
 					>
 						<TableCell className="whitespace-nowrap">{error.error_count}</TableCell>
-						<TableCell className="whitespace-nowrap">{error.error_contract_address}</TableCell>
+						<TableCell className="whitespace-nowrap">0x{error.error_contract_address}</TableCell>
 						<TableCell className="flex flex-row items-center whitespace-nowrap">
 							{error.error_message}
 						</TableCell>
