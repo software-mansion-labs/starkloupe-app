@@ -1,3 +1,8 @@
+export enum ChainId {
+	MAIN = 'SN_MAIN',
+	GOERLI = 'SN_GOERLI'
+}
+
 export interface CommonError {
 	error_message: string;
 	error_count: number;

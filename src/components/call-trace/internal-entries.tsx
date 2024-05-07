@@ -1,8 +1,8 @@
-import { InternalFnCallTrace } from '@/lib/simulation';
 import React, { useContext } from 'react';
-import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
-import { CallTraceContext } from './context';
+import { InternalFnCallTrace } from '@/lib/simulation';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
+import { CallTraceContext } from '@/lib/context/call-trace';
+import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 
 export function InternalCallTrace({
 	calls,

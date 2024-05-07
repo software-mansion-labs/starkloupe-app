@@ -1,25 +1,31 @@
-import { CallTrace } from '@/lib/simulation';
-import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { useContext } from 'react';
 import React from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
+import { CallTrace } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
-import { InternalCallTrace } from './internal-entries';
-import { CallTraceContext } from './context';
+import { CallTraceContext } from '@/lib/context/call-trace';
 import { CallDetails } from '@/components/ui/call-details';
+import { InternalCallTrace } from './internal-entries';
+import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 
 export function ContractCallTrace({
 	calls,
-	nestingLevel
+	nestingLevel,
+	parentId
 }: {
 	calls: CallTrace[];
 	nestingLevel: number;
+	parentId?: string;
 }) {
 	const { expandedCalls, collapsedCalls, showEvents, toggleCallCollapse, toggleCallExpand } =
 		useContext(CallTraceContext);
 
-	return calls.map((call) => {
-		const callIdentifier = call.entryPoint.entryPointSelector + call.entryPoint.storageAddress;
+	return calls.map((call, index) => {
+		const callIdentifier =
+			(parentId ?? '') +
+			call.entryPoint.entryPointSelector +
+			call.entryPoint.storageAddress +
+			index;
 		const hasNestedElements = call.nestedCalls.length > 0 || call.internalFnCallTrace;
 
 		return (
@@ -76,7 +82,11 @@ export function ContractCallTrace({
 				)}
 
 				{collapsedCalls[callIdentifier] != true && (
-					<ContractCallTrace calls={call.nestedCalls} nestingLevel={nestingLevel + 1} />
+					<ContractCallTrace
+						calls={call.nestedCalls}
+						nestingLevel={nestingLevel + 1}
+						parentId={callIdentifier}
+					/>
 				)}
 			</React.Fragment>
 		);

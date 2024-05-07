@@ -1,12 +1,11 @@
 'use client';
 
-import { ReactNode, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { HeaderNav } from '../header';
 import { Container } from '../ui/container';
 import { Footer } from '../footer';
-import { copyToClipboard } from '@/lib/utils';
 import { Loader } from '../ui/loader';
-import { simulateTransactionByHash } from '@/lib/simulation';
+import { simulateTransactionByHash } from '@/lib/transaction';
 import { ChainId } from '@/lib/types';
 import { TransactionSimulationResult } from '@/lib/transaction';
 import { CallTraceRoot } from '@/components/call-trace';

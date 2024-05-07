@@ -1,9 +1,6 @@
 import { SimulationResult } from '@/lib/simulation';
-import { useState } from 'react';
-import { ToggleButton } from '../ui/toggle-button';
-// import { CallTraceContext, StringBooleanDict } from '.';
+import { CallTraceContextProvider } from '@/lib/context/call-trace';
 import { ContractCallTrace } from './entries';
-import { CallTraceContextProvider } from './context';
 
 export function CallTraceRoot({ simulationResult }: { simulationResult: SimulationResult }) {
 	return (

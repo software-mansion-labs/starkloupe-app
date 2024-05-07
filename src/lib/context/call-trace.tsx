@@ -26,17 +26,13 @@ export const CallTraceContextProvider: React.FC<PropsWithChildren> = ({ children
 	const [showEvents, setShowEvents] = useState<boolean>(true);
 
 	const toggleCallCollapse = (id: string) => {
-		console.log('toggleCallCollapse', id);
 		setCollapsedCalls((prevState) => {
-			console.log('setCollapsedCalls', prevState);
 			return { ...prevState, [id]: !!!prevState[id] };
 		});
 	};
 
 	const toggleCallExpand = (id: string) => {
-		console.log('toggleCallExpand', id);
 		setExpandedCalls((prevState) => {
-			console.log('setExpandedCalls', prevState);
 			return { ...prevState, [id]: !!!prevState[id] };
 		});
 	};

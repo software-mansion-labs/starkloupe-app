@@ -29,9 +29,10 @@ export function UserAvatar() {
 					</DropdownMenuContent>
 				</DropdownMenu>
 			) : session.status === 'unauthenticated' ? (
-				<Button onClick={() => signIn('cognito')} variant="outline">
-					Log in
-				</Button>
+				// <Button onClick={() => signIn('cognito')} variant="outline">
+				// 	Log in
+				// </Button>
+				<></>
 			) : (
 				<></>
 			)}

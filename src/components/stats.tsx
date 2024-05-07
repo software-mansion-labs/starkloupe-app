@@ -1,4 +1,4 @@
-import { Project, Stats } from '@/lib/types';
+import type { Project, Stats } from '@/lib/types';
 import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
 import {
 	ExclamationTriangleIcon,

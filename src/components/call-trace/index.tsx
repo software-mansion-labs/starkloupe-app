@@ -1,10 +1,7 @@
-import { ReactNode } from 'react';
-import { copyToClipboard } from '@/lib/utils';
 import React from 'react';
 import clsx from 'clsx';
 import 'monaco-editor/esm/vs/basic-languages/rust/rust.contribution.js';
-
-import { CallType, EntryPointType } from '@/lib/simulation';
+import { CallType } from '@/lib/simulation';
 export * from './root';
 
 export const CALL_NESTING_SPACE_BUMP: number = 16; // in pixels
