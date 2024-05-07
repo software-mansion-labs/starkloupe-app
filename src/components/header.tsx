@@ -5,21 +5,34 @@ import Link from 'next/link';
 import { Disclosure } from '@headlessui/react';
 import { Search } from '@/components/ui/search';
 import { Button } from '@/components/ui/button';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, ChevronUpDownIcon } from '@heroicons/react/24/outline';
 import logoWalnut from '@/assets/walnut.svg';
 import { useSession, signOut, signIn } from 'next-auth/react';
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
+import { UserAvatar } from './user-avatar';
+import { usePathname } from 'next/navigation';
 import {
 	DropdownMenu,
 	DropdownMenuContent,
-	DropdownMenuItem,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
 	DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-import { UserAvatar } from './user-avatar';
+} from './ui/dropdown-menu';
+import { useRouter } from 'next/navigation';
+import { useChain } from '@/lib/utils';
 
 export function HeaderNav() {
 	const session = useSession();
-	console.log('session', session);
+	const pathname = usePathname();
+	const router = useRouter();
+
+	const { chainId, chainName } = useChain();
+
+	function changeChainId(id: string) {
+		if (id === chainId) return;
+		router.push(`/transactions/${id}`);
+	}
+
 	return (
 		<Disclosure as="nav" className="bg-neutral-50 border-b border-neutral-200">
 			{({ open }) => (
@@ -28,25 +41,42 @@ export function HeaderNav() {
 						<div className="flex h-16 items-center justify-between">
 							<div className="flex items-center">
 								<div className="flex-shrink-0">
-									<Link href="/">
-										<Image src={logoWalnut} alt="Walnut logo" unoptimized className="h-8 w-auto" />
-									</Link>
+									{/* <Link href="/"> */}
+									<Image src={logoWalnut} alt="Walnut logo" unoptimized className="h-8 w-auto" />
+									{/* </Link> */}
 								</div>
 								<div className="hidden md:block">
 									<nav className="ml-10 flex items-center space-x-4 lg:space-x-6">
 										{session.status === 'authenticated' ? (
-											<Link href="/simulations">
-												<Button variant="outline">Monitoring</Button>
+											<Link
+												href="/monitoring"
+												className={`text-sm font-medium transition-colors hover:text-primary ${
+													pathname.startsWith('/monitoring') ? '' : 'text-muted-foreground'
+												}`}
+											>
+												Monitoring
 											</Link>
 										) : (
 											<></>
 										)}
+										<Link
+											href="/transactions/SN_MAIN"
+											className={`text-sm font-medium transition-colors hover:text-primary ${
+												pathname.startsWith('/transactions') ? '' : 'text-muted-foreground'
+											}`}
+										>
+											Transactions
+										</Link>
 									</nav>
 								</div>
 							</div>
 							<div className="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end">
-								<div className="w-full max-w-lg lg:max-w-xs">
-									<Search className="w-full" placeholder="Search for transaction"></Search>
+								<div className="w-full max-w-lg lg:max-w-sm">
+									<Search
+										className="w-full"
+										placeholder="Search for transaction"
+										isChainSelector
+									></Search>
 								</div>
 							</div>
 							<div className="hidden md:block">
@@ -72,7 +102,7 @@ export function HeaderNav() {
 					<Disclosure.Panel className="md:hidden fixed bg-neutral-50 inset-x-0 z-50 border-b border-neutral-200">
 						<div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
 							{session.status === 'authenticated' ? (
-								<Link href="/simulations">
+								<Link href="/monitoring">
 									<Button variant="ghost">Monitoring</Button>
 								</Link>
 							) : (

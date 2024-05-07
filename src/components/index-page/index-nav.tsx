@@ -1,15 +1,7 @@
 'use client';
 
-import { signIn, signOut, useSession } from 'next-auth/react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
-
 import { UserAvatar } from '@/components/user-avatar';
 
 export function IndexNav() {
@@ -17,7 +9,7 @@ export function IndexNav() {
 	return (
 		<div className="absolute top-4 right-4 gap-2 flex flex-row">
 			{session.status === 'authenticated' ? (
-				<a href="/simulations">
+				<a href="/monitoring">
 					<Button variant="link">Monitoring</Button>
 				</a>
 			) : (

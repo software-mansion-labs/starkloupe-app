@@ -1,22 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
-import { Call, CallEventDecoded, CallIoDecoded } from '@/lib/transaction';
-import { copyToClipboard, shortenHash } from '@/lib/utils';
+import { Call, CallEventDecoded, CallIoDecoded } from '@/lib/types';
+import { shortenHash } from '@/lib/utils';
 import { ArrowLongRightIcon, ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
-import { Button } from '@/components/ui/button';
 import { ToggleButton } from '@/components/ui/toggle-button';
 import React from 'react';
 import clsx from 'clsx';
 import * as monaco from 'monaco-editor/esm/vs/editor/editor.api';
 import 'monaco-editor/esm/vs/basic-languages/rust/rust.contribution.js';
-import {
-	Table,
-	TableBody,
-	TableCaption,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow
-} from '@/components/ui/table';
+import { Table, TableBody, TableCell, TableHead, TableRow } from '@/components/ui/table';
 import { Details } from '.';
 
 const CALL_NESTING_SPACE_BUMP: number = 16; // in pixels
@@ -65,7 +56,7 @@ export function Trace({
 					/>
 				</div>
 			</div>
-			<div className="overflow-x-auto whitespace-nowrap min-h-[20rem] -mx-4 text-xs">
+			<div className="overflow-x-auto whitespace-nowrap min-h-[20rem] -mx-4 text-xs pb-4">
 				<div className="min-w-fit">
 					{CallElements(
 						[executeInvocation],
