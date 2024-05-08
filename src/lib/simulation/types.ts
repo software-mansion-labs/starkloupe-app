@@ -46,6 +46,9 @@ export interface CallTrace {
 	result: CallResult;
 	internalFnCallTrace: InternalFnCallTrace;
 	nestedCalls: CallTrace[];
+	additionalInfo: {
+		entryPointSelectorName: string | null;
+	};
 }
 
 export interface SimulationResult {

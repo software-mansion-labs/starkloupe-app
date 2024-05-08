@@ -65,7 +65,8 @@ export function ContractCallTrace({
 						<span className="text-blue-600">{call.entryPoint.storageAddress}</span>
 						{'.'}
 						<span className="text-pink-500">
-							{shortenHash(call.entryPoint.entryPointSelector, 13)}
+							{call.additionalInfo.entryPointSelectorName ??
+								shortenHash(call.entryPoint.entryPointSelector, 13)}
 						</span>
 						<span className="text-yellow-900">{'('}</span>
 						<span className="text-yellow-900">{')'}</span>
