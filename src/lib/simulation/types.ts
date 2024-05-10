@@ -47,7 +47,11 @@ export interface CallTrace {
 	internalFnCallTrace: InternalFnCallTrace;
 	nestedCalls: CallTrace[];
 	additionalInfo: {
-		entryPointSelectorName: string | null;
+		entryPointFunctionName: string | null;
+		entryPointInterfaceName: string | null;
+		isErc20Token: boolean;
+		erc20TokenName: string | null;
+		erc20TokenSymbol: string | null;
 	};
 }
 
