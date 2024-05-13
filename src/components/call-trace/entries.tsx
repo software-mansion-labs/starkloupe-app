@@ -28,6 +28,15 @@ export function ContractCallTrace({
 			index;
 		const hasNestedElements = call.nestedCalls.length > 0 || call.internalFnCallTrace;
 
+		let contractName = call.entryPoint.storageAddress;
+
+		if (call.additionalInfo.erc20TokenName || call.additionalInfo.erc20TokenSymbol) {
+			contractName = [
+				call.additionalInfo.erc20TokenName,
+				`(${call.additionalInfo.erc20TokenSymbol})`
+			].join(' ');
+		}
+
 		return (
 			<React.Fragment key={callIdentifier}>
 				<TraceLine
@@ -62,7 +71,7 @@ export function ContractCallTrace({
 								''
 							)}
 						</div>
-						<span className="text-blue-600">{call.entryPoint.storageAddress}</span>
+						<span className="text-blue-600">{contractName}</span>
 						{'.'}
 						<span className="text-pink-500">
 							{call.additionalInfo?.entryPointFunctionName ??
@@ -129,6 +138,35 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 			value: JSON.stringify(call.result)
 		}
 	];
+
+	if (call.additionalInfo.erc20TokenName) {
+		details.push({
+			name: 'Token Name',
+			value: call.additionalInfo.erc20TokenName
+		});
+	}
+
+	if (call.additionalInfo.erc20TokenSymbol) {
+		details.push({
+			name: 'Token Symbol',
+			value: call.additionalInfo.erc20TokenSymbol
+		});
+	}
+
+	if (call.additionalInfo.entryPointFunctionName) {
+		details.push({
+			name: 'Function Name',
+			value: call.additionalInfo.entryPointFunctionName
+		});
+	}
+
+	if (call.additionalInfo.entryPointInterfaceName) {
+		details.push({
+			name: 'Interface Name',
+			value: call.additionalInfo.entryPointInterfaceName
+		});
+	}
+
 	return <CallDetails details={details} isTraceElement />;
 }
 
