@@ -52,6 +52,7 @@ export interface CallTrace {
 		isErc20Token: boolean;
 		erc20TokenName: string | null;
 		erc20TokenSymbol: string | null;
+		errorMessage: string | null;
 	};
 }
 

@@ -6,6 +6,7 @@ import { shortenHash } from '@/lib/utils';
 import { CallTraceContext } from '@/lib/context/call-trace';
 import { CallDetails } from '@/components/ui/call-details';
 import { InternalCallTrace } from './internal-entries';
+import { ErrorTraceLine } from './error-trace-line';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 
 export function ContractCallTrace({
@@ -90,13 +91,15 @@ export function ContractCallTrace({
 						parentId={callIdentifier}
 					/>
 				)}
-
 				{collapsedCalls[callIdentifier] != true && (
 					<ContractCallTrace
 						calls={call.nestedCalls}
 						nestingLevel={nestingLevel + 1}
 						parentId={callIdentifier}
 					/>
+				)}
+				{collapsedCalls[callIdentifier] != true && (
+					<ErrorTraceLine call={call} nestingLevel={nestingLevel + 1} />
 				)}
 			</React.Fragment>
 		);
@@ -164,6 +167,13 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 		details.push({
 			name: 'Interface Name',
 			value: call.additionalInfo.entryPointInterfaceName
+		});
+	}
+
+	if (call.additionalInfo.errorMessage) {
+		details.push({
+			name: 'Error Message',
+			value: call.additionalInfo.errorMessage
 		});
 	}
 

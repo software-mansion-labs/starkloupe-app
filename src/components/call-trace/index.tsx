@@ -18,7 +18,7 @@ export function TraceLine({ className, ...props }: React.ComponentPropsWithoutRe
 	);
 }
 
-type CallTypeChipKind = CallType | 'Internal';
+type CallTypeChipKind = CallType | 'Internal' | 'Error';
 export function CallTypeChip(kind: CallTypeChipKind) {
 	let callTypeCellClass: { [key: string]: string } = {
 		['Call']: 'bg-green-100 border-green-400 text-green-900',
