@@ -1,10 +1,17 @@
 import { copyToClipboard } from '@/lib/utils';
 
+export interface CallDetail {
+	name: string;
+	value: React.ReactNode;
+	isCopyable?: boolean;
+	valueToCopy?: string;
+}
+
 export function CallDetails({
 	details,
 	isTraceElement
 }: {
-	details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[];
+	details: CallDetail[];
 	isTraceElement?: boolean;
 }) {
 	return (

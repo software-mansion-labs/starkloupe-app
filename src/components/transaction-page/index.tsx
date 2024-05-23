@@ -9,7 +9,7 @@ import { simulateTransactionByHash } from '@/lib/transaction';
 import { ChainId } from '@/lib/types';
 import { TransactionSimulationResult } from '@/lib/transaction';
 import { CallTraceRoot } from '@/components/call-trace';
-import { CallDetails } from '../ui/call-details';
+import { CallDetail, CallDetails } from '../ui/call-details';
 
 export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: string }) {
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
@@ -22,6 +22,7 @@ export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: 
 					await simulateTransactionByHash({ chainId: chainId as ChainId, txHash })
 				);
 			} catch (error) {
+				console.error(error);
 				setError('Error fetching data');
 			}
 		};
@@ -53,7 +54,7 @@ export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: 
 }
 
 function TransactionDetails({ txSimResult }: { txSimResult: TransactionSimulationResult }) {
-	const details = [
+	const details: CallDetail[] = [
 		{
 			name: 'Chain',
 			value: txSimResult.chainId
@@ -73,6 +74,26 @@ function TransactionDetails({ txSimResult }: { txSimResult: TransactionSimulatio
 			isCopyable: true
 		}
 	];
+	if (txSimResult.simulationResult.executionResult.executionStatus === 'SUCCEEDED') {
+		details.unshift({
+			name: 'Execution status',
+			value: (
+				<span className="text-green-600">
+					{txSimResult.simulationResult.executionResult.executionStatus}
+				</span>
+			)
+		});
+	} else {
+		details.unshift({
+			name: 'Execution status',
+			value: (
+				<span className="text-red-600">
+					{txSimResult.simulationResult.executionResult.executionStatus}: &quot;
+					{txSimResult.simulationResult.executionResult.revertReason}&quot;
+				</span>
+			)
+		});
+	}
 	return (
 		<div className="mt-4 py-1 px-2 bg-neutral-100 rounded-sm">
 			<CallDetails details={details} />

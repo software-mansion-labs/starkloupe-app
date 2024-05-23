@@ -56,8 +56,18 @@ export interface CallTrace {
 	};
 }
 
+interface ExecutionResultSucceeded {
+	executionStatus: 'SUCCEEDED';
+}
+
+interface ExecutionResultReverted {
+	executionStatus: 'REVERTED';
+	revertReason: string;
+}
+
 export interface SimulationResult {
 	callTrace: CallTrace;
+	executionResult: ExecutionResultSucceeded | ExecutionResultReverted;
 }
 
 export interface InternalFnCallTrace {
