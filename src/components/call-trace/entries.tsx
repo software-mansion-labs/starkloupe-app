@@ -79,7 +79,26 @@ export function ContractCallTrace({
 								shortenHash(call.entryPoint.entryPointSelector, 13)}
 						</span>
 						<span className="text-yellow-900">{'('}</span>
+						{call.additionalInfo?.functionArgumentsNames ? (
+							<span className="text-orange-500">
+								{call.additionalInfo.functionArgumentsNames.join(', ')}
+							</span>
+						) : (
+							call.additionalInfo?.functionArguments && (
+								<span className="text-orange-500">
+									{call.additionalInfo.functionArguments.map((arg) => shortenHash(arg)).join(', ')}
+								</span>
+							)
+						)}
 						<span className="text-yellow-900">{')'}</span>
+						{call.additionalInfo?.functionResult && call.additionalInfo?.functionReturnResultTypes && (
+							<>
+								<span className="text-yellow-900">{'->'}</span>
+								<span className="text-pink-500">
+									{`(${call.additionalInfo?.functionReturnResultTypes.join(', ')})`}
+								</span>
+							</>
+						)}
 					</div>
 				</TraceLine>
 				{expandedCalls[callIdentifier] && <ContractCallDetails call={call} />}
@@ -174,6 +193,20 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 		details.push({
 			name: 'Error Message',
 			value: call.additionalInfo.errorMessage
+		});
+	}
+
+	if (call.additionalInfo.functionResult) {
+		details.unshift({
+			name: 'Raw Result',
+			value: JSON.stringify(call.additionalInfo.functionResult)
+		});
+	}
+
+	if (call.additionalInfo.functionArguments) {
+		details.unshift({
+			name: 'Raw Arguments',
+			value: JSON.stringify(call.additionalInfo.functionArguments)
 		});
 	}
 

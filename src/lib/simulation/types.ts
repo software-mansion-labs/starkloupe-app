@@ -53,6 +53,10 @@ export interface CallTrace {
 		erc20TokenName: string | null;
 		erc20TokenSymbol: string | null;
 		errorMessage: string | null;
+		functionResult: string[] | null;
+		functionReturnResultTypes: string[] | null;
+		functionArguments: string[] | null;
+		functionArgumentsNames: string[] | null;
 	};
 }
 
