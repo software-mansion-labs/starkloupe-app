@@ -3,25 +3,29 @@ import { InternalFnCallTrace } from '@/lib/simulation';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { CallTraceContext } from '@/lib/context/call-trace';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
+import { ErrorTraceLine } from './error-trace-line';
 
 export function InternalCallTrace({
 	calls,
 	nestingLevel,
-	parentId
+	parentId,
+	errorMessage
 }: {
 	calls: InternalFnCallTrace[];
 	nestingLevel: number;
 	parentId: string;
+	errorMessage?: string;
 }) {
-	const { collapsedCalls, toggleCallCollapse } = useContext(CallTraceContext);
+	const { notCollapsedInternalFnCalls, toggleInternalFnCallCollapse } =
+		useContext(CallTraceContext);
 
-	return calls.map((call) => {
-		const callIdentifier = parentId + call.data.fp;
+	return calls.map((call, index) => {
+		const callIdentifier = `${parentId}-${index}`;
 
 		return (
 			<React.Fragment key={callIdentifier}>
 				<TraceLine className={`border-y-2 cursor-pointer border-transparent trace-line--selected`}>
-					{CallTypeChip('Internal')}
+					{CallTypeChip('Function')}
 					<div
 						style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
 						className="flex flex-row items-center"
@@ -32,11 +36,11 @@ export function InternalCallTrace({
 							}`}
 							onClick={(event) => {
 								event.stopPropagation();
-								call.nestedCalls.length > 0 && toggleCallCollapse(callIdentifier);
+								call.nestedCalls.length > 0 && toggleInternalFnCallCollapse(callIdentifier);
 							}}
 						>
 							{call.nestedCalls.length > 0 ? (
-								collapsedCalls[callIdentifier] == true ? (
+								notCollapsedInternalFnCalls[callIdentifier] !== true ? (
 									<ChevronRightIcon />
 								) : (
 									<ChevronDownIcon />
@@ -49,13 +53,20 @@ export function InternalCallTrace({
 					</div>
 				</TraceLine>
 
-				{collapsedCalls[callIdentifier] != true ? (
+				{notCollapsedInternalFnCalls[callIdentifier] === true ? (
 					<InternalCallTrace
 						calls={call.nestedCalls}
 						nestingLevel={nestingLevel + 1}
 						parentId={callIdentifier}
+						errorMessage={errorMessage}
 					/>
 				) : null}
+
+				{notCollapsedInternalFnCalls[callIdentifier] === true &&
+					call.data.isPanicResult &&
+					errorMessage && (
+						<ErrorTraceLine errorMessage={errorMessage} nestingLevel={nestingLevel + 1} />
+					)}
 			</React.Fragment>
 		);
 	});

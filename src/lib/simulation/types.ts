@@ -76,8 +76,9 @@ export interface SimulationResult {
 
 export interface InternalFnCallTrace {
 	data: {
-		fnName: string;
+		fnName: string | null;
 		fp: number;
+		isPanicResult?: boolean;
 	};
 	nestedCalls: InternalFnCallTrace[];
 }

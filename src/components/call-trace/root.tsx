@@ -4,7 +4,7 @@ import { ContractCallTrace } from './entries';
 
 export function CallTraceRoot({ simulationResult }: { simulationResult: SimulationResult }) {
 	return (
-		<CallTraceContextProvider>
+		<CallTraceContextProvider callTrace={simulationResult.callTrace}>
 			<div className="pt-16">
 				<div className="pb-3 sm:flex sm:items-center">
 					<h3 className="text-xs uppercase font-semibold text-gray-900 mr-8">Call Trace</h3>

@@ -2,6 +2,7 @@ import React from 'react';
 import clsx from 'clsx';
 import 'monaco-editor/esm/vs/basic-languages/rust/rust.contribution.js';
 import { CallType } from '@/lib/simulation';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/solid';
 export * from './root';
 
 export const CALL_NESTING_SPACE_BUMP: number = 16; // in pixels
@@ -18,25 +19,30 @@ export function TraceLine({ className, ...props }: React.ComponentPropsWithoutRe
 	);
 }
 
-type CallTypeChipKind = CallType | 'Internal' | 'Error';
-export function CallTypeChip(kind: CallTypeChipKind) {
+type CallTypeChipKind = CallType | 'Function' | 'Error';
+export function CallTypeChip(kind: CallTypeChipKind, isError = false) {
 	let callTypeCellClass: { [key: string]: string } = {
 		['Call']: 'bg-green-100 border-green-400 text-green-900',
 		['Call Delegate']: 'bg-green-100 border-green-400 text-green-900',
 		['Delegate']: 'bg-blue-100 border-blue-400 text-blue-900',
 		['Event']: 'bg-purple-100 border-purple-400 text-purple-900',
-		['Error']: 'bg-red-100 border-red-400 text-red-900',
-		['Internal']: 'bg-purple-100 border-purple-400 text-purple-900'
+		['Error']: 'border-red-900 text-red-900',
+		['Function']: 'bg-purple-100 border-purple-400 text-purple-900'
 	};
 
 	return (
-		<div className="w-20 flex-none flex">
-			<div
-				className={`${callTypeCellClass[kind]} flex-auto border text-center rounded-sm inline-block px-1.5 py-0.5 mr-1`}
-			>
-				{kind.toUpperCase()}
+		<>
+			<div className="w-20 flex-none flex relative">
+				<div
+					className={`${callTypeCellClass[kind]} flex-auto border text-center rounded-sm inline-block px-1.5 py-0.5 mr-1`}
+				>
+					{kind.toUpperCase()}
+				</div>
+				{isError && (
+					<ExclamationTriangleIcon className="w-4 h-4 text-red-600 absolute -right-5 top-1" />
+				)}
 			</div>
-		</div>
+		</>
 	);
 }
 

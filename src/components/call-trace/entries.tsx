@@ -1,7 +1,7 @@
-import { useContext } from 'react';
+import { useContext, useEffect } from 'react';
 import React from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
-import { CallTrace } from '@/lib/simulation';
+import { CallTrace, InternalFnCallTrace } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
 import { CallTraceContext } from '@/lib/context/call-trace';
 import { CallDetails } from '@/components/ui/call-details';
@@ -19,15 +19,11 @@ export function ContractCallTrace({
 	nestingLevel: number;
 	parentId?: string;
 }) {
-	const { expandedCalls, collapsedCalls, showEvents, toggleCallCollapse, toggleCallExpand } =
+	const { expandedCalls, collapsedCalls, toggleCallCollapse, toggleCallExpand } =
 		useContext(CallTraceContext);
 
 	return calls.map((call, index) => {
-		const callIdentifier =
-			(parentId ?? '') +
-			call.entryPoint.entryPointSelector +
-			call.entryPoint.storageAddress +
-			index;
+		const callIdentifier = parentId ? `${parentId}-${index}` : index.toString();
 		const hasNestedElements = call.nestedCalls.length > 0 || call.internalFnCallTrace;
 
 		let contractName: string | undefined = undefined;
@@ -62,7 +58,7 @@ export function ContractCallTrace({
 					}`}
 					onClick={() => toggleCallExpand(callIdentifier)}
 				>
-					{CallTypeChip(call.entryPoint.callType)}
+					{CallTypeChip(call.entryPoint.callType, !!call.additionalInfo.errorMessage)}
 					<div
 						style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
 						className="flex flex-row items-center trace-line_content"
@@ -120,6 +116,7 @@ export function ContractCallTrace({
 						calls={[call.internalFnCallTrace]}
 						nestingLevel={nestingLevel + 1}
 						parentId={callIdentifier}
+						errorMessage={call.additionalInfo.errorMessage ?? undefined}
 					/>
 				)}
 				{collapsedCalls[callIdentifier] != true && (
@@ -129,9 +126,12 @@ export function ContractCallTrace({
 						parentId={callIdentifier}
 					/>
 				)}
-				{collapsedCalls[callIdentifier] != true && (
-					<ErrorTraceLine call={call} nestingLevel={nestingLevel + 1} />
-				)}
+				{/* {collapsedCalls[callIdentifier] != true && call.additionalInfo.errorMessage && (
+					<ErrorTraceLine
+						errorMessage={call.additionalInfo.errorMessage}
+						nestingLevel={nestingLevel + 1}
+					/>
+				)} */}
 			</React.Fragment>
 		);
 	});
