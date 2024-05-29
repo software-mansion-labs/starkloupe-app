@@ -8,6 +8,7 @@ import { CallDetails } from '@/components/ui/call-details';
 import { InternalCallTrace } from './internal-entries';
 import { ErrorTraceLine } from './error-trace-line';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
+import { getEntryPointNames } from '@/lib/utils/entrypoint-names';
 
 export function ContractCallTrace({
 	calls,
@@ -29,13 +30,26 @@ export function ContractCallTrace({
 			index;
 		const hasNestedElements = call.nestedCalls.length > 0 || call.internalFnCallTrace;
 
-		let contractName = call.entryPoint.storageAddress;
+		let contractName: string | undefined = undefined;
+		let entryPointFunctionName = call.additionalInfo?.entryPointFunctionName;
 
 		if (call.additionalInfo.erc20TokenName || call.additionalInfo.erc20TokenSymbol) {
 			contractName = [
 				call.additionalInfo.erc20TokenName,
 				`(${call.additionalInfo.erc20TokenSymbol})`
 			].join(' ');
+		}
+
+		const entryPointNames = getEntryPointNames(call.entryPoint);
+		if (!contractName && entryPointNames.contractName) contractName = entryPointNames.contractName;
+		if (!entryPointFunctionName && entryPointNames.entryPointFunctionName)
+			entryPointFunctionName = entryPointNames.entryPointFunctionName;
+
+		if (!contractName) {
+			contractName = call.entryPoint.storageAddress;
+		}
+		if (!entryPointFunctionName) {
+			entryPointFunctionName = shortenHash(call.entryPoint.entryPointSelector, 13);
 		}
 
 		return (
@@ -74,10 +88,7 @@ export function ContractCallTrace({
 						</div>
 						<span className="text-blue-600">{contractName}</span>
 						{'.'}
-						<span className="text-pink-500">
-							{call.additionalInfo?.entryPointFunctionName ??
-								shortenHash(call.entryPoint.entryPointSelector, 13)}
-						</span>
+						<span className="text-pink-500">{entryPointFunctionName}</span>
 						<span className="text-yellow-900">{'('}</span>
 						{call.additionalInfo?.functionArgumentsNames ? (
 							<span className="text-orange-500">
@@ -91,14 +102,15 @@ export function ContractCallTrace({
 							)
 						)}
 						<span className="text-yellow-900">{')'}</span>
-						{call.additionalInfo?.functionResult && call.additionalInfo?.functionReturnResultTypes && (
-							<>
-								<span className="text-yellow-900">{'->'}</span>
-								<span className="text-pink-500">
-									{`(${call.additionalInfo?.functionReturnResultTypes.join(', ')})`}
-								</span>
-							</>
-						)}
+						{call.additionalInfo?.functionResult &&
+							call.additionalInfo?.functionReturnResultTypes && (
+								<>
+									<span className="text-yellow-900">{'->'}</span>
+									<span className="text-pink-500">
+										{`(${call.additionalInfo?.functionReturnResultTypes.join(', ')})`}
+									</span>
+								</>
+							)}
 					</div>
 				</TraceLine>
 				{expandedCalls[callIdentifier] && <ContractCallDetails call={call} />}
