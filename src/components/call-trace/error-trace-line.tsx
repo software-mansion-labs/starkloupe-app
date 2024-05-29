@@ -12,7 +12,7 @@ export function ErrorTraceLine({
 	return (
 		<React.Fragment>
 			{
-				<TraceLine className={`border-y-2 border-transparent bg-red-200`}>
+				<TraceLine className={`border-y-2 border-transparent bg-red-200 hover:bg-red-200`}>
 					{CallTypeChip('Error')}
 					<div
 						style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
