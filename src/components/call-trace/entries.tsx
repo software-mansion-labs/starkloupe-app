@@ -9,6 +9,7 @@ import { InternalCallTrace } from './internal-entries';
 import { ErrorTraceLine } from './error-trace-line';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { getEntryPointNames } from '@/lib/utils/entrypoint-names';
+import { Arguments } from './arguments';
 
 export function ContractCallTrace({
 	calls,
@@ -85,19 +86,7 @@ export function ContractCallTrace({
 						<span className="text-blue-600">{contractName}</span>
 						{'.'}
 						<span className="text-pink-500">{entryPointFunctionName}</span>
-						<span className="text-yellow-900">{'('}</span>
-						{call.additionalInfo?.functionArgumentsNames ? (
-							<span className="text-orange-500">
-								{call.additionalInfo.functionArgumentsNames.join(', ')}
-							</span>
-						) : (
-							call.additionalInfo?.functionArguments && (
-								<span className="text-orange-500">
-									{call.additionalInfo.functionArguments.map((arg) => shortenHash(arg)).join(', ')}
-								</span>
-							)
-						)}
-						<span className="text-yellow-900">{')'}</span>
+						<Arguments call={call} />
 						{call.additionalInfo?.functionResult &&
 							call.additionalInfo?.functionReturnResultTypes && (
 								<>
