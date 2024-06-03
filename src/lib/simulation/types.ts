@@ -60,11 +60,11 @@ export interface CallTrace {
 	};
 }
 
-interface ExecutionResultSucceeded {
+export interface ExecutionResultSucceeded {
 	executionStatus: 'SUCCEEDED';
 }
 
-interface ExecutionResultReverted {
+export interface ExecutionResultReverted {
 	executionStatus: 'REVERTED';
 	revertReason: string;
 }

@@ -20,7 +20,7 @@ export function TraceLine({ className, ...props }: React.ComponentPropsWithoutRe
 }
 
 type CallTypeChipKind = CallType | 'Function' | 'Error';
-export function CallTypeChip(kind: CallTypeChipKind, isError = false) {
+export function CallTypeChip(kind: CallTypeChipKind) {
 	let callTypeCellClass: { [key: string]: string } = {
 		['Call']: 'bg-green-100 border-green-400 text-green-900',
 		['Call Delegate']: 'bg-green-100 border-green-400 text-green-900',
@@ -38,9 +38,6 @@ export function CallTypeChip(kind: CallTypeChipKind, isError = false) {
 				>
 					{kind.toUpperCase()}
 				</div>
-				{isError && (
-					<ExclamationTriangleIcon className="w-4 h-4 text-red-600 absolute -right-5 top-1" />
-				)}
 			</div>
 		</>
 	);

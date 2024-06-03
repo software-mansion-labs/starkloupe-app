@@ -1,8 +1,11 @@
-import { SimulationResult } from '@/lib/simulation';
+import { ExecutionResultReverted, SimulationResult } from '@/lib/simulation';
 import { CallTraceContextProvider } from '@/lib/context/call-trace';
 import { ContractCallTrace } from './entries';
 
 export function CallTraceRoot({ simulationResult }: { simulationResult: SimulationResult }) {
+	const executionFailed =
+		(simulationResult.executionResult as ExecutionResultReverted) !== undefined;
+
 	return (
 		<CallTraceContextProvider callTrace={simulationResult.callTrace}>
 			<div className="pt-16">
@@ -11,7 +14,11 @@ export function CallTraceRoot({ simulationResult }: { simulationResult: Simulati
 				</div>
 				<div className="overflow-x-auto whitespace-nowrap min-h-[20rem] -mx-4 text-xs">
 					<div className="min-w-fit">
-						<ContractCallTrace calls={[simulationResult.callTrace]} nestingLevel={0} />
+						<ContractCallTrace
+							calls={[simulationResult.callTrace]}
+							nestingLevel={0}
+							executionFailed
+						/>
 					</div>
 				</div>
 			</div>

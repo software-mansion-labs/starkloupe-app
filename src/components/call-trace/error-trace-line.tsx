@@ -4,16 +4,19 @@ import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 
 export function ErrorTraceLine({
 	errorMessage,
-	nestingLevel
+	nestingLevel,
+	executionFailed
 }: {
 	errorMessage: string;
 	nestingLevel: number;
+	executionFailed: boolean;
 }) {
 	return (
 		<React.Fragment>
 			{
 				<TraceLine className={`border-y-2 border-transparent bg-red-200 hover:bg-red-200`}>
 					{CallTypeChip('Error')}
+					{executionFailed && <div className="w-5"></div>}
 					<div
 						style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
 						className="flex flex-row items-center"

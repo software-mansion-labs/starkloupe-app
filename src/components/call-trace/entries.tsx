@@ -1,8 +1,8 @@
 import { useContext, useEffect } from 'react';
 import React from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
-import { CallTrace, InternalFnCallTrace } from '@/lib/simulation';
-import { shortenHash } from '@/lib/utils';
+import { CallTrace, ExecutionResultReverted, ExecutionResultSucceeded } from '@/lib/simulation';
+import { cn, shortenHash } from '@/lib/utils';
 import { CallTraceContext } from '@/lib/context/call-trace';
 import { CallDetails } from '@/components/ui/call-details';
 import { InternalCallTrace } from './internal-entries';
@@ -10,14 +10,17 @@ import { ErrorTraceLine } from './error-trace-line';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { getEntryPointNames } from '@/lib/utils/entrypoint-names';
 import { Arguments } from './arguments';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 export function ContractCallTrace({
 	calls,
 	nestingLevel,
+	executionFailed,
 	parentId
 }: {
 	calls: CallTrace[];
 	nestingLevel: number;
+	executionFailed: boolean;
 	parentId?: string;
 }) {
 	const { expandedCalls, collapsedCalls, toggleCallCollapse, toggleCallExpand } =
@@ -29,6 +32,20 @@ export function ContractCallTrace({
 
 		let contractName: string | undefined = undefined;
 		let entryPointFunctionName = call.additionalInfo?.entryPointFunctionName;
+
+		// The error column doesn't render in case the whole tx is successful
+		// If the tx is reverted, the error column will render for all call lines
+		// Only the error-ed call line will have the error icon
+		let errorColumn = <></>;
+		if (executionFailed) {
+			errorColumn = (
+				<div className="w-5">
+					{!!call.additionalInfo.errorMessage && (
+						<ExclamationTriangleIcon className="w-5 h-5 text-yellow-600" />
+					)}
+				</div>
+			);
+		}
 
 		if (call.additionalInfo.erc20TokenName || call.additionalInfo.erc20TokenSymbol) {
 			contractName = [
@@ -59,7 +76,14 @@ export function ContractCallTrace({
 					}`}
 					onClick={() => toggleCallExpand(callIdentifier)}
 				>
-					{CallTypeChip(call.entryPoint.callType, !!call.additionalInfo.errorMessage)}
+					{CallTypeChip(call.entryPoint.callType)}
+
+					{/* Error column
+					 * Empty in most lines,
+					 * or exclamation triangle icon in case of error on the line
+					 */}
+					{errorColumn}
+
 					<div
 						style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
 						className="flex flex-row items-center trace-line_content"
@@ -105,6 +129,7 @@ export function ContractCallTrace({
 						calls={[call.internalFnCallTrace]}
 						nestingLevel={nestingLevel + 1}
 						parentId={callIdentifier}
+						executionFailed={executionFailed}
 						errorMessage={call.additionalInfo.errorMessage ?? undefined}
 					/>
 				)}
@@ -113,6 +138,7 @@ export function ContractCallTrace({
 						calls={call.nestedCalls}
 						nestingLevel={nestingLevel + 1}
 						parentId={callIdentifier}
+						executionFailed={executionFailed}
 					/>
 				)}
 				{/* {collapsedCalls[callIdentifier] != true && call.additionalInfo.errorMessage && (

@@ -9,11 +9,13 @@ export function InternalCallTrace({
 	calls,
 	nestingLevel,
 	parentId,
+	executionFailed,
 	errorMessage
 }: {
 	calls: InternalFnCallTrace[];
 	nestingLevel: number;
 	parentId: string;
+	executionFailed: boolean;
 	errorMessage?: string;
 }) {
 	const { notCollapsedInternalFnCalls, toggleInternalFnCallCollapse } =
@@ -24,8 +26,9 @@ export function InternalCallTrace({
 
 		return (
 			<React.Fragment key={callIdentifier}>
-				<TraceLine className={`border-y-2 cursor-pointer border-transparent trace-line--selected`}>
+				<TraceLine className={`border-y-2 cursor-pointer border-transparent`}>
 					{CallTypeChip('Function')}
+					{executionFailed && <div className="w-5"></div>}
 					<div
 						style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
 						className="flex flex-row items-center"
@@ -58,6 +61,7 @@ export function InternalCallTrace({
 						calls={call.nestedCalls}
 						nestingLevel={nestingLevel + 1}
 						parentId={callIdentifier}
+						executionFailed={executionFailed}
 						errorMessage={errorMessage}
 					/>
 				) : null}
@@ -65,7 +69,11 @@ export function InternalCallTrace({
 				{notCollapsedInternalFnCalls[callIdentifier] === true &&
 					call.data.isPanicResult &&
 					errorMessage && (
-						<ErrorTraceLine errorMessage={errorMessage} nestingLevel={nestingLevel + 1} />
+						<ErrorTraceLine
+							executionFailed
+							errorMessage={errorMessage}
+							nestingLevel={nestingLevel + 1}
+						/>
 					)}
 			</React.Fragment>
 		);
