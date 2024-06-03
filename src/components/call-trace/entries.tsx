@@ -1,7 +1,7 @@
 import { useContext, useEffect } from 'react';
 import React from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
-import { CallTrace, ExecutionResultReverted, ExecutionResultSucceeded } from '@/lib/simulation';
+import { CallTrace, DataType, InternalFnCallTrace, ExecutionResultReverted, ExecutionResultSucceeded } from '@/lib/simulation';
 import { cn, shortenHash } from '@/lib/utils';
 import { CallTraceContext } from '@/lib/context/call-trace';
 import { CallDetails } from '@/components/ui/call-details';
@@ -9,6 +9,7 @@ import { InternalCallTrace } from './internal-entries';
 import { ErrorTraceLine } from './error-trace-line';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { getEntryPointNames } from '@/lib/utils/entrypoint-names';
+import { CalldataTable } from '../calldata-table';
 import { Arguments } from './arguments';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
@@ -109,21 +110,49 @@ export function ContractCallTrace({
 						</div>
 						<span className="text-blue-600">{contractName}</span>
 						{'.'}
-						<span className="text-pink-500">{entryPointFunctionName}</span>
-						<Arguments call={call} />
+						<span className="text-pink-500">
+							{call.additionalInfo?.entryPointFunctionName ??
+								shortenHash(call.entryPoint.entryPointSelector, 13)}
+						</span>
+						<span className="text-yellow-900">{'('}</span>
+						{call.additionalInfo?.functionArgumentsNames ? (
+							<span className="text-orange-500">
+								{call.additionalInfo.functionArgumentsNames.join(', ')}
+							</span>
+						) : (
+							call.additionalInfo?.functionArguments && (
+								<span className="text-orange-500">
+									{call.additionalInfo.functionArguments.map((arg) => shortenHash(arg)).join(', ')}
+								</span>
+							)
+						)}
+						<span className="text-yellow-900">{')'}</span>
 						{call.additionalInfo?.functionResult &&
-							call.additionalInfo?.functionReturnResultTypes && (
-								<>
-									<span className="text-yellow-900">{'->'}</span>
-									<span className="text-pink-500">
-										{`(${call.additionalInfo?.functionReturnResultTypes.join(', ')})`}
-									</span>
-								</>
-							)}
+						call.additionalInfo?.functionReturnResultTypes ? (
+							<>
+								<span className="text-yellow-900">{'->'}</span>
+								<span className="text-pink-500">
+									{`(${call.additionalInfo?.functionReturnResultTypes.join(', ')})`}
+								</span>
+							</>
+						) : (
+							<>
+								<span className="text-yellow-900">{'-> ()'}</span>{' '}
+							</>
+						)}
 					</div>
 				</TraceLine>
-				{expandedCalls[callIdentifier] && <ContractCallDetails call={call} />}
-
+				{expandedCalls[callIdentifier] && (
+					<>
+						<ContractCallDetails call={call} />
+						{call.additionalInfo?.calldataDecoded && (
+							<CalldataTable calldata={call.additionalInfo.calldataDecoded} type={DataType.INPUT} />
+						)}
+						{call.additionalInfo?.functionResult && (
+							<CalldataTable calldata={call.additionalInfo.functionResult} type={DataType.OUTPUT} />
+						)}
+					</>
+				)}{' '}
 				{collapsedCalls[callIdentifier] != true && call.internalFnCallTrace && (
 					<InternalCallTrace
 						calls={[call.internalFnCallTrace]}

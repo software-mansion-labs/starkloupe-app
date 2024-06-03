@@ -29,6 +29,11 @@ export enum CallType {
 	CALL = 'Call'
 }
 
+export enum DataType {
+	INPUT = 'INPUT',
+	OUTPUT = 'OUTPUT'
+}
+
 export interface EntryPoint {
 	classHash: string;
 	codeAddress: string;
@@ -40,6 +45,14 @@ export interface EntryPoint {
 	callType: CallType;
 	initialGas: number;
 }
+
+export interface DecodedItem {
+	type: string;
+	name: string;
+	value: string | DecodedItem[] | string[];
+}
+
+export type CalldataDecoded = DecodedItem[];
 
 export interface CallTrace {
 	entryPoint: EntryPoint;
@@ -53,10 +66,11 @@ export interface CallTrace {
 		erc20TokenName: string | null;
 		erc20TokenSymbol: string | null;
 		errorMessage: string | null;
-		functionResult: string[] | null;
+		functionResult: CalldataDecoded | null;
 		functionReturnResultTypes: string[] | null;
 		functionArguments: string[] | null;
 		functionArgumentsNames: string[] | null;
+		calldataDecoded: CalldataDecoded | null;
 	};
 }
 
