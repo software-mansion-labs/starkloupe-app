@@ -17,7 +17,7 @@ export function CallTraceRoot({ simulationResult }: { simulationResult: Simulati
 						<ContractCallTrace
 							calls={[simulationResult.callTrace]}
 							nestingLevel={0}
-							executionFailed
+							executionFailed={executionFailed}
 						/>
 					</div>
 				</div>
