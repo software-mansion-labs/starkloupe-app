@@ -1,16 +1,14 @@
-import { useContext, useEffect } from 'react';
+import { useContext } from 'react';
 import React from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
-import { CallTrace, DataType, InternalFnCallTrace, ExecutionResultReverted, ExecutionResultSucceeded } from '@/lib/simulation';
-import { cn, shortenHash } from '@/lib/utils';
+import { CallTrace, DataType } from '@/lib/simulation';
+import { shortenHash } from '@/lib/utils';
 import { CallTraceContext } from '@/lib/context/call-trace';
-import { CallDetails } from '@/components/ui/call-details';
+import { InfoBox } from '@/components/ui/info-box';
 import { InternalCallTrace } from './internal-entries';
-import { ErrorTraceLine } from './error-trace-line';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { getEntryPointNames } from '@/lib/utils/entrypoint-names';
 import { CalldataTable } from '../calldata-table';
-import { Arguments } from './arguments';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 export function ContractCallTrace({
@@ -137,22 +135,12 @@ export function ContractCallTrace({
 							</>
 						) : (
 							<>
-								<span className="text-yellow-900">{'-> ()'}</span>{' '}
+								<span className="text-yellow-900">{'->()'}</span>{' '}
 							</>
 						)}
 					</div>
 				</TraceLine>
-				{expandedCalls[callIdentifier] && (
-					<>
-						<ContractCallDetails call={call} />
-						{call.additionalInfo?.calldataDecoded && (
-							<CalldataTable calldata={call.additionalInfo.calldataDecoded} type={DataType.INPUT} />
-						)}
-						{call.additionalInfo?.functionResult && (
-							<CalldataTable calldata={call.additionalInfo.functionResult} type={DataType.OUTPUT} />
-						)}
-					</>
-				)}{' '}
+				{expandedCalls[callIdentifier] && <ContractCallDetails call={call} />}{' '}
 				{collapsedCalls[callIdentifier] != true && call.internalFnCallTrace && (
 					<InternalCallTrace
 						calls={[call.internalFnCallTrace]}
@@ -170,12 +158,6 @@ export function ContractCallTrace({
 						executionFailed={executionFailed}
 					/>
 				)}
-				{/* {collapsedCalls[callIdentifier] != true && call.additionalInfo.errorMessage && (
-					<ErrorTraceLine
-						errorMessage={call.additionalInfo.errorMessage}
-						nestingLevel={nestingLevel + 1}
-					/>
-				)} */}
 			</React.Fragment>
 		);
 	});
@@ -266,7 +248,17 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 		});
 	}
 
-	return <CallDetails details={details} isTraceElement />;
+	return (
+		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4">
+			<InfoBox details={details} />
+			{call.additionalInfo?.calldataDecoded && (
+				<CalldataTable calldata={call.additionalInfo.calldataDecoded} type={DataType.INPUT} />
+			)}
+			{call.additionalInfo?.functionResult && (
+				<CalldataTable calldata={call.additionalInfo.functionResult} type={DataType.OUTPUT} />
+			)}
+		</div>
+	);
 }
 
 // function EventDetails({ eventDecoded }: { eventDecoded: CallEventDecoded }) {

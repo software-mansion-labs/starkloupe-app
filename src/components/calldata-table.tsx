@@ -16,7 +16,7 @@ export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; t
 		if (Array.isArray(value)) {
 			if (isObjectArray(value)) {
 				return (
-					<Table className="bg-neutral-50 border-b border-neutral-200">
+					<Table className="text-xs">
 						<TableHeader>
 							<TableRow>
 								<TableHead>Name</TableHead>
@@ -50,40 +50,38 @@ export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; t
 	};
 
 	return (
-		<Table className="mt-4 mb-4 py-1 px-2 bg-neutral-100 rounded-sm">
-			<TableHeader>
-				<TableRow>
-					{type === DataType.INPUT ? (
-						<TableHead className="whitespace-break-spaces">{DataType.INPUT}</TableHead>
-					) : (
-						<TableHead className="whitespace-break-spaces">{DataType.OUTPUT}</TableHead>
-					)}
-				</TableRow>
-				<TableRow>
-					{type === DataType.INPUT && (
-						<TableHead className="whitespace-break-spaces">Name</TableHead>
-					)}
-					<TableHead>Type</TableHead>
-					<TableHead>Value</TableHead>
-				</TableRow>
-			</TableHeader>
-			<TableBody>
-				{calldata.map((item: DecodedItem, index: number) => (
-					<TableRow key={index}>
+		<div className="my-4">
+			<div className="font-medium uppercase mb-1">
+				{type === DataType.INPUT ? 'Input params' : 'Output params'}
+			</div>
+			<Table className="w-auto py-0.5 px-2 bg-white text-xs border border-neutral-200">
+				<TableHeader>
+					<TableRow>
 						{type === DataType.INPUT && (
-							<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
-								{item.name}
-							</TableCell>
+							<TableHead className="whitespace-break-spaces">Name</TableHead>
 						)}
-						<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
-							{item.type}
-						</TableCell>
-						<TableCell className="border-r border-neutral-200 last:border-r-0">
-							{renderValue(item.value)}
-						</TableCell>
+						<TableHead>Type</TableHead>
+						<TableHead>Value</TableHead>
 					</TableRow>
-				))}
-			</TableBody>
-		</Table>
+				</TableHeader>
+				<TableBody>
+					{calldata.map((item: DecodedItem, index: number) => (
+						<TableRow key={index}>
+							{type === DataType.INPUT && (
+								<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
+									{item.name}
+								</TableCell>
+							)}
+							<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
+								{item.type}
+							</TableCell>
+							<TableCell className="border-r border-neutral-200 last:border-r-0">
+								{renderValue(item.value)}
+							</TableCell>
+						</TableRow>
+					))}
+				</TableBody>
+			</Table>
+		</div>
 	);
 }

@@ -9,7 +9,7 @@ import { simulateTransactionByHash } from '@/lib/transaction';
 import { ChainId } from '@/lib/types';
 import { TransactionSimulationResult } from '@/lib/transaction';
 import { CallTraceRoot } from '@/components/call-trace';
-import { CallDetail, CallDetails } from '../ui/call-details';
+import { InfoBoxItem, InfoBox } from '../ui/info-box';
 
 export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: string }) {
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
@@ -54,7 +54,7 @@ export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: 
 }
 
 function TransactionDetails({ txSimResult }: { txSimResult: TransactionSimulationResult }) {
-	const details: CallDetail[] = [
+	const details: InfoBoxItem[] = [
 		{
 			name: 'Chain',
 			value: txSimResult.chainId
@@ -95,8 +95,8 @@ function TransactionDetails({ txSimResult }: { txSimResult: TransactionSimulatio
 		});
 	}
 	return (
-		<div className="mt-4 py-1 px-2 bg-neutral-100 rounded-sm">
-			<CallDetails details={details} />
+		<div className="mt-4 py-1 px-2 bg-neutral-100 rounded-sm flex flex-col">
+			<InfoBox details={details} />
 		</div>
 	);
 }

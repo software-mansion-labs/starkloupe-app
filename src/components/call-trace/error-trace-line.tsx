@@ -1,5 +1,4 @@
 import React from 'react';
-import { CallTrace } from '@/lib/simulation';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 
 export function ErrorTraceLine({
