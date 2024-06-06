@@ -60,6 +60,7 @@ export interface CallTrace {
 	internalFnCallTrace: InternalFnCallTrace;
 	nestedCalls: CallTrace[];
 	additionalInfo: {
+    contractName: string | null;
 		entryPointFunctionName: string | null;
 		entryPointInterfaceName: string | null;
 		isErc20Token: boolean;

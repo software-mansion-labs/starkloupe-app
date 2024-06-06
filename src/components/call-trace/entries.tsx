@@ -7,7 +7,6 @@ import { CallTraceContext } from '@/lib/context/call-trace';
 import { InfoBox } from '@/components/ui/info-box';
 import { InternalCallTrace } from './internal-entries';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
-import { getEntryPointNames } from '@/lib/utils/entrypoint-names';
 import { CalldataTable } from '../calldata-table';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
@@ -45,24 +44,17 @@ export function ContractCallTrace({
 				</div>
 			);
 		}
-
-		if (call.additionalInfo.erc20TokenName || call.additionalInfo.erc20TokenSymbol) {
+  
+    if (call.additionalInfo.contractName) {
+      contractName = call.additionalInfo.contractName;
+    } else if (call.additionalInfo.erc20TokenName || call.additionalInfo.erc20TokenSymbol) {
 			contractName = [
 				call.additionalInfo.erc20TokenName,
 				`(${call.additionalInfo.erc20TokenSymbol})`
 			].join(' ');
 		}
-
-		const entryPointNames = getEntryPointNames(call.entryPoint);
-		if (!contractName && entryPointNames.contractName) contractName = entryPointNames.contractName;
-		if (!entryPointFunctionName && entryPointNames.entryPointFunctionName)
-			entryPointFunctionName = entryPointNames.entryPointFunctionName;
-
 		if (!contractName) {
-			contractName = call.entryPoint.storageAddress;
-		}
-		if (!entryPointFunctionName) {
-			entryPointFunctionName = shortenHash(call.entryPoint.entryPointSelector, 13);
+			contractName = shortenHash(call.entryPoint.storageAddress, 13);
 		}
 
 		return (
