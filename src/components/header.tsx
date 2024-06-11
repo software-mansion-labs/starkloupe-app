@@ -5,33 +5,15 @@ import Link from 'next/link';
 import { Disclosure } from '@headlessui/react';
 import { Search } from '@/components/ui/search';
 import { Button } from '@/components/ui/button';
-import { Bars3Icon, XMarkIcon, ChevronUpDownIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, PlayIcon } from '@heroicons/react/24/outline';
 import logoWalnut from '@/assets/walnut.svg';
-import { useSession, signOut, signIn } from 'next-auth/react';
-import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
-import { UserAvatar } from './user-avatar';
+import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuRadioGroup,
-	DropdownMenuRadioItem,
-	DropdownMenuTrigger
-} from './ui/dropdown-menu';
-import { useRouter } from 'next/navigation';
-import { useChain } from '@/lib/utils';
+import { SimulateDialog } from './simulate-dialog';
 
 export function HeaderNav() {
 	const session = useSession();
 	const pathname = usePathname();
-	const router = useRouter();
-
-	const { chainId, chainName } = useChain();
-
-	function changeChainId(id: string) {
-		if (id === chainId) return;
-		router.push(`/transactions/${id}`);
-	}
 
 	return (
 		<Disclosure as="nav" className="bg-neutral-50 border-b border-neutral-200">
@@ -41,9 +23,7 @@ export function HeaderNav() {
 						<div className="flex h-16 items-center justify-between">
 							<div className="flex items-center">
 								<div className="flex-shrink-0">
-									{/* <Link href="/"> */}
 									<Image src={logoWalnut} alt="Walnut logo" unoptimized className="h-8 w-auto" />
-									{/* </Link> */}
 								</div>
 								<div className="hidden md:block">
 									<nav className="ml-10 flex items-center space-x-4 lg:space-x-6">
@@ -59,33 +39,42 @@ export function HeaderNav() {
 										) : (
 											<></>
 										)}
-										<Link
+										{/* <Link
 											href="/transactions/SN_MAIN"
 											className={`text-sm font-medium transition-colors hover:text-primary ${
 												pathname.startsWith('/transactions') ? '' : 'text-muted-foreground'
 											}`}
 										>
 											Transactions
-										</Link>
+										</Link> */}
 									</nav>
 								</div>
 							</div>
-							<div className="flex flex-1 justify-center px-2 lg:ml-6 lg:justify-end">
-								<div className="w-full max-w-lg lg:max-w-sm">
+							<div className="flex flex-1 justify-end space-x-2 lg:space-x-4 mx-4 md:mr-0">
+								<div className="w-auto max-w-xs md:max-w-sm">
 									<Search
 										className="w-full"
 										placeholder="Search for transaction"
 										isChainSelector
 									></Search>
 								</div>
+								<div className="hidden md:block">
+									<SimulateDialog
+										dialogTrigger={
+											<Button variant="outline">
+												<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
+											</Button>
+										}
+									/>
+								</div>
 							</div>
-							<div className="hidden md:block">
+							{/* <div className="hidden md:block">
 								<div className="ml-4 flex items-center md:ml-6">
 									<div className="flex flex-row items-center ml-3">
 										<UserAvatar />
 									</div>
 								</div>
-							</div>
+							</div> */}
 							<div className="-mr-2 flex md:hidden">
 								{/* Mobile menu button */}
 								<Disclosure.Button>
@@ -108,8 +97,9 @@ export function HeaderNav() {
 							) : (
 								<></>
 							)}
+							<Button variant="ghost">Simulate transaction</Button>
 						</div>
-						<div className="border-t border-neutral-100 pb-3 pt-4">
+						{/* <div className="border-t border-neutral-100 pb-3 pt-4">
 							{session.status === 'authenticated' ? (
 								<div className="flex items-center px-5 justify-between">
 									<div className="flex flex-row items-center">
@@ -140,7 +130,7 @@ export function HeaderNav() {
 							) : (
 								<></>
 							)}
-						</div>
+						</div> */}
 					</Disclosure.Panel>
 				</>
 			)}

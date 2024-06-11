@@ -7,4 +7,5 @@ export interface TransactionSimulationResult {
 	nonce: number;
 	senderAddress: string;
 	calldata: string[];
+	transactionVersion: number;
 }

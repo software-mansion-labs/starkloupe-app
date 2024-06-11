@@ -10,6 +10,9 @@ import { ChainId } from '@/lib/types';
 import { TransactionSimulationResult } from '@/lib/transaction';
 import { CallTraceRoot } from '@/components/call-trace';
 import { InfoBoxItem, InfoBox } from '../ui/info-box';
+import { SimulateDialog } from '../simulate-dialog';
+import { Button } from '../ui/button';
+import { PlayIcon } from '@heroicons/react/24/outline';
 
 export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: string }) {
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
@@ -35,8 +38,24 @@ export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: 
 			<HeaderNav />
 			<main>
 				<Container>
-					<div className="bg-white border-x border-b shadow-sm border-neutral-200 p-4">
-						<h1 className="text-l font-medium leading-6 mt-4 mb-2">Transaction {txHash}</h1>
+					<div className="bg-white border-x border-b shadow-sm border-neutral-200 p-4 pb-0">
+						<div className="flex flex-row items-baseline justify-between">
+							<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2">Transaction {txHash}</h1>
+							<SimulateDialog
+								title="Re-simulate transaction"
+								description="Edit the transaction details below and click “Run Simulation” to re-simulate."
+								dialogTrigger={
+									<Button variant="outline" disabled={!transactionSimulation}>
+										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+									</Button>
+								}
+								senderAddress={transactionSimulation?.senderAddress}
+								blockNumber={transactionSimulation?.blockNumber.toString()}
+								chainId={transactionSimulation?.chainId}
+								calldata={transactionSimulation?.calldata.join('\n')}
+								transactionVersion={transactionSimulation?.transactionVersion}
+							/>
+						</div>
 						{transactionSimulation && <TransactionDetails txSimResult={transactionSimulation} />}
 						{transactionSimulation ? (
 							<CallTraceRoot simulationResult={transactionSimulation.simulationResult} />
@@ -53,15 +72,11 @@ export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: 
 	);
 }
 
-function TransactionDetails({ txSimResult }: { txSimResult: TransactionSimulationResult }) {
+export function TransactionDetails({ txSimResult }: { txSimResult: TransactionSimulationResult }) {
 	const details: InfoBoxItem[] = [
 		{
 			name: 'Chain',
 			value: txSimResult.chainId
-		},
-		{
-			name: 'Nonce',
-			value: txSimResult.nonce.toString()
 		},
 		{
 			name: 'Block',
@@ -74,6 +89,15 @@ function TransactionDetails({ txSimResult }: { txSimResult: TransactionSimulatio
 			isCopyable: true
 		}
 	];
+
+	if (txSimResult.nonce) {
+		// Nonce only exists on real transactions, not simulations
+		details.push({
+			name: 'Nonce',
+			value: txSimResult.nonce.toString()
+		});
+	}
+
 	if (txSimResult.simulationResult.executionResult.executionStatus === 'SUCCEEDED') {
 		details.unshift({
 			name: 'Execution status',
@@ -100,116 +124,3 @@ function TransactionDetails({ txSimResult }: { txSimResult: TransactionSimulatio
 		</div>
 	);
 }
-
-// export function SimulationPage({ simulationId }: { simulationId: string }) {
-// 	const [simulationData, setSimulationData] = useState<SimulationResponse>();
-// 	const [error, setError] = useState<string | undefined>();
-
-// 	useEffect(() => {
-// 		const fetchData = async () => {
-// 			try {
-// 				setSimulationData(await fetchSimulation(simulationId));
-// 			} catch (error) {
-// 				setError('Error fetching data');
-// 			}
-// 		};
-
-// 		fetchData();
-// 	}, [simulationId]);
-
-// 	return (
-// 		<>
-// 			<HeaderNav />
-// 			<main>
-// 				<Container>
-// 					<div className="bg-white border-x border-b shadow-sm border-neutral-200 p-4">
-// 						<div className="flex items-baseline">
-// 							<h1 className="text-l font-medium leading-6 mt-4 mb-2">Simulation {simulationId}</h1>
-// 							<p className="ml-2 mt-1 truncate text-sm text-gray-500">
-// 								{simulationData?.simulation.team_id &&
-// 									`in project ${simulationData?.simulation.team_id}`}
-// 							</p>
-// 						</div>
-// 						{simulationData && <SimulationInfo simulation={simulationData.simulation} />}
-// 						{simulationData?.trace.execute_invocation ? (
-// 							<Trace
-// 								executeInvocation={processTraceData(simulationData.trace.execute_invocation)}
-// 								classes={simulationData.classes}
-// 							/>
-// 						) : error ? (
-// 							error
-// 						) : (
-// 							<Loader />
-// 						)}
-// 					</div>
-// 				</Container>
-// 			</main>
-// 			<Footer />
-// 		</>
-// 	);
-// }
-
-// function Details(
-// 	info: { name: string; value: ReactNode | string; isCopyable?: boolean; valueToCopy?: string }[]
-// ) {
-// 	return (
-// 		<div className="rounded text-xs flex flex-row gap-x-3 flex-wrap leading-loose">
-// 			{info.map(
-// 				({ name, value, isCopyable, valueToCopy }) =>
-// 					value && (
-// 						<span key={name} className="whitespace-nowrap">
-// 							<span className="text-neutral-500">{name}:</span>{' '}
-// 							<span
-// 								onClick={() =>
-// 									isCopyable && valueToCopy
-// 										? copyToClipboard(valueToCopy)
-// 										: typeof value === 'string'
-// 										? copyToClipboard(value)
-// 										: () => {}
-// 								}
-// 								className={`rounded-sm font-mono px-1 ${
-// 									isCopyable ? 'cursor-pointer hover:bg-black/10' : ''
-// 								}`}
-// 							>
-// 								{value}
-// 							</span>
-// 						</span>
-// 					)
-// 			)}
-// 		</div>
-// 	);
-// }
-
-// function SimulationInfo({ simulation }: { simulation: Simulation }) {
-// 	const info = [
-// 		{
-// 			name: 'Execution status',
-// 			value: (
-// 				<span
-// 					className={` ${
-// 						simulation.status === 'success'
-// 							? 'text-lime-600'
-// 							: simulation.status === 'simulating'
-// 							? 'text-blue-600'
-// 							: 'text-red-600'
-// 					}`}
-// 				>
-// 					{(simulation.status ?? '').toUpperCase()}
-// 				</span>
-// 			)
-// 		},
-// 		{
-// 			name: 'Chain id',
-// 			value: hexToText(simulation.chain_id)
-// 		},
-// 		{
-// 			name: 'Timestamp',
-// 			value: formatTimestamp(simulation.created_at)
-// 		},
-// 		{
-// 			name: 'Wallet address',
-// 			value: simulation.wallet_address
-// 		}
-// 	];
-// 	return <div className="mt-4">{Details(info)}</div>;
-// }
