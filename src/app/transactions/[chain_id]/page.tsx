@@ -1,5 +1,3 @@
-'use client'; // TODO: not sure we want this here
-
 import { Footer } from '@/components/footer';
 import { HeaderNav } from '@/components/header';
 import { Container } from '@/components/ui/container';
