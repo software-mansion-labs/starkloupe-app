@@ -75,6 +75,14 @@ export interface CallTrace {
 	};
 }
 
+export interface EventTrace {
+	contractName: string | null;
+	eventName: string;
+	eventArgumentsNames: string[];
+	eventKeys: string[];
+	eventDatas: string[];
+}
+
 export interface ExecutionResultSucceeded {
 	executionStatus: 'SUCCEEDED';
 }
@@ -92,6 +100,7 @@ export type SourceCode = {
 
 export interface SimulationResult {
 	callTrace: CallTrace;
+	eventsTrace: EventTrace[];
 	executionResult: ExecutionResultSucceeded | ExecutionResultReverted;
 	sourceCode?: SourceCode;
 }

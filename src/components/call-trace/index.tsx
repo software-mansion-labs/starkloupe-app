@@ -25,7 +25,7 @@ export function TraceLine({
 	);
 }
 
-type CallTypeChipKind = CallType | 'Function' | 'Error';
+type CallTypeChipKind = CallType | 'Function' | 'Error' | 'Event';
 export function CallTypeChip(kind: CallTypeChipKind) {
 	let callTypeCellClass: { [key: string]: string } = {
 		['Call']: 'bg-green-100 border-green-400 text-green-900',
