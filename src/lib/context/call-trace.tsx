@@ -1,5 +1,5 @@
 import { PropsWithChildren, createContext, useState } from 'react';
-import { CallTrace, InternalFnCallTrace } from '@/lib/simulation';
+import { CallTrace, InternalFnCallTrace, SourceCode } from '@/lib/simulation';
 
 interface StringBooleanDict {
 	[key: string]: boolean;
@@ -10,6 +10,7 @@ interface CallTraceContextProps {
 	expandedCalls: StringBooleanDict;
 	showEvents: boolean;
 	notCollapsedInternalFnCalls: StringBooleanDict;
+	sourceCode: SourceCode;
 	toggleCallCollapse: (id: string) => void;
 	toggleCallExpand: (id: string) => void;
 	toggleInternalFnCallCollapse: (id: string) => void;
@@ -20,15 +21,15 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	expandedCalls: {},
 	notCollapsedInternalFnCalls: {},
 	showEvents: true,
+	sourceCode: {},
 	toggleCallCollapse: () => undefined,
 	toggleCallExpand: () => undefined,
 	toggleInternalFnCallCollapse: () => undefined
 });
 
-export const CallTraceContextProvider: React.FC<PropsWithChildren<{ callTrace: CallTrace }>> = ({
-	children,
-	callTrace
-}) => {
+export const CallTraceContextProvider: React.FC<
+	PropsWithChildren<{ callTrace: CallTrace; sourceCode: SourceCode }>
+> = ({ children, callTrace, sourceCode }) => {
 	const [collapsedCalls, setCollapsedCalls] = useState<StringBooleanDict>({});
 	const [expandedCalls, setExpandedCalls] = useState<StringBooleanDict>({});
 	const [showEvents, setShowEvents] = useState<boolean>(true);
@@ -69,6 +70,7 @@ export const CallTraceContextProvider: React.FC<PropsWithChildren<{ callTrace: C
 				collapsedCalls,
 				expandedCalls,
 				showEvents,
+				sourceCode,
 				toggleCallCollapse,
 				toggleCallExpand,
 				notCollapsedInternalFnCalls,

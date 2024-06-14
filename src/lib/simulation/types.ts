@@ -60,7 +60,7 @@ export interface CallTrace {
 	internalFnCallTrace: InternalFnCallTrace;
 	nestedCalls: CallTrace[];
 	additionalInfo: {
-    contractName: string | null;
+		contractName: string | null;
 		entryPointFunctionName: string | null;
 		entryPointInterfaceName: string | null;
 		isErc20Token: boolean;
@@ -84,9 +84,27 @@ export interface ExecutionResultReverted {
 	revertReason: string;
 }
 
+export type SourceCode = {
+	[key: string]: {
+		[key: string]: string;
+	};
+};
+
 export interface SimulationResult {
 	callTrace: CallTrace;
 	executionResult: ExecutionResultSucceeded | ExecutionResultReverted;
+	sourceCode?: SourceCode;
+}
+
+export interface TextPosition {
+	line: number;
+	col: number;
+}
+
+export interface CodeLocation {
+	start: TextPosition;
+	end: TextPosition;
+	filePath: string;
 }
 
 export interface InternalFnCallTrace {
@@ -94,6 +112,7 @@ export interface InternalFnCallTrace {
 		fnName: string | null;
 		fp: number;
 		isPanicResult?: boolean;
+		cairoLocations?: CodeLocation[];
 	};
 	nestedCalls: InternalFnCallTrace[];
 }

@@ -6,11 +6,18 @@ export * from './root';
 
 export const CALL_NESTING_SPACE_BUMP: number = 16; // in pixels
 
-export function TraceLine({ className, ...props }: React.ComponentPropsWithoutRef<'div'>) {
+export function TraceLine({
+	className,
+	isUnclickable,
+	isActive,
+	...props
+}: React.ComponentPropsWithoutRef<'div'> & { isUnclickable?: boolean; isActive?: boolean }) {
 	return (
 		<div
 			className={clsx(
-				'py-0.5 px-4 flex flex-row items-center hover:bg-neutral-100 font-mono',
+				`py-0.5 px-4 flex flex-row items-center font-mono border-y-2 ${
+					isActive ? 'border-neutral-300 trace-line--selected' : 'border-transparent'
+				} ${isUnclickable ? '' : 'hover:bg-neutral-100 cursor-pointer'}`,
 				className
 			)}
 			{...props}

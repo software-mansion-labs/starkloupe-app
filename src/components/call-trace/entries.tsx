@@ -44,10 +44,10 @@ export function ContractCallTrace({
 				</div>
 			);
 		}
-  
-    if (call.additionalInfo.contractName) {
-      contractName = call.additionalInfo.contractName;
-    } else if (call.additionalInfo.erc20TokenName || call.additionalInfo.erc20TokenSymbol) {
+
+		if (call.additionalInfo.contractName) {
+			contractName = call.additionalInfo.contractName;
+		} else if (call.additionalInfo.erc20TokenName || call.additionalInfo.erc20TokenSymbol) {
 			contractName = [
 				call.additionalInfo.erc20TokenName,
 				`(${call.additionalInfo.erc20TokenSymbol})`
@@ -60,11 +60,7 @@ export function ContractCallTrace({
 		return (
 			<React.Fragment key={callIdentifier}>
 				<TraceLine
-					className={`border-y-2 cursor-pointer ${
-						expandedCalls[callIdentifier]
-							? 'border-neutral-300 trace-line--selected'
-							: 'border-transparent'
-					}`}
+					isActive={expandedCalls[callIdentifier]}
 					onClick={() => toggleCallExpand(callIdentifier)}
 				>
 					{CallTypeChip(call.entryPoint.callType)}
@@ -140,6 +136,7 @@ export function ContractCallTrace({
 						parentId={callIdentifier}
 						executionFailed={executionFailed}
 						errorMessage={call.additionalInfo.errorMessage ?? undefined}
+						classHash={call.entryPoint.classHash}
 					/>
 				)}
 				{collapsedCalls[callIdentifier] != true && (

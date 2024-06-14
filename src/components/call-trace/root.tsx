@@ -7,7 +7,10 @@ export function CallTraceRoot({ simulationResult }: { simulationResult: Simulati
 		(simulationResult.executionResult as ExecutionResultReverted) !== undefined;
 
 	return (
-		<CallTraceContextProvider callTrace={simulationResult.callTrace}>
+		<CallTraceContextProvider
+			callTrace={simulationResult.callTrace}
+			sourceCode={simulationResult.sourceCode ?? {}}
+		>
 			<div className="pt-16">
 				<div className="pb-3 sm:flex sm:items-center">
 					<h3 className="text-xs uppercase font-semibold text-gray-900 mr-8">Call Trace</h3>

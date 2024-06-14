@@ -2,6 +2,10 @@ import { API_URL } from '@/lib/config';
 import { getSessionToken } from '@/lib/auth';
 import camelcaseKeys from 'camelcase-keys';
 
+const CLASS_HASH_REGEX = /^0x[0-9a-fA-F]{64}$/;
+const DOTS_SLASH_REGEX = /[./]/;
+const CAMELCASE_EXCLUDE = [CLASS_HASH_REGEX, DOTS_SLASH_REGEX];
+
 interface FetchApiParams {
 	init?: RequestInit | undefined;
 	data?: unknown;
@@ -44,7 +48,10 @@ export async function fetchApi<ResponseDataType>(
 	if (!response.ok) throw Error(await response.text());
 	else {
 		if (params?.renameToCamelCase)
-			return camelcaseKeys(await response.json(), { deep: true }) as ResponseDataType;
+			return camelcaseKeys(await response.json(), {
+				deep: true,
+				exclude: CAMELCASE_EXCLUDE
+			}) as ResponseDataType;
 		else return response.json() as Promise<ResponseDataType>;
 	}
 }
@@ -54,7 +61,12 @@ export async function safeFetchApi<ResponseDataType>(input: string, params?: Fet
 	if (!response.ok) return { error: await response.text() };
 	else {
 		if (params?.renameToCamelCase)
-			return { data: camelcaseKeys(await response.json(), { deep: true }) as ResponseDataType };
+			return {
+				data: camelcaseKeys(await response.json(), {
+					deep: true,
+					exclude: CAMELCASE_EXCLUDE
+				}) as ResponseDataType
+			};
 		else return { data: response.json() as Promise<ResponseDataType> };
 	}
 }
