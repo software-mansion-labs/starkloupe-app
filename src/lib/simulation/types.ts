@@ -72,6 +72,7 @@ export interface CallTrace {
 		functionArguments: string[] | null;
 		functionArgumentsNames: string[] | null;
 		calldataDecoded: CalldataDecoded | null;
+		cairoLocations?: CodeLocation[]; // Added on client side
 	};
 }
 

@@ -5,24 +5,7 @@ import { CallTraceContext } from '@/lib/context/call-trace';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { ErrorTraceLine } from './error-trace-line';
 import { CodeViewer } from '../code-viewer/code-viewer';
-
-function padHexString(hexString: string) {
-	const targetLength = 66; // The target length of the string
-	const prefix = '0x'; // The prefix to be included in the length
-
-	// Remove the prefix if it exists
-	if (hexString.startsWith(prefix)) {
-		hexString = hexString.slice(2);
-	}
-
-	// Pad the string with zeros at the start
-	hexString = hexString.padStart(targetLength - prefix.length, '0');
-
-	// Add the prefix back
-	hexString = prefix + hexString;
-
-	return hexString;
-}
+import { padHexString } from '@/lib/utils';
 
 export function InternalCallTrace({
 	calls,
@@ -56,7 +39,7 @@ export function InternalCallTrace({
 		const classHashString = padHexString(classHash);
 		const cairoLocation: CodeLocation | undefined = call.data.cairoLocations?.[0];
 		if (cairoLocation) {
-			code = sourceCode[padHexString(classHashString)]?.[cairoLocation.filePath];
+			code = sourceCode[classHashString]?.[cairoLocation.filePath];
 		}
 
 		return (

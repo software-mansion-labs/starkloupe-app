@@ -1,5 +1,5 @@
 import { PropsWithChildren, createContext, useState } from 'react';
-import { CallTrace, InternalFnCallTrace, SourceCode } from '@/lib/simulation';
+import { CallTrace, InternalFnCallTrace, SimulationResult, SourceCode } from '@/lib/simulation';
 
 interface StringBooleanDict {
 	[key: string]: boolean;
@@ -28,23 +28,23 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 });
 
 export const CallTraceContextProvider: React.FC<
-	PropsWithChildren<{ callTrace: CallTrace; sourceCode: SourceCode }>
-> = ({ children, callTrace, sourceCode }) => {
+	PropsWithChildren<{ simulationResult: SimulationResult }>
+> = ({ children, simulationResult }) => {
 	const [collapsedCalls, setCollapsedCalls] = useState<StringBooleanDict>({});
 	const [expandedCalls, setExpandedCalls] = useState<StringBooleanDict>({});
 	const [showEvents, setShowEvents] = useState<boolean>(true);
 
-	const a = processCalls([callTrace]);
-	const b = a
-		? a.reduce((obj: StringBooleanDict, key) => {
-				obj[key] = true;
+	const notCollapsedInternalFnCallsIds = findCallPathWithError([simulationResult.callTrace]);
+	const initialNotCollapsedInternalFnCalls = notCollapsedInternalFnCallsIds
+		? notCollapsedInternalFnCallsIds.reduce((obj: StringBooleanDict, id) => {
+				obj[id] = true;
 				return obj;
 		  }, {})
 		: {};
-	console.log(b);
 
-	const [notCollapsedInternalFnCalls, setNotCollapsedInternalFnCalls] =
-		useState<StringBooleanDict>(b);
+	const [notCollapsedInternalFnCalls, setNotCollapsedInternalFnCalls] = useState<StringBooleanDict>(
+		initialNotCollapsedInternalFnCalls
+	);
 
 	const toggleCallCollapse = (id: string) => {
 		setCollapsedCalls((prevState) => {
@@ -70,7 +70,7 @@ export const CallTraceContextProvider: React.FC<
 				collapsedCalls,
 				expandedCalls,
 				showEvents,
-				sourceCode,
+				sourceCode: simulationResult.sourceCode ?? {},
 				toggleCallCollapse,
 				toggleCallExpand,
 				notCollapsedInternalFnCalls,
@@ -82,24 +82,24 @@ export const CallTraceContextProvider: React.FC<
 	);
 };
 
-function processCalls(calls: CallTrace[], parentId?: string): string[] | null {
+function findCallPathWithError(calls: CallTrace[], parentId?: string): string[] | null {
 	for (let i = 0; i < calls.length; i++) {
 		const call = calls[i];
 		const callIdentifier = parentId ? `${parentId}-${i}` : i.toString();
 		if (call.additionalInfo.errorMessage) {
 			if (call.internalFnCallTrace) {
-				return processInternalFnCalls([call.internalFnCallTrace], callIdentifier, []);
+				return findInternalFnCallPathWithError([call.internalFnCallTrace], callIdentifier, []);
 			}
 			break;
 		} else {
-			const internalFnCallsIdTrace = processCalls(call.nestedCalls, callIdentifier);
+			const internalFnCallsIdTrace = findCallPathWithError(call.nestedCalls, callIdentifier);
 			if (internalFnCallsIdTrace) return internalFnCallsIdTrace;
 		}
 	}
 	return null;
 }
 
-function processInternalFnCalls(
+function findInternalFnCallPathWithError(
 	internalFnCalls: InternalFnCallTrace[],
 	parentId: string,
 	internalFnCallsIdTrace: string[]
@@ -111,7 +111,7 @@ function processInternalFnCalls(
 			return [...internalFnCallsIdTrace, callIdentifier];
 		}
 		if (internalCall.nestedCalls.length > 0) {
-			const currentInternalFnCallsIdTrace = processInternalFnCalls(
+			const currentInternalFnCallsIdTrace = findInternalFnCallPathWithError(
 				internalCall.nestedCalls,
 				callIdentifier,
 				[...internalFnCallsIdTrace, callIdentifier]

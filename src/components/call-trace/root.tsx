@@ -33,10 +33,7 @@ export function CallTraceRoot({ simulationResult }: { simulationResult: Simulati
 					Events
 				</h3>
 			</div>
-			<CallTraceContextProvider
-				callTrace={simulationResult.callTrace}
-				sourceCode={simulationResult.sourceCode ?? {}}
-			>
+			<CallTraceContextProvider simulationResult={simulationResult}>
 				<div className="overflow-x-auto whitespace-nowrap min-h-[20rem] -mx-4 text-xs">
 					<div className="min-w-fit">
 						{activeTab === 'call' && (

@@ -1,5 +1,5 @@
 import { ChainId } from '@/lib/types';
-import { fetchApi } from '@/lib/utils';
+import { addCairoLocationsToContractCalls, fetchApi } from '@/lib/utils';
 import { TransactionSimulationResult } from '../transaction';
 
 export * from './types';
@@ -31,5 +31,6 @@ export async function simulateTransactionByData({
 			renameToCamelCase: true
 		}
 	);
+	addCairoLocationsToContractCalls([transactionSimulationResult.simulationResult.callTrace]);
 	return transactionSimulationResult;
 }

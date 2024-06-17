@@ -1,6 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
+import { CallTrace } from '../simulation';
 export * from './fetch';
 
 export function cn(...inputs: ClassValue[]) {
@@ -61,4 +62,35 @@ export function useChain(): { chainId: ChainId; chainName: string } {
 	const isGoerli = path.includes('SN_GOERLI');
 	const chainId = isGoerli ? 'SN_GOERLI' : 'SN_MAIN';
 	return { chainId, chainName: isGoerli ? 'Testnet' : 'Mainnet' };
+}
+
+export function addCairoLocationsToContractCalls(calls: CallTrace[]) {
+	for (const call of calls) {
+		if (call.internalFnCallTrace && call.internalFnCallTrace.nestedCalls.length > 0) {
+			const wrapper = call.internalFnCallTrace;
+			if (!wrapper) continue;
+			const entryPointFunction = wrapper.nestedCalls[1];
+			if (!entryPointFunction) continue;
+			call.additionalInfo.cairoLocations = entryPointFunction.data.cairoLocations;
+		}
+		addCairoLocationsToContractCalls(call.nestedCalls);
+	}
+}
+
+export function padHexString(hexString: string) {
+	const targetLength = 66; // The target length of the string
+	const prefix = '0x'; // The prefix to be included in the length
+
+	// Remove the prefix if it exists
+	if (hexString.startsWith(prefix)) {
+		hexString = hexString.slice(2);
+	}
+
+	// Pad the string with zeros at the start
+	hexString = hexString.padStart(targetLength - prefix.length, '0');
+
+	// Add the prefix back
+	hexString = prefix + hexString;
+
+	return hexString;
 }

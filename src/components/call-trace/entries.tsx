@@ -1,14 +1,15 @@
 import { useContext } from 'react';
 import React from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
-import { CallTrace, DataType } from '@/lib/simulation';
-import { shortenHash } from '@/lib/utils';
+import { CallTrace, CodeLocation, DataType, SourceCode } from '@/lib/simulation';
+import { padHexString, shortenHash } from '@/lib/utils';
 import { CallTraceContext } from '@/lib/context/call-trace';
 import { InfoBox } from '@/components/ui/info-box';
 import { InternalCallTrace } from './internal-entries';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { CalldataTable } from '../calldata-table';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { CodeViewer } from '../code-viewer/code-viewer';
 
 export function ContractCallTrace({
 	calls,
@@ -21,7 +22,7 @@ export function ContractCallTrace({
 	executionFailed: boolean;
 	parentId?: string;
 }) {
-	const { expandedCalls, collapsedCalls, toggleCallCollapse, toggleCallExpand } =
+	const { expandedCalls, collapsedCalls, toggleCallCollapse, toggleCallExpand, sourceCode } =
 		useContext(CallTraceContext);
 
 	return calls.map((call, index) => {
@@ -128,7 +129,9 @@ export function ContractCallTrace({
 						)}
 					</div>
 				</TraceLine>
-				{expandedCalls[callIdentifier] && <ContractCallDetails call={call} />}{' '}
+				{expandedCalls[callIdentifier] && (
+					<ContractCallDetails call={call} sourceCode={sourceCode} />
+				)}{' '}
 				{collapsedCalls[callIdentifier] != true && call.internalFnCallTrace && (
 					<InternalCallTrace
 						calls={[call.internalFnCallTrace]}
@@ -152,7 +155,7 @@ export function ContractCallTrace({
 	});
 }
 
-function ContractCallDetails({ call }: { call: CallTrace }) {
+function ContractCallDetails({ call, sourceCode }: { call: CallTrace; sourceCode: SourceCode }) {
 	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [
 		{
 			name: 'Entry Point Type',
@@ -237,6 +240,17 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 		});
 	}
 
+	console.log(call.additionalInfo);
+
+	let code: string | undefined = undefined;
+
+	// TODO: pad the class hash on the backend
+	const classHashString = padHexString(call.entryPoint.classHash);
+	const cairoLocation: CodeLocation | undefined = call.additionalInfo.cairoLocations?.[0];
+	if (cairoLocation) {
+		code = sourceCode[classHashString]?.[cairoLocation.filePath];
+	}
+
 	return (
 		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4">
 			<InfoBox details={details} />
@@ -245,6 +259,11 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 			)}
 			{call.additionalInfo?.functionResult && (
 				<CalldataTable calldata={call.additionalInfo.functionResult} type={DataType.OUTPUT} />
+			)}
+			{code && cairoLocation && (
+				<div className="h-80">
+					<CodeViewer code={code} codeLocation={cairoLocation} />
+				</div>
 			)}
 		</div>
 	);
