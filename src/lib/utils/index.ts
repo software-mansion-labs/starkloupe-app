@@ -76,21 +76,3 @@ export function addCairoLocationsToContractCalls(calls: CallTrace[]) {
 		addCairoLocationsToContractCalls(call.nestedCalls);
 	}
 }
-
-export function padHexString(hexString: string) {
-	const targetLength = 66; // The target length of the string
-	const prefix = '0x'; // The prefix to be included in the length
-
-	// Remove the prefix if it exists
-	if (hexString.startsWith(prefix)) {
-		hexString = hexString.slice(2);
-	}
-
-	// Pad the string with zeros at the start
-	hexString = hexString.padStart(targetLength - prefix.length, '0');
-
-	// Add the prefix back
-	hexString = prefix + hexString;
-
-	return hexString;
-}

@@ -5,7 +5,6 @@ import { CallTraceContext } from '@/lib/context/call-trace';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { ErrorTraceLine } from './error-trace-line';
 import { CodeViewer } from '../code-viewer/code-viewer';
-import { padHexString } from '@/lib/utils';
 
 export function InternalCallTrace({
 	calls,
@@ -25,7 +24,7 @@ export function InternalCallTrace({
 	const {
 		notCollapsedInternalFnCalls,
 		toggleInternalFnCallCollapse,
-		sourceCode,
+		simulationDebuggerData,
 		expandedCalls,
 		toggleCallExpand
 	} = useContext(CallTraceContext);
@@ -36,10 +35,10 @@ export function InternalCallTrace({
 		let code: string | undefined = undefined;
 
 		// TODO: pad the class hash on the backend
-		const classHashString = padHexString(classHash);
 		const cairoLocation: CodeLocation | undefined = call.data.cairoLocations?.[0];
 		if (cairoLocation) {
-			code = sourceCode[classHashString]?.[cairoLocation.filePath];
+			code =
+				simulationDebuggerData.classesDebuggerData[classHash]?.sourceCode[cairoLocation.filePath];
 		}
 
 		return (
@@ -51,6 +50,10 @@ export function InternalCallTrace({
 				>
 					{CallTypeChip('Function')}
 					{executionFailed && <div className="w-5"></div>}
+
+					{/* TODO: add debug button */}
+					<div className="w-5"></div>
+
 					<div
 						style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
 						className="flex flex-row items-center"

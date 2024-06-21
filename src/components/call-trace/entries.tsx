@@ -1,15 +1,16 @@
 import { useContext } from 'react';
 import React from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
-import { CallTrace, CodeLocation, DataType, SourceCode } from '@/lib/simulation';
-import { padHexString, shortenHash } from '@/lib/utils';
+import { CallTrace, CodeLocation, DataType } from '@/lib/simulation';
+import { shortenHash } from '@/lib/utils';
 import { CallTraceContext } from '@/lib/context/call-trace';
 import { InfoBox } from '@/components/ui/info-box';
 import { InternalCallTrace } from './internal-entries';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { CalldataTable } from '../calldata-table';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { BugAntIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { CodeViewer } from '../code-viewer/code-viewer';
+import { DebuggerContext } from '@/lib/context/debugger-context-provider';
 
 export function ContractCallTrace({
 	calls,
@@ -22,8 +23,15 @@ export function ContractCallTrace({
 	executionFailed: boolean;
 	parentId?: string;
 }) {
-	const { expandedCalls, collapsedCalls, toggleCallCollapse, toggleCallExpand, sourceCode } =
-		useContext(CallTraceContext);
+	const {
+		expandedCalls,
+		collapsedCalls,
+		toggleCallCollapse,
+		toggleCallExpand,
+		setActiveTab,
+		simulationDebuggerData
+	} = useContext(CallTraceContext);
+	const { debugCall } = useContext(DebuggerContext);
 
 	return calls.map((call, index) => {
 		const callIdentifier = parentId ? `${parentId}-${index}` : index.toString();
@@ -58,6 +66,10 @@ export function ContractCallTrace({
 			contractName = shortenHash(call.entryPoint.storageAddress, 13);
 		}
 
+		const isDebuggable =
+			call.additionalInfo.callDebuggerData &&
+			simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash];
+
 		return (
 			<React.Fragment key={callIdentifier}>
 				<TraceLine
@@ -71,6 +83,20 @@ export function ContractCallTrace({
 					 * or exclamation triangle icon in case of error on the line
 					 */}
 					{errorColumn}
+
+					<div
+						onClick={(event) => {
+							event.stopPropagation();
+							if (!isDebuggable) return;
+							debugCall(call);
+							setActiveTab('debugger');
+						}}
+						className={`w-5 h-5 p-0.5 rounded-sm ${
+							isDebuggable ? 'cursor-pointer hover:bg-neutral-200' : ''
+						}`}
+					>
+						{isDebuggable && <BugAntIcon className="w-4 h-4 text-green-700" />}
+					</div>
 
 					<div
 						style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
@@ -129,9 +155,7 @@ export function ContractCallTrace({
 						)}
 					</div>
 				</TraceLine>
-				{expandedCalls[callIdentifier] && (
-					<ContractCallDetails call={call} sourceCode={sourceCode} />
-				)}{' '}
+				{expandedCalls[callIdentifier] && <ContractCallDetails call={call} />}{' '}
 				{collapsedCalls[callIdentifier] != true && call.internalFnCallTrace && (
 					<InternalCallTrace
 						calls={[call.internalFnCallTrace]}
@@ -139,7 +163,7 @@ export function ContractCallTrace({
 						parentId={callIdentifier}
 						executionFailed={executionFailed}
 						errorMessage={call.additionalInfo.errorMessage ?? undefined}
-						classHash={call.entryPoint.classHash}
+						classHash={call.additionalInfo.classHash}
 					/>
 				)}
 				{collapsedCalls[callIdentifier] != true && (
@@ -155,7 +179,8 @@ export function ContractCallTrace({
 	});
 }
 
-function ContractCallDetails({ call, sourceCode }: { call: CallTrace; sourceCode: SourceCode }) {
+function ContractCallDetails({ call }: { call: CallTrace }) {
+	const { simulationDebuggerData } = useContext(CallTraceContext);
 	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [
 		{
 			name: 'Entry Point Type',
@@ -244,11 +269,12 @@ function ContractCallDetails({ call, sourceCode }: { call: CallTrace; sourceCode
 
 	let code: string | undefined = undefined;
 
-	// TODO: pad the class hash on the backend
-	const classHashString = padHexString(call.entryPoint.classHash);
 	const cairoLocation: CodeLocation | undefined = call.additionalInfo.cairoLocations?.[0];
 	if (cairoLocation) {
-		code = sourceCode[classHashString]?.[cairoLocation.filePath];
+		code =
+			simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash]?.sourceCode[
+				cairoLocation.filePath
+			];
 	}
 
 	return (

@@ -54,6 +54,10 @@ export interface DecodedItem {
 
 export type CalldataDecoded = DecodedItem[];
 
+export interface CallDebuggerData {
+	sierraExecutionTrace: number[][];
+}
+
 export interface CallTrace {
 	entryPoint: EntryPoint;
 	result: CallResult;
@@ -73,6 +77,8 @@ export interface CallTrace {
 		functionArgumentsNames: string[] | null;
 		calldataDecoded: CalldataDecoded | null;
 		cairoLocations?: CodeLocation[]; // Added on client side
+		callDebuggerData?: CallDebuggerData;
+		classHash: string; // 66 symbols format
 	};
 }
 
@@ -93,17 +99,28 @@ export interface ExecutionResultReverted {
 	revertReason: string;
 }
 
-export type SourceCode = {
-	[key: string]: {
+export interface ClassDebuggerData {
+	sierraStatementsToCairoInfo: {
+		[key: number]: {
+			cairoLocations: CodeLocation[];
+		};
+	};
+	sourceCode: {
 		[key: string]: string;
 	};
-};
+}
+
+export interface SimulationDebuggerData {
+	classesDebuggerData: {
+		[key: string]: ClassDebuggerData;
+	};
+}
 
 export interface SimulationResult {
 	callTrace: CallTrace;
 	eventsTrace: EventTrace[];
 	executionResult: ExecutionResultSucceeded | ExecutionResultReverted;
-	sourceCode?: SourceCode;
+	simulationDebuggerData: SimulationDebuggerData;
 }
 
 export interface TextPosition {

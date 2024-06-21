@@ -1,52 +1,71 @@
-import { useState } from 'react';
+import { useContext, useState } from 'react';
 import { ExecutionResultReverted, SimulationResult } from '@/lib/simulation';
-import { CallTraceContextProvider } from '@/lib/context/call-trace';
+import { CallTraceContext, CallTraceContextProvider, TabId } from '@/lib/context/call-trace';
 import { ContractCallTrace } from './entries';
 import { EventsList } from './event-entries';
+import { Debugger } from '@/components/debugger';
+import { DebuggerContextProvider } from '@/lib/context/debugger-context-provider';
 
 export function CallTraceRoot({ simulationResult }: { simulationResult: SimulationResult }) {
-	const [activeTab, setActiveTab] = useState('call');
-	const executionFailed =
-		(simulationResult.executionResult as ExecutionResultReverted) !== undefined;
+	return (
+		<CallTraceContextProvider simulationResult={simulationResult}>
+			<DebuggerContextProvider simulationResult={simulationResult}>
+				<CallTraceRootContent simulationResult={simulationResult} />
+			</DebuggerContextProvider>
+		</CallTraceContextProvider>
+	);
+}
+
+function CallTraceRootContent({ simulationResult }: { simulationResult: SimulationResult }) {
+	const { activeTab, setActiveTab } = useContext(CallTraceContext);
+
+	const executionFailed = simulationResult.executionResult.executionStatus === 'REVERTED';
+
+	const tabs: { id: TabId; name: string }[] = [
+		{
+			id: 'call-trace',
+			name: 'Call Trace'
+		},
+		{
+			id: 'events-list',
+			name: 'Events'
+		},
+		{
+			id: 'debugger',
+			name: 'Debugger'
+		}
+	];
 
 	return (
 		<div className="pt-16">
-			<div className="pb-3 sm:flex sm:items-center">
-				<h3
-					className={`text-xs uppercase font-semibold text-gray-900 mr-8 cursor-pointer ${
-						activeTab === 'call'
-							? 'text-black bg-gray-100 rounded-t-lg border-b-2 border-gray-900'
-							: 'text-gray-500 hover:text-black rounded-t-lg hover:border-b-2 hover:border-gray-900'
-					}`}
-					onClick={() => setActiveTab('call')}
-				>
-					Call Trace
-				</h3>
-				<h3
-					className={`text-xs uppercase font-semibold text-gray-900 mr-8 cursor-pointer ${
-						activeTab === 'event'
-							? 'text-black bg-gray-100 rounded-t-lg border-b-2 border-gray-900'
-							: 'text-gray-500 hover:bg-gray-200 rounded-t-lg hover:border-b-2 hover:border-gray-900'
-					}`}
-					onClick={() => setActiveTab('event')}
-				>
-					Events
-				</h3>
-			</div>
-			<CallTraceContextProvider simulationResult={simulationResult}>
-				<div className="overflow-x-auto whitespace-nowrap min-h-[20rem] -mx-4 text-xs">
-					<div className="min-w-fit">
-						{activeTab === 'call' && (
-							<ContractCallTrace
-								calls={[simulationResult.callTrace]}
-								nestingLevel={0}
-								executionFailed={executionFailed}
-							/>
-						)}
-						{activeTab === 'event' && <EventsList events={simulationResult.eventsTrace} />}
+			<div className="flex flex-row items-center border-b border-neutral-200">
+				{tabs.map((tab) => (
+					<div
+						key={tab.id}
+						className={`text-xs uppercase font-semibold cursor-pointer pb-2 border-b-2 -my-[1px] px-4 ${
+							activeTab === tab.id
+								? 'text-black border-black'
+								: 'text-neutral-500 border-transparent'
+						}`}
+						onClick={() => setActiveTab(tab.id)}
+					>
+						{tab.name}
 					</div>
+				))}
+			</div>
+			<div className="overflow-x-auto whitespace-nowrap min-h-[20rem] -mx-4 text-xs mt-5">
+				<div className="min-w-fit">
+					{activeTab === 'call-trace' && (
+						<ContractCallTrace
+							calls={[simulationResult.callTrace]}
+							nestingLevel={0}
+							executionFailed={executionFailed}
+						/>
+					)}
+					{activeTab === 'events-list' && <EventsList events={simulationResult.eventsTrace} />}
+					{activeTab === 'debugger' && <Debugger />}
 				</div>
-			</CallTraceContextProvider>
+			</div>
 		</div>
 	);
 }

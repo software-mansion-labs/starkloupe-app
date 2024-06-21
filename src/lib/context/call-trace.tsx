@@ -1,19 +1,28 @@
 import { PropsWithChildren, createContext, useState } from 'react';
-import { CallTrace, InternalFnCallTrace, SimulationResult, SourceCode } from '@/lib/simulation';
+import {
+	CallTrace,
+	InternalFnCallTrace,
+	SimulationDebuggerData,
+	SimulationResult
+} from '@/lib/simulation';
 
 interface StringBooleanDict {
 	[key: string]: boolean;
 }
+
+export type TabId = 'call-trace' | 'events-list' | 'debugger';
 
 interface CallTraceContextProps {
 	collapsedCalls: StringBooleanDict;
 	expandedCalls: StringBooleanDict;
 	showEvents: boolean;
 	notCollapsedInternalFnCalls: StringBooleanDict;
-	sourceCode: SourceCode;
+	simulationDebuggerData: SimulationDebuggerData;
+	activeTab: TabId;
 	toggleCallCollapse: (id: string) => void;
 	toggleCallExpand: (id: string) => void;
 	toggleInternalFnCallCollapse: (id: string) => void;
+	setActiveTab: (tab: TabId) => void;
 }
 
 export const CallTraceContext = createContext<CallTraceContextProps>({
@@ -21,10 +30,12 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	expandedCalls: {},
 	notCollapsedInternalFnCalls: {},
 	showEvents: true,
-	sourceCode: {},
+	simulationDebuggerData: { classesDebuggerData: {} },
+	activeTab: 'call-trace',
 	toggleCallCollapse: () => undefined,
 	toggleCallExpand: () => undefined,
-	toggleInternalFnCallCollapse: () => undefined
+	toggleInternalFnCallCollapse: () => undefined,
+	setActiveTab: () => undefined
 });
 
 export const CallTraceContextProvider: React.FC<
@@ -33,6 +44,7 @@ export const CallTraceContextProvider: React.FC<
 	const [collapsedCalls, setCollapsedCalls] = useState<StringBooleanDict>({});
 	const [expandedCalls, setExpandedCalls] = useState<StringBooleanDict>({});
 	const [showEvents, setShowEvents] = useState<boolean>(true);
+	const [activeTab, setActiveTab] = useState<TabId>('call-trace');
 
 	const notCollapsedInternalFnCallsIds = findCallPathWithError([simulationResult.callTrace]);
 	const initialNotCollapsedInternalFnCalls = notCollapsedInternalFnCallsIds
@@ -70,11 +82,13 @@ export const CallTraceContextProvider: React.FC<
 				collapsedCalls,
 				expandedCalls,
 				showEvents,
-				sourceCode: simulationResult.sourceCode ?? {},
+				simulationDebuggerData: simulationResult.simulationDebuggerData,
 				toggleCallCollapse,
 				toggleCallExpand,
 				notCollapsedInternalFnCalls,
-				toggleInternalFnCallCollapse
+				toggleInternalFnCallCollapse,
+				activeTab,
+				setActiveTab
 			}}
 		>
 			{children}
