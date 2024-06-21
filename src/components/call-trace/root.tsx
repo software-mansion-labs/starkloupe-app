@@ -38,7 +38,7 @@ function CallTraceRootContent({ simulationResult }: { simulationResult: Simulati
 
 	return (
 		<div className="pt-16">
-			<div className="flex flex-row items-center border-b border-neutral-200">
+			<div className="flex flex-row items-center border-b border-neutral-200 -mx-4 px-4">
 				{tabs.map((tab) => (
 					<div
 						key={tab.id}
@@ -53,16 +53,22 @@ function CallTraceRootContent({ simulationResult }: { simulationResult: Simulati
 					</div>
 				))}
 			</div>
-			<div className="overflow-x-auto whitespace-nowrap min-h-[20rem] -mx-4 text-xs mt-5">
+			<div className="overflow-x-auto whitespace-nowrap min-h-[20rem] -mx-4 text-xs">
 				<div className="min-w-fit">
 					{activeTab === 'call-trace' && (
-						<ContractCallTrace
-							calls={[simulationResult.callTrace]}
-							nestingLevel={0}
-							executionFailed={executionFailed}
-						/>
+						<div className="mt-5">
+							<ContractCallTrace
+								calls={[simulationResult.callTrace]}
+								nestingLevel={0}
+								executionFailed={executionFailed}
+							/>
+						</div>
 					)}
-					{activeTab === 'events-list' && <EventsList events={simulationResult.eventsTrace} />}
+					{activeTab === 'events-list' && (
+						<div className="mt-5">
+							<EventsList events={simulationResult.eventsTrace} />
+						</div>
+					)}
 					{activeTab === 'debugger' && <Debugger />}
 				</div>
 			</div>

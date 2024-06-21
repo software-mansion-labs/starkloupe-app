@@ -22,12 +22,14 @@ export function Debugger() {
 					classDebuggerData={classDebuggerData}
 				/>
 			);
-		} else {
-			return <>No data</>;
 		}
 	}
 
-	return <>No data</>;
+	return (
+		<div className="px-4 mt-5">
+			Please select a contract call to debug in the &quot;Call Trace&quot; tab.
+		</div>
+	);
 }
 
 function DebuggerNotEmpty({
@@ -86,7 +88,7 @@ function DebuggerNotEmpty({
 	}
 
 	return (
-		<div className="w-full h-[500px] flex flex-row border-t border-neutral-200">
+		<div className="w-full h-[500px] flex flex-row">
 			<FilesExplorer
 				classSourceCode={classDebuggerData.sourceCode}
 				activeFile={codeLocation.filePath}
