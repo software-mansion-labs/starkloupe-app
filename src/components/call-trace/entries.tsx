@@ -1,7 +1,7 @@
 import { useContext } from 'react';
 import React from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
-import { CallTrace, CodeLocation, DataType } from '@/lib/simulation';
+import { CallTrace, CodeLocation, DataType, CallType } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
 import { CallTraceContext } from '@/lib/context/call-trace';
 import { InfoBox } from '@/components/ui/info-box';
@@ -35,6 +35,17 @@ export function ContractCallTrace({
 
 	return calls.map((call, index) => {
 		const callIdentifier = parentId ? `${parentId}-${index}` : index.toString();
+		let callType = call.entryPoint.callType;
+		if (
+			callType === CallType.CALL &&
+			call.nestedCalls.length > 0 &&
+			call.nestedCalls[0].entryPoint.callType === CallType.DELEGATE &&
+			call.entryPoint.storageAddress === call.nestedCalls[0].entryPoint.storageAddress &&
+			call.entryPoint.entryPointSelector === call.nestedCalls[0].entryPoint.entryPointSelector
+		) {
+			call = call.nestedCalls[0];
+			callType = CallType.DCALL;
+		}
 		const hasNestedElements = call.nestedCalls.length > 0 || call.internalFnCallTrace;
 
 		let contractName: string | undefined = undefined;
@@ -76,7 +87,7 @@ export function ContractCallTrace({
 					isActive={expandedCalls[callIdentifier]}
 					onClick={() => toggleCallExpand(callIdentifier)}
 				>
-					{CallTypeChip(call.entryPoint.callType)}
+					{CallTypeChip(callType)}
 
 					{/* Error column
 					 * Empty in most lines,
