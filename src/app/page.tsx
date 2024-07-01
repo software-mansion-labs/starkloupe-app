@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Footer } from '@/components/footer';
 import Image from 'next/image';
-import logoWalnut from '@/assets/walnut.svg';
+import logoWalnut from '@/assets/wlnt-logo-beta-bw.svg';
 import { Search } from '@/components/ui/search';
 import { IndexNav } from '@/components/index-page/index-nav';
 import { useSession } from 'next-auth/react';

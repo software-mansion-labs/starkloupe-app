@@ -6,7 +6,7 @@ import { Disclosure } from '@headlessui/react';
 import { Search } from '@/components/ui/search';
 import { Button } from '@/components/ui/button';
 import { Bars3Icon, XMarkIcon, PlayIcon } from '@heroicons/react/24/outline';
-import logoWalnut from '@/assets/walnut.svg';
+import logoWalnut from '@/assets/wlnt-logo-beta-bw.svg';
 import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import { SimulateDialog } from './simulate-dialog';
