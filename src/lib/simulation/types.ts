@@ -136,12 +136,19 @@ export interface CodeLocation {
 	filePath: string;
 }
 
+export interface InternalFnCallIO {
+	typeName: string | null;
+	value: string[];
+}
+
 export interface InternalFnCallTrace {
 	data: {
 		fnName: string | null;
 		fp: number;
-		isPanicResult?: boolean;
-		cairoLocations?: CodeLocation[];
+		cairoLocations: CodeLocation[];
+		arguments: InternalFnCallIO[];
+		results: InternalFnCallIO[];
+		isPanicResult?: boolean; // TODO: implement on server side
 	};
 	nestedCalls: InternalFnCallTrace[];
 }

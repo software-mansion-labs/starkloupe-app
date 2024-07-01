@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { CodeLocation, InternalFnCallTrace } from '@/lib/simulation';
+import { CodeLocation, InternalFnCallIO, InternalFnCallTrace } from '@/lib/simulation';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { CallTraceContext } from '@/lib/context/call-trace';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
@@ -78,6 +78,9 @@ export function InternalCallTrace({
 							)}
 						</div>
 						<span className="text-pink-500">{call.data.fnName ?? 'Unknown internal function'}</span>
+						<CallIO ios={call.data.arguments} />
+						&nbsp;{'->'}&nbsp;
+						<CallIO ios={call.data.results} />
 					</div>
 				</TraceLine>
 
@@ -113,4 +116,29 @@ export function InternalCallTrace({
 			</React.Fragment>
 		);
 	});
+}
+
+function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
+	const ioToSkip = ['RangeCheck', 'GasBuiltin'];
+	return (
+		<>
+			<span className="text-yellow-900">{'('}</span>
+			{ios.map((io, i) =>
+				ioToSkip.includes(io.typeName ?? '') ? null : (
+					<>
+						<span className="text-orange-500">{io.typeName}</span>:&nbsp;
+						<span className="text-orange-700">
+							{io.value.length === 0
+								? 'None'
+								: io.value.length === 1
+								? io.value[0]
+								: `[${io.value.join(', ')}]`}
+						</span>
+						{i < ios.length - 1 ? <>,&nbsp;</> : ''}
+					</>
+				)
+			)}
+			<span className="text-yellow-900">{')'}</span>
+		</>
+	);
 }
