@@ -55,13 +55,13 @@ export function formatTimestamp(timestamp: number): string {
 	return formatDate;
 }
 
-type ChainId = 'SN_MAIN' | 'SN_GOERLI';
+type ChainId = 'SN_MAIN' | 'SN_SEPOLIA';
 
 export function useChain(): { chainId: ChainId; chainName: string } {
 	const path = usePathname();
-	const isGoerli = path.includes('SN_GOERLI');
-	const chainId = isGoerli ? 'SN_GOERLI' : 'SN_MAIN';
-	return { chainId, chainName: isGoerli ? 'Testnet' : 'Mainnet' };
+	const isSepolia = path.includes('SN_SEPOLIA');
+	const chainId = isSepolia ? 'SN_SEPOLIA' : 'SN_MAIN';
+	return { chainId, chainName: isSepolia ? 'Testnet' : 'Mainnet' };
 }
 
 export function addCairoLocationsToContractCalls(calls: CallTrace[]) {

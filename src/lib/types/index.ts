@@ -1,6 +1,6 @@
 export enum ChainId {
 	MAIN = 'SN_MAIN',
-	GOERLI = 'SN_GOERLI'
+	SEPOLIA = 'SN_SEPOLIA'
 }
 
 export interface CommonError {
