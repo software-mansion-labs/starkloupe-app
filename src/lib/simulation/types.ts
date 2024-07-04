@@ -56,8 +56,14 @@ export interface DecodedItem {
 
 export type CalldataDecoded = DecodedItem[];
 
+export interface DebuggerExecutionTraceEntry {
+	sierraIndexes: number[];
+	results: InternalFnCallIO[];
+	arguments: InternalFnCallIO[];
+}
+
 export interface CallDebuggerData {
-	sierraExecutionTrace: number[][];
+	executionTrace: DebuggerExecutionTraceEntry[];
 }
 
 export interface CallTrace {

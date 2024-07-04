@@ -15,7 +15,7 @@ export function Debugger() {
 
 	if (debuggerInfo) {
 		const { callDebuggerData, classDebuggerData } = debuggerInfo;
-		if (callDebuggerData.sierraExecutionTrace.length > 0) {
+		if (callDebuggerData.executionTrace && callDebuggerData.executionTrace.length > 0) {
 			return (
 				<DebuggerNotEmpty
 					callDebuggerData={callDebuggerData}
@@ -49,7 +49,7 @@ function DebuggerNotEmpty({
 	const [codeValue, setCodeValue] = useState<string>(firstStepInfo!.codeValue);
 	const [codeLocation, setCodeLocation] = useState<CodeLocation>(firstStepInfo!.codeLocation);
 
-	const totalSteps = callDebuggerData.sierraExecutionTrace.length;
+	const totalSteps = callDebuggerData.executionTrace.length;
 
 	function nextStep() {
 		if (stepIndex >= totalSteps - 1) return;
@@ -94,6 +94,9 @@ function DebuggerNotEmpty({
 				activeFile={codeLocation.filePath}
 			/>
 			<div className="flex flex-col flex-grow">
+				{/* <div className="break-all max-w-xs">
+					{JSON.stringify(callDebuggerData.executionTrace[stepIndex])}
+				</div> */}
 				<Controls
 					nextStep={nextStep}
 					previousStep={previousStep}
@@ -175,11 +178,10 @@ function findStep({
 	currentLocation?: CodeLocation;
 	direction: 'next' | 'previous';
 }): { codeValue: string; codeLocation: CodeLocation; stepIndex: number } | null {
-	if (stepIndex >= callDebuggerData.sierraExecutionTrace.length || stepIndex < 0) return null;
-	const sierraIndexes = callDebuggerData.sierraExecutionTrace[stepIndex];
-	const firstIndex = sierraIndexes[0];
-	if (firstIndex) {
-		const locations = classDebuggerData.sierraStatementsToCairoInfo[firstIndex]?.cairoLocations;
+	if (stepIndex >= callDebuggerData.executionTrace.length || stepIndex < 0) return null;
+	const sierraIndexes = callDebuggerData.executionTrace[stepIndex].sierraIndexes;
+	for (const sierraIndex of sierraIndexes) {
+		const locations = classDebuggerData.sierraStatementsToCairoInfo[sierraIndex]?.cairoLocations;
 		const location = locations?.[0];
 		if (location) {
 			if (currentLocation && areEnqualLocations(location, currentLocation)) {
