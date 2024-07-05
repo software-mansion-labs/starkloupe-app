@@ -1,5 +1,5 @@
 import { Editor as MonacoEditor, Monaco, useMonaco } from '@monaco-editor/react';
-import { editor } from 'monaco-editor';
+import { editor as Editor } from 'monaco-editor';
 import { cn } from '@/lib/utils';
 import { registerCairoLanguageSupport } from './cairoLangConfig';
 import { useCallback, useEffect, useRef, useState } from 'react';
@@ -20,15 +20,15 @@ export function CodeViewer({
 }) {
 	if (!highlightClass) highlightClass = 'bg-neutral-300 bg-opacity-40';
 
-	const editorRef = useRef<editor.IStandaloneCodeEditor>();
+	const editorRef = useRef<Editor.IStandaloneCodeEditor>();
 	const [editorDecorations, setEditorDecorations] =
-		useState<editor.IEditorDecorationsCollection | null>(null);
+		useState<Editor.IEditorDecorationsCollection | null>(null);
 	const monaco = useMonaco();
 
-	const handleEditorDidMount = async (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
+	const handleEditorDidMount = async (editor: Editor.IStandaloneCodeEditor, monaco: Monaco) => {
 		editorRef.current = editor;
 		registerCairoLanguageSupport(monaco as any);
-		highlightCodeLocation(codeLocation, args ?? [], results ?? [], editor, monaco);
+		highlightCodeLocation(codeLocation, args ?? [], results ?? [], editor, monaco, false);
 	};
 
 	const highlightCodeLocation = useCallback(
@@ -36,8 +36,9 @@ export function CodeViewer({
 			codeLocation: CodeLocation,
 			args: InternalFnCallIO[],
 			results: InternalFnCallIO[],
-			editor: editor.IStandaloneCodeEditor,
-			_monaco: Monaco
+			editor: Editor.IStandaloneCodeEditor,
+			_monaco: Monaco,
+			isSmoothScroll: boolean
 		) => {
 			if (!_monaco || !editor) return;
 			const range = new _monaco.Range(
@@ -47,16 +48,21 @@ export function CodeViewer({
 				codeLocation.end.col + 1
 			);
 
-			editor.revealRangeInCenter(
-				range.plusRange(
-					new _monaco.Range(
-						range.startLineNumber - 2,
-						range.startColumn,
-						range.endLineNumber,
-						range.endColumn
-					)
-				)
-			);
+			const isHighlightOnScreen = isRangeVisible(range.startLineNumber, range.endLineNumber);
+
+			if (!isHighlightOnScreen) {
+				editor.revealRangeInCenter(
+					range.plusRange(
+						new _monaco.Range(
+							range.startLineNumber - 2,
+							range.startColumn,
+							range.endLineNumber,
+							range.endColumn
+						)
+					),
+					isSmoothScroll ? Editor.ScrollType.Smooth : Editor.ScrollType.Immediate
+				);
+			}
 
 			editorDecorations?.clear();
 
@@ -83,7 +89,9 @@ export function CodeViewer({
 				ioValuesText += 'results: ';
 				filteredResults.forEach((io, i) => {
 					if (i !== 0) ioValuesText += ', ';
-					ioValuesText += io.value.length === 1 ? io.value[0] : io.value.join(', ');
+					let value = io.value;
+					if (io.typeName?.includes('PanicResult')) value = value.slice(2);
+					ioValuesText += value.length === 1 ? value[0] : value.join(', ');
 				});
 			}
 
@@ -115,11 +123,33 @@ export function CodeViewer({
 		[editorDecorations, highlightClass]
 	);
 
+	const [prevCodeValue, setPrevCodeValue] = useState<string | null>(null);
+
 	useEffect(() => {
 		if (editorRef.current && monaco) {
-			highlightCodeLocation(codeLocation, args ?? [], results ?? [], editorRef.current, monaco);
+			highlightCodeLocation(
+				codeLocation,
+				args ?? [],
+				results ?? [],
+				editorRef.current,
+				monaco,
+				code === prevCodeValue
+			);
+			setPrevCodeValue(code);
 		}
 	}, [codeLocation, args, results]);
+
+	const isRangeVisible = (startLine: number, endLine: number) => {
+		const editor = editorRef.current;
+		if (editor) {
+			const visibleRanges = editor.getVisibleRanges();
+			return visibleRanges.some(
+				(visibleRange) =>
+					visibleRange.startLineNumber <= endLine && visibleRange.endLineNumber >= startLine
+			);
+		}
+		return false;
+	};
 
 	function setIoValuesText(text: string) {
 		const styleTagId = 'io-values-content-style';
@@ -134,11 +164,11 @@ export function CodeViewer({
 		styleTag.innerHTML = `
 			.io-values::after {
 				content: '${text}';
-				color: rgb(70, 70, 70);
+				color: #ab008a;
 				font-weight: 300;
-				background: rgb(240,240,240);
 				border-radius: 2px;
 				padding: 0 4px;
+				border: 1px dashed #ab008a;
 			}
     	`;
 	}
@@ -151,7 +181,8 @@ export function CodeViewer({
 				minimap: { enabled: false },
 				wordBreak: 'keepAll',
 				wordWrap: 'on',
-				readOnly: true
+				readOnly: true,
+				smoothScrolling: true
 			}}
 			value={code}
 			language={'cairo'}
