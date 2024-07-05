@@ -94,9 +94,6 @@ function DebuggerNotEmpty({
 				activeFile={codeLocation.filePath}
 			/>
 			<div className="flex flex-col flex-grow">
-				{/* <div className="break-all max-w-xs">
-					{JSON.stringify(callDebuggerData.executionTrace[stepIndex])}
-				</div> */}
 				<Controls
 					nextStep={nextStep}
 					previousStep={previousStep}
@@ -108,6 +105,8 @@ function DebuggerNotEmpty({
 						code={codeValue}
 						codeLocation={codeLocation}
 						highlightClass="bg-yellow-300 bg-opacity-40"
+						args={callDebuggerData.executionTrace[stepIndex].arguments}
+						results={callDebuggerData.executionTrace[stepIndex].results}
 					/>
 				</div>
 			</div>

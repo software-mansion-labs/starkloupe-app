@@ -3,16 +3,20 @@ import { editor } from 'monaco-editor';
 import { cn } from '@/lib/utils';
 import { registerCairoLanguageSupport } from './cairoLangConfig';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { CodeLocation } from '@/lib/simulation';
+import { CodeLocation, InternalFnCallIO } from '@/lib/simulation';
 
 export function CodeViewer({
 	code,
 	codeLocation,
-	highlightClass
+	highlightClass,
+	args,
+	results
 }: {
 	code: string;
 	codeLocation: CodeLocation;
 	highlightClass?: string;
+	args?: InternalFnCallIO[];
+	results?: InternalFnCallIO[];
 }) {
 	if (!highlightClass) highlightClass = 'bg-neutral-300 bg-opacity-40';
 
@@ -24,11 +28,17 @@ export function CodeViewer({
 	const handleEditorDidMount = async (editor: editor.IStandaloneCodeEditor, monaco: Monaco) => {
 		editorRef.current = editor;
 		registerCairoLanguageSupport(monaco as any);
-		highlightCodeLocation(codeLocation, editor, monaco);
+		highlightCodeLocation(codeLocation, args ?? [], results ?? [], editor, monaco);
 	};
 
 	const highlightCodeLocation = useCallback(
-		(codeLocation: CodeLocation, editor: editor.IStandaloneCodeEditor, _monaco: Monaco) => {
+		(
+			codeLocation: CodeLocation,
+			args: InternalFnCallIO[],
+			results: InternalFnCallIO[],
+			editor: editor.IStandaloneCodeEditor,
+			_monaco: Monaco
+		) => {
 			if (!_monaco || !editor) return;
 			const range = new _monaco.Range(
 				codeLocation.start.line + 1,
@@ -50,23 +60,88 @@ export function CodeViewer({
 
 			editorDecorations?.clear();
 
-			const editor_decorations = editor.createDecorationsCollection([
-				{
-					range: range,
-					options: { inlineClassName: highlightClass }
-				}
-			]);
+			const ioToSkip = ['RangeCheck', 'GasBuiltin'];
 
-			setEditorDecorations(editor_decorations);
+			const filteredArgs = args.filter((arg) => arg.typeName && !ioToSkip.includes(arg.typeName));
+			const filteredResults = results.filter(
+				(result) => result.typeName && !ioToSkip.includes(result.typeName)
+			);
+
+			const isDisplayIoValues = filteredArgs.length > 0 || filteredResults.length > 0;
+
+			let ioValuesText = '';
+
+			if (filteredArgs.length > 0) {
+				ioValuesText += 'arguments: ';
+				filteredArgs.forEach((io, i) => {
+					if (i !== 0) ioValuesText += ', ';
+					ioValuesText += io.value.length === 1 ? io.value[0] : io.value.join(', ');
+				});
+			}
+			if (filteredResults.length > 0) {
+				if (filteredArgs.length > 0) ioValuesText += ' | ';
+				ioValuesText += 'results: ';
+				filteredResults.forEach((io, i) => {
+					if (i !== 0) ioValuesText += ', ';
+					ioValuesText += io.value.length === 1 ? io.value[0] : io.value.join(', ');
+				});
+			}
+
+			if (isDisplayIoValues) setIoValuesText(ioValuesText);
+
+			setTimeout(() => {
+				const decorations = [
+					{
+						range: range,
+						options: { inlineClassName: highlightClass }
+					}
+				];
+				if (isDisplayIoValues) {
+					decorations.push({
+						range: new _monaco.Range(
+							codeLocation.end.line + 1,
+							codeLocation.end.col + 1,
+							codeLocation.end.line + 1,
+							codeLocation.end.col + 2
+						),
+						options: { inlineClassName: 'io-values' }
+					});
+				}
+				const editorDecorations = editor.createDecorationsCollection(decorations);
+
+				setEditorDecorations(editorDecorations);
+			});
 		},
 		[editorDecorations, highlightClass]
 	);
 
 	useEffect(() => {
 		if (editorRef.current && monaco) {
-			highlightCodeLocation(codeLocation, editorRef.current, monaco);
+			highlightCodeLocation(codeLocation, args ?? [], results ?? [], editorRef.current, monaco);
 		}
-	}, [codeLocation]);
+	}, [codeLocation, args, results]);
+
+	function setIoValuesText(text: string) {
+		const styleTagId = 'io-values-content-style';
+		let styleTag = document.getElementById(styleTagId);
+
+		if (!styleTag) {
+			styleTag = document.createElement('style');
+			styleTag.id = styleTagId;
+			document.head.appendChild(styleTag);
+		}
+
+		styleTag.innerHTML = `
+			.io-values::after {
+				content: '${text}';
+				color: rgb(70, 70, 70);
+				font-weight: 300;
+				background: rgb(240,240,240);
+				border-radius: 2px;
+				padding: 0 4px;
+			}
+    	`;
+	}
 
 	return (
 		<MonacoEditor
