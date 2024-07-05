@@ -137,6 +137,7 @@ export function CodeViewer({
 			);
 			setPrevCodeValue(code);
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [codeLocation, args, results]);
 
 	const isRangeVisible = (startLine: number, endLine: number) => {
