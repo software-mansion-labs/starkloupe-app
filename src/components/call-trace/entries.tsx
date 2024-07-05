@@ -87,6 +87,10 @@ export function ContractCallTrace({
 			call.additionalInfo.callDebuggerData &&
 			simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash];
 
+		let internalFnCallTrace = [call.internalFnCallTrace];
+		if (call.internalFnCallTrace && call.internalFnCallTrace.nestedCalls[1])
+			internalFnCallTrace = call.internalFnCallTrace.nestedCalls[1].nestedCalls;
+
 		return (
 			<React.Fragment key={callIdentifier}>
 				<TraceLine
@@ -175,7 +179,7 @@ export function ContractCallTrace({
 				{expandedCalls[callIdentifier] && <ContractCallDetails call={call} />}{' '}
 				{collapsedCalls[callIdentifier] != true && call.internalFnCallTrace && (
 					<InternalCallTrace
-						calls={[call.internalFnCallTrace]}
+						calls={internalFnCallTrace}
 						nestingLevel={nestingLevel + 1}
 						parentId={callIdentifier}
 						executionFailed={executionFailed}
