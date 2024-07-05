@@ -11,6 +11,7 @@ import { CalldataTable } from '../calldata-table';
 import { BugAntIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { CodeViewer } from '../code-viewer/code-viewer';
 import { DebuggerContext } from '@/lib/context/debugger-context-provider';
+import { getEntryPointNames } from '@/lib/utils/entrypoint-names';
 
 export function ContractCallTrace({
 	calls,
@@ -73,6 +74,11 @@ export function ContractCallTrace({
 				`(${call.additionalInfo.erc20TokenSymbol})`
 			].join(' ');
 		}
+
+		const hardcodedNames = getEntryPointNames(call.entryPoint);
+
+		if (!contractName && hardcodedNames.contractName) contractName = hardcodedNames.contractName;
+
 		if (!contractName) {
 			contractName = shortenHash(call.entryPoint.storageAddress, 13);
 		}
