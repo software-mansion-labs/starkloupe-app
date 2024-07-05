@@ -60,7 +60,7 @@ export function CodeViewer({
 							range.endColumn
 						)
 					),
-					isSmoothScroll ? Editor.ScrollType.Smooth : Editor.ScrollType.Immediate
+					isSmoothScroll ? 0 : 1
 				);
 			}
 
