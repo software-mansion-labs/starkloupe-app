@@ -34,7 +34,6 @@ export function InternalCallTrace({
 
 		let code: string | undefined = undefined;
 
-		// TODO: pad the class hash on the backend
 		const cairoLocation: CodeLocation | undefined = call.data.cairoLocations?.[0];
 		if (cairoLocation) {
 			code =
@@ -77,7 +76,7 @@ export function InternalCallTrace({
 								''
 							)}
 						</div>
-						<span className="text-pink-500">{call.data.fnName ?? 'Unknown internal function'}</span>
+						<FnName fnName={call.data.fnName} />
 						<CallIO ios={call.data.arguments} />
 						&nbsp;{'->'}&nbsp;
 						<CallIO ios={call.data.results} />
@@ -141,4 +140,23 @@ function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 			<span className="text-yellow-900">{')'}</span>
 		</>
 	);
+}
+
+function FnName({ fnName }: { fnName: string | null }) {
+	if (fnName) {
+		const splitted = fnName.split('::');
+		if (splitted.length >= 2) {
+			const lastTwoElements = splitted.slice(-2);
+			return (
+				<>
+					<span className="text-blue-600">{lastTwoElements[0]}</span>::
+					<span className="text-pink-500">{lastTwoElements[1]}</span>
+				</>
+			);
+		} else {
+			return <span className="text-pink-500">{fnName}</span>;
+		}
+	} else {
+		return <span className="text-pink-500">Unknown function</span>;
+	}
 }
