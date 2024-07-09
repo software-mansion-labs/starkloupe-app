@@ -124,7 +124,7 @@ function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 			<span className="text-yellow-900">{'('}</span>
 			{ios.map((io, i) =>
 				ioToSkip.includes(io.typeName ?? '') ? null : (
-					<>
+					<React.Fragment key={i}>
 						<span className="text-orange-500">{io.typeName}</span>:&nbsp;
 						<span className="text-orange-700">
 							{io.value.length === 0
@@ -134,7 +134,7 @@ function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 								: `[${io.value.join(', ')}]`}
 						</span>
 						{i < ios.length - 1 ? <>,&nbsp;</> : ''}
-					</>
+					</React.Fragment>
 				)
 			)}
 			<span className="text-yellow-900">{')'}</span>

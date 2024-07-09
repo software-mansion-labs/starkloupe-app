@@ -7,7 +7,8 @@ const classNames: { [key: string]: string } = {
 	'0x22cd64e6cfb008cd8eec024f15c43f7c88278c00fa3c76519512bd12d21021a': 'Beer'
 };
 const contractNames: { [key: string]: string } = {
-	'0xae1a37094caf0697f008f78d6c7641b0f90f1d5ebbceea2ffb5841d0490627': 'Beer'
+	'0xae1a37094caf0697f008f78d6c7641b0f90f1d5ebbceea2ffb5841d0490627': 'Beer',
+	'0x4d1f96a986f746d6e7bb3f0820516a65f5ef3e82abe59a955477f52660b0b16': 'BeerToken'
 };
 const entrypointFunctionNames: { [key: string]: string } = {};
 

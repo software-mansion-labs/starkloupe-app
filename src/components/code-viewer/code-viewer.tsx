@@ -66,11 +66,19 @@ export function CodeViewer({
 
 			editorDecorations?.clear();
 
-			const ioToSkip = ['RangeCheck', 'GasBuiltin'];
+			const ioToSkip = ['RangeCheck', 'GasBuiltin', 'System'];
 
-			const filteredArgs = args.filter((arg) => arg.typeName && !ioToSkip.includes(arg.typeName));
+			const filteredArgs = args.filter(
+				(arg) =>
+					arg.typeName &&
+					!ioToSkip.includes(arg.typeName) &&
+					!arg.typeName.includes('ContractState')
+			);
 			const filteredResults = results.filter(
-				(result) => result.typeName && !ioToSkip.includes(result.typeName)
+				(result) =>
+					result.typeName &&
+					!ioToSkip.includes(result.typeName) &&
+					!result.typeName.includes('ContractState')
 			);
 
 			const isDisplayIoValues = filteredArgs.length > 0 || filteredResults.length > 0;
@@ -80,6 +88,7 @@ export function CodeViewer({
 			if (filteredArgs.length > 0) {
 				ioValuesText += 'arguments: ';
 				filteredArgs.forEach((io, i) => {
+					if (io.value.length === 0) return;
 					if (i !== 0) ioValuesText += ', ';
 					ioValuesText += io.value.length === 1 ? io.value[0] : io.value.join(', ');
 				});
@@ -88,6 +97,7 @@ export function CodeViewer({
 				if (filteredArgs.length > 0) ioValuesText += ' | ';
 				ioValuesText += 'results: ';
 				filteredResults.forEach((io, i) => {
+					if (io.value.length === 0) return;
 					if (i !== 0) ioValuesText += ', ';
 					let value = io.value;
 					if (io.typeName?.includes('PanicResult')) value = value.slice(2);
