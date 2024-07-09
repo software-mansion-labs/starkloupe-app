@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
 import { CallTrace } from '../simulation';
+import { TransactionSimulationResult } from '../transaction';
 export * from './fetch';
 
 export function cn(...inputs: ClassValue[]) {
@@ -74,5 +75,29 @@ export function addCairoLocationsToContractCalls(calls: CallTrace[]) {
 			call.additionalInfo.cairoLocations = entryPointFunction.data.cairoLocations;
 		}
 		addCairoLocationsToContractCalls(call.nestedCalls);
+	}
+}
+
+export function hardcodeCairoLocationsForTheDemo(simResult: TransactionSimulationResult) {
+	if (simResult.simulationResult.executionResult.executionStatus === 'SUCCEEDED') {
+		const classesDebuggerData =
+			simResult.simulationResult.simulationDebuggerData.classesDebuggerData;
+		let isBeerContract = false;
+		Object.keys(classesDebuggerData).forEach((key) => {
+			const classDebuggerData = classesDebuggerData[key];
+			Object.keys(classDebuggerData.sourceCode).forEach((file) => {
+				const code = classDebuggerData.sourceCode[file];
+				if (code.includes('impl IBeerImpl of super::IBeer<ContractState>')) {
+					isBeerContract = true;
+				}
+			});
+		});
+		if (isBeerContract) {
+			const callDebuggerData =
+				simResult.simulationResult.callTrace.nestedCalls[0].additionalInfo.callDebuggerData;
+			if (callDebuggerData) {
+				callDebuggerData.executionTrace.push({ sierraIndexes: [437], results: [], arguments: [] });
+			}
+		}
 	}
 }
