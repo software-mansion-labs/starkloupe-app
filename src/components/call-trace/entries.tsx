@@ -181,7 +181,7 @@ export function ContractCallTrace({
 					<InternalCallTrace
 						calls={internalFnCallTrace}
 						nestingLevel={nestingLevel + 1}
-						parentId={callIdentifier}
+						parentId={callIdentifier + 'i'}
 						executionFailed={executionFailed}
 						errorMessage={call.additionalInfo.errorMessage ?? undefined}
 						classHash={call.additionalInfo.classHash}
