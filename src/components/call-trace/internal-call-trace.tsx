@@ -9,14 +9,14 @@ import { CodeViewer } from '../code-viewer/code-viewer';
 export function InternalCallTrace({
 	calls,
 	nestingLevel,
-	parentId,
+	contractCallId,
 	executionFailed,
 	classHash,
 	errorMessage
 }: {
 	calls: InternalFnCallTrace[];
 	nestingLevel: number;
-	parentId: string;
+	contractCallId: string;
 	executionFailed: boolean;
 	classHash: string;
 	errorMessage?: string;
@@ -30,7 +30,7 @@ export function InternalCallTrace({
 	} = useContext(CallTraceContext);
 
 	return calls.map((call, index) => {
-		const callIdentifier = `${parentId}-${index}`;
+		const callIdentifier = `${contractCallId}-fn-call-${call.data.fp}`;
 
 		let code: string | undefined = undefined;
 
@@ -59,14 +59,17 @@ export function InternalCallTrace({
 					>
 						<div
 							className={`w-5 h-5 p-1 mr-1  rounded-sm  ${
-								call.nestedCalls.length > 0 ? 'cursor-pointer hover:bg-neutral-200' : ''
+								call.nestedCalls.length > 0 || call.data.isPanicResult
+									? 'cursor-pointer hover:bg-neutral-200'
+									: ''
 							}`}
 							onClick={(event) => {
 								event.stopPropagation();
-								call.nestedCalls.length > 0 && toggleInternalFnCallCollapse(callIdentifier);
+								(call.nestedCalls.length > 0 || call.data.isPanicResult) &&
+									toggleInternalFnCallCollapse(callIdentifier);
 							}}
 						>
-							{call.nestedCalls.length > 0 ? (
+							{call.nestedCalls.length > 0 || call.data.isPanicResult ? (
 								notCollapsedInternalFnCalls[callIdentifier] !== true ? (
 									<ChevronRightIcon />
 								) : (
@@ -97,7 +100,7 @@ export function InternalCallTrace({
 					<InternalCallTrace
 						calls={call.nestedCalls}
 						nestingLevel={nestingLevel + 1}
-						parentId={callIdentifier}
+						contractCallId={contractCallId}
 						executionFailed={executionFailed}
 						errorMessage={errorMessage}
 						classHash={classHash}

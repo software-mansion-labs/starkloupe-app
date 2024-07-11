@@ -1,7 +1,7 @@
 import { useContext, useState } from 'react';
 import { ExecutionResultReverted, SimulationResult } from '@/lib/simulation';
 import { CallTraceContext, CallTraceContextProvider, TabId } from '@/lib/context/call-trace';
-import { ContractCallTrace } from './entries';
+import { ContractCallTrace } from './contract-call-trace';
 import { EventsList } from './event-entries';
 import { Debugger } from '@/components/debugger';
 import { DebuggerContextProvider } from '@/lib/context/debugger-context-provider';

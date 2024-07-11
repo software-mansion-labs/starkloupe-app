@@ -3,7 +3,9 @@ import {
 	CallTrace,
 	InternalFnCallTrace,
 	SimulationDebuggerData,
-	SimulationResult
+	SimulationResult,
+	getContractCallId,
+	getInternalFunctionCallId
 } from '@/lib/simulation';
 
 interface StringBooleanDict {
@@ -96,17 +98,17 @@ export const CallTraceContextProvider: React.FC<
 	);
 };
 
-function findCallPathWithError(calls: CallTrace[], parentId?: string): string[] | null {
+function findCallPathWithError(calls: CallTrace[], parentContractCallId?: string): string[] | null {
 	for (let i = 0; i < calls.length; i++) {
 		const call = calls[i];
-		const callIdentifier = parentId ? `${parentId}-${i}` : i.toString();
+		const contractCallId = getContractCallId({ parentContractCallId, contractCallIndex: i });
 		if (call.additionalInfo.errorMessage) {
 			if (call.internalFnCallTrace) {
-				return findInternalFnCallPathWithError([call.internalFnCallTrace], callIdentifier, []);
+				return findInternalFnCallPathWithError([call.internalFnCallTrace], contractCallId, []);
 			}
 			break;
 		} else {
-			const internalFnCallsIdTrace = findCallPathWithError(call.nestedCalls, callIdentifier);
+			const internalFnCallsIdTrace = findCallPathWithError(call.nestedCalls, contractCallId);
 			if (internalFnCallsIdTrace) return internalFnCallsIdTrace;
 		}
 	}
@@ -115,20 +117,23 @@ function findCallPathWithError(calls: CallTrace[], parentId?: string): string[] 
 
 function findInternalFnCallPathWithError(
 	internalFnCalls: InternalFnCallTrace[],
-	parentId: string,
+	contractCallId: string,
 	internalFnCallsIdTrace: string[]
 ): string[] | null {
 	for (let i = 0; i < internalFnCalls.length; i++) {
 		const internalCall = internalFnCalls[i];
-		const callIdentifier = `${parentId}-${i}`;
+		const internalFnCallIdentifier = getInternalFunctionCallId({
+			contractCallId,
+			fp: internalCall.data.fp
+		});
 		if (internalCall.data.isPanicResult) {
-			return [...internalFnCallsIdTrace, callIdentifier];
+			return [...internalFnCallsIdTrace, internalFnCallIdentifier];
 		}
 		if (internalCall.nestedCalls.length > 0) {
 			const currentInternalFnCallsIdTrace = findInternalFnCallPathWithError(
 				internalCall.nestedCalls,
-				callIdentifier,
-				[...internalFnCallsIdTrace, callIdentifier]
+				contractCallId,
+				[...internalFnCallsIdTrace, internalFnCallIdentifier]
 			);
 			if (currentInternalFnCallsIdTrace) return currentInternalFnCallsIdTrace;
 		}

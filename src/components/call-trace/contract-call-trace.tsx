@@ -1,28 +1,29 @@
 import { useContext } from 'react';
 import React from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
-import { CallTrace, CodeLocation, DataType, CallType } from '@/lib/simulation';
+import { CallTrace, CodeLocation, DataType, CallType, getContractCallId } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
 import { CallTraceContext } from '@/lib/context/call-trace';
 import { InfoBox } from '@/components/ui/info-box';
-import { InternalCallTrace } from './internal-entries';
+import { InternalCallTrace } from './internal-call-trace';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { CalldataTable } from '../calldata-table';
 import { BugAntIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { CodeViewer } from '../code-viewer/code-viewer';
 import { DebuggerContext } from '@/lib/context/debugger-context-provider';
 import { getEntryPointNames } from '@/lib/utils/entrypoint-names';
+import { ErrorTraceLine } from './error-trace-line';
 
 export function ContractCallTrace({
 	calls,
 	nestingLevel,
 	executionFailed,
-	parentId
+	parentContractCallId
 }: {
 	calls: CallTrace[];
 	nestingLevel: number;
 	executionFailed: boolean;
-	parentId?: string;
+	parentContractCallId?: string;
 }) {
 	const {
 		expandedCalls,
@@ -35,7 +36,11 @@ export function ContractCallTrace({
 	const { debugCall } = useContext(DebuggerContext);
 
 	return calls.map((call, index) => {
-		const callIdentifier = parentId ? `${parentId}-${index}` : index.toString();
+		const contractCallId = getContractCallId({
+			parentContractCallId,
+			contractCallIndex: index
+		});
+
 		let callType = call.entryPoint.callType;
 		if (
 			callType === CallType.CALL &&
@@ -88,14 +93,17 @@ export function ContractCallTrace({
 			simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash];
 
 		let internalFnCallTrace = [call.internalFnCallTrace];
-		if (call.internalFnCallTrace && call.internalFnCallTrace.nestedCalls[1])
+		let isInternalCallPanic = false;
+		if (call.internalFnCallTrace && call.internalFnCallTrace.nestedCalls[1]) {
+			isInternalCallPanic = call.internalFnCallTrace.nestedCalls[1].data.isPanicResult;
 			internalFnCallTrace = call.internalFnCallTrace.nestedCalls[1].nestedCalls;
+		}
 
 		return (
-			<React.Fragment key={callIdentifier}>
+			<React.Fragment key={contractCallId}>
 				<TraceLine
-					isActive={expandedCalls[callIdentifier]}
-					onClick={() => toggleCallExpand(callIdentifier)}
+					isActive={expandedCalls[contractCallId]}
+					onClick={() => toggleCallExpand(contractCallId)}
 				>
 					{CallTypeChip(callType)}
 
@@ -129,11 +137,11 @@ export function ContractCallTrace({
 							}`}
 							onClick={(event) => {
 								event.stopPropagation();
-								hasNestedElements && toggleCallCollapse(callIdentifier);
+								hasNestedElements && toggleCallCollapse(contractCallId);
 							}}
 						>
 							{hasNestedElements ? (
-								collapsedCalls[callIdentifier] == true ? (
+								collapsedCalls[contractCallId] == true ? (
 									<ChevronRightIcon />
 								) : (
 									<ChevronDownIcon />
@@ -176,22 +184,31 @@ export function ContractCallTrace({
 						)}
 					</div>
 				</TraceLine>
-				{expandedCalls[callIdentifier] && <ContractCallDetails call={call} />}{' '}
-				{collapsedCalls[callIdentifier] != true && call.internalFnCallTrace && (
+				{expandedCalls[contractCallId] && <ContractCallDetails call={call} />}{' '}
+				{collapsedCalls[contractCallId] != true && call.internalFnCallTrace && (
 					<InternalCallTrace
 						calls={internalFnCallTrace}
 						nestingLevel={nestingLevel + 1}
-						parentId={callIdentifier + 'i'}
+						contractCallId={contractCallId}
 						executionFailed={executionFailed}
 						errorMessage={call.additionalInfo.errorMessage ?? undefined}
 						classHash={call.additionalInfo.classHash}
 					/>
 				)}
-				{collapsedCalls[callIdentifier] != true && (
+				{collapsedCalls[contractCallId] != true &&
+					isInternalCallPanic &&
+					call.additionalInfo.errorMessage && (
+						<ErrorTraceLine
+							executionFailed
+							errorMessage={call.additionalInfo.errorMessage}
+							nestingLevel={nestingLevel + 1}
+						/>
+					)}
+				{collapsedCalls[contractCallId] != true && (
 					<ContractCallTrace
 						calls={call.nestedCalls}
 						nestingLevel={nestingLevel + 1}
-						parentId={callIdentifier}
+						parentContractCallId={contractCallId}
 						executionFailed={executionFailed}
 					/>
 				)}
@@ -285,8 +302,6 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 			value: JSON.stringify(call.additionalInfo.functionArguments)
 		});
 	}
-
-	console.log(call.additionalInfo);
 
 	let code: string | undefined = undefined;
 

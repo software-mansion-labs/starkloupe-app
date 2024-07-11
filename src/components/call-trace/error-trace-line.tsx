@@ -13,9 +13,16 @@ export function ErrorTraceLine({
 	return (
 		<React.Fragment>
 			{
-				<TraceLine className={`border-y-2 border-transparent bg-red-200 hover:bg-red-200`}>
+				<TraceLine
+					className={`border-y-2 border-transparent bg-red-200 hover:bg-red-200`}
+					isUnclickable
+				>
 					{CallTypeChip('Error')}
 					{executionFailed && <div className="w-5"></div>}
+
+					{/* Debug button */}
+					<div className="w-5"></div>
+
 					<div
 						style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
 						className="flex flex-row items-center"

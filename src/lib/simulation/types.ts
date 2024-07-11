@@ -154,7 +154,17 @@ export interface InternalFnCallTrace {
 		cairoLocations: CodeLocation[];
 		arguments: InternalFnCallIO[];
 		results: InternalFnCallIO[];
-		isPanicResult?: boolean; // TODO: implement on server side
+		isPanicResult: boolean;
 	};
 	nestedCalls: InternalFnCallTrace[];
+}
+
+export interface TransactionSimulationResult {
+	simulationResult: SimulationResult;
+	chainId: string;
+	blockNumber: number;
+	nonce: number;
+	senderAddress: string;
+	calldata: string[];
+	transactionVersion: number;
 }

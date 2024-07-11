@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
 import { CallTrace } from '../simulation';
-import { TransactionSimulationResult } from '../transaction';
+import { TransactionSimulationResult } from '@/lib/simulation';
 export * from './fetch';
 
 export function cn(...inputs: ClassValue[]) {
