@@ -1,5 +1,10 @@
 import React, { useContext } from 'react';
-import { CodeLocation, InternalFnCallIO, InternalFnCallTrace } from '@/lib/simulation';
+import {
+	CodeLocation,
+	InternalFnCallIO,
+	InternalFnCallTrace,
+	getInternalFunctionCallId
+} from '@/lib/simulation';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { CallTraceContext } from '@/lib/context/call-trace';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
@@ -30,7 +35,7 @@ export function InternalCallTrace({
 	} = useContext(CallTraceContext);
 
 	return calls.map((call, index) => {
-		const callIdentifier = `${contractCallId}-fn-call-${call.data.fp}`;
+		const internalFunctionCallId = getInternalFunctionCallId({ contractCallId, fp: call.data.fp });
 
 		let code: string | undefined = undefined;
 
@@ -41,11 +46,11 @@ export function InternalCallTrace({
 		}
 
 		return (
-			<React.Fragment key={callIdentifier}>
+			<React.Fragment key={internalFunctionCallId}>
 				<TraceLine
-					isActive={expandedCalls[callIdentifier]}
+					isActive={expandedCalls[internalFunctionCallId]}
 					isUnclickable={!code}
-					onClick={() => code && toggleCallExpand(callIdentifier)}
+					onClick={() => code && toggleCallExpand(internalFunctionCallId)}
 				>
 					{CallTypeChip('Function')}
 					{executionFailed && <div className="w-5"></div>}
@@ -66,11 +71,11 @@ export function InternalCallTrace({
 							onClick={(event) => {
 								event.stopPropagation();
 								(call.nestedCalls.length > 0 || call.data.isPanicResult) &&
-									toggleInternalFnCallCollapse(callIdentifier);
+									toggleInternalFnCallCollapse(internalFunctionCallId);
 							}}
 						>
 							{call.nestedCalls.length > 0 || call.data.isPanicResult ? (
-								notCollapsedInternalFnCalls[callIdentifier] !== true ? (
+								notCollapsedInternalFnCalls[internalFunctionCallId] !== true ? (
 									<ChevronRightIcon />
 								) : (
 									<ChevronDownIcon />
@@ -86,7 +91,7 @@ export function InternalCallTrace({
 					</div>
 				</TraceLine>
 
-				{expandedCalls[callIdentifier] && (
+				{expandedCalls[internalFunctionCallId] && (
 					<div className="flex flex-col bg-sky-50 border-y border-blue-400">
 						{code && cairoLocation && (
 							<div className="h-80">
@@ -96,7 +101,7 @@ export function InternalCallTrace({
 					</div>
 				)}
 
-				{notCollapsedInternalFnCalls[callIdentifier] === true ? (
+				{notCollapsedInternalFnCalls[internalFunctionCallId] === true ? (
 					<InternalCallTrace
 						calls={call.nestedCalls}
 						nestingLevel={nestingLevel + 1}
@@ -106,7 +111,7 @@ export function InternalCallTrace({
 						classHash={classHash}
 					/>
 				) : null}
-				{notCollapsedInternalFnCalls[callIdentifier] === true &&
+				{notCollapsedInternalFnCalls[internalFunctionCallId] === true &&
 					call.data.isPanicResult &&
 					errorMessage && (
 						<ErrorTraceLine
