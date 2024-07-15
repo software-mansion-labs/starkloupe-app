@@ -4,11 +4,12 @@ import { CallDebuggerData, CallTrace, ClassDebuggerData, SimulationResult } from
 interface DebuggerInfo {
 	callDebuggerData: CallDebuggerData;
 	classDebuggerData: ClassDebuggerData;
+	initialStepIndex: number;
 }
 
 interface DebuggerContextProps {
 	debuggerInfo?: DebuggerInfo;
-	debugCall: (call: CallTrace) => void;
+	debugCall: (call: CallTrace, initialStepIndex: number) => void;
 }
 
 export const DebuggerContext = createContext<DebuggerContextProps>({
@@ -21,12 +22,15 @@ export const DebuggerContextProvider: React.FC<
 > = ({ children, simulationResult }) => {
 	const [debuggerInfo, setDebuggerInfo] = useState<DebuggerInfo | undefined>();
 
-	const debugCall = (call: CallTrace) => {
+	const debugCall = (call: CallTrace, initialStepIndex: number) => {
 		if (call.additionalInfo.callDebuggerData) {
 			setDebuggerInfo({
 				callDebuggerData: call.additionalInfo.callDebuggerData,
 				classDebuggerData:
-					simulationResult.simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash]
+					simulationResult.simulationDebuggerData.classesDebuggerData[
+						call.additionalInfo.classHash
+					],
+				initialStepIndex
 			});
 		}
 	};

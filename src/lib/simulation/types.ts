@@ -155,6 +155,7 @@ export interface InternalFnCallTrace {
 		arguments: InternalFnCallIO[];
 		results: InternalFnCallIO[];
 		isPanicResult: boolean;
+		debuggerExecutionTraceStepIndex: number;
 	};
 	nestedCalls: InternalFnCallTrace[];
 }

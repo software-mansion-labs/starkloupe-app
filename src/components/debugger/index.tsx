@@ -14,12 +14,13 @@ export function Debugger() {
 	const { debuggerInfo, debugCall } = useContext(DebuggerContext);
 
 	if (debuggerInfo) {
-		const { callDebuggerData, classDebuggerData } = debuggerInfo;
+		const { callDebuggerData, classDebuggerData, initialStepIndex } = debuggerInfo;
 		if (callDebuggerData.executionTrace && callDebuggerData.executionTrace.length > 0) {
 			return (
 				<DebuggerNotEmpty
 					callDebuggerData={callDebuggerData}
 					classDebuggerData={classDebuggerData}
+					initialStepIndex={initialStepIndex}
 				/>
 			);
 		}
@@ -34,14 +35,16 @@ export function Debugger() {
 
 function DebuggerNotEmpty({
 	callDebuggerData,
-	classDebuggerData
+	classDebuggerData,
+	initialStepIndex
 }: {
 	callDebuggerData: CallDebuggerData;
 	classDebuggerData: ClassDebuggerData;
+	initialStepIndex: number;
 }) {
-	const [stepIndex, setStepIndex] = useState<number>(0);
+	const [stepIndex, setStepIndex] = useState<number>(initialStepIndex);
 	const firstStepInfo = findStep({
-		stepIndex: 0,
+		stepIndex: initialStepIndex,
 		callDebuggerData,
 		classDebuggerData,
 		direction: 'next'

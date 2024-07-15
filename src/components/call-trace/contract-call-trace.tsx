@@ -84,8 +84,8 @@ export function ContractCallTrace({
 		}
 
 		const isDebuggable =
-			call.additionalInfo.callDebuggerData &&
-			simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash];
+			!!call.additionalInfo.callDebuggerData &&
+			!!simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash];
 
 		let internalFnCallTrace = [call.internalFnCallTrace];
 		let isInternalCallPanic = false;
@@ -112,7 +112,7 @@ export function ContractCallTrace({
 						onClick={(event) => {
 							event.stopPropagation();
 							if (!isDebuggable) return;
-							debugCall(call);
+							debugCall(call, 0);
 							setActiveTab('debugger');
 						}}
 						className={`w-5 h-5 p-0.5 rounded-sm ${
@@ -188,6 +188,8 @@ export function ContractCallTrace({
 						executionFailed={executionFailed}
 						errorMessage={call.additionalInfo.errorMessage ?? undefined}
 						classHash={call.additionalInfo.classHash}
+						contractCall={call}
+						isDebuggable={isDebuggable}
 					/>
 				)}
 				{collapsedCalls[contractCallId] != true &&

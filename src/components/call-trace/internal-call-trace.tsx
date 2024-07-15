@@ -1,5 +1,6 @@
 import React, { useContext } from 'react';
 import {
+	CallTrace,
 	CodeLocation,
 	InternalFnCallIO,
 	InternalFnCallTrace,
@@ -10,6 +11,8 @@ import { CallTraceContext } from '@/lib/context/call-trace';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { ErrorTraceLine } from './error-trace-line';
 import { CodeViewer } from '../code-viewer/code-viewer';
+import { DebuggerContext } from '@/lib/context/debugger-context-provider';
+import { BugAntIcon } from '@heroicons/react/24/outline';
 
 export function InternalCallTrace({
 	calls,
@@ -17,7 +20,9 @@ export function InternalCallTrace({
 	contractCallId,
 	executionFailed,
 	classHash,
-	errorMessage
+	errorMessage,
+	contractCall,
+	isDebuggable
 }: {
 	calls: InternalFnCallTrace[];
 	nestingLevel: number;
@@ -25,14 +30,18 @@ export function InternalCallTrace({
 	executionFailed: boolean;
 	classHash: string;
 	errorMessage?: string;
+	contractCall: CallTrace;
+	isDebuggable: boolean;
 }) {
 	const {
 		notCollapsedInternalFnCalls,
 		toggleInternalFnCallCollapse,
 		simulationDebuggerData,
 		expandedCalls,
-		toggleCallExpand
+		toggleCallExpand,
+		setActiveTab
 	} = useContext(CallTraceContext);
+	const { debugCall } = useContext(DebuggerContext);
 
 	return calls.map((call, index) => {
 		const internalFunctionCallId = getInternalFunctionCallId({ contractCallId, fp: call.data.fp });
@@ -55,8 +64,19 @@ export function InternalCallTrace({
 					{CallTypeChip('Function')}
 					{executionFailed && <div className="w-5"></div>}
 
-					{/* TODO: add debug button */}
-					<div className="w-5"></div>
+					<div
+						onClick={(event) => {
+							event.stopPropagation();
+							if (!isDebuggable) return;
+							debugCall(contractCall, call.data.debuggerExecutionTraceStepIndex);
+							setActiveTab('debugger');
+						}}
+						className={`w-5 h-5 p-0.5 rounded-sm ${
+							isDebuggable ? 'cursor-pointer hover:bg-neutral-200' : ''
+						}`}
+					>
+						{isDebuggable && <BugAntIcon className="w-4 h-4 text-green-700" />}
+					</div>
 
 					<div
 						style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
@@ -109,6 +129,8 @@ export function InternalCallTrace({
 						executionFailed={executionFailed}
 						errorMessage={errorMessage}
 						classHash={classHash}
+						contractCall={contractCall}
+						isDebuggable={isDebuggable}
 					/>
 				) : null}
 				{notCollapsedInternalFnCalls[internalFunctionCallId] === true &&
