@@ -57,7 +57,7 @@ export interface DecodedItem {
 export type CalldataDecoded = DecodedItem[];
 
 export interface DebuggerExecutionTraceEntry {
-	sierraIndexes: number[];
+	sierraIndex: number;
 	results: InternalFnCallIO[];
 	arguments: InternalFnCallIO[];
 }
@@ -151,7 +151,7 @@ export interface InternalFnCallTrace {
 	data: {
 		fnName: string | null;
 		fp: number;
-		cairoLocations: CodeLocation[];
+		cairoLocation: CodeLocation | null;
 		arguments: InternalFnCallIO[];
 		results: InternalFnCallIO[];
 		isPanicResult: boolean;

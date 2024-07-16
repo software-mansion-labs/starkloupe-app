@@ -48,7 +48,7 @@ export function InternalCallTrace({
 
 		let code: string | undefined = undefined;
 
-		const cairoLocation: CodeLocation | undefined = call.data.cairoLocations?.[0];
+		const cairoLocation: CodeLocation | null = call.data.cairoLocation;
 		if (cairoLocation) {
 			code =
 				simulationDebuggerData.classesDebuggerData[classHash]?.sourceCode[cairoLocation.filePath];

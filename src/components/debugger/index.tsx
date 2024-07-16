@@ -43,12 +43,7 @@ function DebuggerNotEmpty({
 	initialStepIndex: number;
 }) {
 	const [stepIndex, setStepIndex] = useState<number>(initialStepIndex);
-	const firstStepInfo = findStep({
-		stepIndex: initialStepIndex,
-		callDebuggerData,
-		classDebuggerData,
-		direction: 'next'
-	});
+	const firstStepInfo = getStep(initialStepIndex, callDebuggerData, classDebuggerData);
 	const [codeValue, setCodeValue] = useState<string>(firstStepInfo!.codeValue);
 	const [codeLocation, setCodeLocation] = useState<CodeLocation>(firstStepInfo!.codeLocation);
 
@@ -56,15 +51,9 @@ function DebuggerNotEmpty({
 
 	function nextStep() {
 		if (stepIndex >= totalSteps - 1) return;
-		const nextStepInfo = findStep({
-			stepIndex: stepIndex + 1,
-			currentLocation: codeLocation,
-			callDebuggerData,
-			classDebuggerData,
-			direction: 'next'
-		});
+		const nextStepInfo = getStep(stepIndex + 1, callDebuggerData, classDebuggerData);
 		if (nextStepInfo) {
-			setStepIndex(nextStepInfo.stepIndex);
+			setStepIndex(stepIndex + 1);
 			setCodeValue(nextStepInfo.codeValue);
 			setCodeLocation(nextStepInfo.codeLocation);
 		} else {
@@ -74,15 +63,9 @@ function DebuggerNotEmpty({
 
 	function previousStep() {
 		if (stepIndex <= 0) return;
-		const previousStepInfo = findStep({
-			stepIndex: stepIndex - 1,
-			currentLocation: codeLocation,
-			callDebuggerData,
-			classDebuggerData,
-			direction: 'previous'
-		});
+		const previousStepInfo = getStep(stepIndex - 1, callDebuggerData, classDebuggerData);
 		if (previousStepInfo) {
-			setStepIndex(previousStepInfo.stepIndex);
+			setStepIndex(stepIndex - 1);
 			setCodeValue(previousStepInfo.codeValue);
 			setCodeLocation(previousStepInfo.codeLocation);
 		} else {
@@ -167,45 +150,18 @@ function areEnqualLocations(location1: CodeLocation, location2: CodeLocation) {
 	);
 }
 
-function findStep({
-	stepIndex,
-	currentLocation,
-	callDebuggerData,
-	classDebuggerData,
-	direction
-}: {
-	stepIndex: number;
-	callDebuggerData: CallDebuggerData;
-	classDebuggerData: ClassDebuggerData;
-	currentLocation?: CodeLocation;
-	direction: 'next' | 'previous';
-}): { codeValue: string; codeLocation: CodeLocation; stepIndex: number } | null {
-	if (stepIndex >= callDebuggerData.executionTrace.length || stepIndex < 0) return null;
-	const sierraIndexes = callDebuggerData.executionTrace[stepIndex].sierraIndexes;
-	for (const sierraIndex of sierraIndexes) {
-		const locations = classDebuggerData.sierraStatementsToCairoInfo[sierraIndex]?.cairoLocations;
-		const location = locations?.[0];
-		if (location) {
-			if (currentLocation && areEnqualLocations(location, currentLocation)) {
-				return findStep({
-					stepIndex: direction === 'next' ? stepIndex + 1 : stepIndex - 1,
-					callDebuggerData,
-					classDebuggerData,
-					currentLocation,
-					direction
-				});
-			}
-			const codeValue = classDebuggerData.sourceCode[location.filePath];
-			return { codeLocation: location, codeValue, stepIndex };
-		}
-	}
-	return findStep({
-		stepIndex: direction === 'next' ? stepIndex + 1 : stepIndex - 1,
-		currentLocation,
-		callDebuggerData,
-		classDebuggerData,
-		direction
-	});
+function getStep(
+	stepIndex: number,
+	callDebuggerData: CallDebuggerData,
+	classDebuggerData: ClassDebuggerData
+): { codeValue: string; codeLocation: CodeLocation } | null {
+	const step = callDebuggerData.executionTrace[stepIndex];
+	const sierraIndex = step.sierraIndex;
+	const locations = classDebuggerData.sierraStatementsToCairoInfo[sierraIndex]?.cairoLocations;
+	const location = locations?.[0];
+	const codeValue = location ? classDebuggerData.sourceCode[location.filePath] : undefined;
+	if (!codeValue || !location) return null;
+	return { codeValue, codeLocation: location };
 }
 
 function FilesExplorer({
