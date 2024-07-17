@@ -302,7 +302,7 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 
 	let code: string | undefined = undefined;
 
-	const cairoLocation: CodeLocation | undefined = call.additionalInfo.cairoLocations?.[0];
+	const cairoLocation: CodeLocation | undefined = call.additionalInfo.cairoLocation;
 	if (cairoLocation) {
 		code =
 			simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash]?.sourceCode[

@@ -72,7 +72,7 @@ export function addCairoLocationsToContractCalls(calls: CallTrace[]) {
 			if (!wrapper) continue;
 			const entryPointFunction = wrapper.nestedCalls[1];
 			if (!entryPointFunction) continue;
-			call.additionalInfo.cairoLocations = entryPointFunction.data.cairoLocations;
+			call.additionalInfo.cairoLocation = entryPointFunction.data.cairoLocation ?? undefined;
 		}
 		addCairoLocationsToContractCalls(call.nestedCalls);
 	}
