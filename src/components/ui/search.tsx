@@ -88,7 +88,7 @@ export function Search({
 					<DropdownMenuContent className="w-56">
 						<DropdownMenuRadioGroup value={chainId} onValueChange={changeChainId}>
 							<DropdownMenuRadioItem value="SN_MAIN">Mainnet</DropdownMenuRadioItem>
-							<DropdownMenuRadioItem value="SN_SEPOLIA">Testnet</DropdownMenuRadioItem>
+							<DropdownMenuRadioItem value="SN_SEPOLIA">Sepolia</DropdownMenuRadioItem>
 						</DropdownMenuRadioGroup>
 					</DropdownMenuContent>
 				</DropdownMenu>

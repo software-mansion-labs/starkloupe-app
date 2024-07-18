@@ -62,7 +62,7 @@ export function useChain(): { chainId: ChainId; chainName: string } {
 	const path = usePathname();
 	const isSepolia = path.includes('SN_SEPOLIA');
 	const chainId = isSepolia ? 'SN_SEPOLIA' : 'SN_MAIN';
-	return { chainId, chainName: isSepolia ? 'Testnet' : 'Mainnet' };
+	return { chainId, chainName: isSepolia ? 'Sepolia' : 'Mainnet' };
 }
 
 export function addCairoLocationsToContractCalls(calls: CallTrace[]) {
