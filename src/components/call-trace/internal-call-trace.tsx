@@ -13,6 +13,7 @@ import { ErrorTraceLine } from './error-trace-line';
 import { CodeViewer } from '../code-viewer/code-viewer';
 import { DebuggerContext } from '@/lib/context/debugger-context-provider';
 import { BugAntIcon } from '@heroicons/react/24/outline';
+import { DebugButton } from './debug-btn';
 
 export function InternalCallTrace({
 	calls,
@@ -64,19 +65,13 @@ export function InternalCallTrace({
 					{CallTypeChip('Function')}
 					{executionFailed && <div className="w-5"></div>}
 
-					<div
-						onClick={(event) => {
-							event.stopPropagation();
-							if (!isDebuggable) return;
+					<DebugButton
+						onDebugClick={() => {
 							debugCall(contractCall, call.data.debuggerExecutionTraceStepIndex);
 							setActiveTab('debugger');
 						}}
-						className={`w-5 h-5 p-0.5 rounded-sm ${
-							isDebuggable ? 'cursor-pointer hover:bg-neutral-200' : ''
-						}`}
-					>
-						{isDebuggable && <BugAntIcon className="w-4 h-4 text-green-700" />}
-					</div>
+						isDebuggable={isDebuggable}
+					/>
 
 					<div
 						style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}

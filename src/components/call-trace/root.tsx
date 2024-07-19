@@ -69,7 +69,7 @@ function CallTraceRootContent({ simulationResult }: { simulationResult: Simulati
 							<EventsList events={simulationResult.eventsTrace} />
 						</div>
 					)}
-					{activeTab === 'debugger' && <Debugger />}
+					{activeTab === 'debugger' && <Debugger calls={[simulationResult.callTrace]} />}
 				</div>
 			</div>
 		</div>

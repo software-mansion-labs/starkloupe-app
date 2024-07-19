@@ -1,8 +1,14 @@
 import { DebuggerContext } from '@/lib/context/debugger-context-provider';
-import { useContext, useState } from 'react';
+import { useContext, useState, useEffect, useCallback } from 'react';
 import { CodeViewer } from '../code-viewer/code-viewer';
 import { CallDebuggerData, ClassDebuggerData, CodeLocation } from '@/lib/simulation';
-import { ArrowUturnLeftIcon, ArrowUturnRightIcon } from '@heroicons/react/24/outline';
+import {
+	ArrowUturnLeftIcon,
+	ArrowUturnRightIcon,
+	ExclamationTriangleIcon
+} from '@heroicons/react/24/outline';
+import { CallTrace } from '@/lib/simulation';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 interface StepInfo {
 	codeValue: string;
@@ -10,8 +16,27 @@ interface StepInfo {
 	nextStepNumber: number;
 }
 
-export function Debugger() {
+export function Debugger({ calls }: { calls: CallTrace[] }) {
 	const { debuggerInfo, debugCall } = useContext(DebuggerContext);
+	const [contractAddress, setContractAddress] = useState<string | undefined>();
+
+	const hasCall = calls.length > 0;
+
+	const handleNestedDebugCalls = useCallback(
+		(call: CallTrace, initialStepIndex: number) => {
+			if (call.nestedCalls.length > 0 && call.nestedCalls[0].additionalInfo.callDebuggerData) {
+				debugCall(call.nestedCalls[0], initialStepIndex);
+			}
+			setContractAddress(call.nestedCalls[0].entryPoint.storageAddress);
+		},
+		[debugCall]
+	);
+
+	useEffect(() => {
+		if (hasCall && debuggerInfo === undefined) {
+			handleNestedDebugCalls(calls[0], 0);
+		}
+	}, [hasCall, calls, debuggerInfo, handleNestedDebugCalls]);
 
 	if (debuggerInfo) {
 		const { callDebuggerData, classDebuggerData, initialStepIndex } = debuggerInfo;
@@ -27,9 +52,29 @@ export function Debugger() {
 	}
 
 	return (
-		<div className="px-4 mt-5">
-			Please select a contract call to debug in the &quot;Call Trace&quot; tab.
-		</div>
+		<Alert className="m-4 w-fit">
+			<ExclamationTriangleIcon className="h-5 w-5" />
+			<AlertTitle>No source code for this contract</AlertTitle>
+			<AlertDescription>
+				<p className="mt-2 mb-1">
+					Contract Address: <span className="font-mono">{contractAddress}</span>
+				</p>
+				<p>
+					<span>Follow </span>
+					<a
+						href={
+							'https://github.com/foundry-rs/starknet-foundry/blob/master/docs/src/starknet/verify.md'
+						}
+						className="text-blue-500 cursor-pointer"
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						this guide
+					</a>
+					<span> to verify the source code and run the debugger.</span>
+				</p>
+			</AlertDescription>
+		</Alert>
 	);
 }
 

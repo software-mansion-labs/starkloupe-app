@@ -12,6 +12,9 @@ import { BugAntIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline
 import { CodeViewer } from '../code-viewer/code-viewer';
 import { DebuggerContext } from '@/lib/context/debugger-context-provider';
 import { ErrorTraceLine } from './error-trace-line';
+import { DebugButton } from '@/components/call-trace/debug-btn';
+import { ErrorTooltip } from '@/components/error-tooltip';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 export function ContractCallTrace({
 	calls,
@@ -62,9 +65,9 @@ export function ContractCallTrace({
 		let errorColumn = <></>;
 		if (executionFailed) {
 			errorColumn = (
-				<div className="w-5">
+				<div className="w-5 mr-0.5">
 					{!!call.additionalInfo.errorMessage && (
-						<ExclamationTriangleIcon className="w-5 h-5 text-yellow-600" />
+						<ErrorTooltip errorMessage={call.additionalInfo.errorMessage} />
 					)}
 				</div>
 			);
@@ -108,19 +111,13 @@ export function ContractCallTrace({
 					 */}
 					{errorColumn}
 
-					<div
-						onClick={(event) => {
-							event.stopPropagation();
-							if (!isDebuggable) return;
+					<DebugButton
+						onDebugClick={() => {
 							debugCall(call, 0);
 							setActiveTab('debugger');
 						}}
-						className={`w-5 h-5 p-0.5 rounded-sm ${
-							isDebuggable ? 'cursor-pointer hover:bg-neutral-200' : ''
-						}`}
-					>
-						{isDebuggable && <BugAntIcon className="w-4 h-4 text-green-700" />}
-					</div>
+						isDebuggable={isDebuggable}
+					/>
 
 					<div
 						style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
@@ -312,6 +309,24 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 
 	return (
 		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4">
+			{!(code && cairoLocation) && (
+				<Alert className="my-2 w-fit">
+					<ExclamationTriangleIcon className="h-5 w-5" />
+					<AlertTitle>No source code for this contract</AlertTitle>
+					<AlertDescription>
+						<a
+							href={
+								'https://github.com/foundry-rs/starknet-foundry/blob/master/docs/src/starknet/verify.md'
+							}
+							className="text-blue-500 cursor-pointer"
+							target="_blank"
+						>
+							Verify the contract source code
+						</a>{' '}
+						to get internal call traces and enable the step-by-step debugger.
+					</AlertDescription>
+				</Alert>
+			)}
 			<InfoBox details={details} />
 			{call.additionalInfo?.calldataDecoded && (
 				<CalldataTable calldata={call.additionalInfo.calldataDecoded} type={DataType.INPUT} />
