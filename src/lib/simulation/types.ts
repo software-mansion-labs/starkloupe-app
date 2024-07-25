@@ -56,20 +56,30 @@ export interface DecodedItem {
 
 export type CalldataDecoded = DecodedItem[];
 
-export interface DebuggerExecutionTraceEntry {
+export interface DebuggerExecutionTraceEntryWithContractCall {
+	contractCall: { contractAddress: string; functionSelector: string };
+	contractCallId: string;
+}
+
+export interface DebuggerExecutionTraceEntryWithLocation {
 	sierraIndex: number;
 	results: InternalFnCallIO[];
 	arguments: InternalFnCallIO[];
 }
+
+export type DebuggerExecutionTraceEntry =
+	| { withContractCall: DebuggerExecutionTraceEntryWithContractCall; withLocation?: undefined }
+	| { withLocation: DebuggerExecutionTraceEntryWithLocation; withContractCall?: undefined };
 
 export interface CallDebuggerData {
 	executionTrace: DebuggerExecutionTraceEntry[];
 }
 
 export interface CallTrace {
+	contractCallId: string;
 	entryPoint: EntryPoint;
 	result: CallResult;
-	internalFnCallTrace: InternalFnCallTrace;
+	fnCalls: InternalFnCallTrace[];
 	nestedCalls: CallTrace[];
 	additionalInfo: {
 		contractName: string | null;
@@ -88,6 +98,7 @@ export interface CallTrace {
 		callDebuggerData?: CallDebuggerData;
 		classHash: string; // 66 symbols format
 	};
+	nestedCallsIds: string[]; // Added on client side, list of function call id and contract call id
 }
 
 export interface EventTrace {
@@ -124,7 +135,14 @@ export interface SimulationDebuggerData {
 	};
 }
 
+export type CallsMap = Map<
+	string,
+	| { contractCall: CallTrace; fnCall?: undefined }
+	| { fnCall: InternalFnCallTrace; contractCall?: undefined }
+>;
+
 export interface SimulationResult {
+	callsMap: CallsMap; // Added on client side, contains all function calls and contract calls
 	callTrace: CallTrace;
 	eventsTrace: EventTrace[];
 	executionResult: ExecutionResultSucceeded | ExecutionResultReverted;
@@ -149,6 +167,7 @@ export interface InternalFnCallIO {
 
 export interface InternalFnCallTrace {
 	data: {
+		id: string; // Function call id
 		fnName: string | null;
 		fp: number;
 		cairoLocation: CodeLocation | null;
@@ -156,8 +175,10 @@ export interface InternalFnCallTrace {
 		results: InternalFnCallIO[];
 		isPanicResult: boolean;
 		debuggerExecutionTraceStepIndex: number;
+		nestedCallsIds: string[]; // List of function call id and contract call id
 	};
 	nestedCalls: InternalFnCallTrace[];
+	isHidden?: boolean; // Added on client side to hide duplicated function calls
 }
 
 export interface TransactionSimulationResult {

@@ -58,7 +58,7 @@ function CallTraceRootContent({ simulationResult }: { simulationResult: Simulati
 					{activeTab === 'call-trace' && (
 						<div className="mt-5">
 							<ContractCallTrace
-								calls={[simulationResult.callTrace]}
+								call={simulationResult.callTrace}
 								nestingLevel={0}
 								executionFailed={executionFailed}
 							/>

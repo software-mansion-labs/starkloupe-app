@@ -17,5 +17,5 @@ export function getInternalFunctionCallId({
 	contractCallId: string;
 	fp: number;
 }) {
-	return `${contractCallId}-internal-call-${fp}`;
+	return `${contractCallId}-fp-${fp}`;
 }

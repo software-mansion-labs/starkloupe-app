@@ -18,7 +18,7 @@ export function ErrorTraceLine({
 					isUnclickable
 				>
 					{CallTypeChip('Error')}
-					{executionFailed && <div className="w-5"></div>}
+					{executionFailed && <div className="w-5 mr-0.5"></div>}
 
 					{/* Debug button */}
 					<div className="w-5"></div>

@@ -1,7 +1,13 @@
 import { DebuggerContext } from '@/lib/context/debugger-context-provider';
 import { useContext, useState, useEffect, useCallback } from 'react';
 import { CodeViewer } from '../code-viewer/code-viewer';
-import { CallDebuggerData, ClassDebuggerData, CodeLocation } from '@/lib/simulation';
+import {
+	CallDebuggerData,
+	ClassDebuggerData,
+	CodeLocation,
+	DebuggerExecutionTraceEntryWithContractCall,
+	DebuggerExecutionTraceEntryWithLocation
+} from '@/lib/simulation';
 import {
 	ArrowUturnLeftIcon,
 	ArrowUturnRightIcon,
@@ -9,12 +15,6 @@ import {
 } from '@heroicons/react/24/outline';
 import { CallTrace } from '@/lib/simulation';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-
-interface StepInfo {
-	codeValue: string;
-	codeLocation: CodeLocation;
-	nextStepNumber: number;
-}
 
 export function Debugger({ calls }: { calls: CallTrace[] }) {
 	const { debuggerInfo, debugCall } = useContext(DebuggerContext);
@@ -88,9 +88,12 @@ function DebuggerNotEmpty({
 	initialStepIndex: number;
 }) {
 	const [stepIndex, setStepIndex] = useState<number>(initialStepIndex);
-	const firstStepInfo = getStep(initialStepIndex, callDebuggerData, classDebuggerData);
-	const [codeValue, setCodeValue] = useState<string>(firstStepInfo!.codeValue);
-	const [codeLocation, setCodeLocation] = useState<CodeLocation>(firstStepInfo!.codeLocation);
+	// const firstStepInfo = getStep(initialStepIndex, callDebuggerData, classDebuggerData);
+	// const [codeValue, setCodeValue] = useState<string>(firstStepInfo!.codeValue);
+	// const [codeLocation, setCodeLocation] = useState<CodeLocation>(firstStepInfo!.codeLocation);
+	const [stepInfo, setStepInfo] = useState<Step>(
+		getStep(initialStepIndex, callDebuggerData, classDebuggerData)!
+	);
 
 	const totalSteps = callDebuggerData.executionTrace.length;
 
@@ -99,8 +102,9 @@ function DebuggerNotEmpty({
 		const nextStepInfo = getStep(stepIndex + 1, callDebuggerData, classDebuggerData);
 		if (nextStepInfo) {
 			setStepIndex(stepIndex + 1);
-			setCodeValue(nextStepInfo.codeValue);
-			setCodeLocation(nextStepInfo.codeLocation);
+			setStepInfo(nextStepInfo);
+			// setCodeValue(nextStepInfo.codeValue);
+			// setCodeLocation(nextStepInfo.codeLocation);
 		} else {
 			setStepIndex(totalSteps - 1);
 		}
@@ -111,8 +115,9 @@ function DebuggerNotEmpty({
 		const previousStepInfo = getStep(stepIndex - 1, callDebuggerData, classDebuggerData);
 		if (previousStepInfo) {
 			setStepIndex(stepIndex - 1);
-			setCodeValue(previousStepInfo.codeValue);
-			setCodeLocation(previousStepInfo.codeLocation);
+			setStepInfo(previousStepInfo);
+			// setCodeValue(previousStepInfo.codeValue);
+			// setCodeLocation(previousStepInfo.codeLocation);
 		} else {
 			setStepIndex(0);
 		}
@@ -122,7 +127,7 @@ function DebuggerNotEmpty({
 		<div className="w-full h-[500px] flex flex-row">
 			<FilesExplorer
 				classSourceCode={classDebuggerData.sourceCode}
-				activeFile={codeLocation.filePath}
+				activeFile={stepInfo.withLocation?.codeLocation.filePath}
 			/>
 			<div className="flex flex-col flex-grow">
 				<Controls
@@ -132,13 +137,28 @@ function DebuggerNotEmpty({
 					totalSteps={totalSteps}
 				/>
 				<div className="flex-grow">
-					<CodeViewer
-						code={codeValue}
-						codeLocation={codeLocation}
-						highlightClass="bg-yellow-300 bg-opacity-40"
-						args={callDebuggerData.executionTrace[stepIndex].arguments}
-						results={callDebuggerData.executionTrace[stepIndex].results}
-					/>
+					{stepInfo.withLocation ? (
+						<CodeViewer
+							code={stepInfo.withLocation.codeValue}
+							codeLocation={stepInfo.withLocation.codeLocation}
+							highlightClass="bg-yellow-300 bg-opacity-40"
+							args={stepInfo.withLocation.arguments}
+							results={stepInfo.withLocation.results}
+						/>
+					) : (
+						<div className="p-6 font-mono">
+							Contract call <br />
+							<br />
+							<div className="flex flex-row">
+								<div className="w-36">Contract address:</div>{' '}
+								<div>{stepInfo.withContractCall.contractCall.contractAddress}</div>
+							</div>
+							<div className="flex flex-row">
+								<div className="w-36">Entry point:</div>{' '}
+								<div>{stepInfo.withContractCall.contractCall.functionSelector}</div>
+							</div>
+						</div>
+					)}
 				</div>
 			</div>
 		</div>
@@ -195,18 +215,35 @@ function areEnqualLocations(location1: CodeLocation, location2: CodeLocation) {
 	);
 }
 
+interface StepWithLocation extends DebuggerExecutionTraceEntryWithLocation {
+	codeValue: string;
+	codeLocation: CodeLocation;
+}
+
+type Step =
+	| { withLocation: StepWithLocation; withContractCall?: undefined }
+	| { withLocation?: undefined; withContractCall: DebuggerExecutionTraceEntryWithContractCall };
+
 function getStep(
 	stepIndex: number,
 	callDebuggerData: CallDebuggerData,
 	classDebuggerData: ClassDebuggerData
-): { codeValue: string; codeLocation: CodeLocation } | null {
+): Step | null {
+	console.log('getStep', stepIndex, callDebuggerData, classDebuggerData);
 	const step = callDebuggerData.executionTrace[stepIndex];
-	const sierraIndex = step.sierraIndex;
-	const locations = classDebuggerData.sierraStatementsToCairoInfo[sierraIndex]?.cairoLocations;
-	const location = locations?.[0];
-	const codeValue = location ? classDebuggerData.sourceCode[location.filePath] : undefined;
-	if (!codeValue || !location) return null;
-	return { codeValue, codeLocation: location };
+	if (step.withContractCall) {
+		return step;
+	} else if (step.withLocation) {
+		const locations =
+			classDebuggerData.sierraStatementsToCairoInfo[step.withLocation.sierraIndex]?.cairoLocations;
+		const location = locations?.[0];
+		const codeValue = location ? classDebuggerData.sourceCode[location.filePath] : undefined;
+		if (!codeValue || !location) return null;
+		return { withLocation: { codeValue, codeLocation: location, ...step.withLocation } };
+	} else {
+		// unreachable
+		return null;
+	}
 }
 
 function FilesExplorer({
@@ -216,7 +253,7 @@ function FilesExplorer({
 	classSourceCode: {
 		[key: string]: string;
 	};
-	activeFile: string;
+	activeFile?: string;
 }) {
 	const files = Object.keys(classSourceCode);
 	return (

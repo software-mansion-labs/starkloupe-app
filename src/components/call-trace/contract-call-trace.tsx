@@ -5,7 +5,7 @@ import { CallTrace, CodeLocation, DataType, CallType, getContractCallId } from '
 import { shortenHash } from '@/lib/utils';
 import { CallTraceContext } from '@/lib/context/call-trace';
 import { InfoBox } from '@/components/ui/info-box';
-import { InternalCallTrace } from './internal-call-trace';
+import { FunctionCallTrace } from './function-call-trace';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { CalldataTable } from '../calldata-table';
 import { BugAntIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
@@ -15,17 +15,16 @@ import { ErrorTraceLine } from './error-trace-line';
 import { DebugButton } from '@/components/call-trace/debug-btn';
 import { ErrorTooltip } from '@/components/error-tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { CommonCallTrace } from './common-call-trace';
 
 export function ContractCallTrace({
-	calls,
+	call,
 	nestingLevel,
-	executionFailed,
-	parentContractCallId
+	executionFailed
 }: {
-	calls: CallTrace[];
+	call: CallTrace;
 	nestingLevel: number;
 	executionFailed: boolean;
-	parentContractCallId?: string;
 }) {
 	const {
 		expandedCalls,
@@ -37,178 +36,150 @@ export function ContractCallTrace({
 	} = useContext(CallTraceContext);
 	const { debugCall } = useContext(DebuggerContext);
 
-	return calls.map((call, index) => {
-		const contractCallId = getContractCallId({
-			parentContractCallId,
-			contractCallIndex: index
-		});
+	let callType = call.entryPoint.callType;
+	if (
+		callType === CallType.CALL &&
+		call.nestedCalls.length > 0 &&
+		call.nestedCalls[0].entryPoint.callType === CallType.DELEGATE &&
+		call.entryPoint.storageAddress === call.nestedCalls[0].entryPoint.storageAddress &&
+		call.entryPoint.entryPointSelector === call.nestedCalls[0].entryPoint.entryPointSelector
+	) {
+		call = call.nestedCalls[0];
+		callType = CallType.DCALL;
+	}
+	const hasNestedElements = call.nestedCalls.length > 0 || call.fnCalls.length > 0;
 
-		let callType = call.entryPoint.callType;
-		if (
-			callType === CallType.CALL &&
-			call.nestedCalls.length > 0 &&
-			call.nestedCalls[0].entryPoint.callType === CallType.DELEGATE &&
-			call.entryPoint.storageAddress === call.nestedCalls[0].entryPoint.storageAddress &&
-			call.entryPoint.entryPointSelector === call.nestedCalls[0].entryPoint.entryPointSelector
-		) {
-			call = call.nestedCalls[0];
-			callType = CallType.DCALL;
-		}
-		const hasNestedElements = call.nestedCalls.length > 0 || call.internalFnCallTrace;
+	let entryPointFunctionName = call.additionalInfo?.entryPointFunctionName;
 
-		let contractName: string | undefined = undefined;
-		let entryPointFunctionName = call.additionalInfo?.entryPointFunctionName;
+	// The error column doesn't render in case the whole tx is successful
+	// If the tx is reverted, the error column will render for all call lines
+	// Only the error-ed call line will have the error icon
+	let errorColumn = <></>;
+	if (executionFailed) {
+		errorColumn = (
+			<div className="w-5 mr-0.5">
+				{!!call.additionalInfo.errorMessage && (
+					<ErrorTooltip errorMessage={call.additionalInfo.errorMessage} />
+				)}
+			</div>
+		);
+	}
 
-		// The error column doesn't render in case the whole tx is successful
-		// If the tx is reverted, the error column will render for all call lines
-		// Only the error-ed call line will have the error icon
-		let errorColumn = <></>;
-		if (executionFailed) {
-			errorColumn = (
-				<div className="w-5 mr-0.5">
-					{!!call.additionalInfo.errorMessage && (
-						<ErrorTooltip errorMessage={call.additionalInfo.errorMessage} />
-					)}
-				</div>
-			);
-		}
+	let contractName: string | undefined = undefined;
+	if (call.additionalInfo.contractName) {
+		contractName = call.additionalInfo.contractName;
+	} else if (call.additionalInfo.erc20TokenName || call.additionalInfo.erc20TokenSymbol) {
+		contractName = [
+			call.additionalInfo.erc20TokenName,
+			`(${call.additionalInfo.erc20TokenSymbol})`
+		].join(' ');
+	} else if (call.additionalInfo.entryPointInterfaceName) {
+		contractName = call.additionalInfo.entryPointInterfaceName.split('::').pop();
+	}
 
-		if (call.additionalInfo.contractName) {
-			contractName = call.additionalInfo.contractName;
-		} else if (call.additionalInfo.erc20TokenName || call.additionalInfo.erc20TokenSymbol) {
-			contractName = [
-				call.additionalInfo.erc20TokenName,
-				`(${call.additionalInfo.erc20TokenSymbol})`
-			].join(' ');
-		}
+	if (!contractName) {
+		contractName = shortenHash(call.entryPoint.storageAddress, 13);
+	}
 
-		if (!contractName) {
-			contractName = shortenHash(call.entryPoint.storageAddress, 13);
-		}
+	const isDebuggable =
+		!!call.additionalInfo.callDebuggerData &&
+		!!simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash];
 
-		const isDebuggable =
-			!!call.additionalInfo.callDebuggerData &&
-			!!simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash];
+	return (
+		<React.Fragment key={call.contractCallId}>
+			<TraceLine
+				isActive={expandedCalls[call.contractCallId]}
+				onClick={() => toggleCallExpand(call.contractCallId)}
+			>
+				{CallTypeChip(callType)}
 
-		let internalFnCallTrace = [call.internalFnCallTrace];
-		let isInternalCallPanic = false;
-		if (call.internalFnCallTrace && call.internalFnCallTrace.nestedCalls[1]) {
-			isInternalCallPanic = call.internalFnCallTrace.nestedCalls[1].data.isPanicResult;
-			internalFnCallTrace = call.internalFnCallTrace.nestedCalls[1].nestedCalls;
-		}
+				{/* Error column
+				 * Empty in most lines,
+				 * or exclamation triangle icon in case of error on the line
+				 */}
+				{errorColumn}
 
-		return (
-			<React.Fragment key={contractCallId}>
-				<TraceLine
-					isActive={expandedCalls[contractCallId]}
-					onClick={() => toggleCallExpand(contractCallId)}
+				<DebugButton
+					onDebugClick={() => {
+						debugCall(call, 0);
+						setActiveTab('debugger');
+					}}
+					isDebuggable={isDebuggable}
+				/>
+
+				<div
+					style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
+					className="flex flex-row items-center trace-line_content"
 				>
-					{CallTypeChip(callType)}
-
-					{/* Error column
-					 * Empty in most lines,
-					 * or exclamation triangle icon in case of error on the line
-					 */}
-					{errorColumn}
-
-					<DebugButton
-						onDebugClick={() => {
-							debugCall(call, 0);
-							setActiveTab('debugger');
-						}}
-						isDebuggable={isDebuggable}
-					/>
-
 					<div
-						style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
-						className="flex flex-row items-center trace-line_content"
+						className={`w-5 h-5 p-1 mr-1  rounded-sm  ${
+							hasNestedElements ? 'cursor-pointer hover:bg-neutral-200' : ''
+						}`}
+						onClick={(event) => {
+							event.stopPropagation();
+							hasNestedElements && toggleCallCollapse(call.contractCallId);
+						}}
 					>
-						<div
-							className={`w-5 h-5 p-1 mr-1  rounded-sm  ${
-								hasNestedElements ? 'cursor-pointer hover:bg-neutral-200' : ''
-							}`}
-							onClick={(event) => {
-								event.stopPropagation();
-								hasNestedElements && toggleCallCollapse(contractCallId);
-							}}
-						>
-							{hasNestedElements ? (
-								collapsedCalls[contractCallId] == true ? (
-									<ChevronRightIcon />
-								) : (
-									<ChevronDownIcon />
-								)
+						{hasNestedElements ? (
+							collapsedCalls[call.contractCallId] == true ? (
+								<ChevronRightIcon />
 							) : (
-								''
-							)}
-						</div>
-						<span className="text-blue-600">{contractName}</span>
-						{'.'}
-						<span className="text-pink-500">
-							{call.additionalInfo?.entryPointFunctionName ??
-								shortenHash(call.entryPoint.entryPointSelector, 13)}
-						</span>
-						<span className="text-yellow-900">{'('}</span>
-						{call.additionalInfo?.functionArgumentsNames ? (
-							<span className="text-orange-500">
-								{call.additionalInfo.functionArgumentsNames.join(', ')}
-							</span>
-						) : (
-							call.additionalInfo?.functionArguments && (
-								<span className="text-orange-500">
-									{call.additionalInfo.functionArguments.map((arg) => shortenHash(arg)).join(', ')}
-								</span>
+								<ChevronDownIcon />
 							)
-						)}
-						<span className="text-yellow-900">{')'}</span>
-						{call.additionalInfo?.functionResult &&
-						call.additionalInfo?.functionReturnResultTypes ? (
-							<>
-								<span className="text-yellow-900">{'->'}</span>
-								<span className="text-pink-500">
-									{`(${call.additionalInfo?.functionReturnResultTypes.join(', ')})`}
-								</span>
-							</>
 						) : (
-							<>
-								<span className="text-yellow-900">{'->()'}</span>{' '}
-							</>
+							''
 						)}
 					</div>
-				</TraceLine>
-				{expandedCalls[contractCallId] && <ContractCallDetails call={call} />}{' '}
-				{collapsedCalls[contractCallId] != true && call.internalFnCallTrace && (
-					<InternalCallTrace
-						calls={internalFnCallTrace}
-						nestingLevel={nestingLevel + 1}
-						contractCallId={contractCallId}
-						executionFailed={executionFailed}
-						errorMessage={call.additionalInfo.errorMessage ?? undefined}
-						classHash={call.additionalInfo.classHash}
-						contractCall={call}
-						isDebuggable={isDebuggable}
-					/>
-				)}
-				{collapsedCalls[contractCallId] != true &&
-					isInternalCallPanic &&
-					call.additionalInfo.errorMessage && (
-						<ErrorTraceLine
-							executionFailed
-							errorMessage={call.additionalInfo.errorMessage}
-							nestingLevel={nestingLevel + 1}
-						/>
+					<span className="text-blue-600">{contractName}</span>
+					{'.'}
+					<span className="text-pink-500">
+						{call.additionalInfo?.entryPointFunctionName ??
+							shortenHash(call.entryPoint.entryPointSelector, 13)}
+					</span>
+					<span className="text-yellow-900">{'('}</span>
+					{call.additionalInfo?.functionArgumentsNames ? (
+						<span className="text-orange-500">
+							{call.additionalInfo.functionArgumentsNames.join(', ')}
+						</span>
+					) : (
+						call.additionalInfo?.functionArguments && (
+							<span className="text-orange-500">
+								{call.additionalInfo.functionArguments.map((arg) => shortenHash(arg)).join(', ')}
+							</span>
+						)
 					)}
-				{collapsedCalls[contractCallId] != true && (
-					<ContractCallTrace
-						calls={call.nestedCalls}
-						nestingLevel={nestingLevel + 1}
-						parentContractCallId={contractCallId}
-						executionFailed={executionFailed}
-					/>
-				)}
-			</React.Fragment>
-		);
-	});
+					<span className="text-yellow-900">{')'}</span>
+					{call.additionalInfo?.functionResult && call.additionalInfo?.functionReturnResultTypes ? (
+						<>
+							<span className="text-yellow-900">&nbsp;{'->'}&nbsp;</span>
+							<span className="text-pink-500">
+								{`(${call.additionalInfo?.functionReturnResultTypes.join(', ')})`}
+							</span>
+						</>
+					) : (
+						<>
+							<span className="text-yellow-900">{'->()'}</span>{' '}
+						</>
+					)}
+				</div>
+			</TraceLine>
+			{expandedCalls[call.contractCallId] && <ContractCallDetails call={call} />}{' '}
+			{collapsedCalls[call.contractCallId] != true && (
+				<>
+					{call.nestedCallsIds.map((nestedCallId) => (
+						<CommonCallTrace
+							key={nestedCallId}
+							callId={nestedCallId}
+							nestingLevel={nestingLevel + 1}
+							executionFailed={executionFailed}
+							parentContractCall={call}
+							errorMessage={call.additionalInfo.errorMessage ?? undefined}
+						/>
+					))}
+				</>
+			)}
+		</React.Fragment>
+	);
 }
 
 function ContractCallDetails({ call }: { call: CallTrace }) {
