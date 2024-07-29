@@ -185,6 +185,7 @@ export interface TransactionSimulationResult {
 	simulationResult: SimulationResult;
 	chainId: string;
 	blockNumber: number;
+	blockTimestamp: number;
 	nonce: number;
 	senderAddress: string;
 	calldata: string[];

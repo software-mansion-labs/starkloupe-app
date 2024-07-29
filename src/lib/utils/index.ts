@@ -56,6 +56,24 @@ export function formatTimestamp(timestamp: number): string {
 	return formatDate;
 }
 
+export function formatTimestampToUTC(timestamp: number): string {
+	let dateObject = new Date(timestamp * 1000);
+	const options: Intl.DateTimeFormatOptions = {
+		year: 'numeric',
+		month: 'short',
+		day: '2-digit',
+		hour: '2-digit',
+		minute: '2-digit',
+		second: '2-digit',
+		hourCycle: 'h23',
+		timeZone: 'UTC',
+		timeZoneName: 'short'
+	};
+
+	const formatter = new Intl.DateTimeFormat('en-GB', options);
+	return formatter.format(dateObject);
+}
+
 type ChainId = 'SN_MAIN' | 'SN_SEPOLIA';
 
 export function useChain(): { chainId: ChainId; chainName: string } {
