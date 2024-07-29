@@ -9,6 +9,7 @@ interface DebuggerInfo {
 
 interface DebuggerContextProps {
 	debuggerInfo?: DebuggerInfo;
+	contractAddress?: string | undefined;
 	debugCall: (call: CallTrace, initialStepIndex: number) => void;
 }
 
@@ -21,6 +22,7 @@ export const DebuggerContextProvider: React.FC<
 	PropsWithChildren<{ simulationResult: SimulationResult }>
 > = ({ children, simulationResult }) => {
 	const [debuggerInfo, setDebuggerInfo] = useState<DebuggerInfo | undefined>();
+	const [contractAddress, setContractAddress] = useState<string | undefined>();
 
 	const debugCall = (call: CallTrace, initialStepIndex: number) => {
 		if (call.additionalInfo.callDebuggerData) {
@@ -33,12 +35,14 @@ export const DebuggerContextProvider: React.FC<
 				initialStepIndex
 			});
 		}
+		setContractAddress(call.entryPoint.storageAddress);
 	};
 
 	return (
 		<DebuggerContext.Provider
 			value={{
 				debuggerInfo,
+				contractAddress,
 				debugCall
 			}}
 		>

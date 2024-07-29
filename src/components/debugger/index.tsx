@@ -17,17 +17,15 @@ import { CallTrace } from '@/lib/simulation';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 export function Debugger({ calls }: { calls: CallTrace[] }) {
-	const { debuggerInfo, debugCall } = useContext(DebuggerContext);
-	const [contractAddress, setContractAddress] = useState<string | undefined>();
+	const { debuggerInfo, contractAddress, debugCall } = useContext(DebuggerContext);
 
 	const hasCall = calls.length > 0;
 
 	const handleNestedDebugCalls = useCallback(
 		(call: CallTrace, initialStepIndex: number) => {
-			if (call.nestedCalls.length > 0 && call.nestedCalls[0].additionalInfo.callDebuggerData) {
+			if (call.nestedCalls.length > 0) {
 				debugCall(call.nestedCalls[0], initialStepIndex);
 			}
-			setContractAddress(call.nestedCalls[0].entryPoint.storageAddress);
 		},
 		[debugCall]
 	);
@@ -47,6 +45,18 @@ export function Debugger({ calls }: { calls: CallTrace[] }) {
 					classDebuggerData={classDebuggerData}
 					initialStepIndex={initialStepIndex}
 				/>
+			);
+		} else {
+			return (
+				<Alert className="m-4 w-fit">
+					<ExclamationTriangleIcon className="h-6 w-6" />
+					<AlertTitle>No execution trace found.</AlertTitle>
+					<AlertDescription>
+						<p>
+							Contract Address: <span className="font-mono">{contractAddress}</span>
+						</p>
+					</AlertDescription>
+				</Alert>
 			);
 		}
 	}

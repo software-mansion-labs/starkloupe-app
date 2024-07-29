@@ -278,26 +278,42 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 			];
 	}
 
+	const callDebuggerData = call.additionalInfo.callDebuggerData;
+	const hasDebuggableInfo =
+		!!callDebuggerData &&
+		!!callDebuggerData.executionTrace &&
+		!!simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash];
+	const hasNoExecutionTrace = callDebuggerData && callDebuggerData.executionTrace.length === 0;
+
+	const noSourceCodeAlert = (
+		<Alert className="my-2 w-fit">
+			<ExclamationTriangleIcon className="h-5 w-5" />
+			<AlertTitle>No source code for this contract</AlertTitle>
+			<AlertDescription>
+				<a
+					href={
+						'https://github.com/foundry-rs/starknet-foundry/blob/master/docs/src/starknet/verify.md'
+					}
+					className="text-blue-500 cursor-pointer"
+					target="_blank"
+				>
+					Verify the contract source code
+				</a>{' '}
+				to get internal call traces and enable the step-by-step debugger.
+			</AlertDescription>
+		</Alert>
+	);
+
+	const noExecutionTraceAlert = (
+		<Alert className="m-4 w-fit">
+			<ExclamationTriangleIcon className="h-6 w-6" />
+			<AlertDescription className="mt-2">No execution trace found.</AlertDescription>
+		</Alert>
+	);
+
 	return (
 		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4">
-			{!(code && cairoLocation) && (
-				<Alert className="my-2 w-fit">
-					<ExclamationTriangleIcon className="h-5 w-5" />
-					<AlertTitle>No source code for this contract</AlertTitle>
-					<AlertDescription>
-						<a
-							href={
-								'https://github.com/foundry-rs/starknet-foundry/blob/master/docs/src/starknet/verify.md'
-							}
-							className="text-blue-500 cursor-pointer"
-							target="_blank"
-						>
-							Verify the contract source code
-						</a>{' '}
-						to get internal call traces and enable the step-by-step debugger.
-					</AlertDescription>
-				</Alert>
-			)}
+			{!hasDebuggableInfo ? noSourceCodeAlert : hasNoExecutionTrace && noExecutionTraceAlert}
 			<InfoBox details={details} />
 			{call.additionalInfo?.calldataDecoded && (
 				<CalldataTable calldata={call.additionalInfo.calldataDecoded} type={DataType.INPUT} />
