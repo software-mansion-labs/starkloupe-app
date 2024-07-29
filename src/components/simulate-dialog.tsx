@@ -54,10 +54,9 @@ export function SimulateDialog({
 	const router = useRouter();
 	const searchParams = useSearchParams();
 
-	const _tempChainId = 'SN_MAIN'; // TODO: use real chain id
 	function onDialogSubmit() {
 		router.push(
-			`/simulations/${_tempChainId}` +
+			`/simulations/${_chainId.toUpperCase()}` +
 				'?' +
 				createQueryStringWithObject({
 					senderAddress: _senderAddress,
