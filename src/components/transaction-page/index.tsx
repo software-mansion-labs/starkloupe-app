@@ -6,6 +6,7 @@ import { Container } from '../ui/container';
 import { Footer } from '../footer';
 import { Loader } from '../ui/loader';
 import { simulateTransactionByHash, TransactionSimulationResult } from '@/lib/simulation';
+import { formatTimestampToUTC } from '@/lib/utils';
 import { ChainId } from '@/lib/types';
 import { CallTraceRoot } from '@/components/call-trace';
 import { InfoBoxItem, InfoBox } from '../ui/info-box';
@@ -81,6 +82,10 @@ export function TransactionDetails({ txSimResult }: { txSimResult: TransactionSi
 			name: 'Block',
 			value: txSimResult.blockNumber.toString(),
 			isCopyable: true
+		},
+		{
+			name: 'Timestamp',
+			value: formatTimestampToUTC(txSimResult.blockTimestamp)
 		},
 		{
 			name: 'Sender',
