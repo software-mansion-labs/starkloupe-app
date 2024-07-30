@@ -49,10 +49,10 @@ export function Debugger({ calls }: { calls: CallTrace[] }) {
 		} else {
 			return (
 				<Alert className="m-4 w-fit">
-					<ExclamationTriangleIcon className="h-6 w-6" />
+					<ExclamationTriangleIcon className="h-5 w-5" />
 					<AlertTitle>No execution trace found.</AlertTitle>
 					<AlertDescription>
-						<p>
+						<p className="mt-2 mb-1">
 							Contract Address: <span className="font-mono">{contractAddress}</span>
 						</p>
 					</AlertDescription>

@@ -305,9 +305,11 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 	);
 
 	const noExecutionTraceAlert = (
-		<Alert className="m-4 w-fit">
-			<ExclamationTriangleIcon className="h-6 w-6" />
-			<AlertDescription className="mt-2">No execution trace found.</AlertDescription>
+		<Alert className="my-2 w-fit">
+			<ExclamationTriangleIcon className="h-5 w-5" />
+			<AlertDescription>
+				<p className="mt-1">No execution trace found.</p>
+			</AlertDescription>
 		</Alert>
 	);
 
