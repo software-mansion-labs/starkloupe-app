@@ -102,6 +102,13 @@ export function TransactionDetails({ txSimResult }: { txSimResult: TransactionSi
 		});
 	}
 
+	if (txSimResult.transactionVersion) {
+		details.push({
+			name: 'Transaction Version',
+			value: txSimResult.transactionVersion.toString()
+		});
+	}
+
 	if (txSimResult.simulationResult.executionResult.executionStatus === 'SUCCEEDED') {
 		details.unshift({
 			name: 'Execution status',
