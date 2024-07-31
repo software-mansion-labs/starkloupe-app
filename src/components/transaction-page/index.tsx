@@ -13,6 +13,7 @@ import { InfoBoxItem, InfoBox } from '../ui/info-box';
 import { SimulateDialog } from '../simulate-dialog';
 import { Button } from '../ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
+import { SimulationError } from '../ui/error';
 
 export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: string }) {
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
@@ -24,9 +25,8 @@ export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: 
 				setTransactionSimulation(
 					await simulateTransactionByHash({ chainId: chainId as ChainId, txHash })
 				);
-			} catch (error) {
-				console.error(error);
-				setError('Error fetching data');
+			} catch (error: any) {
+				setError(error.toString());
 			}
 		};
 
@@ -60,7 +60,7 @@ export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: 
 						{transactionSimulation ? (
 							<CallTraceRoot simulationResult={transactionSimulation.simulationResult} />
 						) : error ? (
-							error
+							<SimulationError message={error} />
 						) : (
 							<Loader />
 						)}
