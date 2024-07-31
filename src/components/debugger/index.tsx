@@ -24,10 +24,12 @@ export function Debugger({ calls }: { calls: CallTrace[] }) {
 
 	const handleNestedDebugCalls = useCallback(
 		(call: CallTrace, initialStepIndex: number) => {
-			if (call.nestedCalls.length > 0 && call.nestedCalls[0].additionalInfo.callDebuggerData) {
+			if (call.nestedCalls.length > 0) {
 				debugCall(call.nestedCalls[0], initialStepIndex);
+				setContractAddress(call.nestedCalls[0].entryPoint.storageAddress);
+			} else {
+				setContractAddress(call.entryPoint.storageAddress);
 			}
-			setContractAddress(call.nestedCalls[0].entryPoint.storageAddress);
 		},
 		[debugCall]
 	);
@@ -62,9 +64,7 @@ export function Debugger({ calls }: { calls: CallTrace[] }) {
 				<p>
 					<span>Follow </span>
 					<a
-						href={
-							'https://github.com/foundry-rs/starknet-foundry/blob/master/docs/src/starknet/verify.md'
-						}
+						href={'https://foundry-rs.github.io/starknet-foundry/starknet/verify.html'}
 						className="text-blue-500 cursor-pointer"
 						target="_blank"
 						rel="noopener noreferrer"

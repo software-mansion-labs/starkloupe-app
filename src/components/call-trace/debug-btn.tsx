@@ -41,9 +41,7 @@ export function DebugButton({
 						This contract source code is not verified. To run the debugger, first verify the source
 						code by following{' '}
 						<a
-							href={
-								'https://github.com/foundry-rs/starknet-foundry/blob/master/docs/src/starknet/verify.md'
-							}
+							href={'https://foundry-rs.github.io/starknet-foundry/starknet/verify.html'}
 							target="_blank"
 							className="text-blue-500 cursor-pointer"
 						>
