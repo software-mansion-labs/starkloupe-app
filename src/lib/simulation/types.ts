@@ -190,4 +190,5 @@ export interface TransactionSimulationResult {
 	senderAddress: string;
 	calldata: string[];
 	transactionVersion: number;
+	transactionType: string;
 }

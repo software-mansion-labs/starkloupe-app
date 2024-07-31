@@ -45,7 +45,12 @@ export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: 
 								title="Re-simulate transaction"
 								description="Edit the transaction details below and click “Run Simulation” to re-simulate."
 								dialogTrigger={
-									<Button variant="outline" disabled={!transactionSimulation}>
+									<Button
+										variant="outline"
+										disabled={
+											!transactionSimulation || transactionSimulation.transactionType === 'DECLARE'
+										}
+									>
 										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
 									</Button>
 								}
@@ -129,6 +134,15 @@ export function TransactionDetails({ txSimResult }: { txSimResult: TransactionSi
 			)
 		});
 	}
+
+	if (txSimResult.transactionType) {
+		details.unshift({
+			name: 'Transaction Type',
+			value: <span className="text-blue-600">{txSimResult.transactionType}</span>,
+			isCopyable: true
+		});
+	}
+
 	return (
 		<div className="mt-4 py-1 px-2 bg-neutral-100 rounded-sm flex flex-col">
 			<InfoBox details={details} />

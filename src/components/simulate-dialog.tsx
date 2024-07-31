@@ -20,7 +20,7 @@ import { DialogClose } from '@radix-ui/react-dialog';
 
 export function SimulateDialog({
 	title = 'Simulate transaction',
-	description = 'Configure your transaction for simulation.',
+	description = 'Configure your invoke transaction for simulation.',
 	dialogTrigger,
 	senderAddress = '',
 	blockNumber = '',
