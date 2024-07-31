@@ -286,9 +286,7 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 					<AlertTitle>No source code for this contract</AlertTitle>
 					<AlertDescription>
 						<a
-							href={
-								'https://github.com/foundry-rs/starknet-foundry/blob/master/docs/src/starknet/verify.md'
-							}
+							href={'https://foundry-rs.github.io/starknet-foundry/starknet/verify.html'}
 							className="text-blue-500 cursor-pointer"
 							target="_blank"
 						>
