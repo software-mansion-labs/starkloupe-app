@@ -79,7 +79,7 @@ export function SimulationPage({ chainId }: { chainId: string }) {
 							</h1>
 							<SimulateDialog
 								title="Re-simulate transaction"
-								description="Edit the transaction details below and click “Run Simulation” to re-simulate."
+								description="Edit the invoke transaction details below and click “Run Simulation” to re-simulate."
 								dialogTrigger={
 									<Button variant="outline" disabled={isLoading}>
 										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
