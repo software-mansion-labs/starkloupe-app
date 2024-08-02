@@ -16,14 +16,11 @@ export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; t
 		);
 	};
 
-	const formatHexDecValue = (value: any): string => {
-		if (typeof value === 'string' && value.startsWith('0x')) {
-			if (displayFormat === 'dec') {
-				return BigInt(value).toString(10);
-			}
-			return value;
+	const formatHexDecValue = (value: string): string => {
+		if (value.startsWith('0x') && displayFormat === 'dec') {
+			return BigInt(value).toString(10);
 		}
-		return value.toString();
+		return value;
 	};
 
 	const renderValue = (value: any): JSX.Element => {
