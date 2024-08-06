@@ -5,13 +5,11 @@ import { CallTrace, CodeLocation, DataType, CallType, getContractCallId } from '
 import { shortenHash } from '@/lib/utils';
 import { CallTraceContext } from '@/lib/context/call-trace';
 import { InfoBox } from '@/components/ui/info-box';
-import { FunctionCallTrace } from './function-call-trace';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { CalldataTable } from '../calldata-table';
-import { BugAntIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { CodeViewer } from '../code-viewer/code-viewer';
 import { DebuggerContext } from '@/lib/context/debugger-context-provider';
-import { ErrorTraceLine } from './error-trace-line';
 import { DebugButton } from '@/components/call-trace/debug-btn';
 import { ErrorTooltip } from '@/components/error-tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -268,22 +266,45 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 		});
 	}
 
+	const callDebuggerData = call.additionalInfo.callDebuggerData;
+	const classDebuggerData =
+		simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash];
+	const hasDebuggableInfo =
+		!!callDebuggerData && !!callDebuggerData.executionTrace && !!classDebuggerData;
+
 	let code: string | undefined = undefined;
 
-	const cairoLocation: CodeLocation | undefined = call.additionalInfo.cairoLocation;
-	if (cairoLocation) {
-		code =
-			simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash]?.sourceCode[
-				cairoLocation.filePath
-			];
-	}
+	let contractName: string | null = call.additionalInfo.contractName;
+	let entryPointInterfaceName: string | null = call.additionalInfo.entryPointInterfaceName;
 
-	const callDebuggerData = call.additionalInfo.callDebuggerData;
-	const hasDebuggableInfo =
-		!!callDebuggerData &&
-		!!callDebuggerData.executionTrace &&
-		!!simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash];
-	const hasNoExecutionTrace = callDebuggerData && callDebuggerData.executionTrace.length === 0;
+	const cairoLocation: CodeLocation | undefined = call.additionalInfo.cairoLocation;
+	const sourceCodeFiles: { [key: string]: string } | undefined = classDebuggerData?.sourceCode;
+
+	const findFilePath = (terms: string[], files: { [key: string]: string }): string | undefined => {
+		for (const term of terms) {
+			const filePath = Object.keys(files).find((path) => path.includes(`${term}.cairo`));
+			if (filePath) return filePath;
+		}
+		return undefined;
+	};
+
+	if (sourceCodeFiles) {
+		if (cairoLocation) {
+			code = sourceCodeFiles[cairoLocation.filePath];
+		} else {
+			let filePath: string | undefined;
+			if (contractName) {
+				const name = contractName.toLowerCase();
+				filePath = Object.keys(sourceCodeFiles).find((path) =>
+					path.toLowerCase().includes(`${name}.cairo`)
+				);
+			} else if (entryPointInterfaceName) {
+				const terms = entryPointInterfaceName.split('::');
+				filePath = findFilePath(terms, sourceCodeFiles);
+			}
+			code = filePath ? sourceCodeFiles[filePath] : undefined;
+		}
+	}
 
 	const noSourceCodeAlert = (
 		<Alert className="my-2 w-fit">
@@ -304,16 +325,9 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 		</Alert>
 	);
 
-	const noExecutionTraceAlert = (
-		<Alert className="my-2 w-fit">
-			<ExclamationTriangleIcon className="h-5 w-5" />
-			<AlertTitle className="mt-1">No execution trace found.</AlertTitle>
-		</Alert>
-	);
-
 	return (
 		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4">
-			{!hasDebuggableInfo ? noSourceCodeAlert : hasNoExecutionTrace && noExecutionTraceAlert}
+			{!hasDebuggableInfo && noSourceCodeAlert}
 			<InfoBox details={details} />
 			{call.additionalInfo?.calldataDecoded && (
 				<CalldataTable calldata={call.additionalInfo.calldataDecoded} type={DataType.INPUT} />
@@ -321,7 +335,7 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 			{call.additionalInfo?.functionResult && (
 				<CalldataTable calldata={call.additionalInfo.functionResult} type={DataType.OUTPUT} />
 			)}
-			{code && cairoLocation && (
+			{code && (
 				<div className="h-80">
 					<CodeViewer code={code} codeLocation={cairoLocation} />
 				</div>
