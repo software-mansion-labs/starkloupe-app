@@ -252,6 +252,13 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 		});
 	}
 
+	if (call.additionalInfo.cairoVersion) {
+		details.push({
+			name: 'Cairo Version',
+			value: call.additionalInfo.cairoVersion
+		});
+	}
+
 	if (call.additionalInfo.functionResult) {
 		details.unshift({
 			name: 'Raw Result',

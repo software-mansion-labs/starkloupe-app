@@ -1,7 +1,11 @@
+import { useState } from 'react';
 import { DecodedItem, CalldataDecoded, DataType } from '@/lib/simulation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
+import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 
 export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; type: DataType }) {
+	const [displayFormat, setDisplayFormat] = useState<'hex' | 'dec'>('hex');
+
 	const isObjectArray = (value: any[]): boolean => {
 		return (
 			Array.isArray(value) &&
@@ -10,6 +14,13 @@ export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; t
 			'name' in value[0] &&
 			'value' in value[0]
 		);
+	};
+
+	const formatHexDecValue = (value: string): string => {
+		if (value.startsWith('0x') && displayFormat === 'dec') {
+			return BigInt(value).toString(10);
+		}
+		return value;
 	};
 
 	const renderValue = (value: any): JSX.Element => {
@@ -45,14 +56,33 @@ export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; t
 				);
 			}
 		} else {
-			return <span>{value}</span>;
+			const formattedHexDecValue = formatHexDecValue(value);
+			return <span>{formattedHexDecValue}</span>;
 		}
 	};
 
 	return (
 		<div className="my-4">
-			<div className="font-medium uppercase mb-1">
-				{type === DataType.INPUT ? 'Input params' : 'Output params'}
+			<div className="flex flex-raw items-center mb-1">
+				<div className="font-medium uppercase mr-2">
+					{type === DataType.INPUT ? 'Input params' : 'Output params'}
+				</div>
+				<ToggleGroup
+					type="single"
+					size={'sm'}
+					variant="outline"
+					className="mb-1"
+					defaultValue="hex"
+					aria-label="Hex or Decimal Toggle"
+					onValueChange={(value) => setDisplayFormat(value as 'hex' | 'dec')}
+				>
+					<ToggleGroupItem value="hex" aria-label="Hexadecimal">
+						Hex
+					</ToggleGroupItem>
+					<ToggleGroupItem value="dec" aria-label="Decimal">
+						Decimal
+					</ToggleGroupItem>
+				</ToggleGroup>
 			</div>
 			<Table className="w-auto py-0.5 px-2 bg-white text-xs border border-neutral-200">
 				<TableHeader>

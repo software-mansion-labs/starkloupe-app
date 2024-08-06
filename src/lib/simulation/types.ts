@@ -97,6 +97,7 @@ export interface CallTrace {
 		cairoLocation?: CodeLocation; // Added on client side
 		callDebuggerData?: CallDebuggerData;
 		classHash: string; // 66 symbols format
+		cairoVersion: string;
 	};
 	nestedCallsIds: string[]; // Added on client side, list of function call id and contract call id
 }
@@ -185,8 +186,10 @@ export interface TransactionSimulationResult {
 	simulationResult: SimulationResult;
 	chainId: string;
 	blockNumber: number;
+	blockTimestamp: number;
 	nonce: number;
 	senderAddress: string;
 	calldata: string[];
 	transactionVersion: number;
+	transactionType: string;
 }
