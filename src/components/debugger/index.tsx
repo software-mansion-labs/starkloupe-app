@@ -95,16 +95,15 @@ function DebuggerNotEmpty({
 		getStep(initialStepIndex, callDebuggerData, classDebuggerData)!
 	);
 
-	const [activeFile, setActiveFile] = useState<string | undefined>(undefined);
-	const [activeCodeLocation, setActiveCodeLocation] = useState<CodeLocation | undefined>(undefined);
+	const [activeFile, setActiveFile] = useState(stepInfo.withLocation?.codeLocation.filePath);
+	const [activeCodeLocation, setActiveCodeLocation] = useState(stepInfo.withLocation?.codeLocation);
 	const [debugFile, setDebugFile] = useState(stepInfo.withLocation?.codeLocation.filePath);
 	const [debugPosition, setDebugPosition] = useState(stepInfo.withLocation?.codeLocation);
 	const [showArgsAndResults, setShowArgsAndResults] = useState(true);
 
 	const totalSteps = callDebuggerData.executionTrace.length;
 
-	const updateCodeLocationForStep = (index: number) => {
-		const step = getStep(index, callDebuggerData, classDebuggerData);
+	const updateCodeLocationForStep = (step: Step) => {
 		if (step?.withLocation) {
 			const codeLocation = step.withLocation.codeLocation;
 			setDebugFile(codeLocation.filePath);
@@ -113,10 +112,6 @@ function DebuggerNotEmpty({
 			setActiveCodeLocation(codeLocation);
 		}
 	};
-
-	useEffect(() => {
-		updateCodeLocationForStep(initialStepIndex);
-	}, []);
 
 	const handleFileClick = (file: string) => {
 		if (file === debugFile) {
@@ -143,7 +138,7 @@ function DebuggerNotEmpty({
 			const newIndex = stepIndex + 1;
 			setStepIndex(newIndex);
 			setStepInfo(nextStepInfo);
-			updateCodeLocationForStep(newIndex);
+			updateCodeLocationForStep(nextStepInfo);
 			// setCodeValue(nextStepInfo.codeValue);
 			// setCodeLocation(nextStepInfo.codeLocation);
 		} else {
@@ -158,7 +153,7 @@ function DebuggerNotEmpty({
 			const newIndex = stepIndex - 1;
 			setStepIndex(newIndex);
 			setStepInfo(previousStepInfo);
-			updateCodeLocationForStep(newIndex);
+			updateCodeLocationForStep(previousStepInfo);
 			// setCodeValue(previousStepInfo.codeValue);
 			// setCodeLocation(previousStepInfo.codeLocation);
 		} else {
