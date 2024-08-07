@@ -95,14 +95,50 @@ function DebuggerNotEmpty({
 		getStep(initialStepIndex, callDebuggerData, classDebuggerData)!
 	);
 
+	const [activeFile, setActiveFile] = useState(stepInfo.withLocation?.codeLocation.filePath);
+	const [activeCodeLocation, setActiveCodeLocation] = useState(stepInfo.withLocation?.codeLocation);
+	const [debugFile, setDebugFile] = useState(stepInfo.withLocation?.codeLocation.filePath);
+	const [debugPosition, setDebugPosition] = useState(stepInfo.withLocation?.codeLocation);
+	const [showArgsAndResults, setShowArgsAndResults] = useState(true);
+
 	const totalSteps = callDebuggerData.executionTrace.length;
+
+	const updateCodeLocationForStep = (step: Step) => {
+		if (step?.withLocation) {
+			const codeLocation = step.withLocation.codeLocation;
+			setDebugFile(codeLocation.filePath);
+			setDebugPosition(codeLocation);
+			setActiveFile(codeLocation.filePath);
+			setActiveCodeLocation(codeLocation);
+		}
+	};
+
+	const handleFileClick = (file: string) => {
+		if (file === debugFile) {
+			// Restore the last debug position if switching back to the debug file
+			setActiveCodeLocation(debugPosition);
+			setShowArgsAndResults(true);
+		} else {
+			// Show the new file from the start
+			const initialLocation = {
+				start: { line: 0, col: 0 },
+				end: { line: 0, col: 0 },
+				filePath: file
+			};
+			setActiveCodeLocation(initialLocation);
+			setShowArgsAndResults(false);
+		}
+		setActiveFile(file);
+	};
 
 	function nextStep() {
 		if (stepIndex >= totalSteps - 1) return;
 		const nextStepInfo = getStep(stepIndex + 1, callDebuggerData, classDebuggerData);
 		if (nextStepInfo) {
-			setStepIndex(stepIndex + 1);
+			const newIndex = stepIndex + 1;
+			setStepIndex(newIndex);
 			setStepInfo(nextStepInfo);
+			updateCodeLocationForStep(nextStepInfo);
 			// setCodeValue(nextStepInfo.codeValue);
 			// setCodeLocation(nextStepInfo.codeLocation);
 		} else {
@@ -114,20 +150,22 @@ function DebuggerNotEmpty({
 		if (stepIndex <= 0) return;
 		const previousStepInfo = getStep(stepIndex - 1, callDebuggerData, classDebuggerData);
 		if (previousStepInfo) {
-			setStepIndex(stepIndex - 1);
+			const newIndex = stepIndex - 1;
+			setStepIndex(newIndex);
 			setStepInfo(previousStepInfo);
+			updateCodeLocationForStep(previousStepInfo);
 			// setCodeValue(previousStepInfo.codeValue);
 			// setCodeLocation(previousStepInfo.codeLocation);
 		} else {
 			setStepIndex(0);
 		}
 	}
-
 	return (
 		<div className="w-full h-[500px] flex flex-row">
 			<FilesExplorer
 				classSourceCode={classDebuggerData.sourceCode}
-				activeFile={stepInfo.withLocation?.codeLocation.filePath}
+				activeFile={activeFile}
+				handleFileClick={handleFileClick}
 			/>
 			<div className="flex flex-col flex-grow">
 				<Controls
@@ -137,13 +175,13 @@ function DebuggerNotEmpty({
 					totalSteps={totalSteps}
 				/>
 				<div className="flex-grow">
-					{stepInfo.withLocation ? (
+					{stepInfo.withLocation && activeCodeLocation && activeFile ? (
 						<CodeViewer
-							code={stepInfo.withLocation.codeValue}
-							codeLocation={stepInfo.withLocation.codeLocation}
+							code={classDebuggerData.sourceCode[activeFile]}
+							codeLocation={activeCodeLocation}
 							highlightClass="bg-yellow-300 bg-opacity-40"
-							args={stepInfo.withLocation.arguments}
-							results={stepInfo.withLocation.results}
+							args={showArgsAndResults ? stepInfo.withLocation.arguments : undefined}
+							results={showArgsAndResults ? stepInfo.withLocation.results : undefined}
 						/>
 					) : (
 						<div className="p-6 font-mono">
@@ -151,11 +189,11 @@ function DebuggerNotEmpty({
 							<br />
 							<div className="flex flex-row">
 								<div className="w-36">Contract address:</div>{' '}
-								<div>{stepInfo.withContractCall.contractCall.contractAddress}</div>
+								<div>{stepInfo.withContractCall?.contractCall.contractAddress}</div>
 							</div>
 							<div className="flex flex-row">
 								<div className="w-36">Entry point:</div>{' '}
-								<div>{stepInfo.withContractCall.contractCall.functionSelector}</div>
+								<div>{stepInfo.withContractCall?.contractCall.functionSelector}</div>
 							</div>
 						</div>
 					)}
@@ -248,12 +286,14 @@ function getStep(
 
 function FilesExplorer({
 	classSourceCode,
-	activeFile
+	activeFile,
+	handleFileClick
 }: {
 	classSourceCode: {
 		[key: string]: string;
 	};
 	activeFile?: string;
+	handleFileClick: Function;
 }) {
 	const files = Object.keys(classSourceCode);
 	return (
@@ -266,6 +306,7 @@ function FilesExplorer({
 						className={`py-1 px-4 ${
 							activeFile === file ? 'bg-neutral-200' : 'cursor-pointer hover:bg-neutral-100'
 						}`}
+						onClick={() => handleFileClick(file)}
 					>
 						{file}
 					</div>
