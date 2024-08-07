@@ -41,14 +41,16 @@ export function SimulateDialog({
 	const [_calldata, _setCalldata] = useState(calldata);
 	const [_blockNumber, _setBlockNumber] = useState(blockNumber);
 	const [_chainId, _setChainId] = useState(chainId);
-	const [_transactionVersion, _setTransactionVersion] = useState(transactionVersion);
+	const [_transactionVersion, _setTransactionVersion] = useState<string>(
+		transactionVersion.toString()
+	);
 
 	useEffect(() => {
 		_setSenderAddress(senderAddress);
 		_setBlockNumber(blockNumber);
 		_setChainId(chainId);
 		_setCalldata(calldata);
-		_setTransactionVersion(transactionVersion);
+		_setTransactionVersion(transactionVersion.toString());
 	}, [senderAddress, blockNumber, chainId, calldata, transactionVersion]);
 
 	const router = useRouter();
@@ -143,7 +145,12 @@ export function SimulateDialog({
 						<Label htmlFor="tx-version" className="text-right">
 							Transaction version
 						</Label>
-						<Input id="tx-version" value={_transactionVersion} className="col-span-3 font-mono" />
+						<Input
+							id="tx-version"
+							value={_transactionVersion}
+							className="col-span-3 font-mono"
+							onChange={(e) => _setTransactionVersion(e.target.value)}
+						/>
 					</div>
 				</div>
 				<DialogFooter>
