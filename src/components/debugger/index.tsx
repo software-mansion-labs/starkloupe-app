@@ -25,9 +25,6 @@ export function Debugger({ calls }: { calls: CallTrace[] }) {
 		(call: CallTrace, initialStepIndex: number) => {
 			if (call.nestedCalls.length > 0) {
 				debugCall(call.nestedCalls[0], initialStepIndex);
-				setContractAddress(call.nestedCalls[0].entryPoint.storageAddress);
-			} else {
-				setContractAddress(call.entryPoint.storageAddress);
 			}
 		},
 		[debugCall]
