@@ -13,7 +13,7 @@ export function CodeViewer({
 	results
 }: {
 	code: string;
-	codeLocation: CodeLocation;
+	codeLocation: CodeLocation | undefined;
 	highlightClass?: string;
 	args?: InternalFnCallIO[];
 	results?: InternalFnCallIO[];
@@ -28,7 +28,9 @@ export function CodeViewer({
 	const handleEditorDidMount = async (editor: Editor.IStandaloneCodeEditor, monaco: Monaco) => {
 		editorRef.current = editor;
 		registerCairoLanguageSupport(monaco as any);
-		highlightCodeLocation(codeLocation, args ?? [], results ?? [], editor, monaco, false);
+		if (codeLocation) {
+			highlightCodeLocation(codeLocation, args ?? [], results ?? [], editor, monaco, false);
+		}
 	};
 
 	const highlightCodeLocation = useCallback(
@@ -136,7 +138,7 @@ export function CodeViewer({
 	const [prevCodeValue, setPrevCodeValue] = useState<string | null>(null);
 
 	useEffect(() => {
-		if (editorRef.current && monaco) {
+		if (editorRef.current && monaco && codeLocation) {
 			highlightCodeLocation(
 				codeLocation,
 				args ?? [],
