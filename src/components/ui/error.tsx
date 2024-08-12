@@ -4,7 +4,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { Button } from './button';
 
-export function SimulationError({ message }: { message: string }) {
+export function Error({ message }: { message: string }) {
 	const [copyToastVisible, setCopyToastVisible] = React.useState(false);
 
 	const onCopyToClipboardClick = () => {

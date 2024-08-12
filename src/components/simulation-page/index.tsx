@@ -13,7 +13,7 @@ import { PlayIcon } from '@heroicons/react/24/outline';
 import { TransactionDetails } from '../transaction-page';
 import { CallTraceRoot } from '../call-trace';
 import { Loader } from '../ui/loader';
-import { SimulationError } from '../ui/error';
+import { Error } from '../ui/error';
 
 export function SimulationPage({ chainId }: { chainId: string }) {
 	const searchParams = useSearchParams();
@@ -57,7 +57,7 @@ export function SimulationPage({ chainId }: { chainId: string }) {
 	if (isLoading) {
 		content = <Loader />;
 	} else if (error) {
-		content = <SimulationError message={error} />;
+		content = <Error message={error} />;
 	} else if (transactionSimulation) {
 		content = (
 			<>

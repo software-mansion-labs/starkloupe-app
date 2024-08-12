@@ -1,4 +1,4 @@
-import * as React from 'react';
+import { useEffect, useState, forwardRef, HTMLAttributes } from 'react';
 
 const Quotes = [
 	'Debugging transactions one walnut at a time.\nPatience, Cairo master!',
@@ -13,17 +13,23 @@ const Quotes = [
 	'Breaking down blocks and cracking open transactions, walnut style!'
 ];
 
-const Loader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(() => (
-	<div className="text-center my-16 text-gray-800">
-		<h3 className="text-md font-medium max-w-sm mx-auto whitespace-pre-line">
-			{Quotes[Math.floor(Math.random() * Quotes.length)]}
-		</h3>
-		<div className={'flex items-center justify-center mt-4 gap-2'}>
-			<span className="h-6 w-6 block rounded-full border-4 border-t-gray-800 animate-spin"></span>
-			loading...
+const Loader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(() => {
+	const [quote, setQuote] = useState('');
+
+	useEffect(() => {
+		setQuote(Quotes[Math.floor(Math.random() * Quotes.length)]);
+	}, []);
+
+	return (
+		<div className="text-center my-16 text-gray-800">
+			<h3 className="text-md font-medium max-w-sm mx-auto whitespace-pre-line">{quote}</h3>
+			<div className={'flex items-center justify-center mt-4 gap-2'}>
+				<span className="h-6 w-6 block rounded-full border-4 border-t-gray-800 animate-spin"></span>
+				loading...
+			</div>
 		</div>
-	</div>
-));
+	);
+});
 Loader.displayName = 'Loader';
 
 export { Loader };
