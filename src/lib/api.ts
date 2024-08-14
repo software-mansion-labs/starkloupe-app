@@ -3,10 +3,18 @@ import {
 	Project,
 	SimulationResponse,
 	SimulationsResponse,
-	Transaction
+	Transaction,
+	SearchDataResponse
 } from '@/lib/types';
 import { fetchApi } from '@/lib/utils';
 import { API_URL } from '@/lib/config';
+
+export async function fetchSearchData({ hash }: { hash: string }): Promise<SearchDataResponse> {
+	const searchDataResponse = await fetchApi<SearchDataResponse>(`/v1/search/${hash}`, {
+		renameToCamelCase: true
+	});
+	return searchDataResponse;
+}
 
 export function fetchCommonErrors({ projectSlug }: { projectSlug: string }) {
 	return fetchApi<{ project: Project; common_errors: CommonError[] }>(

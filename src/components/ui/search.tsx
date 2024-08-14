@@ -2,97 +2,136 @@
 
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { Input } from './input';
-import { useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
-import { Button } from './button';
+import { useEffect, useState, useCallback } from 'react';
+import { useRouter } from 'next/navigation';
 import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuRadioGroup,
-	DropdownMenuRadioItem,
-	DropdownMenuTrigger
-} from './dropdown-menu';
-import { ChevronUpDownIcon } from '@heroicons/react/24/outline';
-import { cn, useChain } from '@/lib/utils';
-
-function getChainIdFromPathname(pathname: string) {
-	const chainId = pathname.split('/')[2];
-	return chainId ?? 'SN_MAIN';
-}
+	CommandDialog,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList
+} from './command';
+import { cn } from '@/lib/utils';
+import { fetchSearchData } from '@/lib/api';
+import { SearchDataResponse, SearchData } from '@/lib/types';
+import { Badge } from './badge';
 
 export function Search({
 	className,
 	placeholder,
-	isTxSearch,
-	isSearchButton,
-	isChainSelector,
 	...props
 }: React.ComponentPropsWithoutRef<'div'> & {
-	isTxSearch?: boolean;
-	onSearch?: (value: string) => void;
-	isSearchButton?: boolean;
-	isChainSelector?: boolean;
+	placeholder: string;
 }) {
-	const router = useRouter();
-	const pathname = usePathname();
-
 	const [searchValue, setSearchValue] = useState('');
+	const [searchDataResponse, setSearchDataResponse] = useState<SearchDataResponse | undefined>();
+	const [error, setError] = useState<string | undefined>();
+	const [open, setOpen] = useState(false);
 
-	const { chainId, chainName } = useChain();
+	const fetchSearchDataResponse = async (value: string) => {
+		try {
+			setSearchDataResponse(await fetchSearchData({ hash: value }));
+		} catch (error: any) {
+			setError(error.toString());
+		}
+	};
 
-	function changeChainId(id: string) {
-		if (id === chainId) return;
-		router.push(`/transactions/${id}`);
-	}
+	useEffect(() => {
+		setSearchDataResponse(undefined);
+		setError(undefined);
 
-	function onSearch() {
-		if (props.onSearch) props.onSearch(searchValue);
-		else if (searchValue && searchValue.trim().length > 0)
-			router.push(`/transactions/${getChainIdFromPathname(pathname)}/${searchValue}`);
-	}
+		if (open && searchValue.trim().length > 3) {
+			fetchSearchDataResponse(searchValue);
+		} else {
+			setSearchValue('');
+		}
+	}, [searchValue, open]);
+
+	useEffect(() => {
+		const down = (e: KeyboardEvent) => {
+			if (e.key === 'k' && (e.metaKey || e.ctrlKey)) {
+				e.preventDefault();
+				setOpen((open) => !open);
+			}
+		};
+		document.addEventListener('keydown', down);
+		return () => document.removeEventListener('keydown', down);
+	}, []);
 
 	return (
 		<div className={cn('flex flex-row', className)} {...props}>
 			<label htmlFor="search" className="sr-only">
-				Search by tx hash
+				Search(cmd + K or ctrl + K)
 			</label>
 			<div className="relative flex-1">
 				<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
 					<MagnifyingGlassIcon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
 				</div>
 				<Input
-					className={`pl-10 ${isChainSelector ? 'rounded-r-none' : ''}`}
+					className="pl-10"
 					placeholder={placeholder}
 					type="search"
 					name="search"
-					value={searchValue}
-					onInput={(e) => setSearchValue(e.currentTarget.value)}
-					onKeyDown={(e) => e.key === 'Enter' && onSearch()}
+					onFocus={() => setOpen(true)}
 				/>
-				{isSearchButton && searchValue.trim().length > 0 && (
-					<Button size="sm" className="absolute inset-y-1 right-1 h-auto" onClick={onSearch}>
-						Search
-					</Button>
-				)}
 			</div>
-			{isChainSelector && (
-				<DropdownMenu>
-					<DropdownMenuTrigger asChild>
-						<Button
-							variant="outline"
-							className="relative pr-10 min-w-[7rem] rounded-l-none border-l-0"
-						>
-							{chainName} <ChevronUpDownIcon className="w-5 h-5 absolute right-2" />
-						</Button>
-					</DropdownMenuTrigger>
-					<DropdownMenuContent className="w-56">
-						<DropdownMenuRadioGroup value={chainId} onValueChange={changeChainId}>
-							<DropdownMenuRadioItem value="SN_MAIN">Mainnet</DropdownMenuRadioItem>
-							<DropdownMenuRadioItem value="SN_SEPOLIA">Sepolia</DropdownMenuRadioItem>
-						</DropdownMenuRadioGroup>
-					</DropdownMenuContent>
-				</DropdownMenu>
-			)}
+			<CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
+				<CommandInput
+					placeholder="Search for transaction, contract or class"
+					onValueChange={(value) => setSearchValue(value)}
+				/>
+				<CommandList>
+					{searchDataResponse ? (
+						<>
+							{searchDataResponse.transactions?.length > 0 && (
+								<CommandGroup heading="Transactions">
+									{searchDataResponse.transactions.map((tx, index) => (
+										<SearchItem key={`${tx.hash}-${index}`} data={tx} type="transactions" />
+									))}
+								</CommandGroup>
+							)}
+							{searchDataResponse.classes?.length > 0 && (
+								<CommandGroup heading="Classes">
+									{searchDataResponse.classes.map((cls, index) => (
+										<SearchItem key={`${cls.hash}-${index}`} data={cls} type="classes" />
+									))}
+								</CommandGroup>
+							)}
+							{searchDataResponse.contracts?.length > 0 && (
+								<CommandGroup heading="Contracts">
+									{searchDataResponse.contracts.map((contract, index) => (
+										<SearchItem
+											key={`${contract.hash}-${index}`}
+											data={contract}
+											type="contracts"
+										/>
+									))}
+								</CommandGroup>
+							)}
+						</>
+					) : error ? (
+						<CommandEmpty>No data found</CommandEmpty>
+					) : (
+						searchValue.length > 3 && <CommandEmpty>Loading...</CommandEmpty>
+					)}
+				</CommandList>
+			</CommandDialog>
 		</div>
 	);
 }
+
+const SearchItem = ({ data, type }: { data: SearchData; type: string }) => {
+	const router = useRouter();
+
+	const handleSearchItem = useCallback(() => {
+		router.push(`/${type}/${data.chainId.toUpperCase()}/${data.hash}`);
+	}, [router, data, type]);
+
+	return (
+		<CommandItem onSelect={handleSearchItem}>
+			<Badge>{data.chainId}</Badge>
+			<p className="ml-2 text-[x-small]">{data.hash}</p>
+		</CommandItem>
+	);
+};

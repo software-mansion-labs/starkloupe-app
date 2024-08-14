@@ -154,3 +154,14 @@ export interface Transaction {
 	receipt: TransactionReceipt;
 	classes: { [key: string]: { code: string } };
 }
+
+export interface SearchData {
+	chainId: string;
+	hash: string;
+}
+
+export interface SearchDataResponse {
+	transactions: SearchData[];
+	classes: SearchData[];
+	contracts: SearchData[];
+}
