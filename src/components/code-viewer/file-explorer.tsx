@@ -1,8 +1,10 @@
 export function FilesExplorer({
+	showTitle = true,
 	classSourceCode,
 	activeFile,
 	handleFileClick
 }: {
+	showTitle?: boolean;
 	classSourceCode: {
 		[key: string]: string;
 	};
@@ -12,8 +14,8 @@ export function FilesExplorer({
 	const files = Object.keys(classSourceCode);
 	return (
 		<div className="w-[200px] border-r border-neutral-200">
-			<div className="uppercase py-2 px-4 h-7">Source files</div>
-			<div className="flex flex-col mt-4 max-h-[400px] overflow-y-auto">
+			{showTitle && <div className="uppercase py-2 px-4 h-7 mb-4">Source files</div>}
+			<div className="flex flex-col max-h-[400px] overflow-y-auto">
 				{files.map((file) => (
 					<div
 						key={file}
