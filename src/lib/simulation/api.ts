@@ -1,9 +1,5 @@
 import { ChainId } from '@/lib/types';
-import {
-	addCairoLocationsToContractCalls,
-	fetchApi,
-	hardcodeCairoLocationsForTheDemo
-} from '@/lib/utils';
+import { addCairoLocationsToContractCalls, fetchApi } from '@/lib/utils';
 import {
 	CallTrace,
 	CallsMap,
@@ -60,7 +56,6 @@ export async function simulateTransactionByHash({
 function processTransactionSimulationResult(
 	transactionSimulationResult: TransactionSimulationResult
 ) {
-	hardcodeCairoLocationsForTheDemo(transactionSimulationResult);
 	addCairoLocationsToContractCalls([transactionSimulationResult.simulationResult.callTrace]);
 	addNestedCallsIdsToContractCalls(transactionSimulationResult);
 	const callsMap = makeCallsMap(transactionSimulationResult);

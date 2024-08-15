@@ -276,14 +276,13 @@ function getStep(
 	callDebuggerData: CallDebuggerData,
 	classDebuggerData: ClassDebuggerData
 ): Step | null {
-	console.log('getStep', stepIndex, callDebuggerData, classDebuggerData);
 	const step = callDebuggerData.executionTrace[stepIndex];
 	if (step.withContractCall) {
 		return step;
 	} else if (step.withLocation) {
 		const locations =
 			classDebuggerData.sierraStatementsToCairoInfo[step.withLocation.sierraIndex]?.cairoLocations;
-		const location = locations?.[0];
+		const location = locations?.[step.withLocation.locationIndex];
 		const codeValue = location ? classDebuggerData.sourceCode[location.filePath] : undefined;
 		if (!codeValue || !location) return null;
 		return { withLocation: { codeValue, codeLocation: location, ...step.withLocation } };

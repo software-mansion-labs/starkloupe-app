@@ -65,6 +65,7 @@ export interface DebuggerExecutionTraceEntryWithLocation {
 	sierraIndex: number;
 	results: InternalFnCallIO[];
 	arguments: InternalFnCallIO[];
+	locationIndex: number;
 }
 
 export type DebuggerExecutionTraceEntry =
