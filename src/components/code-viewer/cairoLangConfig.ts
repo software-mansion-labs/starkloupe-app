@@ -1,5 +1,6 @@
-import * as MonacoEditor from 'monaco-editor-core/esm/vs/editor/editor.api';
-export function registerCairoLanguageSupport(_monaco: typeof MonacoEditor) {
+import type { Monaco } from '@monaco-editor/react';
+
+export function registerCairoLanguageSupport(_monaco: Monaco) {
 	const languageId = 'cairo';
 	_monaco.languages.register({ id: languageId });
 	_monaco.languages.setLanguageConfiguration(languageId, {

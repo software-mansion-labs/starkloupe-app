@@ -26,7 +26,7 @@ export default function Page() {
 				<Image src={logoWalnut} alt="Walnut logo" unoptimized className="h-10 w-auto" />
 				<Search
 					className="w-[38rem] max-w-[92%]"
-					placeholder="Search for transaction, contract or class (cmd + K or ctrl + K)"
+					placeholder={`Search for transaction, contract or class`}
 				></Search>
 			</main>
 			{/* <div onClick={() => signIn()}>Login</div> */}

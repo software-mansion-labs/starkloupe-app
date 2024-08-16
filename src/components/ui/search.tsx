@@ -59,10 +59,13 @@ export function Search({
 		return () => document.removeEventListener('keydown', down);
 	}, []);
 
+	const isMac =
+		typeof window !== 'undefined' && window.navigator.userAgent.toUpperCase().indexOf('MAC') >= 0;
+
 	return (
 		<div className={cn('flex flex-row', className)} {...props}>
 			<label htmlFor="search" className="sr-only">
-				Search(cmd + K or ctrl + K)
+				Search
 			</label>
 			<div className="relative flex-1">
 				<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -75,6 +78,9 @@ export function Search({
 					name="search"
 					onFocus={() => setOpen(true)}
 				/>
+				<div className="pointer-events-none border border-neutral-200 text-neutral-600 rounded-sm text-sm absolute right-0 inset-y-1.5 mr-1.5 p-1 flex items-center">
+					{isMac ? '⌘K' : 'Ctrl+K'}
+				</div>
 			</div>
 			<CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
 				<CommandInput

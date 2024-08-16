@@ -52,7 +52,7 @@ export function HeaderNav() {
 							</div>
 							<div className="flex flex-1 justify-end space-x-2 lg:space-x-4 mx-4 md:mr-0">
 								<div className="w-auto max-w-xs md:max-w-sm">
-									<Search className="w-full" placeholder="Search(cmd + K or ctrl + K)"></Search>
+									<Search className="w-full" placeholder="Search"></Search>
 								</div>
 								<div className="hidden md:block">
 									<SimulateDialog

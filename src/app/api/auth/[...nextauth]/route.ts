@@ -1,6 +1,6 @@
 import NextAuth from 'next-auth';
 import CognitoProvider from 'next-auth/providers/cognito';
-import * as jose from 'jose';
+import { jwtVerify, SignJWT } from 'jose';
 
 export const runtime = 'edge';
 
@@ -42,7 +42,7 @@ const { handlers } = NextAuth({
 		async decode(params) {
 			const { token, secret, salt } = params;
 			if (!token) return null;
-			const { payload } = await jose.jwtVerify(token, new TextEncoder().encode(secret));
+			const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
 			return payload as any;
 		},
 		async encode(params) {
@@ -50,7 +50,7 @@ const { handlers } = NextAuth({
 			const { token = {}, secret, maxAge = DEFAULT_MAX_AGE, salt } = params;
 			const iat = Math.floor(Date.now() / 1000);
 			const exp = Math.floor(Date.now() / 1000) + maxAge;
-			return new jose.SignJWT(token)
+			return new SignJWT(token)
 				.setProtectedHeader({ alg: 'HS256', typ: 'JWT' })
 				.setExpirationTime(exp)
 				.setIssuedAt(iat)
