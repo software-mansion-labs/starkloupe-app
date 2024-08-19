@@ -84,7 +84,7 @@ export function Search({
 			</div>
 			<CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
 				<CommandInput
-					placeholder="Search for transaction, contract or class"
+					placeholder="Search for transaction or contract"
 					onValueChange={(value) => setSearchValue(value)}
 				/>
 				<CommandList>
@@ -97,6 +97,7 @@ export function Search({
 									))}
 								</CommandGroup>
 							)}
+							{/*
 							{searchDataResponse.classes?.length > 0 && (
 								<CommandGroup heading="Classes">
 									{searchDataResponse.classes.map((cls, index) => (
@@ -104,6 +105,7 @@ export function Search({
 									))}
 								</CommandGroup>
 							)}
+							*/}
 							{searchDataResponse.contracts?.length > 0 && (
 								<CommandGroup heading="Contracts">
 									{searchDataResponse.contracts.map((contract, index) => (
