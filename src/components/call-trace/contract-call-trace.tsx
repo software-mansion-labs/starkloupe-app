@@ -200,7 +200,7 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 			value: JSON.stringify(call.entryPoint.calldata)
 		},
 		{
-			name: 'Storage Address',
+			name: 'Contract Address',
 			value: call.entryPoint.storageAddress
 		},
 		{
