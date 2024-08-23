@@ -106,6 +106,8 @@ export function Search({
 								</CommandGroup>
 							)}
 							*/}
+							{/* This is hot fix till we don't develop classes page*/}
+							{searchDataResponse.classes?.length > 0 && <CommandEmpty>Nothing found</CommandEmpty>}
 							{searchDataResponse.contracts?.length > 0 && (
 								<CommandGroup heading="Contracts">
 									{searchDataResponse.contracts.map((contract, index) => (
@@ -119,7 +121,7 @@ export function Search({
 							)}
 						</>
 					) : error ? (
-						<CommandEmpty>No data found</CommandEmpty>
+						<CommandEmpty>Nothing found</CommandEmpty>
 					) : (
 						searchValue.length > 3 && <CommandEmpty>Loading...</CommandEmpty>
 					)}
