@@ -185,7 +185,6 @@ export interface InternalFnCallTrace {
 
 export interface TransactionSimulationResult {
 	simulationResult: SimulationResult;
-	chainId: string;
 	blockNumber: number;
 	blockTimestamp: number;
 	nonce: number;
@@ -193,4 +192,5 @@ export interface TransactionSimulationResult {
 	calldata: string[];
 	transactionVersion: number;
 	transactionType: string;
+	chainId?: string;
 }

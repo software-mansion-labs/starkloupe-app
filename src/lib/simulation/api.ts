@@ -25,11 +25,13 @@ export async function simulateTransactionByData({
 		{
 			method: 'POST',
 			data: {
-				chain_id: chainId,
-				block_number: blockNumber,
-				sender_address: senderAddress,
-				calldata: calldata,
-				transaction_version: transactionVersion
+				WithCalldata: {
+					chain_id: chainId,
+					block_number: blockNumber,
+					sender_address: senderAddress,
+					calldata: calldata,
+					transaction_version: transactionVersion
+				}
 			},
 			renameToCamelCase: true
 		}
@@ -48,6 +50,29 @@ export async function simulateTransactionByHash({
 		`/v1/${chainId}/simulate-transaction/${txHash}`,
 		{
 			renameToCamelCase: true
+		}
+	);
+	return processTransactionSimulationResult(transactionSimulationResult);
+}
+
+export async function simulateCustomNetworkTransactionByHash({
+	rpcUrl,
+	txHash
+}: {
+	rpcUrl: string;
+	txHash: string;
+}): Promise<TransactionSimulationResult> {
+	const transactionSimulationResult = await fetchApi<TransactionSimulationResult>(
+		`/v1/simulate-transaction`,
+		{
+			method: 'POST',
+			renameToCamelCase: true,
+			data: {
+				WithTxHash: {
+					rpc_url: rpcUrl,
+					tx_hash: txHash
+				}
+			}
 		}
 	);
 	return processTransactionSimulationResult(transactionSimulationResult);

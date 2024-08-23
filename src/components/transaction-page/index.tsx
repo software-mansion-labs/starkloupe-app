@@ -5,7 +5,11 @@ import { HeaderNav } from '../header';
 import { Container } from '../ui/container';
 import { Footer } from '../footer';
 import { Loader } from '../ui/loader';
-import { simulateTransactionByHash, TransactionSimulationResult } from '@/lib/simulation';
+import {
+	simulateCustomNetworkTransactionByHash,
+	simulateTransactionByHash,
+	TransactionSimulationResult
+} from '@/lib/simulation';
 import { formatTimestampToUTC } from '@/lib/utils';
 import { ChainId } from '@/lib/types';
 import { CallTraceRoot } from '@/components/call-trace';
@@ -15,23 +19,35 @@ import { Button } from '../ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
 import { Error } from '../ui/error';
 
-export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: string }) {
+export function TransactionPage({
+	txHash,
+	chainId,
+	rpcUrl
+}: {
+	txHash: string;
+	chainId?: ChainId;
+	rpcUrl?: string;
+}) {
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
 	const [error, setError] = useState<string | undefined>();
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
-				setTransactionSimulation(
-					await simulateTransactionByHash({ chainId: chainId as ChainId, txHash })
-				);
+				if (chainId) {
+					setTransactionSimulation(await simulateTransactionByHash({ chainId, txHash }));
+				} else if (rpcUrl) {
+					setTransactionSimulation(
+						await simulateCustomNetworkTransactionByHash({ txHash, rpcUrl })
+					);
+				}
 			} catch (error: any) {
 				setError(error.toString());
 			}
 		};
 
 		fetchData();
-	}, [chainId, txHash]);
+	}, [chainId, txHash, rpcUrl]);
 
 	return (
 		<>
@@ -41,25 +57,29 @@ export function TransactionPage({ chainId, txHash }: { chainId: string; txHash: 
 					<div className="bg-white border-x border-b shadow-sm border-neutral-200 p-4 pb-0">
 						<div className="flex flex-row items-baseline justify-between">
 							<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2">Transaction {txHash}</h1>
-							<SimulateDialog
-								title="Re-simulate transaction"
-								description="Edit the transaction details below and click “Run Simulation” to re-simulate."
-								dialogTrigger={
-									<Button
-										variant="outline"
-										disabled={
-											!transactionSimulation || transactionSimulation.transactionType === 'DECLARE'
-										}
-									>
-										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
-									</Button>
-								}
-								senderAddress={transactionSimulation?.senderAddress}
-								blockNumber={transactionSimulation?.blockNumber.toString()}
-								chainId={transactionSimulation?.chainId}
-								calldata={transactionSimulation?.calldata.join('\n')}
-								transactionVersion={transactionSimulation?.transactionVersion}
-							/>
+							{/* TODO: add support for custom networks and remove this check */}
+							{transactionSimulation?.chainId && (
+								<SimulateDialog
+									title="Re-simulate transaction"
+									description="Edit the transaction details below and click “Run Simulation” to re-simulate."
+									dialogTrigger={
+										<Button
+											variant="outline"
+											disabled={
+												!transactionSimulation ||
+												transactionSimulation.transactionType === 'DECLARE'
+											}
+										>
+											<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+										</Button>
+									}
+									senderAddress={transactionSimulation?.senderAddress}
+									blockNumber={transactionSimulation?.blockNumber.toString()}
+									chainId={transactionSimulation?.chainId}
+									calldata={transactionSimulation?.calldata.join('\n')}
+									transactionVersion={transactionSimulation?.transactionVersion}
+								/>
+							)}
 						</div>
 						{transactionSimulation && <TransactionDetails txSimResult={transactionSimulation} />}
 						{transactionSimulation ? (

@@ -3,7 +3,6 @@
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { Input } from './input';
 import { useEffect, useState, useCallback } from 'react';
-import { useRouter } from 'next/navigation';
 import {
 	CommandDialog,
 	CommandEmpty,
@@ -28,6 +27,7 @@ export function Search({
 	const [searchDataResponse, setSearchDataResponse] = useState<SearchDataResponse | undefined>();
 	const [error, setError] = useState<string | undefined>();
 	const [open, setOpen] = useState(false);
+	const [isMac, setIsMac] = useState(true);
 
 	const fetchSearchDataResponse = async (value: string) => {
 		try {
@@ -59,8 +59,12 @@ export function Search({
 		return () => document.removeEventListener('keydown', down);
 	}, []);
 
-	const isMac =
-		typeof window !== 'undefined' && window.navigator.userAgent.toUpperCase().indexOf('MAC') >= 0;
+	useEffect(() => {
+		// Set isMac state on client side
+		setIsMac(
+			typeof window !== 'undefined' && window.navigator.userAgent.toUpperCase().indexOf('MAC') >= 0
+		);
+	}, []); // Run only once after the component mounts
 
 	return (
 		<div className={cn('flex flex-row', className)} {...props}>
@@ -86,6 +90,7 @@ export function Search({
 				<CommandInput
 					placeholder="Search for transaction or contract"
 					onValueChange={(value) => setSearchValue(value)}
+					displayBorder={!!searchDataResponse || !!error || searchValue.length > 3}
 				/>
 				<CommandList>
 					{searchDataResponse ? (
@@ -131,12 +136,16 @@ export function Search({
 	);
 }
 
-const SearchItem = ({ data, type }: { data: SearchData; type: string }) => {
-	const router = useRouter();
-
+const SearchItem = ({ data, type }: { data: SearchData; type: 'transactions' | 'contracts' }) => {
 	const handleSearchItem = useCallback(() => {
-		router.push(`/${type}/${data.chainId.toUpperCase()}/${data.hash}`);
-	}, [router, data, type]);
+		if (type === 'transactions') {
+			window.location.href = `/transactions?chainId=${data.chainId.toUpperCase()}&txHash=${
+				data.hash
+			}`;
+		} else if (type === 'contracts') {
+			window.location.href = `/contracts/${data.hash}`;
+		}
+	}, [data, type]);
 
 	return (
 		<CommandItem onSelect={handleSearchItem}>

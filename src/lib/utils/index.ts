@@ -3,6 +3,7 @@ import { usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
 import { CallTrace } from '../simulation';
 import { TransactionSimulationResult } from '@/lib/simulation';
+import { ChainId } from '../types';
 export * from './fetch';
 
 export function cn(...inputs: ClassValue[]) {
@@ -74,12 +75,10 @@ export function formatTimestampToUTC(timestamp: number): string {
 	return formatter.format(dateObject);
 }
 
-type ChainId = 'SN_MAIN' | 'SN_SEPOLIA';
-
 export function useChain(): { chainId: ChainId; chainName: string } {
 	const path = usePathname();
 	const isSepolia = path.includes('SN_SEPOLIA');
-	const chainId = isSepolia ? 'SN_SEPOLIA' : 'SN_MAIN';
+	const chainId = isSepolia ? ChainId.SEPOLIA : ChainId.MAIN;
 	return { chainId, chainName: isSepolia ? 'Sepolia' : 'Mainnet' };
 }
 
@@ -93,5 +92,16 @@ export function addCairoLocationsToContractCalls(calls: CallTrace[]) {
 			call.additionalInfo.cairoLocation = entryPointFunction.data.cairoLocation ?? undefined;
 		}
 		addCairoLocationsToContractCalls(call.nestedCalls);
+	}
+}
+
+export function extractChainId(chainIdStr: string): ChainId | undefined {
+	switch (chainIdStr) {
+		case ChainId.MAIN:
+			return ChainId.MAIN;
+		case ChainId.SEPOLIA:
+			return ChainId.SEPOLIA;
+		default:
+			return undefined;
 	}
 }
