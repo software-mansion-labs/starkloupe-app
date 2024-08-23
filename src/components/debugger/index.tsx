@@ -81,7 +81,7 @@ export function Debugger({ calls }: { calls: CallTrace[] }) {
 			<AlertTitle>No source code for this contract</AlertTitle>
 			<AlertDescription>
 				<p className="mt-2 mb-1">
-					Contract Address:
+					Contract Address:{' '}
 					<span className="font-mono">
 						{contractAddress ? contractAddress : calls[0].entryPoint.storageAddress}
 					</span>
