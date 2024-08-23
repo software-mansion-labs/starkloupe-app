@@ -22,13 +22,26 @@ export function Debugger({ calls }: { calls: CallTrace[] }) {
 
 	const hasCall = calls.length > 0;
 
+	const findCallWithDebuggerData = useCallback((call: CallTrace): CallTrace | undefined => {
+		if (call.additionalInfo.callDebuggerData) {
+			return call;
+		}
+		for (const nestedCall of call.nestedCalls) {
+			const result = findCallWithDebuggerData(nestedCall);
+			if (result) {
+				return result;
+			}
+		}
+	}, []);
+
 	const handleNestedDebugCalls = useCallback(
 		(call: CallTrace, initialStepIndex: number) => {
-			if (call.nestedCalls.length > 0) {
-				debugCall(call.nestedCalls[0], initialStepIndex);
+			const callWithDebuggerData = findCallWithDebuggerData(call);
+			if (callWithDebuggerData) {
+				debugCall(callWithDebuggerData, initialStepIndex);
 			}
 		},
-		[debugCall]
+		[debugCall, findCallWithDebuggerData]
 	);
 
 	useEffect(() => {
@@ -68,7 +81,10 @@ export function Debugger({ calls }: { calls: CallTrace[] }) {
 			<AlertTitle>No source code for this contract</AlertTitle>
 			<AlertDescription>
 				<p className="mt-2 mb-1">
-					Contract Address: <span className="font-mono">{contractAddress}</span>
+					Contract Address:{' '}
+					<span className="font-mono">
+						{contractAddress ? contractAddress : calls[0].entryPoint.storageAddress}
+					</span>
 				</p>
 				<p>
 					<span>Follow </span>
