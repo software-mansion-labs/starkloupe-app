@@ -319,9 +319,7 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 			<AlertTitle>No source code for this contract</AlertTitle>
 			<AlertDescription>
 				<a
-					href={
-						'https://github.com/foundry-rs/starknet-foundry/blob/master/docs/src/starknet/verify.md'
-					}
+					href={'https://docs.walnut.dev/verify-contract-classes'}
 					className="text-blue-500 cursor-pointer"
 					target="_blank"
 				>

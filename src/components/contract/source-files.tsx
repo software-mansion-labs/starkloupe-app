@@ -55,7 +55,7 @@ export function SourceFiles({
 						<p>
 							<span>Follow </span>
 							<a
-								href={'https://foundry-rs.github.io/starknet-foundry/starknet/verify.html'}
+								href={'https://docs.walnut.dev/verify-contract-classes'}
 								className="text-blue-500 cursor-pointer"
 								target="_blank"
 								rel="noopener noreferrer"
