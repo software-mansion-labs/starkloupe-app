@@ -8,6 +8,7 @@ import { CodeViewer } from '../code-viewer/code-viewer';
 import { DebuggerContext } from '@/lib/context/debugger-context-provider';
 import { DebugButton } from './debug-btn';
 import { CommonCallTrace } from './common-call-trace';
+import { InfoBox } from '@/components/ui/info-box';
 
 export function FunctionCallTrace({
 	call,
@@ -32,16 +33,6 @@ export function FunctionCallTrace({
 	} = useContext(CallTraceContext);
 	const { debugCall } = useContext(DebuggerContext);
 
-	let code: string | undefined = undefined;
-
-	const cairoLocation: CodeLocation | null = call.data.cairoLocation;
-	if (cairoLocation) {
-		code =
-			simulationDebuggerData.classesDebuggerData[contractCall.additionalInfo.classHash]?.sourceCode[
-				cairoLocation.filePath
-			];
-	}
-
 	const isDebuggable =
 		!!contractCall.additionalInfo.callDebuggerData &&
 		!!simulationDebuggerData.classesDebuggerData[contractCall.additionalInfo.classHash];
@@ -50,8 +41,7 @@ export function FunctionCallTrace({
 		<React.Fragment key={call.data.id}>
 			<TraceLine
 				isActive={expandedCalls[call.data.id]}
-				isUnclickable={!code}
-				onClick={() => code && toggleCallExpand(call.data.id)}
+				onClick={() => toggleCallExpand(call.data.id)}
 			>
 				{CallTypeChip('Function')}
 				{executionFailed && <div className="w-5 mr-0.5"></div>}
@@ -96,17 +86,9 @@ export function FunctionCallTrace({
 					<CallIO ios={call.data.results} />
 				</div>
 			</TraceLine>
-
 			{expandedCalls[call.data.id] && (
-				<div className="flex flex-col bg-sky-50 border-y border-blue-400">
-					{code && cairoLocation && (
-						<div className="h-80">
-							<CodeViewer code={code} codeLocation={cairoLocation} />
-						</div>
-					)}
-				</div>
-			)}
-
+				<FunctionCallDetails call={call} contractCall={contractCall} />
+			)}{' '}
 			{collapsedCalls[call.data.id] != true && (
 				<>
 					{call.data.nestedCallsIds.map((nestedCallId) => (
@@ -156,21 +138,92 @@ function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 	);
 }
 
+function getRawFunctionName(fnName: string): string {
+	let rawFnName = fnName.replace(/::?<([^<>]*)>/g, '');
+	while (/<[^<>]*>/g.test(rawFnName)) {
+		rawFnName = rawFnName.replace(/::?<([^<>]*)>/g, '');
+	}
+	return rawFnName.replace(/::$/, '');
+}
+
 function FnName({ fnName }: { fnName: string | null }) {
 	if (fnName) {
-		const splitted = fnName.split('::');
-		if (splitted.length >= 2) {
-			const lastTwoElements = splitted.slice(-2);
-			return (
-				<>
-					<span className="text-purple-600">{lastTwoElements[0]}</span>::
-					<span className="text-pink-500">{lastTwoElements[1]}</span>
-				</>
-			);
-		} else {
-			return <span className="text-pink-500">{fnName}</span>;
-		}
+		const rawFnName = getRawFunctionName(fnName);
+		const splittedFnName = rawFnName.split('::');
+
+		return (
+			<>
+				{splittedFnName.length >= 2 ? (
+					<>
+						<span className="text-purple-600">{splittedFnName[splittedFnName.length - 2]}</span>::
+						<span className="text-pink-500">{splittedFnName[splittedFnName.length - 1]}</span>
+					</>
+				) : (
+					<span className="text-pink-500">{rawFnName}</span>
+				)}
+			</>
+		);
 	} else {
 		return <span className="text-pink-500">Unknown function</span>;
 	}
+}
+
+function FunctionCallDetails({
+	call,
+	contractCall
+}: {
+	call: InternalFnCallTrace;
+	contractCall: CallTrace;
+}) {
+	const { simulationDebuggerData } = useContext(CallTraceContext);
+	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [];
+	if (call.data.fnName) {
+		const rawFnName = getRawFunctionName(call.data.fnName);
+		const splittedFnName = rawFnName.split('::');
+
+		details.push(
+			{
+				name: 'Function Name',
+				value: splittedFnName[splittedFnName.length - 1]
+			},
+			{
+				name: 'Interface Name',
+				value: call.data.fnName
+			}
+		);
+	}
+	if (call.data.arguments) {
+		details.push({
+			name: 'Raw Arguments',
+			value: JSON.stringify(call.data.arguments)
+		});
+	}
+
+	if (call.data.results) {
+		details.push({
+			name: 'Raw Results',
+			value: JSON.stringify(call.data.results)
+		});
+	}
+
+	let code: string | undefined = undefined;
+
+	const cairoLocation: CodeLocation | null = call.data.cairoLocation;
+	if (cairoLocation) {
+		code =
+			simulationDebuggerData.classesDebuggerData[contractCall.additionalInfo.classHash]?.sourceCode[
+				cairoLocation.filePath
+			];
+	}
+
+	return (
+		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4">
+			<InfoBox details={details} />
+			{code && cairoLocation && (
+				<div className="h-80">
+					<CodeViewer code={code} codeLocation={cairoLocation} />
+				</div>
+			)}
+		</div>
+	);
 }
