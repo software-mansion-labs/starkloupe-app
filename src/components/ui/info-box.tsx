@@ -9,7 +9,7 @@ export interface InfoBoxItem {
 
 export function InfoBox({ details }: { details: InfoBoxItem[] }) {
 	return (
-		<div className="rounded text-xs flex flex-row gap-x-3 flex-wrap leading-loose">
+		<div className="rounded text-xs flex flex-row gap-x-3 flex-wrap leading-loose max-w-6xl">
 			{details.map(
 				({ name, value, isCopyable, valueToCopy }) =>
 					value && (

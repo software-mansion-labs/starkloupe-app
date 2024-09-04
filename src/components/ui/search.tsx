@@ -15,6 +15,7 @@ import { cn } from '@/lib/utils';
 import { fetchSearchData } from '@/lib/api';
 import { SearchDataResponse, SearchData } from '@/lib/types';
 import { Badge } from './badge';
+import { Network, useSettings } from '@/lib/context/settings-context';
 
 export function Search({
 	className,
@@ -28,10 +29,13 @@ export function Search({
 	const [error, setError] = useState<string | undefined>();
 	const [open, setOpen] = useState(false);
 	const [isMac, setIsMac] = useState(true);
+	const { networks } = useSettings();
 
 	const fetchSearchDataResponse = async (value: string) => {
 		try {
-			setSearchDataResponse(await fetchSearchData({ hash: value }));
+			setSearchDataResponse(
+				await fetchSearchData({ hash: value, rpcUrls: networks.map((n) => n.rpcUrl) })
+			);
 		} catch (error: any) {
 			setError(error.toString());
 		}
@@ -98,7 +102,12 @@ export function Search({
 							{searchDataResponse.transactions?.length > 0 && (
 								<CommandGroup heading="Transactions">
 									{searchDataResponse.transactions.map((tx, index) => (
-										<SearchItem key={`${tx.hash}-${index}`} data={tx} type="transactions" />
+										<SearchItem
+											key={`${tx.hash}-${index}`}
+											data={tx}
+											type="transactions"
+											networks={networks}
+										/>
 									))}
 								</CommandGroup>
 							)}
@@ -120,6 +129,7 @@ export function Search({
 											key={`${contract.hash}-${index}`}
 											data={contract}
 											type="contracts"
+											networks={networks}
 										/>
 									))}
 								</CommandGroup>
@@ -136,21 +146,47 @@ export function Search({
 	);
 }
 
-const SearchItem = ({ data, type }: { data: SearchData; type: 'transactions' | 'contracts' }) => {
+const SearchItem = ({
+	data,
+	type,
+	networks
+}: {
+	data: SearchData;
+	type: 'transactions' | 'contracts';
+	networks: Network[];
+}) => {
 	const handleSearchItem = useCallback(() => {
 		if (type === 'transactions') {
-			window.location.href = `/transactions?chainId=${data.chainId.toUpperCase()}&txHash=${
-				data.hash
-			}`;
+			if (data.source.rpcUrl) {
+				window.location.href = `/transactions?rpcUrl=${encodeURIComponent(
+					data.source.rpcUrl
+				)}&txHash=${data.hash}`;
+			} else if (data.source.chainId) {
+				window.location.href = `/transactions?chainId=${data.source.chainId.toUpperCase()}&txHash=${
+					data.hash
+				}`;
+			}
 		} else if (type === 'contracts') {
 			window.location.href = `/contracts/${data.hash}`;
 		}
 	}, [data, type]);
 
+	const network = data.source.rpcUrl
+		? networks.find((n) => n.rpcUrl === data.source.rpcUrl)
+		: undefined;
+
 	return (
-		<CommandItem onSelect={handleSearchItem}>
-			<Badge>{data.chainId}</Badge>
-			<p className="ml-2 text-[x-small]">{data.hash}</p>
+		<CommandItem
+			onSelect={handleSearchItem}
+			className="truncate cursor-pointer !bg-transparent hover:!bg-accent"
+			style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
+		>
+			{network ? (
+				<Badge className="hover:bg-primary">{network.networkName}</Badge>
+			) : data.source.chainId ? (
+				<Badge className="hover:bg-primary">{data.source.chainId}</Badge>
+			) : null}
+			<p className="ml-2 text-[x-small] truncate">{data.hash}</p>
 		</CommandItem>
 	);
 };

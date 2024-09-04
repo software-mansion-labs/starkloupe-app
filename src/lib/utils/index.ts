@@ -1,7 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
-import { CallTrace } from '../simulation';
+import { CallTrace, SimulationPayloadWithCalldata } from '../simulation';
 import { TransactionSimulationResult } from '@/lib/simulation';
 import { ChainId } from '../types';
 export * from './fetch';
@@ -104,4 +104,47 @@ export function extractChainId(chainIdStr: string): ChainId | undefined {
 		default:
 			return undefined;
 	}
+}
+
+export function extractSimulationPayloadWithCalldata(
+	searchParams: URLSearchParams
+): SimulationPayloadWithCalldata | undefined {
+	const senderAddress = searchParams.get('senderAddress');
+	const calldata = searchParams.get('calldata');
+	const blockNumber = searchParams.get('blockNumber');
+	const transactionVersion = searchParams.get('transactionVersion');
+	const nonce = searchParams.get('nonce');
+	const rpcUrl = searchParams.get('rpcUrl');
+	const chainId = searchParams.get('chainId');
+
+	if ((rpcUrl || chainId) && senderAddress && calldata && blockNumber && transactionVersion) {
+		return {
+			senderAddress,
+			calldata: parseCalldata(calldata),
+			blockNumber: blockNumber ? parseInt(blockNumber) : undefined,
+			transactionVersion: parseInt(transactionVersion),
+			nonce: nonce ? parseInt(nonce) : undefined,
+			rpcUrl: rpcUrl ?? undefined,
+			chainId: chainId ?? undefined
+		};
+	}
+}
+
+export function openSimulationPage(simulationPayload: SimulationPayloadWithCalldata) {
+	const params = new URLSearchParams({
+		senderAddress: simulationPayload.senderAddress,
+		calldata: simulationPayload.calldata.join(','),
+		transactionVersion: simulationPayload.transactionVersion.toString()
+	});
+	if (simulationPayload.blockNumber !== undefined)
+		params.set('blockNumber', simulationPayload.blockNumber.toString());
+	if (simulationPayload.nonce !== undefined)
+		params.set('nonce', simulationPayload.nonce.toString());
+	if (simulationPayload.chainId) params.set('chainId', simulationPayload.chainId);
+	if (simulationPayload.rpcUrl) params.set('rpcUrl', simulationPayload.rpcUrl);
+	window.location.href = `/simulations?${params.toString()}`;
+}
+
+export function parseCalldata(calldata: string): string[] {
+	return calldata.split(',');
 }

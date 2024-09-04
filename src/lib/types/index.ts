@@ -156,7 +156,7 @@ export interface Transaction {
 }
 
 export interface SearchData {
-	chainId: string;
+	source: { chainId: string; rpcUrl: undefined } | { chainId: undefined; rpcUrl: string };
 	hash: string;
 }
 

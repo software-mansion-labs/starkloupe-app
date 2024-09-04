@@ -4,33 +4,26 @@ import {
 	CallTrace,
 	CallsMap,
 	InternalFnCallTrace,
+	SimulationPayloadWithCalldata,
 	TransactionSimulationResult
 } from '@/lib/simulation';
 
-export async function simulateTransactionByData({
-	chainId,
-	senderAddress,
-	calldata,
-	blockNumber,
-	transactionVersion
-}: {
-	chainId: ChainId;
-	senderAddress: string;
-	calldata: string[];
-	blockNumber: number;
-	transactionVersion: number;
-}): Promise<TransactionSimulationResult> {
+export async function simulateTransactionByData(
+	simulationPayload: SimulationPayloadWithCalldata
+): Promise<TransactionSimulationResult> {
 	const transactionSimulationResult = await fetchApi<TransactionSimulationResult>(
 		`/v1/simulate-transaction`,
 		{
 			method: 'POST',
 			data: {
 				WithCalldata: {
-					chain_id: chainId,
-					block_number: blockNumber,
-					sender_address: senderAddress,
-					calldata: calldata,
-					transaction_version: transactionVersion
+					sender_address: simulationPayload.senderAddress,
+					calldata: simulationPayload.calldata,
+					block_number: simulationPayload.blockNumber,
+					transaction_version: simulationPayload.transactionVersion,
+					nonce: simulationPayload.nonce,
+					rpc_url: simulationPayload.rpcUrl,
+					chain_id: simulationPayload.chainId
 				}
 			},
 			renameToCamelCase: true

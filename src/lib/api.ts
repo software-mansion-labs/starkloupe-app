@@ -9,8 +9,17 @@ import {
 import { fetchApi } from '@/lib/utils';
 import { API_URL } from '@/lib/config';
 
-export async function fetchSearchData({ hash }: { hash: string }): Promise<SearchDataResponse> {
+export async function fetchSearchData({
+	hash,
+	rpcUrls
+}: {
+	hash: string;
+	rpcUrls?: string[];
+}): Promise<SearchDataResponse> {
+	const queryParams: { rpc_urls?: string } = {};
+	if (rpcUrls && rpcUrls.length > 0) queryParams.rpc_urls = rpcUrls.join(',');
 	const searchDataResponse = await fetchApi<SearchDataResponse>(`/v1/search/${hash}`, {
+		queryParams,
 		renameToCamelCase: true
 	});
 	return searchDataResponse;

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Disclosure } from '@headlessui/react';
 import { Search } from '@/components/ui/search';
 import { Button } from '@/components/ui/button';
-import { Bars3Icon, XMarkIcon, PlayIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, XMarkIcon, PlayIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import logoWalnut from '@/assets/wlnt-logo-beta-bw.svg';
 import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
@@ -64,13 +64,17 @@ export function HeaderNav() {
 									/>
 								</div>
 							</div>
-							{/* <div className="hidden md:block">
-								<div className="ml-4 flex items-center md:ml-6">
+							<div className="hidden md:block">
+								<div className="flex items-center">
 									<div className="flex flex-row items-center ml-3">
-										<UserAvatar />
+										<a href="/settings">
+											<Button variant="ghost" className="px-2">
+												<Cog6ToothIcon className="h-6 w-6" />
+											</Button>
+										</a>
 									</div>
 								</div>
-							</div> */}
+							</div>
 							<div className="-mr-2 flex md:hidden">
 								{/* Mobile menu button */}
 								<Disclosure.Button>

@@ -194,3 +194,14 @@ export interface TransactionSimulationResult {
 	transactionType: string;
 	chainId?: string;
 }
+
+export interface SimulationPayloadWithCalldata {
+	senderAddress: string;
+	calldata: string[];
+	blockNumber?: number;
+	transactionVersion: number;
+	nonce?: number;
+	// Either chainId or rpcUrl should be provided
+	chainId?: string;
+	rpcUrl?: string;
+}

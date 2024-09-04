@@ -18,6 +18,7 @@ import { SimulateDialog } from '../simulate-dialog';
 import { Button } from '../ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
 import { Error } from '../ui/error';
+import { useSettings } from '@/lib/context/settings-context';
 
 export function TransactionPage({
 	txHash,
@@ -57,8 +58,8 @@ export function TransactionPage({
 					<div className="bg-white border-x border-b shadow-sm border-neutral-200 p-4 pb-0">
 						<div className="flex flex-row items-baseline justify-between">
 							<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2">Transaction {txHash}</h1>
-							{/* TODO: add support for custom networks and remove this check */}
-							{transactionSimulation?.chainId && (
+
+							{transactionSimulation && (
 								<SimulateDialog
 									title="Re-simulate transaction"
 									description="Edit the transaction details below and click “Run Simulation” to re-simulate."
@@ -73,15 +74,20 @@ export function TransactionPage({
 											<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
 										</Button>
 									}
-									senderAddress={transactionSimulation?.senderAddress}
-									blockNumber={transactionSimulation?.blockNumber.toString()}
-									chainId={transactionSimulation?.chainId}
-									calldata={transactionSimulation?.calldata.join('\n')}
-									transactionVersion={transactionSimulation?.transactionVersion}
+									simulationPayload={{
+										senderAddress: transactionSimulation.senderAddress,
+										calldata: transactionSimulation.calldata,
+										chainId: chainId,
+										transactionVersion: transactionSimulation.transactionVersion,
+										rpcUrl: rpcUrl,
+										blockNumber: transactionSimulation.blockNumber
+									}}
 								/>
 							)}
 						</div>
-						{transactionSimulation && <TransactionDetails txSimResult={transactionSimulation} />}
+						{transactionSimulation && (
+							<TransactionDetails txSimResult={transactionSimulation} rpcUrl={rpcUrl} />
+						)}
 						{transactionSimulation ? (
 							<CallTraceRoot simulationResult={transactionSimulation.simulationResult} />
 						) : error ? (
@@ -97,12 +103,38 @@ export function TransactionPage({
 	);
 }
 
-export function TransactionDetails({ txSimResult }: { txSimResult: TransactionSimulationResult }) {
-	const details: InfoBoxItem[] = [
-		{
+export function TransactionDetails({
+	txSimResult,
+	rpcUrl
+}: {
+	txSimResult: TransactionSimulationResult;
+	rpcUrl?: string;
+}) {
+	const { getNetworkByRpcUrl } = useSettings();
+	let details: InfoBoxItem[] = [];
+
+	if (rpcUrl) {
+		const network = getNetworkByRpcUrl(rpcUrl);
+		if (network) {
+			details.push({
+				name: 'Custom Network',
+				value: network.networkName
+			});
+		}
+		details.push({
+			name: 'RPC URL',
+			value: rpcUrl
+		});
+	}
+
+	if (txSimResult.chainId) {
+		details.push({
 			name: 'Chain',
 			value: txSimResult.chainId
-		},
+		});
+	}
+
+	details = details.concat([
 		{
 			name: 'Block',
 			value: txSimResult.blockNumber.toString(),
@@ -117,7 +149,7 @@ export function TransactionDetails({ txSimResult }: { txSimResult: TransactionSi
 			value: txSimResult.senderAddress,
 			isCopyable: true
 		}
-	];
+	]);
 
 	if (txSimResult.nonce) {
 		// Nonce only exists on real transactions, not simulations

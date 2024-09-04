@@ -6,7 +6,11 @@ import { Footer } from '../footer';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { ChainId } from '@/lib/types';
-import { simulateTransactionByData, TransactionSimulationResult } from '@/lib/simulation';
+import {
+	simulateTransactionByData,
+	SimulationPayloadWithCalldata,
+	TransactionSimulationResult
+} from '@/lib/simulation';
 import { SimulateDialog } from '../simulate-dialog';
 import { Button } from '../ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
@@ -15,14 +19,11 @@ import { CallTraceRoot } from '../call-trace';
 import { Loader } from '../ui/loader';
 import { Error } from '../ui/error';
 
-export function SimulationPage({ chainId }: { chainId: string }) {
-	const searchParams = useSearchParams();
-
-	const senderAddress = searchParams.get('senderAddress');
-	const calldata = searchParams.get('calldata');
-	const blockNumber = searchParams.get('blockNumber');
-	const transactionVersion = searchParams.get('transactionVersion');
-
+export function SimulationPage({
+	simulationPayload
+}: {
+	simulationPayload?: SimulationPayloadWithCalldata;
+}) {
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
 	const [error, setError] = useState<string | undefined>();
 
@@ -30,28 +31,22 @@ export function SimulationPage({ chainId }: { chainId: string }) {
 
 	useEffect(() => {
 		const fetchData = async () => {
-			if (senderAddress && calldata && blockNumber && transactionVersion) {
+			if (simulationPayload) {
 				try {
 					setIsLoading(true);
-					setTransactionSimulation(
-						await simulateTransactionByData({
-							chainId: chainId as ChainId,
-							senderAddress: senderAddress as string,
-							calldata: (calldata as string).split('\n').map((data) => data.substring(2)),
-							blockNumber: parseInt(blockNumber as string),
-							transactionVersion: parseInt(transactionVersion as string, 10)
-						})
-					);
+					setTransactionSimulation(await simulateTransactionByData(simulationPayload));
 				} catch (err: any) {
 					setError(err.toString());
 				} finally {
 					setIsLoading(false);
 				}
+			} else {
+				setError('Invalid simulation parameters');
 			}
 		};
 
 		fetchData();
-	}, [chainId, senderAddress, calldata, blockNumber, transactionVersion]);
+	}, [simulationPayload]);
 
 	let content = null;
 	if (isLoading) {
@@ -61,7 +56,10 @@ export function SimulationPage({ chainId }: { chainId: string }) {
 	} else if (transactionSimulation) {
 		content = (
 			<>
-				<TransactionDetails txSimResult={transactionSimulation} />
+				<TransactionDetails
+					txSimResult={transactionSimulation}
+					rpcUrl={simulationPayload?.rpcUrl}
+				/>
 				<CallTraceRoot simulationResult={transactionSimulation.simulationResult} />
 			</>
 		);
@@ -85,11 +83,7 @@ export function SimulationPage({ chainId }: { chainId: string }) {
 										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
 									</Button>
 								}
-								senderAddress={senderAddress || ''}
-								blockNumber={blockNumber || ''}
-								chainId={chainId}
-								calldata={calldata || ''}
-								transactionVersion={parseInt(transactionVersion as string, 10)}
+								simulationPayload={simulationPayload}
 							/>
 						</div>
 						{content}
