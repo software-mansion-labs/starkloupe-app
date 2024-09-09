@@ -11,7 +11,12 @@ export default function Page() {
 
 	const txHash = searchParams.get('txHash');
 	const chainIdStr = searchParams.get('chainId');
-	const rpcUrl = searchParams.get('rpcUrl');
+	let rpcUrl = searchParams.get('rpcUrl');
+
+	// TODO: Fix this on Dojo side and remove this
+	if (rpcUrl && !isValidUrl(rpcUrl)) {
+		rpcUrl = decodeURIComponent(rpcUrl);
+	}
 
 	if (txHash && chainIdStr) {
 		const chainId = extractChainId(chainIdStr);
@@ -22,3 +27,12 @@ export default function Page() {
 		return <div>Page not found</div>;
 	}
 }
+
+const isValidUrl = (urlString: string) => {
+	try {
+		new URL(urlString);
+		return true;
+	} catch (e) {
+		return false;
+	}
+};
