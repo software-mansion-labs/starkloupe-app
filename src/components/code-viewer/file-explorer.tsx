@@ -14,7 +14,7 @@ export function FilesExplorer({
 	const files = Object.keys(classSourceCode);
 	return (
 		<div className="w-[200px] border-r border-neutral-200">
-			{showTitle && <div className="uppercase py-2 px-4 h-7 mb-4">Source files</div>}
+			{showTitle && <div className="uppercase px-4 my-2 font-medium">Source files</div>}
 			<div className="flex flex-col max-h-[400px] overflow-y-auto">
 				{files.map((file) => (
 					<div

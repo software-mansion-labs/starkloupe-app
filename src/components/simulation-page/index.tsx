@@ -3,9 +3,7 @@
 import { HeaderNav } from '../header';
 import { Container } from '../ui/container';
 import { Footer } from '../footer';
-import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { ChainId } from '@/lib/types';
 import {
 	simulateTransactionByData,
 	SimulationPayloadWithCalldata,
@@ -68,26 +66,22 @@ export function SimulationPage({
 	return (
 		<>
 			<HeaderNav />
-			<main>
-				<Container>
-					<div className="bg-white border-x border-b shadow-sm border-neutral-200 p-4 pb-0 min-h-[50vh]">
-						<div className="flex flex-row items-baseline justify-between">
-							<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2">
-								Transaction simulation
-							</h1>
-							<SimulateDialog
-								title="Re-simulate transaction"
-								description="Edit the invoke transaction details below and click “Run Simulation” to re-simulate."
-								dialogTrigger={
-									<Button variant="outline" disabled={isLoading}>
-										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
-									</Button>
-								}
-								simulationPayload={simulationPayload}
-							/>
-						</div>
-						{content}
+			<main className="overflow-y-auto flex-grow">
+				<Container className="py-6">
+					<div className="flex flex-row items-baseline justify-between">
+						<h1 className="text-xl font-medium leading-6 mt-4 mr-2">Transaction simulation</h1>
+						<SimulateDialog
+							title="Re-simulate transaction"
+							description="Edit the invoke transaction details below and click “Run Simulation” to re-simulate."
+							dialogTrigger={
+								<Button variant="outline" disabled={isLoading}>
+									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+								</Button>
+							}
+							simulationPayload={simulationPayload}
+						/>
 					</div>
+					{content}
 				</Container>
 			</main>
 			<Footer />

@@ -8,12 +8,10 @@ export default async function Page() {
 	return (
 		<>
 			<HeaderNav />
-			<main>
-				<Container>
-					<div className={`bg-white border-x border-b shadow-sm border-neutral-200 p-4 pb-0`}>
-						<h1 className="text-xl font-medium leading-6 mb-4">Transactions</h1>
-						<p>Use search bar at the top right to get details about a transaction.</p>
-					</div>
+			<main className="overflow-y-auto flex-grow">
+				<Container className="py-6">
+					<h1 className="text-xl font-medium leading-6 mb-4">Transactions</h1>
+					<p>Use search bar at the top right to get details about a transaction.</p>
 				</Container>
 			</main>
 			<Footer />

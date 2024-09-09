@@ -39,7 +39,7 @@ export function SimulationsWithErrorPage({
 	return (
 		<>
 			<HeaderNav />
-			<Container className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+			<Container className="px-4 sm:px-6 lg:px-8">
 				<main className="bg-white border-x border-b shadow-sm border-neutral-200 px-4 py-8 flex flex-col gap-8">
 					{fetchError ? (
 						<div>{fetchError.message}</div>

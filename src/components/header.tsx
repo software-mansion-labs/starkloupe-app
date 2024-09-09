@@ -10,6 +10,7 @@ import logoWalnut from '@/assets/wlnt-logo-beta-bw.svg';
 import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import { SimulateDialog } from './simulate-dialog';
+import { Container } from '@/components/ui/container';
 
 export function HeaderNav() {
 	const session = useSession();
@@ -19,11 +20,18 @@ export function HeaderNav() {
 		<Disclosure as="nav" className="bg-neutral-50 border-b border-neutral-200">
 			{({ open }) => (
 				<>
-					<div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+					<Container>
 						<div className="flex h-16 items-center justify-between">
 							<div className="flex items-center">
 								<div className="flex-shrink-0">
-									<Image src={logoWalnut} alt="Walnut logo" unoptimized className="h-8 w-auto" />
+									<Link href="/">
+										<Image
+											src={logoWalnut}
+											alt="Walnut logo"
+											unoptimized
+											className="h-8 w-auto cursor-pointer"
+										/>
+									</Link>
 								</div>
 								<div className="hidden md:block">
 									<nav className="ml-10 flex items-center space-x-4 lg:space-x-6">
@@ -51,7 +59,7 @@ export function HeaderNav() {
 								</div>
 							</div>
 							<div className="flex flex-1 justify-end space-x-2 lg:space-x-4 mx-4 md:mr-0">
-								<div className="w-auto max-w-xs md:max-w-sm">
+								<div className="w-auto max-w-xs md:w-80">
 									<Search className="w-full" placeholder="Search"></Search>
 								</div>
 								<div className="hidden md:block">
@@ -64,7 +72,7 @@ export function HeaderNav() {
 									/>
 								</div>
 							</div>
-							<div className="hidden md:block">
+							<div className="hidden md:block -mr-2">
 								<div className="flex items-center">
 									<div className="flex flex-row items-center ml-3">
 										<a href="/settings">
@@ -86,7 +94,7 @@ export function HeaderNav() {
 								</Disclosure.Button>
 							</div>
 						</div>
-					</div>
+					</Container>
 
 					<Disclosure.Panel className="md:hidden fixed bg-neutral-50 inset-x-0 z-50 border-b border-neutral-200">
 						<div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">

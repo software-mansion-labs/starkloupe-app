@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				<NextAuthProvider>
 					<SettingsProvider>
 						<LayoutClientContainer />
-						<div className="min-h-full">{children}</div>
+						<div className="h-screen flex flex-col">{children}</div>
 					</SettingsProvider>
 				</NextAuthProvider>
 			</body>

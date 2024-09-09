@@ -6,6 +6,11 @@ import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 
 export function EventsList({ events }: { events: EventTrace[] }) {
 	const { expandedCalls } = useContext(CallTraceContext);
+
+	if (events.length === 0) {
+		return <div className="px-4 py-2 text-sm">No events emitted during this transaction.</div>;
+	}
+
 	return events.map((event, index) => {
 		const key = `event-${index}`;
 
@@ -31,46 +36,6 @@ export function EventsList({ events }: { events: EventTrace[] }) {
 						<span className="text-yellow-900">{')'}</span>
 					</div>
 				</TraceLine>
-				{/* {expandedTraceIndex === index && (
-            <div className="justify-center py-2">
-             {call.eventDatas && call.eventDatas.length > 0 && (
-              <Table className="w-auto bg-white text-xs border border-neutral-200 mx-auto mt-2">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Data</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {call.eventDatas.map((item: string, index: number) => (
-                  <TableRow key={index}>
-                    <TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
-                      {item}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                </TableBody>
-              </Table>
-            )}
-            {call.eventKeys && call.eventKeys.length > 0 && (
-              <Table className="w-auto bg-white text-xs border border-neutral-200 mx-auto mt-2">
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Keys</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {call.eventKeys.map((item: string, index: number) => (
-                  <TableRow key={index}>
-                    <TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
-                      {item}
-                    </TableCell>
-                  </TableRow>
-                ))}
-                </TableBody>
-              </Table>
-            )}
-            </div>
-          )} */}
 			</React.Fragment>
 		);
 	});

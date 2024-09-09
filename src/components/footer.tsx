@@ -1,14 +1,14 @@
 import { JSX, SVGProps } from 'react';
-import { Button } from '@/components/ui/button';
-import Link from 'next/link';
+import { Container } from '@/components/ui/container';
+import { Separator } from '@/components/ui/separator';
 
 const navigation = [
 	{
-		name: 'Email',
-		href: 'mailto:hi@walnut.dev',
+		name: 'Telegram',
+		href: 'https://t.me/walnuthq', // Replace with your actual Telegram link
 		icon: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 			<svg fill="currentColor" viewBox="0 0 24 24" {...props}>
-				<path d="M20 4H4C2.9 4 2 4.9 2 6v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM4 6l8 5 8-5v12H4V6z" />
+				<path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z" />
 			</svg>
 		)
 	},
@@ -39,26 +39,47 @@ const navigation = [
 export function Footer() {
 	return (
 		<footer>
-			<div className="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between lg:px-8">
-				<div className="flex justify-center space-x-6 md:order-2 items-center">
-					{navigation.map((item) => (
+			<Container className="py-1 bg-neutral-50 border-t border-neutral-200">
+				<div className="flex flex-col md:flex-row md:justify-between md:items-center">
+					<div className="flex space-x-12 mb-4 md:mb-0 text-xs">
 						<a
-							key={item.name}
-							href={item.href}
+							href="https://t.me/walnuthq"
 							target="_blank"
-							className="text-gray-400 hover:text-gray-500"
+							rel="noopener noreferrer"
+							className="text-gray-500 hover:underline text-xs"
 						>
-							<span className="sr-only">{item.name}</span>
-							<item.icon className="h-6 w-6" aria-hidden="true" />
+							Join our Telegram for updates, support or some nutty vibes 🥜
 						</a>
-					))}
+					</div>
+					<div className="flex justify-end space-x-4 items-center">
+						<div className="flex justify-end mb-4 md:mb-0">
+							<a
+								href="https://docs.walnut.dev"
+								target="_blank"
+								rel="noopener noreferrer"
+								className="text-gray-500 hover:underline text-xs"
+							>
+								Docs
+							</a>
+						</div>
+						<Separator orientation="vertical" className="h-4" />
+						<div className="flex justify-center space-x-4 items-center">
+							{navigation.map((item) => (
+								<a
+									key={item.name}
+									href={item.href}
+									target="_blank"
+									rel="noopener noreferrer"
+									className="text-gray-400 hover:text-gray-500"
+								>
+									<span className="sr-only">{item.name}</span>
+									<item.icon className="h-5 w-5" aria-hidden="true" />
+								</a>
+							))}
+						</div>
+					</div>
 				</div>
-				<div className="mt-8 md:order-1 md:mt-0">
-					<p className="text-center text-xs leading-5 text-gray-500">
-						Copyright &copy; {new Date().getFullYear()} Wido Inc. All rights reserved.
-					</p>
-				</div>
-			</div>
+			</Container>
 		</footer>
 	);
 }

@@ -42,23 +42,21 @@ export function ContractPage({
 	return (
 		<>
 			<HeaderNav />
-			<main>
-				<Container>
-					<div className="bg-white border-x border-b shadow-sm border-neutral-200 p-4 pb-0">
-						<div className="flex flex-row items-baseline justify-between">
-							<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2">
-								Contract {contractAddress}
-							</h1>
-						</div>
-						{contractData && <ContractDetails contractData={contractData} />}
-						{contractData ? (
-							<ContractRoot contractData={contractData} />
-						) : error ? (
-							<Error message={error} />
-						) : (
-							<Loader />
-						)}
+			<main className="overflow-y-auto flex-grow">
+				<Container className="py-6">
+					<div className="flex flex-row items-baseline justify-between">
+						<h1 className="text-xl font-medium leading-6 mt-4 mb-2 mr-2">
+							Contract {contractAddress}
+						</h1>
 					</div>
+					{contractData && <ContractDetails contractData={contractData} />}
+					{contractData ? (
+						<ContractRoot contractData={contractData} />
+					) : error ? (
+						<Error message={error} />
+					) : (
+						<Loader />
+					)}
 				</Container>
 			</main>
 			<Footer />
@@ -73,13 +71,13 @@ function ContractDetails({ contractData }: { contractData: ContractResponseWithS
 			value: contractData.classHash
 		},
 		{
-			name: 'Verified',
+			name: 'Verified on Walnut',
 			value: contractData.isClassVerified.toString()
 		}
 	];
 
 	return (
-		<div className="mt-4 py-1 px-2 bg-neutral-100 rounded-sm flex flex-col">
+		<div className="mt-4">
 			<InfoBox details={details} />
 		</div>
 	);

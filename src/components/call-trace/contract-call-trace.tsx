@@ -14,6 +14,7 @@ import { DebugButton } from '@/components/call-trace/debug-btn';
 import { ErrorTooltip } from '@/components/error-tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CommonCallTrace } from './common-call-trace';
+import { Card } from '../ui/card';
 
 export function ContractCallTrace({
 	call,
@@ -331,7 +332,7 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 	);
 
 	return (
-		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4">
+		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-2 px-4">
 			{!hasDebuggableInfo && noSourceCodeAlert}
 			<InfoBox details={details} />
 			{call.additionalInfo?.calldataDecoded && (
@@ -341,69 +342,12 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 				<CalldataTable calldata={call.additionalInfo.functionResult} type={DataType.OUTPUT} />
 			)}
 			{code && (
-				<div className="h-80">
-					<CodeViewer code={code} codeLocation={cairoLocation} />
-				</div>
+				<Card>
+					<div className="h-80">
+						<CodeViewer code={code} codeLocation={cairoLocation} />
+					</div>
+				</Card>
 			)}
 		</div>
 	);
-}
-
-// function EventDetails({ eventDecoded }: { eventDecoded: CallEventDecoded }) {
-// 	return (
-// 		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4 mb-2">
-// 			<div className="w-fit min-w-[30rem]">
-// 				{CallDetailsIo([{ io: eventDecoded.data ?? [], name: 'Event argument' }])}
-// 			</div>
-// 		</div>
-// 	);
-// }
-
-/* {showEvents == true &&
-					!(collapsedCalls?.[callIdentifier] == true) &&
-					call.events_decoded &&
-					call.events_decoded.length > 0 &&
-					call.events_decoded.map((event_decoded, j) => (
-						<div key={j}>
-							<TraceLine
-								key={j}
-								onClick={() =>
-									callExpandHandler({
-										...expandedCalls,
-										[callIdentifier + event_decoded.name]:
-											!expandedCalls[callIdentifier + event_decoded.name]
-									})
-								}
-								className={`border-y-2 cursor-pointer ${
-									expandedCalls[callIdentifier + event_decoded.name]
-										? 'border-neutral-300 trace-line--selected'
-										: 'border-transparent'
-								}`}
-							>
-								{CallTypeChip('EVENT')}
-								<CallChip
-									style={{ marginLeft: (nestingLevel + 2.5) * CALL_NESTING_SPACE_BUMP }}
-									className="trace-line_content"
-								>
-									{event_decoded.name}
-									{event_decoded.order ? `order=${event_decoded.order}` : ''}
-									<ArrowLongRightIcon className="h-3 w-3 inline mx-1" />{' '}
-									{CallInputs(event_decoded.data)}
-								</CallChip>
-							</TraceLine>
-							{expandedCalls[callIdentifier + event_decoded.name] && (
-								<EventDetails eventDecoded={event_decoded} />
-							)}
-						</div>
-					))} */
-
-{
-	/* {call.error_message && !(collapsedCalls?.[callIdentifier] == true) && (
-					<TraceLine>
-						{CallTypeChip('ERROR')}
-						<CallChip style={{ marginLeft: (nestingLevel + 2.5) * CALL_NESTING_SPACE_BUMP }}>
-							{call.error_message}
-						</CallChip>
-					</TraceLine>
-				)} */
 }

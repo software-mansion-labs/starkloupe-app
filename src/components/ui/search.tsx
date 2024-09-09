@@ -138,7 +138,7 @@ export function Search({
 					) : error ? (
 						<CommandEmpty>Nothing found</CommandEmpty>
 					) : (
-						searchValue.length > 3 && <CommandEmpty>Loading...</CommandEmpty>
+						searchValue.length > 3 && <CommandEmpty>Searching...</CommandEmpty>
 					)}
 				</CommandList>
 			</CommandDialog>
@@ -167,7 +167,7 @@ const SearchItem = ({
 				}`;
 			}
 		} else if (type === 'contracts') {
-			window.location.href = `/contracts/${data.hash}`;
+			window.location.href = `/contracts/${data.source.chainId}/${data.hash}`;
 		}
 	}, [data, type]);
 
@@ -186,7 +186,7 @@ const SearchItem = ({
 			) : data.source.chainId ? (
 				<Badge className="hover:bg-primary">{data.source.chainId}</Badge>
 			) : null}
-			<p className="ml-2 text-[x-small] truncate">{data.hash}</p>
+			<p className="ml-2 text-sm truncate">{data.hash}</p>
 		</CommandItem>
 	);
 };

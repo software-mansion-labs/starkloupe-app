@@ -53,49 +53,46 @@ export function TransactionPage({
 	return (
 		<>
 			<HeaderNav />
-			<main>
-				<Container>
-					<div className="bg-white border-x border-b shadow-sm border-neutral-200 p-4 pb-0">
-						<div className="flex flex-row items-baseline justify-between">
-							<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2">Transaction {txHash}</h1>
+			<main className="overflow-y-auto flex-grow">
+				<Container className="py-6">
+					<div className="flex flex-row items-baseline justify-between">
+						<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2">Transaction {txHash}</h1>
 
-							{transactionSimulation && (
-								<SimulateDialog
-									title="Re-simulate transaction"
-									description="Edit the transaction details below and click “Run Simulation” to re-simulate."
-									dialogTrigger={
-										<Button
-											variant="outline"
-											disabled={
-												!transactionSimulation ||
-												transactionSimulation.transactionType === 'DECLARE'
-											}
-										>
-											<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
-										</Button>
-									}
-									simulationPayload={{
-										senderAddress: transactionSimulation.senderAddress,
-										calldata: transactionSimulation.calldata,
-										chainId: chainId,
-										transactionVersion: transactionSimulation.transactionVersion,
-										rpcUrl: rpcUrl,
-										blockNumber: transactionSimulation.blockNumber
-									}}
-								/>
-							)}
-						</div>
 						{transactionSimulation && (
-							<TransactionDetails txSimResult={transactionSimulation} rpcUrl={rpcUrl} />
-						)}
-						{transactionSimulation ? (
-							<CallTraceRoot simulationResult={transactionSimulation.simulationResult} />
-						) : error ? (
-							<Error message={error} />
-						) : (
-							<Loader />
+							<SimulateDialog
+								title="Re-simulate transaction"
+								description="Edit the transaction details below and click “Run Simulation” to re-simulate."
+								dialogTrigger={
+									<Button
+										variant="outline"
+										disabled={
+											!transactionSimulation || transactionSimulation.transactionType === 'DECLARE'
+										}
+									>
+										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+									</Button>
+								}
+								simulationPayload={{
+									senderAddress: transactionSimulation.senderAddress,
+									calldata: transactionSimulation.calldata,
+									chainId: chainId,
+									transactionVersion: transactionSimulation.transactionVersion,
+									rpcUrl: rpcUrl,
+									blockNumber: transactionSimulation.blockNumber
+								}}
+							/>
 						)}
 					</div>
+					{transactionSimulation && (
+						<TransactionDetails txSimResult={transactionSimulation} rpcUrl={rpcUrl} />
+					)}
+					{transactionSimulation ? (
+						<CallTraceRoot simulationResult={transactionSimulation.simulationResult} />
+					) : error ? (
+						<Error message={error} />
+					) : (
+						<Loader />
+					)}
 				</Container>
 			</main>
 			<Footer />
@@ -196,7 +193,7 @@ export function TransactionDetails({
 	}
 
 	return (
-		<div className="mt-4 py-1 px-2 bg-neutral-100 rounded-sm flex flex-col">
+		<div className="mt-4">
 			<InfoBox details={details} />
 		</div>
 	);

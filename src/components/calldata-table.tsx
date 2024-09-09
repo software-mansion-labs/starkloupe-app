@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { DecodedItem, CalldataDecoded, DataType } from '@/lib/simulation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
-
+import { Card } from './ui/card';
 export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; type: DataType }) {
 	const [displayFormat, setDisplayFormat] = useState<'hex' | 'dec'>('hex');
 
@@ -84,34 +84,36 @@ export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; t
 					</ToggleGroupItem>
 				</ToggleGroup>
 			</div>
-			<Table className="w-auto py-0.5 px-2 bg-white text-xs border border-neutral-200">
-				<TableHeader>
-					<TableRow>
-						{type === DataType.INPUT && (
-							<TableHead className="whitespace-break-spaces">Name</TableHead>
-						)}
-						<TableHead>Type</TableHead>
-						<TableHead>Value</TableHead>
-					</TableRow>
-				</TableHeader>
-				<TableBody>
-					{calldata.map((item: DecodedItem, index: number) => (
-						<TableRow key={index}>
+			<Card className="w-fit">
+				<Table className="w-auto py-0.5 px-2 text-xs">
+					<TableHeader>
+						<TableRow>
 							{type === DataType.INPUT && (
-								<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
-									{item.name}
-								</TableCell>
+								<TableHead className="whitespace-break-spaces">Name</TableHead>
 							)}
-							<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
-								{item.type}
-							</TableCell>
-							<TableCell className="border-r border-neutral-200 last:border-r-0">
-								{renderValue(item.value)}
-							</TableCell>
+							<TableHead>Type</TableHead>
+							<TableHead>Value</TableHead>
 						</TableRow>
-					))}
-				</TableBody>
-			</Table>
+					</TableHeader>
+					<TableBody>
+						{calldata.map((item: DecodedItem, index: number) => (
+							<TableRow key={index}>
+								{type === DataType.INPUT && (
+									<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
+										{item.name}
+									</TableCell>
+								)}
+								<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
+									{item.type}
+								</TableCell>
+								<TableCell className="border-r border-neutral-200 last:border-r-0">
+									{renderValue(item.value)}
+								</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			</Card>
 		</div>
 	);
 }

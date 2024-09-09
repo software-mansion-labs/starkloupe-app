@@ -1,10 +1,13 @@
 import { useContext, useState } from 'react';
-import { ExecutionResultReverted, SimulationResult } from '@/lib/simulation';
-import { CallTraceContext, CallTraceContextProvider, TabId } from '@/lib/context/call-trace';
+import { SimulationResult } from '@/lib/simulation';
+import { CallTraceContextProvider } from '@/lib/context/call-trace';
 import { ContractCallTrace } from './contract-call-trace';
 import { EventsList } from './event-entries';
 import { Debugger } from '@/components/debugger';
 import { DebuggerContextProvider } from '@/lib/context/debugger-context-provider';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Card, CardContent } from '@/components/ui/card';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 export function CallTraceRoot({ simulationResult }: { simulationResult: SimulationResult }) {
 	return (
@@ -17,61 +20,41 @@ export function CallTraceRoot({ simulationResult }: { simulationResult: Simulati
 }
 
 function CallTraceRootContent({ simulationResult }: { simulationResult: SimulationResult }) {
-	const { activeTab, setActiveTab } = useContext(CallTraceContext);
-
 	const executionFailed = simulationResult.executionResult.executionStatus === 'REVERTED';
 
-	const tabs: { id: TabId; name: string }[] = [
-		{
-			id: 'call-trace',
-			name: 'Call Trace'
-		},
-		{
-			id: 'events-list',
-			name: 'Events'
-		},
-		{
-			id: 'debugger',
-			name: 'Debugger'
-		}
-	];
-
 	return (
-		<div className="pt-16">
-			<div className="flex flex-row items-center border-b border-neutral-200 -mx-4 px-4">
-				{tabs.map((tab) => (
-					<div
-						key={tab.id}
-						className={`text-xs uppercase font-semibold cursor-pointer pb-2 border-b-2 -my-[1px] px-4 ${
-							activeTab === tab.id
-								? 'text-black border-black'
-								: 'text-neutral-500 border-transparent'
-						}`}
-						onClick={() => setActiveTab(tab.id)}
-					>
-						{tab.name}
-					</div>
-				))}
-			</div>
-			<div className="overflow-x-auto whitespace-nowrap min-h-[20rem] -mx-4 text-xs">
-				<div className="min-w-fit">
-					{activeTab === 'call-trace' && (
-						<div className="mt-5">
+		<div className="mt-12">
+			<Tabs defaultValue="call-trace">
+				<TabsList>
+					<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
+					<TabsTrigger value="events-list">Events</TabsTrigger>
+					<TabsTrigger value="debugger">Debugger</TabsTrigger>
+				</TabsList>
+				<TabsContent value="call-trace">
+					<ScrollArea className="whitespace-nowrap rounded-xl border">
+						<div className="text-xs px-0 py-2">
 							<ContractCallTrace
 								call={simulationResult.callTrace}
 								nestingLevel={0}
 								executionFailed={executionFailed}
 							/>
 						</div>
-					)}
-					{activeTab === 'events-list' && (
-						<div className="mt-5">
+						<ScrollBar orientation="horizontal" />
+					</ScrollArea>
+				</TabsContent>
+				<TabsContent value="events-list">
+					<Card>
+						<CardContent className="p-0 py-2 text-xs">
 							<EventsList events={simulationResult.eventsTrace} />
-						</div>
-					)}
-					{activeTab === 'debugger' && <Debugger calls={[simulationResult.callTrace]} />}
-				</div>
-			</div>
+						</CardContent>
+					</Card>
+				</TabsContent>
+				<TabsContent value="debugger">
+					<Card className="text-xs">
+						<Debugger calls={[simulationResult.callTrace]} />
+					</Card>
+				</TabsContent>
+			</Tabs>
 		</div>
 	);
 }
