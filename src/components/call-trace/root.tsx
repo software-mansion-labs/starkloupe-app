@@ -1,6 +1,6 @@
-import { useContext, useState } from 'react';
+import { useContext } from 'react';
 import { SimulationResult } from '@/lib/simulation';
-import { CallTraceContextProvider } from '@/lib/context/call-trace';
+import { CallTraceContext, CallTraceContextProvider, TabId } from '@/lib/context/call-trace';
 import { ContractCallTrace } from './contract-call-trace';
 import { EventsList } from './event-entries';
 import { Debugger } from '@/components/debugger';
@@ -20,11 +20,12 @@ export function CallTraceRoot({ simulationResult }: { simulationResult: Simulati
 }
 
 function CallTraceRootContent({ simulationResult }: { simulationResult: SimulationResult }) {
+	const { activeTab, setActiveTab } = useContext(CallTraceContext);
 	const executionFailed = simulationResult.executionResult.executionStatus === 'REVERTED';
 
 	return (
 		<div className="mt-12">
-			<Tabs defaultValue="call-trace">
+			<Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabId)}>
 				<TabsList>
 					<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
 					<TabsTrigger value="events-list">Events</TabsTrigger>
