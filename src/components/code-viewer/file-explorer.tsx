@@ -9,7 +9,7 @@ export function FilesExplorer({
 		[key: string]: string;
 	};
 	activeFile?: string;
-	handleFileClick: Function;
+	handleFileClick: (filePath: string) => void;
 }) {
 	const files = Object.keys(classSourceCode);
 	return (

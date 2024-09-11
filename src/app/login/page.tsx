@@ -8,16 +8,16 @@ import { signIn, useSession } from 'next-auth/react';
 export const runtime = 'edge';
 
 export default function Page({ params }: { params: { team_id: string } }) {
-	const { status } = useSession();
-	const router = useRouter();
+	// const { status } = useSession();
+	// const router = useRouter();
 
-	useEffect(() => {
-		if (status === 'authenticated') {
-			router.push('/monitoring');
-		} else if (status === 'unauthenticated') {
-			signIn('cognito');
-		}
-	}, [status, router]);
+	// useEffect(() => {
+	// 	if (status === 'authenticated') {
+	// 		router.push('/monitoring');
+	// 	} else if (status === 'unauthenticated') {
+	// 		signIn('cognito');
+	// 	}
+	// }, [status, router]);
 
 	return <div className="text-center pt-20">Loading...</div>;
 }

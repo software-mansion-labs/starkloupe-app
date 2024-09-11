@@ -10,7 +10,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 
 export function SimulationsTable({ simulations }: { simulations: SimulationListItem[] }) {
-	const router = useRouter();
+	// const router = useRouter();
 	const [isFilterStatus, setIsFilterStatus] = useState(false);
 
 	const isOnlyFailure = !simulations.some((s) => s.status !== 'failure');

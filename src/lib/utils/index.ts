@@ -1,8 +1,7 @@
 import { type ClassValue, clsx } from 'clsx';
 import { usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
-import { CallTrace, SimulationPayloadWithCalldata } from '../simulation';
-import { TransactionSimulationResult } from '@/lib/simulation';
+import { CallTrace, SimulationPayloadWithCalldata , TransactionSimulationResult } from '../simulation';
 import { ChainId } from '../types';
 export * from './fetch';
 

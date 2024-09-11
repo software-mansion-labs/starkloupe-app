@@ -6,7 +6,8 @@
 		"dev": "next dev -p 5173",
 		"build": "next build",
 		"start": "next start",
-		"lint": "next lint",
+		"lint": "eslint .",
+		"lint-fix": "eslint . --fix",
 		"pages:build": "npx @cloudflare/next-on-pages@1",
 		"pages:deploy": "npm run pages:build && wrangler pages deploy .vercel/output/static",
 		"pages:watch": "npx @cloudflare/next-on-pages@1 --watch",
@@ -68,7 +69,10 @@
 	"devDependencies": {
 		"@cloudflare/next-on-pages": "^1.11.2",
 		"@types/pg": "^8.10.9",
+		"eslint-plugin-import": "^2.30.0",
+		"eslint-plugin-jsx-a11y": "^6.10.0",
 		"eslint-plugin-next-on-pages": "^1.11.2",
+		"eslint-plugin-react": "^7.35.2",
 		"postcss-import": "^15.1.0",
 		"vercel": "^32.4.1"
 	}

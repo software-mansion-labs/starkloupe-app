@@ -44,6 +44,7 @@ export function DebugButton({
 							href={'https://docs.walnut.dev/verify-contract-classes'}
 							target="_blank"
 							className="text-blue-500 cursor-pointer"
+							rel="noreferrer"
 						>
 							this guide
 						</a>

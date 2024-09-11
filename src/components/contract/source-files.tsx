@@ -38,7 +38,7 @@ export function SourceFiles({
 						/>
 						<div className="flex flex-col flex-grow">
 							{activeFile && (
-								<CodeViewer code={sourceCode[activeFile]} codeLocation={initialCodeLocation} />
+								<CodeViewer content={sourceCode[activeFile]} codeLocation={initialCodeLocation} />
 							)}
 						</div>
 					</div>

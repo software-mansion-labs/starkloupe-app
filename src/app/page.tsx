@@ -7,23 +7,23 @@ import Image from 'next/image';
 import logoWalnut from '@/assets/wlnt-logo-beta-bw.svg';
 import { Search } from '@/components/ui/search';
 import { IndexNav } from '@/components/index-page/index-nav';
-import { useSession } from 'next-auth/react';
+// import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 
 export default function Page() {
-	const { status } = useSession();
-	const router = useRouter();
+	// const { status } = useSession();
+	// const router = useRouter();
 
-	useEffect(() => {
-		if (status === 'authenticated') {
-			router.push('/monitoring');
-		}
-	}, [status, router]);
+	// useEffect(() => {
+	// 	if (status === 'authenticated') {
+	// 		router.push('/monitoring');
+	// 	}
+	// }, [status, router]);
 
 	return (
 		<div className="min-h-screen flex flex-col">
 			<main className="overflow-hidden flex flex-col items-center justify-center gap-10 flex-auto relative">
-				<IndexNav />
+				{/* <IndexNav /> */}
 				<Image src={logoWalnut} alt="Walnut logo" unoptimized className="h-10 w-auto" />
 				<div className="w-[38rem] max-w-[92%] text-center">
 					<Search placeholder={`Search for transaction or contract`}></Search>

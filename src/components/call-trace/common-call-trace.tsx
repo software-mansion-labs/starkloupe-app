@@ -1,4 +1,4 @@
-import { CallTraceContext } from '@/lib/context/call-trace';
+import { CallTraceContext } from '@/lib/context/call-trace-context-provider';
 import { useContext } from 'react';
 import { ContractCallTrace } from './contract-call-trace';
 import { FunctionCallTrace } from './function-call-trace';

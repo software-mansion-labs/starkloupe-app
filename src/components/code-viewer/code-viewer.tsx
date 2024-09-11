@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/named
 import { Editor as MonacoEditor, Monaco, useMonaco } from '@monaco-editor/react';
 import { editor as Editor } from 'monaco-editor';
 import { cn } from '@/lib/utils';
@@ -6,13 +7,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { CodeLocation, InternalFnCallIO } from '@/lib/simulation';
 
 export function CodeViewer({
-	code,
+	content,
 	codeLocation,
 	highlightClass,
 	args,
 	results
 }: {
-	code: string;
+	content: string;
 	codeLocation: CodeLocation | undefined;
 	highlightClass?: string;
 	args?: InternalFnCallIO[];
@@ -138,16 +139,20 @@ export function CodeViewer({
 	const [prevCodeValue, setPrevCodeValue] = useState<string | null>(null);
 
 	useEffect(() => {
-		if (editorRef.current && monaco && codeLocation) {
-			highlightCodeLocation(
-				codeLocation,
-				args ?? [],
-				results ?? [],
-				editorRef.current,
-				monaco,
-				code === prevCodeValue
-			);
-			setPrevCodeValue(code);
+		if (editorRef.current && monaco) {
+			if (codeLocation) {
+				highlightCodeLocation(
+					codeLocation,
+					args ?? [],
+					results ?? [],
+					editorRef.current,
+					monaco,
+					content === prevCodeValue
+				);
+			} else {
+				editorRef.current.revealLineNearTop(0, 1);
+			}
+			setPrevCodeValue(content);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [codeLocation, args, results]);
@@ -197,7 +202,7 @@ export function CodeViewer({
 				readOnly: true,
 				smoothScrolling: true
 			}}
-			value={code}
+			value={content}
 			language={'cairo'}
 			className={cn(
 				'whitespace-pre-wrap overflow-hidden p-0 m-0 w-full h-full absolute top-0 left-0'

@@ -18,7 +18,7 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 const NETWORKS_STORAGE_KEY = 'networks';
 
-export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [networks, setNetworks] = useState<Network[]>([]);
 
 	useEffect(() => {

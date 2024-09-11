@@ -1,6 +1,5 @@
 import { copyToClipboard } from '@/lib/utils';
-import { Card } from '@/components/ui/card';
-import { CardContent } from '@/components/ui/card';
+import { Card , CardContent } from '@/components/ui/card';
 
 export interface InfoBoxItem {
 	name: string;

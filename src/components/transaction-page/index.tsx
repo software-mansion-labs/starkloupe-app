@@ -18,7 +18,7 @@ import { SimulateDialog } from '../simulate-dialog';
 import { Button } from '../ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
 import { Error } from '../ui/error';
-import { useSettings } from '@/lib/context/settings-context';
+import { useSettings } from '@/lib/context/settings-context-provider';
 
 export function TransactionPage({
 	txHash,

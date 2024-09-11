@@ -1,9 +1,8 @@
 import './globals.css';
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
-import NextAuthProvider from '@/lib/context/NextAuthProvider';
 import LayoutClientContainer from './layout-client-container';
-import { SettingsProvider } from '@/lib/context/settings-context';
+import { SettingsContextProvider } from '@/lib/context/settings-context-provider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -16,12 +15,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 	return (
 		<html lang="en" className="h-full ">
 			<body className={`${inter.className} h-full`}>
-				<NextAuthProvider>
-					<SettingsProvider>
-						<LayoutClientContainer />
-						<div className="h-screen flex flex-col">{children}</div>
-					</SettingsProvider>
-				</NextAuthProvider>
+				<SettingsContextProvider>
+					<LayoutClientContainer />
+					<div className="h-screen flex flex-col">{children}</div>
+				</SettingsContextProvider>
 			</body>
 		</html>
 	);

@@ -13,8 +13,8 @@ import { SimulateDialog } from './simulate-dialog';
 import { Container } from '@/components/ui/container';
 
 export function HeaderNav() {
-	const session = useSession();
-	const pathname = usePathname();
+	// const session = useSession();
+	// const pathname = usePathname();
 
 	return (
 		<Disclosure as="nav" className="bg-neutral-50 border-b border-neutral-200">
@@ -35,7 +35,7 @@ export function HeaderNav() {
 								</div>
 								<div className="hidden md:block">
 									<nav className="ml-10 flex items-center space-x-4 lg:space-x-6">
-										{session.status === 'authenticated' ? (
+										{/* {session.status === 'authenticated' ? (
 											<Link
 												href="/monitoring"
 												className={`text-sm font-medium transition-colors hover:text-primary ${
@@ -46,7 +46,7 @@ export function HeaderNav() {
 											</Link>
 										) : (
 											<></>
-										)}
+										)} */}
 										{/* <Link
 											href="/transactions/SN_MAIN"
 											className={`text-sm font-medium transition-colors hover:text-primary ${
@@ -98,13 +98,13 @@ export function HeaderNav() {
 
 					<Disclosure.Panel className="md:hidden fixed bg-neutral-50 inset-x-0 z-50 border-b border-neutral-200">
 						<div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
-							{session.status === 'authenticated' ? (
+							{/* {session.status === 'authenticated' ? (
 								<Link href="/monitoring">
 									<Button variant="ghost">Monitoring</Button>
 								</Link>
 							) : (
 								<></>
-							)}
+							)} */}
 							<Button variant="ghost">Simulate transaction</Button>
 						</div>
 						{/* <div className="border-t border-neutral-100 pb-3 pt-4">

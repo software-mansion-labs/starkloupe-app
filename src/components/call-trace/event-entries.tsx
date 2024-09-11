@@ -1,11 +1,10 @@
-import { useContext } from 'react';
-import React from 'react';
+import React, { useContext } from 'react';
 import { EventTrace } from '@/lib/simulation';
-import { CallTraceContext } from '@/lib/context/call-trace';
+import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 
 export function EventsList({ events }: { events: EventTrace[] }) {
-	const { expandedCalls } = useContext(CallTraceContext);
+	const { expandedCalls } = useCallTrace();
 
 	if (events.length === 0) {
 		return <div className="px-4 py-2 text-sm">No events emitted during this transaction.</div>;

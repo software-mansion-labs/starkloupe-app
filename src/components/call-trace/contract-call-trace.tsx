@@ -1,9 +1,8 @@
-import { useContext } from 'react';
-import React from 'react';
+import { Fragment, useContext } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { CallTrace, CodeLocation, DataType, CallType, getContractCallId } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
-import { CallTraceContext } from '@/lib/context/call-trace';
+import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { InfoBox } from '@/components/ui/info-box';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { CalldataTable } from '../calldata-table';
@@ -15,6 +14,7 @@ import { ErrorTooltip } from '@/components/error-tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CommonCallTrace } from './common-call-trace';
 import { Card } from '../ui/card';
+import { ContractCallSignature } from '../ui/signature';
 
 export function ContractCallTrace({
 	call,
@@ -32,8 +32,8 @@ export function ContractCallTrace({
 		toggleCallExpand,
 		setActiveTab,
 		simulationDebuggerData
-	} = useContext(CallTraceContext);
-	const { debugCall } = useContext(DebuggerContext);
+	} = useCallTrace();
+	const { debugCall, checkIfDebuggable } = useContext(DebuggerContext);
 
 	let callType = call.entryPoint.callType;
 	if (
@@ -80,12 +80,10 @@ export function ContractCallTrace({
 		contractName = shortenHash(call.entryPoint.storageAddress, 13);
 	}
 
-	const isDebuggable =
-		!!call.additionalInfo.callDebuggerData &&
-		!!simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash];
+	const isDebuggable = checkIfDebuggable(call.contractCallId);
 
 	return (
-		<React.Fragment key={call.contractCallId}>
+		<Fragment key={call.contractCallId}>
 			<TraceLine
 				isActive={expandedCalls[call.contractCallId]}
 				onClick={() => toggleCallExpand(call.contractCallId)}
@@ -100,7 +98,7 @@ export function ContractCallTrace({
 
 				<DebugButton
 					onDebugClick={() => {
-						debugCall(call, 0);
+						debugCall(call.contractCallId);
 						setActiveTab('debugger');
 					}}
 					isDebuggable={isDebuggable}
@@ -129,12 +127,7 @@ export function ContractCallTrace({
 							''
 						)}
 					</div>
-					<span className="text-blue-600">{contractName}</span>
-					{'.'}
-					<span className="text-pink-500">
-						{call.additionalInfo?.entryPointFunctionName ??
-							shortenHash(call.entryPoint.entryPointSelector, 13)}
-					</span>
+					<ContractCallSignature contractCall={call} />
 					<span className="text-yellow-900">{'('}</span>
 					{call.additionalInfo?.functionArgumentsNames ? (
 						<span className="text-orange-500">
@@ -177,12 +170,12 @@ export function ContractCallTrace({
 					))}
 				</>
 			)}
-		</React.Fragment>
+		</Fragment>
 	);
 }
 
 function ContractCallDetails({ call }: { call: CallTrace }) {
-	const { simulationDebuggerData } = useContext(CallTraceContext);
+	const { simulationDebuggerData } = useCallTrace();
 	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [
 		{
 			name: 'Entry Point Type',
@@ -323,6 +316,7 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 					href={'https://docs.walnut.dev/verify-contract-classes'}
 					className="text-blue-500 cursor-pointer"
 					target="_blank"
+					rel="noreferrer"
 				>
 					Verify the contract source code
 				</a>{' '}
@@ -344,7 +338,7 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 			{code && (
 				<Card>
 					<div className="h-80">
-						<CodeViewer code={code} codeLocation={cairoLocation} />
+						<CodeViewer content={code} codeLocation={cairoLocation} />
 					</div>
 				</Card>
 			)}

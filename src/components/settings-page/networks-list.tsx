@@ -3,9 +3,13 @@
 import * as React from 'react';
 import { CaretSortIcon, ChevronDownIcon, DotsHorizontalIcon } from '@radix-ui/react-icons';
 import {
+	// eslint-disable-next-line import/named
 	ColumnDef,
+	// eslint-disable-next-line import/named
 	ColumnFiltersState,
+	// eslint-disable-next-line import/named
 	SortingState,
+	// eslint-disable-next-line import/named
 	VisibilityState,
 	flexRender,
 	getCoreRowModel,
@@ -36,7 +40,7 @@ import {
 	TableRow
 } from '@/components/ui/table';
 
-import { Network, useSettings } from '@/lib/context/settings-context';
+import { Network, useSettings } from '@/lib/context/settings-context-provider';
 import { Label } from '../ui/label';
 
 export const columns = (removeNetwork: (network: Network) => void): ColumnDef<Network>[] => [

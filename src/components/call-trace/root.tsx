@@ -1,6 +1,10 @@
 import { useContext } from 'react';
 import { SimulationResult } from '@/lib/simulation';
-import { CallTraceContext, CallTraceContextProvider, TabId } from '@/lib/context/call-trace';
+import {
+	CallTraceContext,
+	CallTraceContextProvider,
+	TabId
+} from '@/lib/context/call-trace-context-provider';
 import { ContractCallTrace } from './contract-call-trace';
 import { EventsList } from './event-entries';
 import { Debugger } from '@/components/debugger';
@@ -12,15 +16,15 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 export function CallTraceRoot({ simulationResult }: { simulationResult: SimulationResult }) {
 	return (
 		<CallTraceContextProvider simulationResult={simulationResult}>
-			<DebuggerContextProvider simulationResult={simulationResult}>
-				<CallTraceRootContent simulationResult={simulationResult} />
+			<DebuggerContextProvider>
+				<CallTraceRootContent />
 			</DebuggerContextProvider>
 		</CallTraceContextProvider>
 	);
 }
 
-function CallTraceRootContent({ simulationResult }: { simulationResult: SimulationResult }) {
-	const { activeTab, setActiveTab } = useContext(CallTraceContext);
+function CallTraceRootContent() {
+	const { activeTab, setActiveTab, simulationResult } = useContext(CallTraceContext);
 	const executionFailed = simulationResult.executionResult.executionStatus === 'REVERTED';
 
 	return (
@@ -52,7 +56,7 @@ function CallTraceRootContent({ simulationResult }: { simulationResult: Simulati
 				</TabsContent>
 				<TabsContent value="debugger">
 					<Card className="text-xs">
-						<Debugger calls={[simulationResult.callTrace]} />
+						<Debugger />
 					</Card>
 				</TabsContent>
 			</Tabs>

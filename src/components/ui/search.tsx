@@ -15,7 +15,7 @@ import { cn } from '@/lib/utils';
 import { fetchSearchData } from '@/lib/api';
 import { SearchDataResponse, SearchData } from '@/lib/types';
 import { Badge } from './badge';
-import { Network, useSettings } from '@/lib/context/settings-context';
+import { Network, useSettings } from '@/lib/context/settings-context-provider';
 
 export function Search({
 	className,
@@ -50,6 +50,7 @@ export function Search({
 		} else {
 			setSearchValue('');
 		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [searchValue, open]);
 
 	useEffect(() => {

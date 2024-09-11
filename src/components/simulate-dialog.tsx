@@ -19,7 +19,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { DialogClose } from '@radix-ui/react-dialog';
 import { SimulationPayloadWithCalldata } from '@/lib/simulation';
 import { openSimulationPage } from '@/lib/utils';
-import { Network, useSettings } from '@/lib/context/settings-context';
+import { Network, useSettings } from '@/lib/context/settings-context-provider';
 import {
 	Select,
 	SelectContent,

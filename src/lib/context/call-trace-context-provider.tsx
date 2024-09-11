@@ -1,12 +1,10 @@
-import { PropsWithChildren, createContext, useState } from 'react';
+import { PropsWithChildren, createContext, useContext, useState } from 'react';
 import {
 	CallTrace,
 	CallsMap,
 	InternalFnCallTrace,
 	SimulationDebuggerData,
-	SimulationResult,
-	getContractCallId,
-	getInternalFunctionCallId
+	SimulationResult
 } from '@/lib/simulation';
 
 interface StringBooleanDict {
@@ -16,6 +14,7 @@ interface StringBooleanDict {
 export type TabId = 'call-trace' | 'events-list' | 'debugger';
 
 interface CallTraceContextProps {
+	simulationResult: SimulationResult;
 	callsMap: CallsMap;
 	collapsedCalls: StringBooleanDict;
 	expandedCalls: StringBooleanDict;
@@ -30,6 +29,7 @@ interface CallTraceContextProps {
 }
 
 export const CallTraceContext = createContext<CallTraceContextProps>({
+	simulationResult: {} as SimulationResult,
 	callsMap: new Map(),
 	collapsedCalls: {},
 	expandedCalls: {},
@@ -84,6 +84,7 @@ export const CallTraceContextProvider: React.FC<
 	return (
 		<CallTraceContext.Provider
 			value={{
+				simulationResult,
 				callsMap: simulationResult.callsMap,
 				collapsedCalls,
 				expandedCalls,
@@ -100,6 +101,14 @@ export const CallTraceContextProvider: React.FC<
 			{children}
 		</CallTraceContext.Provider>
 	);
+};
+
+export const useCallTrace = () => {
+	const context = useContext(CallTraceContext);
+	if (!context) {
+		throw new Error('useCallTrace must be used within a CallTraceContextProvider');
+	}
+	return context;
 };
 
 function findCallPathWithError(calls: CallTrace[]): string[] | null {

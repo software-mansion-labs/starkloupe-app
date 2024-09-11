@@ -1,11 +1,11 @@
 import React, { useContext } from 'react';
 import { CallTrace, CodeLocation, InternalFnCallIO, InternalFnCallTrace } from '@/lib/simulation';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
-import { CallTraceContext } from '@/lib/context/call-trace';
+import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { ErrorTraceLine } from './error-trace-line';
 import { CodeViewer } from '../code-viewer/code-viewer';
-import { DebuggerContext } from '@/lib/context/debugger-context-provider';
+import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { DebugButton } from './debug-btn';
 import { CommonCallTrace } from './common-call-trace';
 import { InfoBox } from '@/components/ui/info-box';
@@ -30,12 +30,10 @@ export function FunctionCallTrace({
 		expandedCalls,
 		toggleCallExpand,
 		setActiveTab
-	} = useContext(CallTraceContext);
-	const { debugCall } = useContext(DebuggerContext);
+	} = useCallTrace();
+	const { debugCall, checkIfDebuggable } = useDebugger();
 
-	const isDebuggable =
-		!!contractCall.additionalInfo.callDebuggerData &&
-		!!simulationDebuggerData.classesDebuggerData[contractCall.additionalInfo.classHash];
+	const isDebuggable = checkIfDebuggable(call.data.id);
 
 	return (
 		<React.Fragment key={call.data.id}>
@@ -48,7 +46,7 @@ export function FunctionCallTrace({
 
 				<DebugButton
 					onDebugClick={() => {
-						debugCall(contractCall, call.data.debuggerExecutionTraceStepIndex);
+						debugCall(call.data.id);
 						setActiveTab('debugger');
 					}}
 					isDebuggable={isDebuggable}
@@ -175,7 +173,7 @@ function FunctionCallDetails({
 	call: InternalFnCallTrace;
 	contractCall: CallTrace;
 }) {
-	const { simulationDebuggerData } = useContext(CallTraceContext);
+	const { simulationDebuggerData } = useCallTrace();
 	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [];
 	if (call.data.fnName) {
 		const rawFnName = getRawFunctionName(call.data.fnName);
@@ -221,7 +219,7 @@ function FunctionCallDetails({
 			<InfoBox details={details} />
 			{code && cairoLocation && (
 				<div className="h-80">
-					<CodeViewer code={code} codeLocation={cairoLocation} />
+					<CodeViewer content={code} codeLocation={cairoLocation} />
 				</div>
 			)}
 		</div>
