@@ -56,17 +56,19 @@ export async function fetchApi<ResponseDataType>(
 	}
 }
 
-export async function safeFetchApi<ResponseDataType>(input: string, params?: FetchApiParams) {
+export async function safeFetchApi<ResponseDataType>(
+	input: string,
+	params?: FetchApiParams
+): Promise<{ isError: boolean; response: ResponseDataType }> {
 	const response = await makeApiRequest(input, params);
-	if (!response.ok) return { error: await response.text() };
-	else {
-		if (params?.renameToCamelCase)
-			return {
-				data: camelcaseKeys(await response.json(), {
-					deep: true,
-					exclude: CAMELCASE_EXCLUDE
-				}) as ResponseDataType
-			};
-		else return { data: response.json() as Promise<ResponseDataType> };
-	}
+	const isError = !response.ok;
+	if (params?.renameToCamelCase)
+		return {
+			isError,
+			response: camelcaseKeys(await response.json(), {
+				deep: true,
+				exclude: CAMELCASE_EXCLUDE
+			}) as ResponseDataType
+		};
+	else return { isError, response: (await response.json()) as ResponseDataType };
 }
