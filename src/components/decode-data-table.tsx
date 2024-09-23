@@ -1,24 +1,47 @@
-import { useState } from 'react';
-import { DecodedItem, CalldataDecoded, DataType } from '@/lib/simulation';
+import { useEffect, useState } from 'react';
+import { DecodedItem, DataDecoded, DataType } from '@/lib/simulation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 import { Card } from './ui/card';
-export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; type: DataType }) {
+import { isHexFormat } from '@/lib/utils';
+
+export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded; type: DataType }) {
+	const hasNameField = decodeData.some((item: DecodedItem) => 'name' in item);
 	const [displayFormat, setDisplayFormat] = useState<'hex' | 'dec'>('hex');
+
+	useEffect(() => {
+		const hasHex = decodeData.some((item: DecodedItem) => {
+			if (typeof item.value === 'string') {
+				return isHexFormat(item.value);
+			} else if (Array.isArray(item.value)) {
+				return item.value.some((nestedItem) => isHexFormat(nestedItem.toString()));
+			}
+			return false;
+		});
+
+		if (!hasHex) {
+			setDisplayFormat('dec');
+		}
+	}, [decodeData]);
 
 	const isObjectArray = (value: any[]): boolean => {
 		return (
 			Array.isArray(value) &&
-			typeof value[0] === 'object' &&
-			'type' in value[0] &&
-			'name' in value[0] &&
-			'value' in value[0]
+			value.some(
+				(item) => typeof item === 'object' && item !== null && 'type' in item && 'value' in item
+			)
 		);
 	};
 
 	const formatHexDecValue = (value: string): string => {
-		if (value.startsWith('0x') && displayFormat === 'dec') {
-			return BigInt(value).toString(10);
+		if (displayFormat === 'dec') {
+			if (value.startsWith('0x')) {
+				return BigInt(value).toString(10);
+			}
+		} else if (displayFormat === 'hex') {
+			if (!value.startsWith('0x') && /^\d+$/.test(value)) {
+				return '0x' + BigInt(value).toString(16);
+			}
 		}
 		return value;
 	};
@@ -30,7 +53,7 @@ export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; t
 					<Table className="text-xs">
 						<TableHeader>
 							<TableRow>
-								<TableHead>Name</TableHead>
+								{hasNameField && <TableHead>Name</TableHead>}
 								<TableHead>Type</TableHead>
 								<TableHead>Value</TableHead>
 							</TableRow>
@@ -38,7 +61,9 @@ export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; t
 						<TableBody className="font-mono">
 							{value.map((item: any, index: number) => (
 								<TableRow key={index}>
-									<TableCell className="whitespace-break-spaces">{item.name}</TableCell>
+									{item.name && (
+										<TableCell className="whitespace-break-spaces">{item.name}</TableCell>
+									)}
 									<TableCell className="whitespace-break-spaces">{item.type}</TableCell>
 									<TableCell>{renderValue(item.value)}</TableCell>
 								</TableRow>
@@ -49,12 +74,24 @@ export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; t
 			} else {
 				return (
 					<ul>
-						{value.map((item: any, index: number) => (
-							<li key={index}>{renderValue(item)}</li>
+						{value.map((item: any) => (
+							<li key={item}>{renderValue(item)}</li>
 						))}
 					</ul>
 				);
 			}
+		} else if (typeof value === 'object' && value !== null) {
+			return (
+				<Table className="text-xs">
+					<TableBody className="font-mono">
+						{Object.entries(value).map(([key, val]: [string, any]) => (
+							<TableRow key={key}>
+								<TableCell>{renderValue(val)}</TableCell>
+							</TableRow>
+						))}
+					</TableBody>
+				</Table>
+			);
 		} else {
 			const formattedHexDecValue = formatHexDecValue(value);
 			return <span>{formattedHexDecValue}</span>;
@@ -72,7 +109,7 @@ export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; t
 					size={'sm'}
 					variant="outline"
 					className="mb-1"
-					defaultValue="hex"
+					value={displayFormat}
 					aria-label="Hex or Decimal Toggle"
 					onValueChange={(value) => setDisplayFormat(value as 'hex' | 'dec')}
 				>
@@ -88,7 +125,7 @@ export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; t
 				<Table className="w-auto py-0.5 px-2 text-xs">
 					<TableHeader>
 						<TableRow>
-							{type === DataType.INPUT && (
+							{type === DataType.INPUT && hasNameField && (
 								<TableHead className="whitespace-break-spaces">Name</TableHead>
 							)}
 							<TableHead>Type</TableHead>
@@ -96,9 +133,9 @@ export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; t
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{calldata.map((item: DecodedItem, index: number) => (
+						{decodeData.map((item: DecodedItem, index: number) => (
 							<TableRow key={index}>
-								{type === DataType.INPUT && (
+								{type === DataType.INPUT && item.name && (
 									<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
 										{item.name}
 									</TableCell>

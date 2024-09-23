@@ -1,7 +1,11 @@
 import { type ClassValue, clsx } from 'clsx';
 import { usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
-import { CallTrace, SimulationPayloadWithCalldata , TransactionSimulationResult } from '../simulation';
+import {
+	CallTrace,
+	SimulationPayloadWithCalldata,
+	TransactionSimulationResult
+} from '../simulation';
 import { ChainId } from '../types';
 export * from './fetch';
 
@@ -37,6 +41,14 @@ export function hexToText(hex: string): string {
 		text += String.fromCharCode(parseInt(hex.substr(i, 2), 16));
 	}
 	return text;
+}
+
+export function isHexFormat(value: string): boolean {
+	return typeof value === 'string' && /^0x[0-9a-fA-F]+$/.test(value);
+}
+
+export function isDecimalFormat(value: string): boolean {
+	return typeof value === 'string' && /^[0-9]+$/.test(value);
 }
 
 export function formatTimestamp(timestamp: number): string {

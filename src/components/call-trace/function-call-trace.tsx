@@ -9,6 +9,8 @@ import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { DebugButton } from './debug-btn';
 import { CommonCallTrace } from './common-call-trace';
 import { InfoBox } from '@/components/ui/info-box';
+import { DecodeDataTable } from '../decode-data-table';
+import { DataType } from '@/lib/simulation';
 
 export function FunctionCallTrace({
 	call,
@@ -124,8 +126,8 @@ function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 							{io.value.length === 0
 								? 'None'
 								: io.value.length === 1
-								? io.value[0]
-								: `[${io.value.join(', ')}]`}
+									? io.value[0]
+									: `[${io.value.join(', ')}]`}
 						</span>
 						{i < ios.length - 1 ? <>,&nbsp;</> : ''}
 					</React.Fragment>
@@ -215,8 +217,14 @@ function FunctionCallDetails({
 	}
 
 	return (
-		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4">
+		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-2 px-4">
 			<InfoBox details={details} />
+			{call.data?.argumentsDecoded && (
+				<DecodeDataTable decodeData={call.data.argumentsDecoded} type={DataType.INPUT} />
+			)}
+			{call.data?.resultsDecoded && (
+				<DecodeDataTable decodeData={call.data.resultsDecoded} type={DataType.OUTPUT} />
+			)}
 			{code && cairoLocation && (
 				<div className="h-80">
 					<CodeViewer content={code} codeLocation={cairoLocation} />

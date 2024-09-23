@@ -5,7 +5,7 @@ import { shortenHash } from '@/lib/utils';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { InfoBox } from '@/components/ui/info-box';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
-import { CalldataTable } from '../calldata-table';
+import { DecodeDataTable } from '../decode-data-table';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { CodeViewer } from '../code-viewer/code-viewer';
 import { DebuggerContext } from '@/lib/context/debugger-context-provider';
@@ -330,10 +330,10 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 			{!hasDebuggableInfo && noSourceCodeAlert}
 			<InfoBox details={details} />
 			{call.additionalInfo?.calldataDecoded && (
-				<CalldataTable calldata={call.additionalInfo.calldataDecoded} type={DataType.INPUT} />
+				<DecodeDataTable decodeData={call.additionalInfo.calldataDecoded} type={DataType.INPUT} />
 			)}
 			{call.additionalInfo?.functionResult && (
-				<CalldataTable calldata={call.additionalInfo.functionResult} type={DataType.OUTPUT} />
+				<DecodeDataTable decodeData={call.additionalInfo.functionResult} type={DataType.OUTPUT} />
 			)}
 			{code && (
 				<Card>

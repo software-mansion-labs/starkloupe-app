@@ -50,11 +50,11 @@ export interface EntryPoint {
 
 export interface DecodedItem {
 	type: string;
-	name: string;
+	name: string | null;
 	value: string | DecodedItem[] | string[];
 }
 
-export type CalldataDecoded = DecodedItem[];
+export type DataDecoded = DecodedItem[];
 
 export interface DebuggerExecutionTraceEntryWithContractCall {
 	contractCall: { contractAddress: string; functionSelector: string };
@@ -90,11 +90,11 @@ export interface CallTrace {
 		erc20TokenName: string | null;
 		erc20TokenSymbol: string | null;
 		errorMessage: string | null;
-		functionResult: CalldataDecoded | null;
+		functionResult: DataDecoded | null;
 		functionReturnResultTypes: string[] | null;
 		functionArguments: string[] | null;
 		functionArgumentsNames: string[] | null;
-		calldataDecoded: CalldataDecoded | null;
+		calldataDecoded: DataDecoded | null;
 		cairoLocation?: CodeLocation; // Added on client side
 		callDebuggerData?: CallDebuggerData;
 		classHash: string; // 66 symbols format
@@ -165,6 +165,7 @@ export interface CodeLocation {
 export interface InternalFnCallIO {
 	typeName: string | null;
 	value: string[];
+	internalIODecoded: DataDecoded | null;
 }
 
 export interface InternalFnCallTrace {
@@ -174,7 +175,9 @@ export interface InternalFnCallTrace {
 		fp: number;
 		cairoLocation: CodeLocation | null;
 		arguments: InternalFnCallIO[];
+		argumentsDecoded: DataDecoded | null;
 		results: InternalFnCallIO[];
+		resultsDecoded: DataDecoded | null;
 		isPanicResult: boolean;
 		debuggerExecutionTraceStepIndex: number;
 		nestedCallsIds: string[]; // List of function call id and contract call id
