@@ -1,5 +1,11 @@
-import React, { useContext } from 'react';
-import { CallTrace, CodeLocation, InternalFnCallIO, InternalFnCallTrace } from '@/lib/simulation';
+import React from 'react';
+import {
+	CallTrace,
+	CodeLocation,
+	InternalFnCallIO,
+	InternalFnCallTrace,
+	DataType
+} from '@/lib/simulation';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
@@ -10,7 +16,6 @@ import { DebugButton } from './debug-btn';
 import { CommonCallTrace } from './common-call-trace';
 import { InfoBox } from '@/components/ui/info-box';
 import { DecodeDataTable } from '../decode-data-table';
-import { DataType } from '@/lib/simulation';
 
 export function FunctionCallTrace({
 	call,
