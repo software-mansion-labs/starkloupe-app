@@ -4,14 +4,47 @@ import { BugAntIcon } from '@heroicons/react/24/outline';
 
 export function DebugButton({
 	onDebugClick,
+	noCodeLocationAvaliable,
 	isDebuggable
 }: {
 	onDebugClick: React.MouseEventHandler<HTMLDivElement>;
+	noCodeLocationAvaliable?: boolean;
 	isDebuggable?: boolean;
 }) {
 	const [tooltipOpen, setPopoverOpen] = useState(false);
 
 	const bugIconClassName = 'w-h h-4';
+
+	const NoCodeLocationMessage = () => (
+		<>
+			There are no code locations present for this call. It might be a bug; Please{' '}
+			<a
+				href="https://t.me/walnuthq"
+				target="_blank"
+				className="text-blue-500 cursor-pointer"
+				rel="noreferrer"
+			>
+				contact us
+			</a>{' '}
+			to resolve it.{' '}
+		</>
+	);
+
+	const NoCodeMessage = () => (
+		<>
+			This contract source code is not verified. To run the debugger, first verify the source code
+			by following{' '}
+			<a
+				href="https://docs.walnut.dev/verify-contract-classes"
+				target="_blank"
+				className="text-blue-500 cursor-pointer"
+				rel="noreferrer"
+			>
+				this guide
+			</a>
+			.
+		</>
+	);
 
 	return (
 		<div
@@ -38,17 +71,7 @@ export function DebugButton({
 						</div>
 					</PopoverTrigger>
 					<PopoverContent className="text-sm text-muted-foreground">
-						This contract source code is not verified. To run the debugger, first verify the source
-						code by following{' '}
-						<a
-							href={'https://docs.walnut.dev/verify-contract-classes'}
-							target="_blank"
-							className="text-blue-500 cursor-pointer"
-							rel="noreferrer"
-						>
-							this guide
-						</a>
-						.
+						{noCodeLocationAvaliable ? <NoCodeLocationMessage /> : <NoCodeMessage />}
 					</PopoverContent>
 				</Popover>
 			)}

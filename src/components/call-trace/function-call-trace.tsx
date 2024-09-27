@@ -34,6 +34,9 @@ export function FunctionCallTrace({
 	const { debugCall, checkIfDebuggable } = useDebugger();
 
 	const isDebuggable = checkIfDebuggable(call.data.id);
+	const contractCallId = call.data.id.split('-fp')[0];
+	const isParentContractCallDebuggable = checkIfDebuggable(contractCallId);
+	const noCodeLocationAvaliable = isParentContractCallDebuggable && !isDebuggable;
 
 	return (
 		<React.Fragment key={call.data.id}>
@@ -50,8 +53,8 @@ export function FunctionCallTrace({
 						setActiveTab('debugger');
 					}}
 					isDebuggable={isDebuggable}
+					noCodeLocationAvaliable={noCodeLocationAvaliable}
 				/>
-
 				<div
 					style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
 					className="flex flex-row items-center"
@@ -124,8 +127,8 @@ function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 							{io.value.length === 0
 								? 'None'
 								: io.value.length === 1
-								? io.value[0]
-								: `[${io.value.join(', ')}]`}
+									? io.value[0]
+									: `[${io.value.join(', ')}]`}
 						</span>
 						{i < ios.length - 1 ? <>,&nbsp;</> : ''}
 					</React.Fragment>
