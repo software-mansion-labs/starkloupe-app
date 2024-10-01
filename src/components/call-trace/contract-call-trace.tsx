@@ -1,4 +1,4 @@
-import { Fragment, useContext } from 'react';
+import { Fragment, useContext, useEffect } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { CallTrace, CodeLocation, DataType, CallType, getContractCallId } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
@@ -86,7 +86,9 @@ export function ContractCallTrace({
 		<Fragment key={call.contractCallId}>
 			<TraceLine
 				isActive={expandedCalls[call.contractCallId]}
-				onClick={() => toggleCallExpand(call.contractCallId)}
+				onClick={() => {
+					toggleCallExpand(call.contractCallId);
+				}}
 			>
 				{CallTypeChip(callType)}
 

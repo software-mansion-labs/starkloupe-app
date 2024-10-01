@@ -23,6 +23,8 @@ interface CallTraceContextProps {
 	simulationDebuggerData: SimulationDebuggerData;
 	activeTab: TabId;
 	toggleCallCollapse: (id: string) => void;
+	expandAll: () => void;
+	collapseAll: () => void;
 	toggleCallExpand: (id: string) => void;
 	toggleInternalFnCallCollapse: (id: string) => void;
 	setActiveTab: (tab: TabId) => void;
@@ -38,6 +40,8 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	simulationDebuggerData: { classesDebuggerData: {} },
 	activeTab: 'call-trace',
 	toggleCallCollapse: () => undefined,
+	expandAll: () => undefined,
+	collapseAll: () => undefined,
 	toggleCallExpand: () => undefined,
 	toggleInternalFnCallCollapse: () => undefined,
 	setActiveTab: () => undefined
@@ -69,6 +73,23 @@ export const CallTraceContextProvider: React.FC<
 		});
 	};
 
+	const expandAll = () => {
+		setCollapsedCalls({});
+	};
+
+	const collapseAll = () => {
+		const newState: StringBooleanDict = {};
+
+		simulationResult.callsMap.forEach((value, key) => {
+			if (value && value.contractCall) {
+				if (value.contractCall.nestedCalls.length > 0 || value.contractCall.fnCalls.length > 0) {
+					newState[key] = true;
+				}
+			}
+		});
+		setCollapsedCalls(newState);
+	};
+
 	const toggleInternalFnCallCollapse = (id: string) => {
 		setNotCollapsedInternalFnCalls((prevState) => {
 			return { ...prevState, [id]: !!!prevState[id] };
@@ -92,6 +113,8 @@ export const CallTraceContextProvider: React.FC<
 				simulationDebuggerData: simulationResult.simulationDebuggerData,
 				toggleCallCollapse,
 				toggleCallExpand,
+				collapseAll,
+				expandAll,
 				notCollapsedInternalFnCalls,
 				toggleInternalFnCallCollapse,
 				activeTab,
