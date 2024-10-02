@@ -2,14 +2,14 @@
 
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { Input } from './input';
-import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
 	CommandDialog,
 	CommandEmpty,
 	CommandGroup,
 	CommandInput,
 	CommandItem,
-	CommandList
+	CommandList, CommandSeparator
 } from './command';
 import { cn } from '@/lib/utils';
 import { fetchSearchData } from '@/lib/api';
@@ -171,19 +171,22 @@ export function Search({
 						searchValue.length > 3 && <CommandEmpty>Searching...</CommandEmpty>
 					)}
 					{(searchDataResponse || error) && (
-						<CommandItem
-							className="!bg-transparent border-t"
-							style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
-							<p className="text-muted-foreground">
-								<span className="font-semibold">{dataResponseResults}</span>
-								&nbsp;{ dataResponseResults === 1 ? 'result' : 'results' } found on&nbsp;
-								<span className="font-semibold">{allAvailableNetworksString}</span>
-								&nbsp;networks.&nbsp;
-								<Link href="/settings" className="underline">
-									Add custom networks to search.
-								</Link>
-							</p>
-						</CommandItem>
+						<div className="bg-gray-50 border-t ">
+							<CommandSeparator/>
+							<CommandItem
+								className="ml-1.5"
+								style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
+								<p className="text-muted-foreground">
+									<span className="font-semibold">{dataResponseResults}</span>
+									&nbsp;{ dataResponseResults === 1 ? 'result' : 'results' } found on&nbsp;
+									<span className="font-semibold">{allAvailableNetworksString}</span>
+									&nbsp;networks.&nbsp;
+									<Link href="/settings" className="underline">
+										Add custom networks to search.
+									</Link>
+								</p>
+							</CommandItem>
+						</div>
 					)}
 				</CommandList>
 			</CommandDialog>
