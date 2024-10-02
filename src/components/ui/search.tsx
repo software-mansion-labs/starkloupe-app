@@ -2,7 +2,7 @@
 
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { Input } from './input';
-import { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import {
 	CommandDialog,
 	CommandEmpty,
@@ -16,6 +16,7 @@ import { fetchSearchData } from '@/lib/api';
 import { SearchDataResponse, SearchData } from '@/lib/types';
 import { Badge } from './badge';
 import { Network, useSettings } from '@/lib/context/settings-context-provider';
+import Link from 'next/link';
 
 export function Search({
 	className,
@@ -26,20 +27,29 @@ export function Search({
 }) {
 	const [searchValue, setSearchValue] = useState('');
 	const [searchDataResponse, setSearchDataResponse] = useState<SearchDataResponse | undefined>();
+	const [dataResponseResults, setDataResponseResults] = useState<number>(0);
 	const [error, setError] = useState<string | undefined>();
 	const [open, setOpen] = useState(false);
 	const [isMac, setIsMac] = useState(true);
 	const { networks } = useSettings();
+	const [allAvailableNetworksString, setAllAvailableNetworksString] = useState<string>('');
 
 	const fetchSearchDataResponse = async (value: string) => {
 		try {
-			setSearchDataResponse(
-				await fetchSearchData({ hash: value, rpcUrls: networks.map((n) => n.rpcUrl) })
-			);
+			const searchData: SearchDataResponse = await fetchSearchData({ hash: value, rpcUrls: networks.map((n) => n.rpcUrl) })
+			setSearchDataResponse(searchData);
+			setDataResponseResults(searchData.transactions.length + searchData.classes.length + searchData.contracts.length);
 		} catch (error: any) {
 			setError(error.toString());
 		}
 	};
+
+	useEffect(() => {
+		if (networks.length > 0) {
+			const networkNames = networks.map(network => network.networkName);
+			setAllAvailableNetworksString(`sn_main, sn_sepolia, ${networkNames.join(', ')}`);
+		}
+	}, [networks]);
 
 	useEffect(() => {
 		setSearchDataResponse(undefined);
@@ -140,6 +150,21 @@ export function Search({
 						<CommandEmpty>Nothing found</CommandEmpty>
 					) : (
 						searchValue.length > 3 && <CommandEmpty>Searching...</CommandEmpty>
+					)}
+					{(searchDataResponse || error) && (
+						<CommandItem
+							className="!bg-transparent border-t"
+							style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
+							<p>
+								<span className="font-semibold text-primary">{dataResponseResults}</span>
+								&nbsp;results found on&nbsp;
+								<span className="font-semibold text-primary">{allAvailableNetworksString}</span>
+								&nbsp;networks.&nbsp;
+								<Link href="/settings" className="underline">
+									Add custom networks to search.
+								</Link>
+							</p>
+						</CommandItem>
 					)}
 				</CommandList>
 			</CommandDialog>
