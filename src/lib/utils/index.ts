@@ -1,7 +1,11 @@
 import { type ClassValue, clsx } from 'clsx';
 import { usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
-import { CallTrace, SimulationPayloadWithCalldata , TransactionSimulationResult } from '../simulation';
+import {
+	CallTrace,
+	SimulationPayloadWithCalldata,
+	TransactionSimulationResult
+} from '../simulation';
 import { ChainId } from '../types';
 export * from './fetch';
 
@@ -79,19 +83,6 @@ export function useChain(): { chainId: ChainId; chainName: string } {
 	const isSepolia = path.includes('SN_SEPOLIA');
 	const chainId = isSepolia ? ChainId.SEPOLIA : ChainId.MAIN;
 	return { chainId, chainName: isSepolia ? 'Sepolia' : 'Mainnet' };
-}
-
-export function addCairoLocationsToContractCalls(calls: CallTrace[]) {
-	for (const call of calls) {
-		if (call.fnCalls[0] && call.fnCalls[0].nestedCalls.length > 0) {
-			const wrapper = call.fnCalls[0];
-			if (!wrapper) continue;
-			const entryPointFunction = wrapper.nestedCalls[1];
-			if (!entryPointFunction) continue;
-			call.additionalInfo.cairoLocation = entryPointFunction.data.cairoLocation ?? undefined;
-		}
-		addCairoLocationsToContractCalls(call.nestedCalls);
-	}
 }
 
 export function extractChainId(chainIdStr: string): ChainId | undefined {
