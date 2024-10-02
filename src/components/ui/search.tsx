@@ -173,7 +173,7 @@ export function Search({
 					{(searchDataResponse || error) && (
 						<div className="bg-gray-50 border-t ">
 							<CommandItem
-								className="ml-1.5"
+								className="ml-1.5 hover:bg-gray-50"
 								style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
 								<p className="text-muted-foreground">
 									<span className="font-semibold">{dataResponseResults}</span>
