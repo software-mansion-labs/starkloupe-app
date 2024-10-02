@@ -2,7 +2,7 @@
 
 import { MagnifyingGlassIcon } from '@radix-ui/react-icons';
 import { Input } from './input';
-import React, { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
 	CommandDialog,
 	CommandEmpty,
