@@ -157,7 +157,7 @@ export function Search({
 							style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
 							<p>
 								<span className="font-semibold text-primary">{dataResponseResults}</span>
-								&nbsp;results found on&nbsp;
+								&nbsp;{ dataResponseResults === 1 ? 'result' : 'results' } found on&nbsp;
 								<span className="font-semibold text-primary">{allAvailableNetworksString}</span>
 								&nbsp;networks.&nbsp;
 								<Link href="/settings" className="underline">
