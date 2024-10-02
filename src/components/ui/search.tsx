@@ -9,7 +9,7 @@ import {
 	CommandGroup,
 	CommandInput,
 	CommandItem,
-	CommandList, CommandSeparator
+	CommandList
 } from './command';
 import { cn } from '@/lib/utils';
 import { fetchSearchData } from '@/lib/api';
@@ -172,7 +172,6 @@ export function Search({
 					)}
 					{(searchDataResponse || error) && (
 						<div className="bg-gray-50 border-t ">
-							<CommandSeparator/>
 							<CommandItem
 								className="ml-1.5"
 								style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
