@@ -13,7 +13,7 @@ const { handlers } = NextAuth({
 			name: 'session-token',
 			options:
 				// dev ?
-				{ httpOnly: false, sameSite: 'Lax', path: '/', secure: false }
+				{ httpOnly: false, sameSite: 'lax', path: '/', secure: false }
 			// : {
 			// 		httpOnly: true,
 			// 		sameSite: 'Lax',
@@ -42,7 +42,7 @@ const { handlers } = NextAuth({
 		async decode(params) {
 			const { token, secret, salt } = params;
 			if (!token) return null;
-			const { payload } = await jwtVerify(token, new TextEncoder().encode(secret));
+			const { payload } = await jwtVerify(token, new TextEncoder().encode(<string>secret));
 			return payload as any;
 		},
 		async encode(params) {
@@ -55,7 +55,7 @@ const { handlers } = NextAuth({
 				.setExpirationTime(exp)
 				.setIssuedAt(iat)
 				.setNotBefore(iat)
-				.sign(new TextEncoder().encode(secret));
+				.sign(new TextEncoder().encode(<string>secret));
 		}
 	}
 });

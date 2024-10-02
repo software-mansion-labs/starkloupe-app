@@ -16,6 +16,8 @@ import { fetchSearchData } from '@/lib/api';
 import { SearchDataResponse, SearchData } from '@/lib/types';
 import { Badge } from './badge';
 import { Network, useSettings } from '@/lib/context/settings-context-provider';
+import Link from 'next/link';
+import debounce from 'lodash/debounce';
 
 export function Search({
 	className,
@@ -26,20 +28,30 @@ export function Search({
 }) {
 	const [searchValue, setSearchValue] = useState('');
 	const [searchDataResponse, setSearchDataResponse] = useState<SearchDataResponse | undefined>();
+	const [dataResponseResults, setDataResponseResults] = useState<number>(0);
 	const [error, setError] = useState<string | undefined>();
 	const [open, setOpen] = useState(false);
 	const [isMac, setIsMac] = useState(true);
 	const { networks } = useSettings();
+	const coreNetworks = 'sn_main, sn_sepolia';
+	const [allAvailableNetworksString, setAllAvailableNetworksString] = useState<string>(coreNetworks);
 
 	const fetchSearchDataResponse = async (value: string) => {
 		try {
-			setSearchDataResponse(
-				await fetchSearchData({ hash: value, rpcUrls: networks.map((n) => n.rpcUrl) })
-			);
+			const searchData: SearchDataResponse = await fetchSearchData({ hash: value, rpcUrls: networks.map((n) => n.rpcUrl) })
+			setSearchDataResponse(searchData);
+			setDataResponseResults(searchData.transactions.length + searchData.classes.length + searchData.contracts.length);
 		} catch (error: any) {
 			setError(error.toString());
 		}
 	};
+
+	useEffect(() => {
+		if (networks.length > 0) {
+			const networkNames = networks.map(network => network.networkName);
+			setAllAvailableNetworksString(`${coreNetworks}, ${networkNames.join(', ')}`);
+		}
+	}, [networks]);
 
 	useEffect(() => {
 		setSearchDataResponse(undefined);
@@ -50,8 +62,25 @@ export function Search({
 		} else {
 			setSearchValue('');
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [searchValue, open]);
+
+	const debounceSearch = useCallback(
+		debounce((value: string) => {
+			console.log('Search value:', value); // Here you log the search value
+			setSearchValue(value);
+		}, 500),
+		[]
+	);
+
+	useEffect(() => {
+		return () => {
+			debounceSearch.cancel();
+		};
+	}, [debounceSearch]);
+
+	const onSearchValueChanged = (val: string) => {
+		debounceSearch(val);
+	};
 
 	useEffect(() => {
 		const down = (e: KeyboardEvent) => {
@@ -94,7 +123,7 @@ export function Search({
 			<CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
 				<CommandInput
 					placeholder="Search for transaction or contract"
-					onValueChange={(value) => setSearchValue(value)}
+					onValueChange={(value) => onSearchValueChanged(value)}
 					displayBorder={!!searchDataResponse || !!error || searchValue.length > 3}
 				/>
 				<CommandList>
@@ -140,6 +169,23 @@ export function Search({
 						<CommandEmpty>Nothing found</CommandEmpty>
 					) : (
 						searchValue.length > 3 && <CommandEmpty>Searching...</CommandEmpty>
+					)}
+					{(searchDataResponse || error) && (
+						<div className="bg-gray-50 border-t ">
+							<CommandItem
+								className="ml-1.5 hover:bg-gray-50"
+								style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
+								<p className="text-muted-foreground">
+									<span className="font-semibold">{dataResponseResults}</span>
+									&nbsp;{ dataResponseResults === 1 ? 'result' : 'results' } found on&nbsp;
+									<span className="font-semibold">{allAvailableNetworksString}</span>
+									&nbsp;networks.&nbsp;
+									<Link href="/settings" className="underline">
+										Add custom networks to search.
+									</Link>
+								</p>
+							</CommandItem>
+						</div>
 					)}
 				</CommandList>
 			</CommandDialog>
