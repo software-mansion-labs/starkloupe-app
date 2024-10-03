@@ -3,12 +3,13 @@ import * as React from 'react';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ClipboardDocumentIcon } from '@heroicons/react/24/outline';
 import { Button } from './button';
+import { copyToClipboard } from '@/lib/utils';
 
 export function Error({ message }: { message: string }) {
 	const [copyToastVisible, setCopyToastVisible] = React.useState(false);
 
 	const onCopyToClipboardClick = () => {
-		navigator.clipboard.writeText(message);
+		copyToClipboard(message);
 		setCopyToastVisible(true);
 
 		setTimeout(() => {
