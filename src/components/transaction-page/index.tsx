@@ -33,18 +33,6 @@ export function TransactionPage({
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
 	const [error, setError] = useState<string | undefined>();
 	const { toast } = useToast();
-	// const isMobile = () => {
-	// 	return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-	// 		navigator.userAgent
-	// 	);
-	// };
-	// const displayAdaptiveHash = (txHash: string) => {
-	// 	if (isMobile()) {
-	// 		return shortenHash(txHash);
-	// 	} else {
-	// 		return txHash;
-	// 	}
-	// };
 
 	const shortHash = shortenHash(txHash);
 
