@@ -11,7 +11,7 @@ import {
 	simulateTransactionByHash,
 	TransactionSimulationResult
 } from '@/lib/simulation';
-import { formatTimestampToUTC, shortenHash } from '@/lib/utils';
+import { copyToClipboard, formatTimestampToUTC, shortenHash } from '@/lib/utils';
 import { ChainId } from '@/lib/types';
 import { CallTraceRoot } from '@/components/call-trace';
 import { InfoBoxItem, InfoBox } from '../ui/info-box';
@@ -33,20 +33,20 @@ export function TransactionPage({
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
 	const [error, setError] = useState<string | undefined>();
 	const { toast } = useToast();
-	const isMobile = () => {
-		return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-			navigator.userAgent
-		);
-	};
-	const displayAdaptiveHash = (txHash: string) => {
-		if (isMobile()) {
-			return shortenHash(txHash);
-		} else {
-			return txHash;
-		}
-	};
+	// const isMobile = () => {
+	// 	return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+	// 		navigator.userAgent
+	// 	);
+	// };
+	// const displayAdaptiveHash = (txHash: string) => {
+	// 	if (isMobile()) {
+	// 		return shortenHash(txHash);
+	// 	} else {
+	// 		return txHash;
+	// 	}
+	// };
 
-	const [adaptiveHash, setAdaptiveHash] = useState<string | undefined>(displayAdaptiveHash(txHash));
+	const shortHash = shortenHash(txHash);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -72,18 +72,23 @@ export function TransactionPage({
 			<main className="overflow-y-auto flex-grow">
 				<Container className="py-6">
 					<div className="flex flex-row items-baseline justify-between">
-						<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2">
+						<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2 flex flex-nowrap items-center">
 							Transaction{' '}
 							<span
-								className="hover:bg-neutral-100 p-1 cursor-pointer rounded-sm"
+								className=""
 								onClick={() => {
-									navigator.clipboard.writeText(txHash);
+									copyToClipboard(txHash);
 									toast({
 										description: 'The address has been copied.'
 									});
 								}}
 							>
-								{adaptiveHash}
+								<span className="hidden lg:block hover:bg-neutral-100 cursor-pointer p-1 rounded-sm">
+									{txHash}
+								</span>
+								<span className="lg:hidden hover:bg-neutral-100 cursor-pointer p-1 rounded-sm">
+									{shortHash}
+								</span>
 							</span>
 						</h1>
 
