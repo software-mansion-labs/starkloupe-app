@@ -42,6 +42,7 @@ export function Search({
 			setSearchDataResponse(searchData);
 			setDataResponseResults(searchData.transactions.length + searchData.classes.length + searchData.contracts.length);
 		} catch (error: any) {
+			setDataResponseResults(0);
 			setError(error.toString());
 		}
 	};
