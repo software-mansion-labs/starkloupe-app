@@ -11,7 +11,7 @@ import {
 	simulateTransactionByHash,
 	TransactionSimulationResult
 } from '@/lib/simulation';
-import { copyToClipboard, formatTimestampToUTC, shortenHash } from '@/lib/utils';
+import { formatTimestampToUTC, shortenHash } from '@/lib/utils';
 import { ChainId } from '@/lib/types';
 import { CallTraceRoot } from '@/components/call-trace';
 import { InfoBoxItem, InfoBox } from '../ui/info-box';
@@ -20,6 +20,7 @@ import { Button } from '../ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
 import { Error } from '../ui/error';
 import { useSettings } from '@/lib/context/settings-context-provider';
+import CopyToClipboardElement from '../ui/copy-to-clipboard';
 
 export function TransactionPage({
 	txHash,
@@ -62,22 +63,20 @@ export function TransactionPage({
 					<div className="flex flex-row items-baseline justify-between">
 						<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2 flex flex-nowrap items-center">
 							Transaction{' '}
-							<span
-								className=""
-								onClick={() => {
-									copyToClipboard(txHash);
-									toast({
-										description: 'The address has been copied.'
-									});
-								}}
+							<CopyToClipboardElement
+								value={txHash}
+								toastDescription="The address has been copied."
+								className="hidden lg:block"
 							>
-								<span className="hidden lg:block hover:bg-neutral-100 cursor-pointer p-1 rounded-sm">
-									{txHash}
-								</span>
-								<span className="lg:hidden hover:bg-neutral-100 cursor-pointer p-1 rounded-sm">
-									{shortHash}
-								</span>
-							</span>
+								{txHash}
+							</CopyToClipboardElement>
+							<CopyToClipboardElement
+								value={txHash}
+								toastDescription="The address has been copied."
+								className=" lg:hidden"
+							>
+								{shortHash}
+							</CopyToClipboardElement>
 						</h1>
 
 						{transactionSimulation && (
