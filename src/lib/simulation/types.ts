@@ -144,7 +144,6 @@ export type CallsMap = Map<
 >;
 
 export interface SimulationResult {
-	callsMap: CallsMap; // Added on client side, contains all function calls and contract calls
 	callTrace: CallTrace;
 	eventsTrace: EventTrace[];
 	executionResult: ExecutionResultSucceeded | ExecutionResultReverted;

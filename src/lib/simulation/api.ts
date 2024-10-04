@@ -1,8 +1,7 @@
 import { ChainId } from '@/lib/types';
-import { addCairoLocationsToContractCalls, fetchApi } from '@/lib/utils';
+import { fetchApi } from '@/lib/utils';
 import {
 	CallTrace,
-	CallsMap,
 	InternalFnCallTrace,
 	SimulationPayloadWithCalldata,
 	TransactionSimulationResult
@@ -29,7 +28,7 @@ export async function simulateTransactionByData(
 			renameToCamelCase: true
 		}
 	);
-	return processTransactionSimulationResult(transactionSimulationResult);
+	return extendTransactionSimulationResult(transactionSimulationResult);
 }
 
 export async function simulateTransactionByHash({
@@ -45,7 +44,7 @@ export async function simulateTransactionByHash({
 			renameToCamelCase: true
 		}
 	);
-	return processTransactionSimulationResult(transactionSimulationResult);
+	return extendTransactionSimulationResult(transactionSimulationResult);
 }
 
 export async function simulateCustomNetworkTransactionByHash({
@@ -68,28 +67,35 @@ export async function simulateCustomNetworkTransactionByHash({
 			}
 		}
 	);
-	return processTransactionSimulationResult(transactionSimulationResult);
+	return extendTransactionSimulationResult(transactionSimulationResult);
 }
 
-function processTransactionSimulationResult(
+type TraverseCallsContext = {
+	contractCallsIds: string[];
+};
+
+// Here we extend the simulation API response with additional information like Cairo locations for contract calls, nestedCallsIds, and so on.
+// Ideally, this should be done on the backend
+function extendTransactionSimulationResult(
 	transactionSimulationResult: TransactionSimulationResult
 ) {
-	addCairoLocationsToContractCalls([transactionSimulationResult.simulationResult.callTrace]);
-	addNestedCallsIdsToContractCalls(transactionSimulationResult);
-	const callsMap = makeCallsMap(transactionSimulationResult);
-	transactionSimulationResult.simulationResult.callsMap = callsMap;
+	const context: TraverseCallsContext = { contractCallsIds: [] };
+	traverseContractCall(transactionSimulationResult.simulationResult.callTrace, context);
 	return transactionSimulationResult;
 }
 
-function addNestedCallsIdsToContractCalls(
-	transactionSimulationResult: TransactionSimulationResult
-) {
-	const contractCallsIds: string[] = [];
-	processContractCall(transactionSimulationResult.simulationResult.callTrace, contractCallsIds);
-}
+function traverseContractCall(contractCall: CallTrace, context: TraverseCallsContext) {
+	// Add cairo location to the contract call
+	if (contractCall.fnCalls[0] && contractCall.fnCalls[0].nestedCalls.length > 0) {
+		const wrapper = contractCall.fnCalls[0];
+		const entryPointFunction = wrapper?.nestedCalls[1];
+		if (wrapper && entryPointFunction) {
+			contractCall.additionalInfo.cairoLocation =
+				entryPointFunction.data.cairoLocation ?? undefined;
+		}
+	}
 
-function processContractCall(contractCall: CallTrace, contractCallsIds: string[]) {
-	processFnCalls(contractCall.fnCalls, contractCallsIds);
+	traverseFnCalls(contractCall.fnCalls, context);
 	contractCall.nestedCallsIds = [];
 	for (const fnCall of contractCall.fnCalls) {
 		if (fnCall.nestedCalls[1]) {
@@ -100,44 +106,21 @@ function processContractCall(contractCall: CallTrace, contractCallsIds: string[]
 		contractCall.nestedCallsIds.push(fnCall.data.id);
 	}
 	for (const nestedCall of contractCall.nestedCalls) {
-		if (!contractCallsIds.includes(nestedCall.contractCallId)) {
+		if (!context.contractCallsIds.includes(nestedCall.contractCallId)) {
 			contractCall.nestedCallsIds.push(nestedCall.contractCallId);
 		}
-		processContractCall(nestedCall, contractCallsIds);
+		traverseContractCall(nestedCall, context);
 	}
 }
 
-function processFnCalls(fnCalls: InternalFnCallTrace[], contractCallsIds: string[]) {
+function traverseFnCalls(fnCalls: InternalFnCallTrace[], context: TraverseCallsContext) {
 	for (const fnCall of fnCalls) {
+		if (!fnCall.data.fnName) fnCall.isHidden = true;
 		for (const nestedCallId of fnCall.data.nestedCallsIds) {
 			if (!nestedCallId.includes('fp')) {
-				contractCallsIds.push(nestedCallId);
+				context.contractCallsIds.push(nestedCallId);
 			}
 		}
-		processFnCalls(fnCall.nestedCalls, contractCallsIds);
-	}
-}
-
-/**
- * Makes a map of call id to contract call or fn call
- */
-function makeCallsMap(transactionSimulationResult: TransactionSimulationResult): CallsMap {
-	const callsMap: CallsMap = new Map();
-	makeContractCallsMap([transactionSimulationResult.simulationResult.callTrace], callsMap);
-	return callsMap;
-}
-
-function makeContractCallsMap(contractCalls: CallTrace[], callsMap: CallsMap) {
-	for (const contractCall of contractCalls) {
-		callsMap.set(contractCall.contractCallId, { contractCall });
-		makeFnCallsMap(contractCall.fnCalls, callsMap);
-		makeContractCallsMap(contractCall.nestedCalls, callsMap);
-	}
-}
-
-function makeFnCallsMap(fnCalls: InternalFnCallTrace[], callsMap: CallsMap) {
-	for (const fnCall of fnCalls) {
-		callsMap.set(fnCall.data.id, { fnCall });
-		makeFnCallsMap(fnCall.nestedCalls, callsMap);
+		traverseFnCalls(fnCall.nestedCalls, context);
 	}
 }

@@ -5,12 +5,20 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 First, run the development server:
 
 ```bash
+nvm use
+npm i
 npm run dev
 # or
 yarn dev
 # or
 pnpm dev
 ```
+
+## Sentry
+Sentry is used for client monitoring purposes - like user session replay.
+Sentry is disabled by default for local development. To enable it, set `NEXT_PUBLIC_USE_SENTRY=true` environment variable and set `NEXT_PUBLIC_SENTRY_DSN_URL`
+with dsn value for Sentry project (can be found in Sentry dashboard).
+If you want to use Sentry for local development, but disable it for particular browser - set `skip-sentry-pls=true` cookie in your browser.
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 

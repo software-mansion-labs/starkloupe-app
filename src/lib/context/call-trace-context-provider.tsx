@@ -1,4 +1,4 @@
-import { PropsWithChildren, createContext, useContext, useState } from 'react';
+import { PropsWithChildren, createContext, useContext, useMemo, useState } from 'react';
 import {
 	CallTrace,
 	CallsMap,
@@ -54,6 +54,7 @@ export const CallTraceContextProvider: React.FC<
 	const [expandedCalls, setExpandedCalls] = useState<StringBooleanDict>({});
 	const [showEvents, setShowEvents] = useState<boolean>(true);
 	const [activeTab, setActiveTab] = useState<TabId>('call-trace');
+	const callsMap = useMemo(() => makeCallsMap(simulationResult), [simulationResult]);
 
 	const notCollapsedInternalFnCallsIds = findCallPathWithError([simulationResult.callTrace]);
 	const initialNotCollapsedInternalFnCalls = notCollapsedInternalFnCallsIds
@@ -80,7 +81,7 @@ export const CallTraceContextProvider: React.FC<
 	const collapseAll = () => {
 		const newState: StringBooleanDict = {};
 
-		simulationResult.callsMap.forEach((value, key) => {
+		callsMap.forEach((value, key) => {
 			if (value && value.contractCall) {
 				if (value.contractCall.nestedCalls.length > 0 || value.contractCall.fnCalls.length > 0) {
 					newState[key] = true;
@@ -106,7 +107,7 @@ export const CallTraceContextProvider: React.FC<
 		<CallTraceContext.Provider
 			value={{
 				simulationResult,
-				callsMap: simulationResult.callsMap,
+				callsMap,
 				collapsedCalls,
 				expandedCalls,
 				showEvents,
@@ -168,4 +169,28 @@ function findInternalFnCallPathWithError(
 		}
 	}
 	return null;
+}
+
+/**
+ * Makes a map of call id to contract call or fn call
+ */
+function makeCallsMap(simulationResult: SimulationResult): CallsMap {
+	const callsMap: CallsMap = new Map();
+	makeContractCallsMap([simulationResult.callTrace], callsMap);
+	return callsMap;
+}
+
+function makeContractCallsMap(contractCalls: CallTrace[], callsMap: CallsMap) {
+	for (const contractCall of contractCalls) {
+		callsMap.set(contractCall.contractCallId, { contractCall });
+		makeFnCallsMap(contractCall.fnCalls, callsMap);
+		makeContractCallsMap(contractCall.nestedCalls, callsMap);
+	}
+}
+
+function makeFnCallsMap(fnCalls: InternalFnCallTrace[], callsMap: CallsMap) {
+	for (const fnCall of fnCalls) {
+		callsMap.set(fnCall.data.id, { fnCall });
+		makeFnCallsMap(fnCall.nestedCalls, callsMap);
+	}
 }
