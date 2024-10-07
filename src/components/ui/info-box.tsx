@@ -1,5 +1,6 @@
 import { copyToClipboard } from '@/lib/utils';
-import { Card , CardContent } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
+import CopyToClipboardElement from './copy-to-clipboard';
 
 export interface InfoBoxItem {
 	name: string;
@@ -17,20 +18,21 @@ export function InfoBox({ details }: { details: InfoBoxItem[] }) {
 						value && (
 							<span key={name} className="whitespace-nowrap">
 								<span className="text-neutral-500">{name}:</span>{' '}
-								<span
-									onClick={() =>
+								<CopyToClipboardElement
+									value={
 										isCopyable && valueToCopy
-											? copyToClipboard(valueToCopy)
+											? valueToCopy
 											: typeof value === 'string'
-											? copyToClipboard(value)
-											: () => {}
+											? value
+											: null
 									}
+									toastDescription={`${name} has been copied.`}
 									className={`rounded-sm font-mono px-1 ${
 										isCopyable ? 'cursor-pointer hover:bg-black/10' : ''
 									}`}
 								>
 									{value}
-								</span>
+								</CopyToClipboardElement>
 							</span>
 						)
 				)}
