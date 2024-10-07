@@ -1,35 +1,19 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { DecodedItem, DataDecoded, DataType } from '@/lib/simulation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 import { Card } from './ui/card';
-import { isHexFormat } from '@/lib/utils';
 
 export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded; type: DataType }) {
 	const hasNameField = decodeData.some((item: DecodedItem) => 'name' in item);
 	const [displayFormat, setDisplayFormat] = useState<'hex' | 'dec'>('hex');
 
-	useEffect(() => {
-		const hasHex = decodeData.some((item: DecodedItem) => {
-			if (typeof item.value === 'string') {
-				return isHexFormat(item.value);
-			} else if (Array.isArray(item.value)) {
-				return item.value.some((nestedItem) => isHexFormat(nestedItem.toString()));
-			}
-			return false;
-		});
-
-		if (!hasHex) {
-			setDisplayFormat('dec');
-		}
-	}, [decodeData]);
-
-	const isObjectArray = (value: any[]): boolean => {
+	const isObject = (value: any): boolean => {
 		return (
-			Array.isArray(value) &&
-			value.some(
-				(item) => typeof item === 'object' && item !== null && 'type' in item && 'value' in item
-			)
+			typeof value === 'object' &&
+			value !== null &&
+			(('name' in value && 'type' in value && 'value' in value) ||
+				Object.keys(value).every((key) => !isNaN(Number(key))))
 		);
 	};
 
@@ -39,7 +23,7 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 				return BigInt(value).toString(10);
 			}
 		} else if (displayFormat === 'hex') {
-			if (!value.startsWith('0x') && /^\d+$/.test(value)) {
+			if (/^\d+$/.test(value)) {
 				return '0x' + BigInt(value).toString(16);
 			}
 		}
@@ -48,45 +32,33 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 
 	const renderValue = (value: any): JSX.Element => {
 		if (Array.isArray(value)) {
-			if (isObjectArray(value)) {
-				return (
-					<Table className="text-xs">
-						<TableHeader>
-							<TableRow>
-								{hasNameField && <TableHead>Name</TableHead>}
-								<TableHead>Type</TableHead>
-								<TableHead>Value</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody className="font-mono">
-							{value.map((item: any, index: number) => (
-								<TableRow key={index}>
-									{item.name && (
-										<TableCell className="whitespace-break-spaces">{item.name}</TableCell>
-									)}
-									<TableCell className="whitespace-break-spaces">{item.type}</TableCell>
-									<TableCell>{renderValue(item.value)}</TableCell>
-								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				);
-			} else {
-				return (
-					<ul>
-						{value.map((item: any) => (
-							<li key={item}>{renderValue(item)}</li>
-						))}
-					</ul>
-				);
-			}
-		} else if (typeof value === 'object' && value !== null) {
+			return (
+				<div className="pl-4">
+					{value.map((item, index) => (
+						<div key={index}>{renderValue(item)}</div>
+					))}
+				</div>
+			);
+		} else if (isObject(value)) {
 			return (
 				<Table className="text-xs">
+					<TableHeader>
+						<TableRow>
+							{hasNameField && <TableHead>Name</TableHead>}
+							<TableHead>Type</TableHead>
+							<TableHead>Value</TableHead>
+						</TableRow>
+					</TableHeader>
 					<TableBody className="font-mono">
-						{Object.entries(value).map(([key, val]: [string, any]) => (
+						{Object.entries(value).map(([key, item]) => (
 							<TableRow key={key}>
-								<TableCell>{renderValue(val)}</TableCell>
+								<TableCell className="whitespace-break-spaces">
+									{(item as { name: string }).name}
+								</TableCell>
+								<TableCell className="whitespace-break-spaces">
+									{(item as { type: string }).type}
+								</TableCell>
+								<TableCell>{renderValue((item as { value: any }).value)}</TableCell>
 							</TableRow>
 						))}
 					</TableBody>
@@ -109,7 +81,7 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 					size={'sm'}
 					variant="outline"
 					className="mb-1"
-					value={displayFormat}
+					defaultValue="hex"
 					aria-label="Hex or Decimal Toggle"
 					onValueChange={(value) => setDisplayFormat(value as 'hex' | 'dec')}
 				>
@@ -125,7 +97,7 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 				<Table className="w-auto py-0.5 px-2 text-xs">
 					<TableHeader>
 						<TableRow>
-							{type === DataType.INPUT && hasNameField && (
+							{type === DataType.INPUT && (
 								<TableHead className="whitespace-break-spaces">Name</TableHead>
 							)}
 							<TableHead>Type</TableHead>
@@ -133,9 +105,9 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{decodeData.map((item: DecodedItem, index: number) => (
+						{decodeData?.map((item: DecodedItem, index: number) => (
 							<TableRow key={index}>
-								{type === DataType.INPUT && item.name && (
+								{type === DataType.INPUT && (
 									<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
 										{item.name}
 									</TableCell>
