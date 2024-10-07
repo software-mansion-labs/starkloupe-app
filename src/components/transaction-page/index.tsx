@@ -5,12 +5,13 @@ import { HeaderNav } from '../header';
 import { Container } from '../ui/container';
 import { Footer } from '../footer';
 import { Loader } from '../ui/loader';
+import { useToast } from '../hooks/use-toast';
 import {
 	simulateCustomNetworkTransactionByHash,
 	simulateTransactionByHash,
 	TransactionSimulationResult
 } from '@/lib/simulation';
-import { formatTimestampToUTC } from '@/lib/utils';
+import { formatTimestampToUTC, shortenHash } from '@/lib/utils';
 import { ChainId } from '@/lib/types';
 import { CallTraceRoot } from '@/components/call-trace';
 import { InfoBoxItem, InfoBox } from '../ui/info-box';
@@ -19,6 +20,7 @@ import { Button } from '../ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
 import { Error } from '../ui/error';
 import { useSettings } from '@/lib/context/settings-context-provider';
+import CopyToClipboardElement from '../ui/copy-to-clipboard';
 
 export function TransactionPage({
 	txHash,
@@ -31,6 +33,9 @@ export function TransactionPage({
 }) {
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
 	const [error, setError] = useState<string | undefined>();
+	const { toast } = useToast();
+
+	const shortHash = shortenHash(txHash);
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -56,7 +61,23 @@ export function TransactionPage({
 			<main className="overflow-y-auto flex-grow">
 				<Container className="py-6">
 					<div className="flex flex-row items-baseline justify-between">
-						<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2">Transaction {txHash}</h1>
+						<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2 flex flex-nowrap items-center">
+							Transaction{' '}
+							<CopyToClipboardElement
+								value={txHash}
+								toastDescription="The address has been copied."
+								className="hidden lg:block"
+							>
+								{txHash}
+							</CopyToClipboardElement>
+							<CopyToClipboardElement
+								value={txHash}
+								toastDescription="The address has been copied."
+								className=" lg:hidden"
+							>
+								{shortHash}
+							</CopyToClipboardElement>
+						</h1>
 
 						{transactionSimulation && (
 							<SimulateDialog

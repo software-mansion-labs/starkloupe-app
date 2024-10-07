@@ -3,6 +3,7 @@ import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import LayoutClientContainer from './layout-client-container';
 import { SettingsContextProvider } from '@/lib/context/settings-context-provider';
+import { Toaster } from '@/components/ui/toaster';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 					<LayoutClientContainer />
 					<div className="h-screen flex flex-col">{children}</div>
 				</SettingsContextProvider>
+				<Toaster />
 			</body>
 		</html>
 	);
