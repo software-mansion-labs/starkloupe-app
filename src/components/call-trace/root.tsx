@@ -80,8 +80,8 @@ function CallTraceRootContent() {
 							</div>
 						</TooltipProvider>
 
-						<ScrollArea>
-							<div className="text-xs px-0 py-2">
+						<ScrollArea className="md:h-[calc(100vh-410px)] h-[calc(100vh-200px)]">
+							<div className="text-xs px-0 py-2 overflow-y-auto">
 								<ContractCallTrace
 									call={simulationResult.callTrace}
 									nestingLevel={0}
