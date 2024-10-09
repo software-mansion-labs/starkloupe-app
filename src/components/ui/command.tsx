@@ -47,9 +47,12 @@ const CommandDialog = ({
 
 const CommandInput = forwardRef<
 	ElementRef<typeof CommandPrimitive.Input>,
-	ComponentPropsWithoutRef<typeof CommandPrimitive.Input> & { displayBorder?: boolean }
->(({ className, displayBorder = true, ...props }, ref) => (
-	<div className={cn('flex items-center px-3', displayBorder && 'border-b')}>
+	ComponentPropsWithoutRef<typeof CommandPrimitive.Input> & {
+		displayBorder?: boolean;
+		parentClassName?: string;
+	}
+>(({ className, displayBorder = true, parentClassName, ...props }, ref) => (
+	<div className={cn('flex items-center px-3', displayBorder && 'border-b', parentClassName)}>
 		<MagnifyingGlassIcon className="mr-2 h-4 w-4 shrink-0 opacity-50" />
 		<CommandPrimitive.Input
 			ref={ref}
@@ -116,12 +119,16 @@ CommandSeparator.displayName = CommandPrimitive.Separator.displayName;
 
 const CommandItem = forwardRef<
 	ElementRef<typeof CommandPrimitive.Item>,
-	ComponentPropsWithoutRef<typeof CommandPrimitive.Item>
->(({ className, ...props }, ref) => (
+	ComponentPropsWithoutRef<typeof CommandPrimitive.Item> & { bgSelectedDisable?: boolean }
+>(({ className, bgSelectedDisable = false, ...props }, ref) => (
 	<CommandPrimitive.Item
 		ref={ref}
 		className={cn(
-			'relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled=true]:pointer-events-none data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground data-[disabled=true]:opacity-50',
+			`relative flex cursor-default select-none items-center rounded-sm px-2 py-1.5 text-sm outline-none data-[disabled=true]:pointer-events-none ${
+				bgSelectedDisable
+					? ''
+					: 'data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground'
+			} data-[disabled=true]:opacity-50`,
 			className
 		)}
 		{...props}

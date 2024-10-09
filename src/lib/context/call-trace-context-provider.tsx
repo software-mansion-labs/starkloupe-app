@@ -1,4 +1,13 @@
-import { PropsWithChildren, createContext, useContext, useMemo, useState } from 'react';
+import React, {
+	MutableRefObject,
+	PropsWithChildren,
+	RefObject,
+	createContext,
+	useContext,
+	useMemo,
+	useRef,
+	useState
+} from 'react';
 import {
 	CallTrace,
 	CallsMap,
@@ -22,12 +31,16 @@ interface CallTraceContextProps {
 	notCollapsedInternalFnCalls: StringBooleanDict;
 	simulationDebuggerData: SimulationDebuggerData;
 	activeTab: TabId;
+	traceLineElementRefs: MutableRefObject<{
+		[key: string]: RefObject<HTMLDivElement>;
+	}>;
 	toggleCallCollapse: (id: string) => void;
 	expandAll: () => void;
 	collapseAll: () => void;
 	toggleCallExpand: (id: string) => void;
 	toggleInternalFnCallCollapse: (id: string) => void;
 	setActiveTab: (tab: TabId) => void;
+	scrollToTraceLineElement: (key: string) => void;
 }
 
 export const CallTraceContext = createContext<CallTraceContextProps>({
@@ -39,12 +52,14 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	showEvents: true,
 	simulationDebuggerData: { classesDebuggerData: {} },
 	activeTab: 'call-trace',
+	traceLineElementRefs: { current: {} },
 	toggleCallCollapse: () => undefined,
 	expandAll: () => undefined,
 	collapseAll: () => undefined,
 	toggleCallExpand: () => undefined,
 	toggleInternalFnCallCollapse: () => undefined,
-	setActiveTab: () => undefined
+	setActiveTab: () => undefined,
+	scrollToTraceLineElement: (key: string) => undefined
 });
 
 export const CallTraceContextProvider: React.FC<
@@ -56,6 +71,7 @@ export const CallTraceContextProvider: React.FC<
 	const [activeTab, setActiveTab] = useState<TabId>('call-trace');
 	const callsMap = useMemo(() => makeCallsMap(simulationResult), [simulationResult]);
 
+	const traceLineElementRefs = useRef<{ [callid: string]: React.RefObject<HTMLDivElement> }>({});
 	const notCollapsedInternalFnCallsIds = findCallPathWithError([simulationResult.callTrace]);
 	const initialNotCollapsedInternalFnCalls = notCollapsedInternalFnCallsIds
 		? notCollapsedInternalFnCallsIds.reduce((obj: StringBooleanDict, id) => {
@@ -67,6 +83,13 @@ export const CallTraceContextProvider: React.FC<
 	const [notCollapsedInternalFnCalls, setNotCollapsedInternalFnCalls] = useState<StringBooleanDict>(
 		initialNotCollapsedInternalFnCalls
 	);
+
+	const scrollToTraceLineElement = (callId: string) => {
+		const element = traceLineElementRefs.current[callId]?.current;
+		if (element) {
+			element.scrollIntoView({ behavior: 'smooth' });
+		}
+	};
 
 	const toggleCallCollapse = (id: string) => {
 		setCollapsedCalls((prevState) => {
@@ -116,10 +139,12 @@ export const CallTraceContextProvider: React.FC<
 				toggleCallExpand,
 				collapseAll,
 				expandAll,
+				traceLineElementRefs,
 				notCollapsedInternalFnCalls,
 				toggleInternalFnCallCollapse,
 				activeTab,
-				setActiveTab
+				setActiveTab,
+				scrollToTraceLineElement
 			}}
 		>
 			{children}

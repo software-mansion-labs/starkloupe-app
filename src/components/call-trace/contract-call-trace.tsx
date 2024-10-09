@@ -1,4 +1,4 @@
-import { Fragment, useContext, useEffect } from 'react';
+import React, { Fragment, useContext, useEffect } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { CallTrace, CodeLocation, DataType, CallType, getContractCallId } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
@@ -31,7 +31,7 @@ export function ContractCallTrace({
 		toggleCallCollapse,
 		toggleCallExpand,
 		setActiveTab,
-		simulationDebuggerData
+		traceLineElementRefs
 	} = useCallTrace();
 	const { debugCall, checkIfDebuggable } = useContext(DebuggerContext);
 
@@ -81,7 +81,9 @@ export function ContractCallTrace({
 	}
 
 	const isDebuggable = checkIfDebuggable(call.contractCallId);
-
+	if (!traceLineElementRefs.current[call.contractCallId]) {
+		traceLineElementRefs.current[call.contractCallId] = React.createRef<HTMLDivElement>();
+	}
 	return (
 		<Fragment key={call.contractCallId}>
 			<TraceLine
@@ -89,6 +91,7 @@ export function ContractCallTrace({
 				onClick={() => {
 					toggleCallExpand(call.contractCallId);
 				}}
+				ref={traceLineElementRefs.current[call.contractCallId]}
 			>
 				{CallTypeChip(callType)}
 

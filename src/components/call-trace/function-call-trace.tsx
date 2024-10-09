@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { CallTrace, CodeLocation, InternalFnCallIO, InternalFnCallTrace } from '@/lib/simulation';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
@@ -9,6 +9,8 @@ import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { DebugButton } from './debug-btn';
 import { CommonCallTrace } from './common-call-trace';
 import { InfoBox } from '@/components/ui/info-box';
+import { FnName } from '../ui/function-name';
+import { getRawFunctionName } from '@/lib/utils';
 
 export function FunctionCallTrace({
 	call,
@@ -26,23 +28,25 @@ export function FunctionCallTrace({
 	const {
 		collapsedCalls,
 		toggleCallCollapse,
-		simulationDebuggerData,
 		expandedCalls,
 		toggleCallExpand,
-		setActiveTab
+		setActiveTab,
+		traceLineElementRefs
 	} = useCallTrace();
 	const { debugCall, checkIfDebuggable } = useDebugger();
-
 	const isDebuggable = checkIfDebuggable(call.data.id);
 	const contractCallId = call.data.id.split('-fp')[0];
 	const isParentContractCallDebuggable = checkIfDebuggable(contractCallId);
 	const noCodeLocationAvaliable = isParentContractCallDebuggable && !isDebuggable;
-
+	if (!traceLineElementRefs.current[call.data.id]) {
+		traceLineElementRefs.current[call.data.id] = React.createRef<HTMLDivElement>();
+	}
 	return (
 		<React.Fragment key={call.data.id}>
 			<TraceLine
 				isActive={expandedCalls[call.data.id]}
 				onClick={() => toggleCallExpand(call.data.id)}
+				ref={traceLineElementRefs.current[call.data.id]}
 			>
 				{CallTypeChip('Function')}
 				{executionFailed && <div className="w-5 mr-0.5"></div>}
@@ -127,8 +131,8 @@ function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 							{io.value.length === 0
 								? 'None'
 								: io.value.length === 1
-									? io.value[0]
-									: `[${io.value.join(', ')}]`}
+								? io.value[0]
+								: `[${io.value.join(', ')}]`}
 						</span>
 						{i < ios.length - 1 ? <>,&nbsp;</> : ''}
 					</React.Fragment>
@@ -137,36 +141,6 @@ function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 			<span className="text-yellow-900">{')'}</span>
 		</>
 	);
-}
-
-function getRawFunctionName(fnName: string): string {
-	let rawFnName = fnName.replace(/::?<([^<>]*)>/g, '');
-	while (/<[^<>]*>/g.test(rawFnName)) {
-		rawFnName = rawFnName.replace(/::?<([^<>]*)>/g, '');
-	}
-	return rawFnName.replace(/::$/, '');
-}
-
-function FnName({ fnName }: { fnName: string | null }) {
-	if (fnName) {
-		const rawFnName = getRawFunctionName(fnName);
-		const splittedFnName = rawFnName.split('::');
-
-		return (
-			<>
-				{splittedFnName.length >= 2 ? (
-					<>
-						<span className="text-purple-600">{splittedFnName[splittedFnName.length - 2]}</span>::
-						<span className="text-pink-500">{splittedFnName[splittedFnName.length - 1]}</span>
-					</>
-				) : (
-					<span className="text-pink-500">{rawFnName}</span>
-				)}
-			</>
-		);
-	} else {
-		return <span className="text-pink-500">Unknown function</span>;
-	}
 }
 
 function FunctionCallDetails({

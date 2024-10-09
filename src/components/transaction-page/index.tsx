@@ -60,7 +60,7 @@ export function TransactionPage({
 			<HeaderNav />
 			<main className="overflow-y-auto flex-grow">
 				<Container className="py-6">
-					<div className="flex flex-row items-baseline justify-between">
+					<div className="lg:flex flex-row items-baseline justify-between">
 						<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2 flex flex-nowrap items-center">
 							Transaction{' '}
 							<CopyToClipboardElement

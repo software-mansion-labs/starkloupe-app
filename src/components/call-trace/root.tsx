@@ -1,4 +1,3 @@
-import { useContext, useState } from 'react';
 import { SimulationResult } from '@/lib/simulation';
 import {
 	CallTraceContext,
@@ -13,6 +12,7 @@ import { DebuggerContextProvider } from '@/lib/context/debugger-context-provider
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import CalldataSearch from '../ui/calldata-search';
 import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
 import { Button } from '../ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
@@ -43,8 +43,9 @@ function CallTraceRootContent() {
 					<div className="whitespace-nowrap rounded-xl border">
 						<TooltipProvider>
 							<div className="border-b shadow-sm">
-								<div className="flex justify-end items-center px-4 ">
-									<div className="py-1">
+								<div className="flex justify-between w-full items-center px-4 ">
+									<CalldataSearch />
+									<div className="pt-1">
 										<Tooltip delayDuration={100}>
 											<TooltipTrigger>
 												<div
