@@ -15,12 +15,12 @@ export function ContractCallSignature({
 		const contractName = getContractName({ contractCall });
 		return (
 			<>
-				{displayFunctionName && (
+				{displayContractName && (
 					<span className={`${variant === 'search-result' ? '' : 'text-blue-600'}`}>
 						{contractName}
 					</span>
 				)}
-				{displayContractName && (
+				{displayFunctionName && (
 					<>
 						{displayContractName && displayFunctionName && <> {'.'}</>}
 
