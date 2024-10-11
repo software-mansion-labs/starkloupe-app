@@ -33,15 +33,18 @@ export async function simulateTransactionByData(
 
 export async function simulateTransactionByHash({
 	chainId,
-	txHash
+	txHash,
+	skipTracking = false
 }: {
 	chainId: ChainId;
 	txHash: string;
+	skipTracking?: boolean;
 }): Promise<TransactionSimulationResult> {
 	const transactionSimulationResult = await fetchApi<TransactionSimulationResult>(
 		`/v1/${chainId}/simulate-transaction/${txHash}`,
 		{
-			renameToCamelCase: true
+			renameToCamelCase: true,
+			queryParams: skipTracking ? { skip_tracking: 'true' } : undefined
 		}
 	);
 	return extendTransactionSimulationResult(transactionSimulationResult);
