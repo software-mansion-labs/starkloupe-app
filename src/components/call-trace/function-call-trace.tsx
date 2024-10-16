@@ -11,6 +11,7 @@ import { CommonCallTrace } from './common-call-trace';
 import { InfoBox } from '@/components/ui/info-box';
 import { FnName } from '../ui/function-name';
 import { getRawFunctionName } from '@/lib/utils';
+import { Card } from '../ui/card';
 
 export function FunctionCallTrace({
 	call,
@@ -193,12 +194,18 @@ function FunctionCallDetails({
 
 	return (
 		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4">
-			<InfoBox details={details} />
-			{code && cairoLocation && (
-				<div className="h-80">
-					<CodeViewer content={code} codeLocation={cairoLocation} />
+			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
+				<div className="">
+					<InfoBox details={details} />
 				</div>
-			)}
+				{code && cairoLocation && (
+					<Card className="mt-5">
+						<div className="h-80 ">
+							<CodeViewer content={code} codeLocation={cairoLocation} />
+						</div>
+					</Card>
+				)}
+			</div>
 		</div>
 	);
 }

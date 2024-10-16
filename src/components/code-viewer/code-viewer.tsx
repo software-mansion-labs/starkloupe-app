@@ -198,14 +198,13 @@ export function CodeViewer({
 			options={{
 				minimap: { enabled: false },
 				wordBreak: 'keepAll',
-				wordWrap: 'on',
 				readOnly: true,
 				smoothScrolling: true
 			}}
 			value={content}
 			language={'cairo'}
 			className={cn(
-				'whitespace-pre-wrap overflow-hidden p-0 m-0 w-full h-full absolute top-0 left-0'
+				'whitespace-pre-wrap overflow-x-scroll p-0 m-0 w-full h-full absolute top-0 left-0'
 			)}
 		/>
 	);

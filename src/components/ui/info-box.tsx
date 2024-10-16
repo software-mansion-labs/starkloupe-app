@@ -12,7 +12,7 @@ export interface InfoBoxItem {
 export function InfoBox({ details }: { details: InfoBoxItem[] }) {
 	return (
 		<Card>
-			<CardContent className="p-2 text-xs flex gap-x-3 flex-wrap leading-loose">
+			<CardContent className="p-2 text-xs flex gap-x-3 flex-wrap leading-loose overflow-x-auto">
 				{details.map(
 					({ name, value, isCopyable, valueToCopy }) =>
 						value && (

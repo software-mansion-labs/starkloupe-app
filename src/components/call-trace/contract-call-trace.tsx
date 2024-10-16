@@ -331,22 +331,27 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 	);
 
 	return (
-		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-2 px-4">
-			{!hasDebuggableInfo && noSourceCodeAlert}
-			<InfoBox details={details} />
-			{call.additionalInfo?.calldataDecoded && (
-				<CalldataTable calldata={call.additionalInfo.calldataDecoded} type={DataType.INPUT} />
-			)}
-			{call.additionalInfo?.functionResult && (
-				<CalldataTable calldata={call.additionalInfo.functionResult} type={DataType.OUTPUT} />
-			)}
-			{code && (
-				<Card>
-					<div className="h-80">
-						<CodeViewer content={code} codeLocation={cairoLocation} />
-					</div>
-				</Card>
-			)}
+		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-2 px-4 ">
+			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
+				<div className="">
+					{!hasDebuggableInfo && noSourceCodeAlert}
+					<InfoBox details={details} />
+					{call.additionalInfo?.calldataDecoded && (
+						<CalldataTable calldata={call.additionalInfo.calldataDecoded} type={DataType.INPUT} />
+					)}
+					{call.additionalInfo?.functionResult && (
+						<CalldataTable calldata={call.additionalInfo.functionResult} type={DataType.OUTPUT} />
+					)}
+				</div>
+
+				{code && (
+					<Card className="">
+						<div className="h-80 ">
+							<CodeViewer content={code} codeLocation={cairoLocation} />
+						</div>
+					</Card>
+				)}
+			</div>
 		</div>
 	);
 }

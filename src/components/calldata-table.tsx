@@ -84,7 +84,7 @@ export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; t
 					</ToggleGroupItem>
 				</ToggleGroup>
 			</div>
-			<Card className="w-fit">
+			<Card className="overflow-x-scroll">
 				<Table className="w-auto py-0.5 px-2 text-xs">
 					<TableHeader>
 						<TableRow>
