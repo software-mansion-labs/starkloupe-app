@@ -12,7 +12,7 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 		return (
 			typeof value === 'object' &&
 			value !== null &&
-			(('name' in value && 'type' in value && 'value' in value) ||
+			(('name' in value && 'type_name' in value && 'value' in value) ||
 				Object.keys(value).every((key) => !isNaN(Number(key))))
 		);
 	};
@@ -93,7 +93,7 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 					</ToggleGroupItem>
 				</ToggleGroup>
 			</div>
-			<Card className="w-fit">
+			<Card className="overflow-x-scroll">
 				<Table className="w-auto py-0.5 px-2 text-xs">
 					<TableHeader>
 						<TableRow>
@@ -113,7 +113,7 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 									</TableCell>
 								)}
 								<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
-									{item.type}
+									{item.typeName}
 								</TableCell>
 								<TableCell className="border-r border-neutral-200 last:border-r-0">
 									{renderValue(item.value)}

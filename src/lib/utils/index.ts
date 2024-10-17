@@ -146,3 +146,33 @@ export function openSimulationPage(simulationPayload: SimulationPayloadWithCalld
 export function parseCalldata(calldata: string): string[] {
 	return calldata.split(',');
 }
+
+export const getContractName = ({ contractCall }: { contractCall: CallTrace }) => {
+	let contractName: string | undefined = undefined;
+	if (contractCall.additionalInfo.contractName) {
+		contractName = contractCall.additionalInfo.contractName;
+	} else if (
+		contractCall.additionalInfo.erc20TokenName ||
+		contractCall.additionalInfo.erc20TokenSymbol
+	) {
+		contractName = [
+			contractCall.additionalInfo.erc20TokenName,
+			`(${contractCall.additionalInfo.erc20TokenSymbol})`
+		].join(' ');
+	} else if (contractCall.additionalInfo.entryPointInterfaceName) {
+		contractName = contractCall.additionalInfo.entryPointInterfaceName.split('::').pop();
+	}
+
+	if (!contractName) {
+		contractName = shortenHash(contractCall.entryPoint.storageAddress, 13);
+	}
+	return contractName;
+};
+
+export function getRawFunctionName(fnName: string): string {
+	let rawFnName = fnName?.replace(/::?<([^<>]*)>/g, '');
+	while (/<[^<>]*>/g.test(rawFnName)) {
+		rawFnName = rawFnName.replace(/::?<([^<>]*)>/g, '');
+	}
+	return rawFnName.replace(/::$/, '');
+}

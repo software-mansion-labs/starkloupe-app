@@ -49,7 +49,7 @@ export interface EntryPoint {
 }
 
 export interface DecodedItem {
-	type: string;
+	typeName: string;
 	name: string | null;
 	value: string | DecodedItem[] | string[];
 }

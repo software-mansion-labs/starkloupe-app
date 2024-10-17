@@ -21,6 +21,7 @@ import { PlayIcon } from '@heroicons/react/24/outline';
 import { Error } from '../ui/error';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
+import { useSearchParams } from 'next/navigation'
 
 export function TransactionPage({
 	txHash,
@@ -34,14 +35,24 @@ export function TransactionPage({
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
 	const [error, setError] = useState<string | undefined>();
 	const { toast } = useToast();
+	const searchParams = useSearchParams();
 
 	const shortHash = shortenHash(txHash);
+
+	const shouldSkipTracking = (): boolean => {
+		const queryParamsIncludesSkipTracking = searchParams.toString().includes('skip_tracking=true');
+		const cookies = document.cookie.split(';');
+		const skipBasedOnCookie = cookies.some(cookie => cookie.trim().startsWith('skip_tracking_pls=true'));
+		const skipBasedOnEnvVar = process.env.NEXT_PUBLIC_USE_TRACKING !== 'true';
+		return queryParamsIncludesSkipTracking || skipBasedOnCookie || skipBasedOnEnvVar;
+	}
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				if (chainId) {
-					setTransactionSimulation(await simulateTransactionByHash({ chainId, txHash }));
+					const skipTracking = shouldSkipTracking();
+					setTransactionSimulation(await simulateTransactionByHash({ chainId, txHash, skipTracking }));
 				} else if (rpcUrl) {
 					setTransactionSimulation(
 						await simulateCustomNetworkTransactionByHash({ txHash, rpcUrl })
@@ -60,7 +71,7 @@ export function TransactionPage({
 			<HeaderNav />
 			<main className="overflow-y-auto flex-grow">
 				<Container className="py-6">
-					<div className="flex flex-row items-baseline justify-between">
+					<div className="lg:flex flex-row items-baseline justify-between">
 						<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2 flex flex-nowrap items-center">
 							Transaction{' '}
 							<CopyToClipboardElement

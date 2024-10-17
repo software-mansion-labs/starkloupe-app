@@ -15,6 +15,9 @@ import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { DebugButton } from './debug-btn';
 import { CommonCallTrace } from './common-call-trace';
 import { InfoBox } from '@/components/ui/info-box';
+import { FnName } from '../ui/function-name';
+import { getRawFunctionName } from '@/lib/utils';
+import { Card } from '../ui/card';
 
 export function FunctionCallTrace({
 	call,
@@ -32,23 +35,25 @@ export function FunctionCallTrace({
 	const {
 		collapsedCalls,
 		toggleCallCollapse,
-		simulationDebuggerData,
 		expandedCalls,
 		toggleCallExpand,
-		setActiveTab
+		setActiveTab,
+		traceLineElementRefs
 	} = useCallTrace();
 	const { debugCall, checkIfDebuggable } = useDebugger();
-
 	const isDebuggable = checkIfDebuggable(call.data.id);
 	const contractCallId = call.data.id.split('-fp')[0];
 	const isParentContractCallDebuggable = checkIfDebuggable(contractCallId);
 	const noCodeLocationAvaliable = isParentContractCallDebuggable && !isDebuggable;
-
+	if (!traceLineElementRefs.current[call.data.id]) {
+		traceLineElementRefs.current[call.data.id] = React.createRef<HTMLDivElement>();
+	}
 	return (
 		<React.Fragment key={call.data.id}>
 			<TraceLine
 				isActive={expandedCalls[call.data.id]}
 				onClick={() => toggleCallExpand(call.data.id)}
+				ref={traceLineElementRefs.current[call.data.id]}
 			>
 				{CallTypeChip('Function')}
 				{executionFailed && <div className="w-5 mr-0.5"></div>}
@@ -133,8 +138,8 @@ function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 							{io.value.length === 0
 								? 'None'
 								: io.value.length === 1
-								? io.value[0]
-								: `[${io.value.join(', ')}]`}
+									? io.value[0]
+									: `[${io.value.join(', ')}]`}
 						</span>
 						{i < ios.length - 1 ? <>,&nbsp;</> : ''}
 					</React.Fragment>
@@ -143,36 +148,6 @@ function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 			<span className="text-yellow-900">{')'}</span>
 		</>
 	);
-}
-
-function getRawFunctionName(fnName: string): string {
-	let rawFnName = fnName.replace(/::?<([^<>]*)>/g, '');
-	while (/<[^<>]*>/g.test(rawFnName)) {
-		rawFnName = rawFnName.replace(/::?<([^<>]*)>/g, '');
-	}
-	return rawFnName.replace(/::$/, '');
-}
-
-function FnName({ fnName }: { fnName: string | null }) {
-	if (fnName) {
-		const rawFnName = getRawFunctionName(fnName);
-		const splittedFnName = rawFnName.split('::');
-
-		return (
-			<>
-				{splittedFnName.length >= 2 ? (
-					<>
-						<span className="text-purple-600">{splittedFnName[splittedFnName.length - 2]}</span>::
-						<span className="text-pink-500">{splittedFnName[splittedFnName.length - 1]}</span>
-					</>
-				) : (
-					<span className="text-pink-500">{rawFnName}</span>
-				)}
-			</>
-		);
-	} else {
-		return <span className="text-pink-500">Unknown function</span>;
-	}
 }
 
 function FunctionCallDetails({
@@ -224,13 +199,19 @@ function FunctionCallDetails({
 	}
 
 	return (
-		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-2 px-4">
-			<InfoBox details={details} />
-			{code && cairoLocation && (
-				<div className="h-80">
-					<CodeViewer content={code} codeLocation={cairoLocation} />
+		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4">
+			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
+				<div className="">
+					<InfoBox details={details} />
 				</div>
-			)}
+				{code && cairoLocation && (
+					<Card className="mt-5">
+						<div className="h-80 ">
+							<CodeViewer content={code} codeLocation={cairoLocation} />
+						</div>
+					</Card>
+				)}
+			</div>
 		</div>
 	);
 }

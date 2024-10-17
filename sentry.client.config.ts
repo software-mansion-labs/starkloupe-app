@@ -7,11 +7,11 @@ import * as Sentry from "@sentry/nextjs";
 // Sentry starts only on client if NEXT_PUBLIC_USE_SENTRY is set to 'prod'
 // Also to disable Sentry on client - set 'skip-sentry-pls=true' cookie
 const cookies = document.cookie.split(';');
-const shouldSkipSentry = cookies.some(cookie => cookie.trim().startsWith('skip-sentry-pls=true'));
+const shouldSkipSentry = cookies.some(cookie => cookie.trim().startsWith('skip_tracking_pls=true'));
 if (shouldSkipSentry) {
-    console.log('Sentry is disabled on client - skip-sentry-pls=true cookie is set');
+    console.log('Sentry is disabled on client - skip_tracking_pls=true cookie is set');
 }
-const isProdEnv = process.env.NEXT_PUBLIC_USE_SENTRY === 'true';
+const isProdEnv = process.env.NEXT_PUBLIC_USE_TRACKING === 'true';
 if (!shouldSkipSentry && isProdEnv) {
     Sentry.init({
         dsn: process.env.NEXT_PUBLIC_SENTRY_DSN_URL,

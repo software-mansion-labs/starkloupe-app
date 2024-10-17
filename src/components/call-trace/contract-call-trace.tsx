@@ -1,4 +1,4 @@
-import { Fragment, useContext, useEffect } from 'react';
+import React, { Fragment, useContext, useEffect } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { CallTrace, CodeLocation, DataType, CallType, getContractCallId } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
@@ -31,7 +31,7 @@ export function ContractCallTrace({
 		toggleCallCollapse,
 		toggleCallExpand,
 		setActiveTab,
-		simulationDebuggerData
+		traceLineElementRefs
 	} = useCallTrace();
 	const { debugCall, checkIfDebuggable } = useContext(DebuggerContext);
 
@@ -81,7 +81,9 @@ export function ContractCallTrace({
 	}
 
 	const isDebuggable = checkIfDebuggable(call.contractCallId);
-
+	if (!traceLineElementRefs.current[call.contractCallId]) {
+		traceLineElementRefs.current[call.contractCallId] = React.createRef<HTMLDivElement>();
+	}
 	return (
 		<Fragment key={call.contractCallId}>
 			<TraceLine
@@ -89,6 +91,7 @@ export function ContractCallTrace({
 				onClick={() => {
 					toggleCallExpand(call.contractCallId);
 				}}
+				ref={traceLineElementRefs.current[call.contractCallId]}
 			>
 				{CallTypeChip(callType)}
 
@@ -328,22 +331,33 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 	);
 
 	return (
-		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-2 px-4">
-			{!hasDebuggableInfo && noSourceCodeAlert}
-			<InfoBox details={details} />
-			{call.additionalInfo?.calldataDecoded && (
-				<DecodeDataTable decodeData={call.additionalInfo.calldataDecoded} type={DataType.INPUT} />
-			)}
-			{call.additionalInfo?.functionResult && (
-				<DecodeDataTable decodeData={call.additionalInfo.functionResult} type={DataType.OUTPUT} />
-			)}
-			{code && (
-				<Card>
-					<div className="h-80">
-						<CodeViewer content={code} codeLocation={cairoLocation} />
-					</div>
-				</Card>
-			)}
+		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-2 px-4 ">
+			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
+				<div className="">
+					{!hasDebuggableInfo && noSourceCodeAlert}
+					<InfoBox details={details} />
+					{call.additionalInfo?.calldataDecoded && (
+						<DecodeDataTable
+							decodeData={call.additionalInfo.calldataDecoded}
+							type={DataType.INPUT}
+						/>
+					)}
+					{call.additionalInfo?.functionResult && (
+						<DecodeDataTable
+							decodeData={call.additionalInfo.functionResult}
+							type={DataType.OUTPUT}
+						/>
+					)}
+				</div>
+
+				{code && (
+					<Card className="">
+						<div className="h-80 ">
+							<CodeViewer content={code} codeLocation={cairoLocation} />
+						</div>
+					</Card>
+				)}
+			</div>
 		</div>
 	);
 }

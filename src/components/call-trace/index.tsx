@@ -6,14 +6,13 @@ export * from './root';
 
 export const CALL_NESTING_SPACE_BUMP: number = 16; // in pixels
 
-export function TraceLine({
-	className,
-	isUnclickable,
-	isActive,
-	...props
-}: React.ComponentPropsWithoutRef<'div'> & { isUnclickable?: boolean; isActive?: boolean }) {
+export const TraceLine = React.forwardRef<
+	HTMLDivElement,
+	React.ComponentPropsWithoutRef<'div'> & { isUnclickable?: boolean; isActive?: boolean }
+>(({ className, isUnclickable, isActive, ...props }, ref) => {
 	return (
 		<div
+			ref={ref}
 			className={clsx(
 				`py-0.5 px-4 flex flex-row items-center font-mono border-y-2 ${
 					isActive ? 'border-neutral-300 trace-line--selected' : 'border-transparent'
@@ -23,7 +22,8 @@ export function TraceLine({
 			{...props}
 		/>
 	);
-}
+});
+TraceLine.displayName = 'TraceLine';
 
 type CallTypeChipKind = CallType | 'Function' | 'Error' | 'Event';
 export function CallTypeChip(kind: CallTypeChipKind) {
