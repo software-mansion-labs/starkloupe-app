@@ -183,7 +183,7 @@ export function SimulateDialog({
 							className="col-span-3 font-mono"
 						/>
 						<p className="text-xs text-muted-foreground col-span-3 col-start-2">
-							If you leave the field empty, the last block will be used.
+							If you leave the field empty, the latest block will be used.
 						</p>
 					</div>
 					<div className="grid grid-cols-4 items-center gap-4">
