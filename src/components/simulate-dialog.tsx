@@ -170,17 +170,21 @@ export function SimulateDialog({
 							The calldata will be executed on the sender contract.
 						</p>
 					</div>
-					<div className="grid grid-cols-4 items-center gap-4">
+					<div className="grid grid-cols-4 items-center gap-x-4 gap-y-2">
 						<Label htmlFor="block-number" className="text-right">
 							Block number
 						</Label>
 						<Input
+							min={0}
 							type="number"
 							id="block-number"
 							value={_blockNumber}
 							onChange={(e) => _setBlockNumber(e.target.value)}
 							className="col-span-3 font-mono"
 						/>
+						<p className="text-xs text-muted-foreground col-span-3 col-start-2">
+							If you leave the field empty, the last block will be used.
+						</p>
 					</div>
 					<div className="grid grid-cols-4 items-center gap-4">
 						<Label htmlFor="chain-id" className="text-right">

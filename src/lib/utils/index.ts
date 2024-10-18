@@ -107,16 +107,19 @@ export function extractSimulationPayloadWithCalldata(
 	const rpcUrl = searchParams.get('rpcUrl');
 	const chainId = searchParams.get('chainId');
 
-	if ((rpcUrl || chainId) && senderAddress && calldata && blockNumber && transactionVersion) {
-		return {
+	if ((rpcUrl || chainId) && senderAddress && calldata && transactionVersion) {
+		const result: SimulationPayloadWithCalldata = {
 			senderAddress,
 			calldata: parseCalldata(calldata),
-			blockNumber: blockNumber ? parseInt(blockNumber) : undefined,
 			transactionVersion: parseInt(transactionVersion),
 			nonce: nonce ? parseInt(nonce) : undefined,
 			rpcUrl: rpcUrl ?? undefined,
 			chainId: chainId ?? undefined
 		};
+		if (blockNumber) {
+			result.blockNumber = parseInt(blockNumber);
+		}
+		return result;
 	}
 }
 
