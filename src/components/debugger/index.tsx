@@ -10,6 +10,7 @@ import { CallTrace } from '@/lib/simulation';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { FilesExplorer } from '../code-viewer/file-explorer';
 import { ContractCallSignature } from '../ui/signature';
+import Link from 'next/link';
 
 export function Debugger({}: {}) {
 	const {
@@ -59,11 +60,22 @@ export function Debugger({}: {}) {
 					) : (
 						<Alert className="m-4 w-fit">
 							<ExclamationTriangleIcon className="h-5 w-5" />
-							<AlertTitle>{currentStep.withContractCall?.message}</AlertTitle>
+							<AlertTitle>No Source Code Available</AlertTitle>
 							<AlertDescription>
 								<p className="mt-2 mb-1">
 									Contract Address:{' '}
 									<span className="font-mono">{contractCall?.entryPoint.storageAddress}</span>
+								</p>
+								<p>
+									The source code for this contract is missing. To enable the step-by-step debugger,
+									verify the contract on Walnut by following{' '}
+									<Link
+										className="underline-offset-4 hover:underline text-pink-500"
+										href="https://docs.walnut.dev/verify-contract-classes"
+									>
+										this guide
+									</Link>
+									.
 								</p>
 							</AlertDescription>
 						</Alert>
