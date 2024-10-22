@@ -4,7 +4,7 @@ import { HeaderNav } from '@/components/header';
 import { Container } from '@/components/ui/container';
 import { Footer } from '@/components/footer';
 import { useEffect, useState } from 'react';
-import { Project , CommonError } from '@/lib/types';
+import { Project, CommonError } from '@/lib/types';
 import { Loader } from '@/components/ui/loader';
 import { fetchCommonErrors } from '@/lib/api';
 import CommonErrorsTable from '@/components/errors-table';

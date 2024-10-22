@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
-import { CallTrace, InternalFnCallTrace } from '@/lib/simulation';
+import { ContractCall, FunctionCall } from '@/lib/simulation';
 import { ContractCallSignature } from './signature';
 
 import {
@@ -15,23 +15,22 @@ import { FnName } from './function-name';
 import { getContractName, getRawFunctionName } from '@/lib/utils';
 
 const CalldataSearch = () => {
-	const { callsMap, toggleCallExpand, scrollToTraceLineElement } = useCallTrace();
+	const { contractCallsMap, functionCallsMap, toggleCallExpand, scrollToTraceLineElement } =
+		useCallTrace();
 
 	const [searchTerm, setSearchTerm] = useState<string>('');
 	const [searchResults, setSearchResults] = useState<
-		[string, { contractCall?: CallTrace; fnCall?: InternalFnCallTrace }][]
+		[number, { contractCall?: ContractCall; fnCall?: FunctionCall }][]
 	>([]);
 
 	const inputRef = useRef<HTMLInputElement | null>(null);
-	const resultsRef = useRef<HTMLDivElement | null>(null);
 	const componentRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
-		const results = searchCallsMap(searchTerm);
+		const results = searchCalls(searchTerm);
 		setSearchResults(results);
-
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [searchTerm, callsMap]);
+	}, [searchTerm]);
 
 	useEffect(() => {
 		const handleClickOutside = (event: MouseEvent) => {
@@ -46,48 +45,56 @@ const CalldataSearch = () => {
 		};
 	}, []);
 
-	const searchCallsMap = (
+	const searchCalls = (
 		term: string
-	): [string, { contractCall?: CallTrace; fnCall?: InternalFnCallTrace }][] => {
+	): [number, { contractCall?: ContractCall; fnCall?: FunctionCall }][] => {
 		if (!term) return [];
 
-		return Array.from(callsMap.entries()).filter(([key, value]) => {
-			let contractName: string | undefined = undefined;
-			let contractAddress: string | undefined = undefined;
-			let splittedFnName: string[] | undefined = undefined;
-			let entryPointFunctionName: string | undefined = undefined;
+		const contractCalls: [number, { contractCall?: ContractCall }][] = Array.from(
+			Object.entries(contractCallsMap)
+		)
+			.filter(([key, contractCall]) => {
+				let contractName: string = getContractName({ contractCall }).toLowerCase();
+				let contractAddress: string = contractCall.entryPoint.storageAddress.toLowerCase();
+				let entryPointName: string = contractCall.entryPointName?.toLowerCase() || '';
 
-			if (value?.contractCall) {
-				contractName = getContractName({ contractCall: value?.contractCall }).toLowerCase();
-				entryPointFunctionName =
-					value.contractCall?.additionalInfo?.entryPointFunctionName?.toLowerCase() || '';
-				contractAddress = value.contractCall.entryPoint.storageAddress.toLowerCase();
-			} else if (value?.fnCall?.data?.fnName && !value.fnCall.isHidden) {
-				contractName = getRawFunctionName(value?.fnCall?.data?.fnName);
-				splittedFnName = getRawFunctionName(value?.fnCall?.data?.fnName).split('::');
+				const lowercaseTerm = term.toLowerCase();
+				return (
+					contractName?.includes(lowercaseTerm) ||
+					contractAddress?.includes(lowercaseTerm) ||
+					entryPointName?.includes(lowercaseTerm)
+				);
+			})
+			.map(([key, contractCall]) => [parseInt(key), { contractCall }]);
+
+		const functionCalls: [number, { fnCall?: FunctionCall }][] = Array.from(
+			Object.entries(functionCallsMap)
+		)
+			.filter(([key, functionCall]) => {
+				let contractName: string = getRawFunctionName(functionCall.fnName);
+				let splittedFnName: string[] = getRawFunctionName(functionCall.fnName).split('::');
+				let entryPointFunctionName: string | undefined = undefined;
 
 				if (splittedFnName.length >= 2) {
 					contractName = splittedFnName[splittedFnName.length - 2].toLowerCase();
 					entryPointFunctionName = splittedFnName[splittedFnName.length - 1].toLowerCase();
 				}
-			}
-			const lowercaseTerm = term.toLowerCase();
-			return (
-				contractName?.includes(lowercaseTerm) ||
-				contractAddress?.includes(lowercaseTerm) ||
-				entryPointFunctionName?.includes(lowercaseTerm)
-			);
-		});
+
+				const lowercaseTerm = term.toLowerCase();
+				return (
+					contractName?.includes(lowercaseTerm) || entryPointFunctionName?.includes(lowercaseTerm)
+				);
+			})
+			.map(([key, functionCall]) => [parseInt(key), { fnCall: functionCall }]);
+
+		return [...contractCalls, ...functionCalls];
 	};
 
 	const handleSearchChange = (value: string) => {
 		setSearchTerm(value);
 	};
 
-	const handleResultClick = (result: {
-		contractCall?: CallTrace;
-		fnCall?: InternalFnCallTrace;
-	}) => {
+	const handleResultClick = (result: { contractCall?: ContractCall; fnCall?: FunctionCall }) => {
 		setSearchTerm('');
 		inputRef.current?.focus();
 	};
@@ -145,41 +152,32 @@ const CalldataSearch = () => {
 																		contractCall={value?.contractCall}
 																	/>
 																</div>
-																{value?.contractCall.additionalInfo.cairoLocation && (
+																{value?.contractCall.codeLocation && (
 																	<div className="underline">
-																		in {value?.contractCall.additionalInfo.cairoLocation?.filePath},
-																		line{' '}
-																		{value?.contractCall.additionalInfo.cairoLocation?.start.line +
-																			1}
+																		in {value?.contractCall.codeLocation?.filePath}, line{' '}
+																		{value?.contractCall.codeLocation?.start.line + 1}
 																	</div>
 																)}
 															</div>
 														</>
-													) : value?.fnCall?.data.fnName ? (
+													) : value?.fnCall?.fnName ? (
 														<>
 															<div className="hidden">{key}</div>
 															<div className="!text-xs ">
 																<ContractCallSignature
 																	displayFunctionName={false}
 																	variant="search-result"
-																	contractCall={
-																		callsMap.get(
-																			value.fnCall.data.id.match(/^\d+(-\d+)*(?=-fp)/)?.[0] ?? ''
-																		)?.contractCall || undefined
-																	}
+																	contractCall={contractCallsMap[value.fnCall.contractCallId]}
 																/>
 															</div>
 															<div className="flex items-center gap-1 !text-xs">
 																<div>
-																	<FnName
-																		variant="search-result"
-																		fnName={value.fnCall?.data.fnName}
-																	/>
+																	<FnName variant="search-result" fnName={value.fnCall?.fnName} />
 																</div>
-																{value?.fnCall?.data.cairoLocation && (
+																{value?.fnCall?.codeLocation && (
 																	<div className="underline">
-																		in {value?.fnCall?.data.cairoLocation.filePath}, line{' '}
-																		{value?.fnCall?.data.cairoLocation?.start.line + 1}
+																		in {value?.fnCall?.codeLocation.filePath}, line{' '}
+																		{value?.fnCall?.codeLocation?.start.line + 1}
 																	</div>
 																)}
 															</div>

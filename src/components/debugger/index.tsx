@@ -4,12 +4,13 @@ import { CodeViewer } from '../code-viewer/code-viewer';
 import {
 	ArrowUturnLeftIcon,
 	ArrowUturnRightIcon,
-	ExclamationTriangleIcon
+	ExclamationTriangleIcon,
+	ArrowUturnDownIcon
 } from '@heroicons/react/24/outline';
-import { CallTrace } from '@/lib/simulation';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { FilesExplorer } from '../code-viewer/file-explorer';
 import { ContractCallSignature } from '../ui/signature';
+import { ContractCall } from '@/lib/simulation';
 import Link from 'next/link';
 
 export function Debugger({}: {}) {
@@ -20,6 +21,7 @@ export function Debugger({}: {}) {
 		setActiveFile,
 		nextStep,
 		prevStep,
+		stepOver,
 		currentStepIndex,
 		totalSteps,
 		contractCall,
@@ -28,10 +30,6 @@ export function Debugger({}: {}) {
 	} = useContext(DebuggerContext);
 
 	if (!currentStep) return <></>; // unreachable
-
-	const classSourceCode = contractCall
-		? classesDebuggerData[contractCall.additionalInfo.classHash]?.sourceCode ?? {}
-		: {};
 
 	return (
 		<div className="w-full h-[500px] flex flex-row">
@@ -47,15 +45,16 @@ export function Debugger({}: {}) {
 					stepIndex={currentStepIndex}
 					totalSteps={totalSteps}
 					contractCall={contractCall}
+					stepOver={stepOver}
 				/>
 				<div className="flex-grow">
-					{currentStep.withCodeLocation ? (
+					{currentStep.withLocation ? (
 						<CodeViewer
-							content={activeFile ? classSourceCode[activeFile] : ''}
+							content={activeFile ? sourceCode[activeFile] : ''}
 							codeLocation={codeLocation}
 							highlightClass="bg-yellow-300 bg-opacity-40"
-							args={codeLocation ? currentStep.withCodeLocation.arguments : undefined}
-							results={codeLocation ? currentStep.withCodeLocation.results : undefined}
+							args={codeLocation ? currentStep.withLocation.arguments : undefined}
+							results={codeLocation ? currentStep.withLocation.results : undefined}
 						/>
 					) : (
 						<Alert className="m-4 w-fit">
@@ -89,15 +88,17 @@ export function Debugger({}: {}) {
 function Controls({
 	nextStep,
 	previousStep,
+	stepOver,
 	stepIndex,
 	totalSteps,
 	contractCall
 }: {
 	nextStep: () => void;
 	previousStep: () => void;
+	stepOver: () => void;
 	stepIndex: number;
 	totalSteps: number;
-	contractCall?: CallTrace;
+	contractCall?: ContractCall;
 }) {
 	return (
 		<div className="flex flex-row border-b border-neutral-200 py-1 px-3 justify-between items-center">
@@ -126,6 +127,16 @@ function Controls({
 						}`}
 					>
 						<ArrowUturnRightIcon className="w-4 h-4" />
+					</div>
+					<div
+						onClick={() => stepOver()}
+						className={`w-5 h-5 p-0.5 rounded-sm select-none ${
+							stepIndex >= totalSteps - 1
+								? 'cursor-not-allowed opacity-60'
+								: 'cursor-pointer hover:bg-neutral-100'
+						}`}
+					>
+						<ArrowUturnDownIcon className="w-4 h-4" style={{ transform: 'scaleX(-1)' }} />
 					</div>
 				</div>
 			</div>

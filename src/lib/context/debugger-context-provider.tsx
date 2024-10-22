@@ -1,26 +1,12 @@
-import { PropsWithChildren, createContext, useContext, useMemo, useState } from 'react';
+import { PropsWithChildren, createContext, useContext, useState } from 'react';
 import {
-	CallsMap,
-	CallTrace,
 	ClassDebuggerData,
 	CodeLocation,
-	InternalFnCallIO,
-	InternalFnCallTrace,
+	ContractCall,
+	DebuggerExecutionTraceEntry,
 	SimulationDebuggerData
 } from '@/lib/simulation';
 import { CallTraceContext } from './call-trace-context-provider';
-
-export interface DebuggerExecutionTraceEntry {
-	withCodeLocation?: {
-		codeLocation: CodeLocation;
-		arguments: InternalFnCallIO[];
-		results: InternalFnCallIO[];
-	};
-	withContractCall?: {
-		message: string; // Reason for the missing code location
-	};
-	contractCallId: string;
-}
 
 interface DebuggerContextProps {
 	classesDebuggerData: {
@@ -30,16 +16,19 @@ interface DebuggerContextProps {
 	totalSteps: number;
 	currentStepIndex: number;
 	activeFile: string | undefined;
-	contractCall?: CallTrace;
+	contractCall?: ContractCall;
 	codeLocation?: CodeLocation;
 	sourceCode: {
 		[key: string]: string;
 	};
-	debugCall: (callId: string) => void;
+	debugFunctionCall: (functionCallId: number) => void;
+	debugContractCall: (contractCallId: number) => void;
 	nextStep: () => void;
 	prevStep: () => void;
+	stepOver: () => void;
 	setActiveFile: (filePath: string) => void;
-	checkIfDebuggable: (callId: string) => boolean;
+	isFunctionCallDebuggable: (functionCallId: number) => boolean;
+	isContractCallDebuggable: (contractCallId: number) => boolean;
 }
 
 export const DebuggerContext = createContext<DebuggerContextProps>({
@@ -51,35 +40,35 @@ export const DebuggerContext = createContext<DebuggerContextProps>({
 	sourceCode: {},
 	contractCall: undefined,
 	codeLocation: undefined,
-	debugCall: () => undefined,
+	debugFunctionCall: () => undefined,
+	debugContractCall: () => undefined,
 	nextStep: () => undefined,
 	prevStep: () => undefined,
+	stepOver: () => undefined,
 	setActiveFile: () => undefined,
-	checkIfDebuggable: () => false
+	isFunctionCallDebuggable: () => false,
+	isContractCallDebuggable: () => false
 });
 
 export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
-	const { callsMap, simulationResult } = useContext(CallTraceContext);
+	const { contractCallsMap, functionCallsMap, simulationResult, simulationDebuggerData } =
+		useContext(CallTraceContext);
 
-	const { executionTrace, callIdToStepIndexMap } = useMemo(() => {
-		return computeDebuggerExecutionTrace(
-			callsMap,
-			simulationResult.simulationDebuggerData,
-			simulationResult.callTrace
-		);
-	}, [callsMap, simulationResult.simulationDebuggerData, simulationResult.callTrace]);
-
-	const [currentStepIndex, _setCurrentStepIndex] = useState(findInitialIndex(executionTrace));
-	const [currentStep, _setCurrentStep] = useState(executionTrace[currentStepIndex]);
+	const [currentStepIndex, _setCurrentStepIndex] = useState(
+		findInitialIndex(simulationDebuggerData.debuggerTrace)
+	);
+	const [currentStep, _setCurrentStep] = useState(
+		simulationDebuggerData.debuggerTrace[currentStepIndex]
+	);
 
 	const initialDebuggerData = getDebuggerDataForStep(
-		callsMap,
+		contractCallsMap,
 		simulationResult.simulationDebuggerData,
 		currentStep
 	);
 
 	const [activeFile, setActiveFile] = useState<string | undefined>(initialDebuggerData.activeFile);
-	const [contractCall, setContractCall] = useState<CallTrace | undefined>(
+	const [contractCall, setContractCall] = useState<ContractCall | undefined>(
 		initialDebuggerData.contractCall
 	);
 	const [codeLocation, setCodeLocation] = useState<CodeLocation | undefined>(
@@ -91,14 +80,11 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 
 	function setCurrentStepIndex(index: number) {
 		_setCurrentStepIndex(index);
-		const newStep = executionTrace[index];
+		const newStep = simulationDebuggerData.debuggerTrace[index];
 		_setCurrentStep(newStep);
 
-		const { contractCall, classSourceCode, activeFile, codeLocation } = getDebuggerDataForStep(
-			callsMap,
-			simulationResult.simulationDebuggerData,
-			newStep
-		);
+		const { contractCall, classSourceCode, activeFile, codeLocation, functionCallId } =
+			getDebuggerDataForStep(contractCallsMap, simulationResult.simulationDebuggerData, newStep);
 
 		setContractCall(contractCall);
 		setSourceCode(classSourceCode);
@@ -106,15 +92,26 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 		setCodeLocation(codeLocation);
 	}
 
-	const debugCall = (callId: string) => {
-		const index = callIdToStepIndexMap.get(callId);
-		if (index !== undefined) {
-			setCurrentStepIndex(index);
+	const debugFunctionCall = (functionCallId: number) => {
+		const functionCall = functionCallsMap[functionCallId];
+		if (functionCall && functionCall.debuggerTraceStepIndex) {
+			setCurrentStepIndex(functionCall.debuggerTraceStepIndex);
+		}
+	};
+
+	const debugContractCall = (contractCallId: number) => {
+		const contractCall = contractCallsMap[contractCallId];
+		if (
+			contractCall &&
+			contractCall.debuggerTraceStepIndex !== null &&
+			contractCall.debuggerTraceStepIndex !== undefined
+		) {
+			setCurrentStepIndex(contractCall.debuggerTraceStepIndex);
 		}
 	};
 
 	const nextStep = () => {
-		if (currentStepIndex < executionTrace.length - 1) {
+		if (currentStepIndex < simulationDebuggerData.debuggerTrace.length - 1) {
 			setCurrentStepIndex(currentStepIndex + 1);
 		}
 	};
@@ -125,11 +122,48 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 		}
 	};
 
-	const checkIfDebuggable = (callId: string): boolean => {
-		const stepIndex = callIdToStepIndexMap.get(callId);
-		if (stepIndex === undefined) return false;
-		const step = executionTrace[stepIndex];
-		if (step.withCodeLocation) return true;
+	// Step over to the next function call with the same or lower fp register value
+	const stepOver = () => {
+		if (currentStepIndex < simulationDebuggerData.debuggerTrace.length - 1) {
+			const currentStep = simulationDebuggerData.debuggerTrace[currentStepIndex];
+			let nextStepIndex = currentStepIndex + 1;
+			if (currentStep.withLocation && currentStep.withLocation.fp) {
+				while (nextStepIndex + 1 < simulationDebuggerData.debuggerTrace.length) {
+					const nextStepWithCodeLocation =
+						simulationDebuggerData.debuggerTrace[nextStepIndex].withLocation;
+					if (nextStepWithCodeLocation) {
+						if (nextStepWithCodeLocation.fp <= currentStep.withLocation.fp) {
+							break;
+						}
+					}
+					nextStepIndex++;
+				}
+			}
+			setCurrentStepIndex(nextStepIndex);
+		}
+	};
+
+	const isContractCallDebuggable = (contractCallId: number): boolean => {
+		const contractCall = contractCallsMap[contractCallId];
+		if (
+			contractCall &&
+			contractCall.debuggerTraceStepIndex !== null &&
+			contractCall.debuggerTraceStepIndex !== undefined
+		) {
+			return true;
+		}
+		return false;
+	};
+
+	const isFunctionCallDebuggable = (functionCallId: number): boolean => {
+		const functionCall = functionCallsMap[functionCallId];
+		if (
+			functionCall &&
+			functionCall.debuggerTraceStepIndex !== null &&
+			functionCall.debuggerTraceStepIndex !== undefined
+		) {
+			return true;
+		}
 		return false;
 	};
 
@@ -138,17 +172,20 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 			value={{
 				classesDebuggerData: simulationResult.simulationDebuggerData.classesDebuggerData,
 				currentStep,
-				totalSteps: executionTrace.length,
+				totalSteps: simulationDebuggerData.debuggerTrace.length,
 				currentStepIndex,
-				debugCall,
+				debugFunctionCall,
+				debugContractCall,
 				nextStep,
 				prevStep,
+				stepOver,
 				setActiveFile,
 				activeFile,
 				contractCall,
 				codeLocation,
 				sourceCode,
-				checkIfDebuggable
+				isContractCallDebuggable,
+				isFunctionCallDebuggable
 			}}
 		>
 			{children}
@@ -164,125 +201,10 @@ export const useDebugger = () => {
 	return context;
 };
 
-function computeDebuggerExecutionTrace(
-	callsMap: CallsMap,
-	simulationDebuggerData: SimulationDebuggerData,
-	rootContractCall: CallTrace
-) {
-	const executionTrace: DebuggerExecutionTraceEntry[] = [];
-	const callIdToStepIndexMap = new Map<string, number>();
-	computeDebuggerExecutionTraceEnterContractCall(
-		callsMap,
-		simulationDebuggerData,
-		executionTrace,
-		rootContractCall,
-		callIdToStepIndexMap
-	);
-	return { executionTrace, callIdToStepIndexMap };
-}
-
-function collectStepIndexToFnCallIdsMap(
-	fnCalls: InternalFnCallTrace[],
-	stepIndexToFnCallIdsMap: { [key: number]: string[] }
-) {
-	for (const fnCall of fnCalls) {
-		if (Array.isArray(stepIndexToFnCallIdsMap[fnCall.data.debuggerExecutionTraceStepIndex])) {
-			stepIndexToFnCallIdsMap[fnCall.data.debuggerExecutionTraceStepIndex].push(fnCall.data.id);
-		} else {
-			stepIndexToFnCallIdsMap[fnCall.data.debuggerExecutionTraceStepIndex] = [fnCall.data.id];
-		}
-		collectStepIndexToFnCallIdsMap(fnCall.nestedCalls, stepIndexToFnCallIdsMap);
-	}
-}
-
-function computeDebuggerExecutionTraceEnterContractCall(
-	callsMap: CallsMap,
-	simulationDebuggerData: SimulationDebuggerData,
-	executionTrace: DebuggerExecutionTraceEntry[],
-	contractCall: CallTrace,
-	callIdToStepIndexMap: Map<string, number>
-) {
-	callIdToStepIndexMap.set(contractCall.contractCallId, executionTrace.length);
-	if (contractCall.additionalInfo.callDebuggerData) {
-		if (contractCall.additionalInfo.callDebuggerData.executionTrace.length > 0) {
-			const stepIndexToFnCallIdsMap: { [key: number]: string[] } = {};
-			collectStepIndexToFnCallIdsMap(contractCall.fnCalls, stepIndexToFnCallIdsMap);
-			for (let i = 0; i < contractCall.additionalInfo.callDebuggerData.executionTrace.length; i++) {
-				const fnCallsAtThisStep = stepIndexToFnCallIdsMap[i];
-				if (fnCallsAtThisStep) {
-					for (const fnCallId of fnCallsAtThisStep) {
-						callIdToStepIndexMap.set(fnCallId, executionTrace.length);
-					}
-				}
-				const step = contractCall.additionalInfo.callDebuggerData.executionTrace[i];
-				if (step.withLocation) {
-					const classDebuggerData =
-						simulationDebuggerData.classesDebuggerData[contractCall.additionalInfo.classHash];
-					const locations =
-						classDebuggerData.sierraStatementsToCairoInfo[step.withLocation.sierraIndex]
-							?.cairoLocations;
-					const location = locations?.[step.withLocation.locationIndex];
-					if (location) {
-						executionTrace.push({
-							withCodeLocation: {
-								codeLocation: location,
-								arguments: step.withLocation.arguments,
-								results: step.withLocation.results
-							},
-							contractCallId: contractCall.contractCallId
-						});
-					}
-				} else if (step.withContractCall) {
-					const contractCall = callsMap.get(step.withContractCall.contractCallId)?.contractCall!;
-					computeDebuggerExecutionTraceEnterContractCall(
-						callsMap,
-						simulationDebuggerData,
-						executionTrace,
-						contractCall,
-						callIdToStepIndexMap
-					);
-				}
-			}
-		} else {
-			executionTrace.push({
-				withContractCall: {
-					message: 'No execution trace found.'
-				},
-				contractCallId: contractCall.contractCallId
-			});
-			for (const nestedContractCall of contractCall.nestedCalls) {
-				computeDebuggerExecutionTraceEnterContractCall(
-					callsMap,
-					simulationDebuggerData,
-					executionTrace,
-					nestedContractCall,
-					callIdToStepIndexMap
-				);
-			}
-		}
-	} else {
-		executionTrace.push({
-			withContractCall: {
-				message: 'No source code for this contract.'
-			},
-			contractCallId: contractCall.contractCallId
-		});
-		for (const nestedContractCall of contractCall.nestedCalls) {
-			computeDebuggerExecutionTraceEnterContractCall(
-				callsMap,
-				simulationDebuggerData,
-				executionTrace,
-				nestedContractCall,
-				callIdToStepIndexMap
-			);
-		}
-	}
-}
-
 function findInitialIndex(executionTrace: DebuggerExecutionTraceEntry[]) {
 	for (let i = 0; i < executionTrace.length; i++) {
 		const step = executionTrace[i];
-		if (step.withCodeLocation) {
+		if (step.withLocation) {
 			return i;
 		}
 	}
@@ -290,23 +212,31 @@ function findInitialIndex(executionTrace: DebuggerExecutionTraceEntry[]) {
 }
 
 function getDebuggerDataForStep(
-	callsMap: CallsMap,
+	contractCallsMap: { [key: string]: ContractCall },
 	simulationDebuggerData: SimulationDebuggerData,
 	step: DebuggerExecutionTraceEntry
 ) {
-	const contractCall = callsMap.get(step.contractCallId)?.contractCall;
+	const contractCallId = step.withLocation
+		? step.withLocation.contractCallId
+		: step.withContractCall?.contractCallId;
+	const contractCall = contractCallsMap[contractCallId];
 
 	const classDebuggerData = contractCall
-		? simulationDebuggerData.classesDebuggerData[contractCall.additionalInfo.classHash]
+		? simulationDebuggerData.classesDebuggerData[contractCall.classHash]
 		: undefined;
 	const classSourceCode = classDebuggerData?.sourceCode ?? {};
 
 	let activeFile: string | undefined;
 	let codeLocation: CodeLocation | undefined;
+	let functionCallId: number | undefined;
 
-	if (step.withCodeLocation) {
-		activeFile = step.withCodeLocation.codeLocation.filePath;
-		codeLocation = step.withCodeLocation.codeLocation;
+	if (step.withLocation) {
+		const classDebuggerData = simulationDebuggerData.classesDebuggerData[contractCall.classHash];
+		const locations =
+			classDebuggerData.sierraStatementsToCairoInfo[step.withLocation.sierraIndex]?.cairoLocations;
+		codeLocation = locations?.[step.withLocation.locationIndex]!; // TODO
+		activeFile = codeLocation.filePath;
+		functionCallId = step.withLocation.functionCallId;
 	} else {
 		if (classDebuggerData) {
 			const someFile = Object.keys(classDebuggerData.sourceCode)[0];
@@ -314,5 +244,5 @@ function getDebuggerDataForStep(
 		}
 	}
 
-	return { contractCall, classSourceCode, activeFile, codeLocation };
+	return { contractCall, classSourceCode, activeFile, codeLocation, functionCallId };
 }

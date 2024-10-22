@@ -1,6 +1,12 @@
 import React, { Fragment, useContext, useEffect } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
-import { CallTrace, CodeLocation, DataType, CallType, getContractCallId } from '@/lib/simulation';
+import {
+	CodeLocation,
+	DataType,
+	CallType,
+	getContractCallId,
+	ContractCall
+} from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { InfoBox } from '@/components/ui/info-box';
@@ -8,22 +14,21 @@ import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { CalldataTable } from '../calldata-table';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { CodeViewer } from '../code-viewer/code-viewer';
-import { DebuggerContext } from '@/lib/context/debugger-context-provider';
+import { DebuggerContext, useDebugger } from '@/lib/context/debugger-context-provider';
 import { DebugButton } from '@/components/call-trace/debug-btn';
 import { ErrorTooltip } from '@/components/error-tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CommonCallTrace } from './common-call-trace';
 import { Card } from '../ui/card';
 import { ContractCallSignature } from '../ui/signature';
+import { FunctionCallTrace } from './function-call-trace';
 
 export function ContractCallTrace({
-	call,
-	nestingLevel,
-	executionFailed
+	contractCallId,
+	nestingLevel
 }: {
-	call: CallTrace;
+	contractCallId: number;
 	nestingLevel: number;
-	executionFailed: boolean;
 }) {
 	const {
 		expandedCalls,
@@ -31,67 +36,70 @@ export function ContractCallTrace({
 		toggleCallCollapse,
 		toggleCallExpand,
 		setActiveTab,
+		simulationDebuggerData,
+		contractCallsMap,
+		isExecutionFailed,
 		traceLineElementRefs
 	} = useCallTrace();
-	const { debugCall, checkIfDebuggable } = useContext(DebuggerContext);
+	const { debugContractCall, isContractCallDebuggable } = useDebugger();
+
+	let call = contractCallsMap[contractCallId];
+	const firstChildCallId = call.childrenCallIds[0];
+	const firstChildCall = contractCallsMap[firstChildCallId];
 
 	let callType = call.entryPoint.callType;
 	if (
 		callType === CallType.CALL &&
-		call.nestedCalls.length > 0 &&
-		call.nestedCalls[0].entryPoint.callType === CallType.DELEGATE &&
-		call.entryPoint.storageAddress === call.nestedCalls[0].entryPoint.storageAddress &&
-		call.entryPoint.entryPointSelector === call.nestedCalls[0].entryPoint.entryPointSelector
+		call.childrenCallIds.length > 0 &&
+		firstChildCall.entryPoint.callType === CallType.DELEGATE &&
+		call.entryPoint.storageAddress === firstChildCall.entryPoint.storageAddress &&
+		call.entryPoint.entryPointSelector === firstChildCall.entryPoint.entryPointSelector
 	) {
-		call = call.nestedCalls[0];
+		call = firstChildCall;
 		callType = CallType.DCALL;
 	}
-	const hasNestedElements = call.nestedCalls.length > 0 || call.fnCalls.length > 0;
+	const hasNestedElements = call.childrenCallIds.length > 0 || call.functionCallId;
 
-	let entryPointFunctionName = call.additionalInfo?.entryPointFunctionName;
+	let entryPointFunctionName = call.entryPointName;
 
 	// The error column doesn't render in case the whole tx is successful
 	// If the tx is reverted, the error column will render for all call lines
 	// Only the error-ed call line will have the error icon
 	let errorColumn = <></>;
-	if (executionFailed) {
+	if (isExecutionFailed) {
 		errorColumn = (
 			<div className="w-5 mr-0.5">
-				{!!call.additionalInfo.errorMessage && (
-					<ErrorTooltip errorMessage={call.additionalInfo.errorMessage} />
-				)}
+				{!!call.errorMessage && <ErrorTooltip errorMessage={call.errorMessage} />}
 			</div>
 		);
 	}
 
 	let contractName: string | undefined = undefined;
-	if (call.additionalInfo.contractName) {
-		contractName = call.additionalInfo.contractName;
-	} else if (call.additionalInfo.erc20TokenName || call.additionalInfo.erc20TokenSymbol) {
-		contractName = [
-			call.additionalInfo.erc20TokenName,
-			`(${call.additionalInfo.erc20TokenSymbol})`
-		].join(' ');
-	} else if (call.additionalInfo.entryPointInterfaceName) {
-		contractName = call.additionalInfo.entryPointInterfaceName.split('::').pop();
+	if (call.contractName) {
+		contractName = call.contractName;
+	} else if (call.erc20TokenName || call.erc20TokenSymbol) {
+		contractName = [call.erc20TokenName, `(${call.erc20TokenSymbol})`].join(' ');
+	} else if (call.entryPointInterfaceName) {
+		contractName = call.entryPointInterfaceName.split('::').pop();
 	}
 
 	if (!contractName) {
 		contractName = shortenHash(call.entryPoint.storageAddress, 13);
 	}
 
-	const isDebuggable = checkIfDebuggable(call.contractCallId);
-	if (!traceLineElementRefs.current[call.contractCallId]) {
-		traceLineElementRefs.current[call.contractCallId] = React.createRef<HTMLDivElement>();
+	const isDebuggable = isContractCallDebuggable(call.callId);
+
+	if (!traceLineElementRefs.current[contractCallId]) {
+		traceLineElementRefs.current[contractCallId] = React.createRef<HTMLDivElement>();
 	}
 	return (
-		<Fragment key={call.contractCallId}>
+		<Fragment key={call.callId}>
 			<TraceLine
-				isActive={expandedCalls[call.contractCallId]}
+				isActive={expandedCalls[call.callId]}
 				onClick={() => {
-					toggleCallExpand(call.contractCallId);
+					toggleCallExpand(call.callId);
 				}}
-				ref={traceLineElementRefs.current[call.contractCallId]}
+				ref={traceLineElementRefs.current[contractCallId]}
 			>
 				{CallTypeChip(callType)}
 
@@ -103,7 +111,7 @@ export function ContractCallTrace({
 
 				<DebugButton
 					onDebugClick={() => {
-						debugCall(call.contractCallId);
+						debugContractCall(call.callId);
 						setActiveTab('debugger');
 					}}
 					isDebuggable={isDebuggable}
@@ -119,11 +127,11 @@ export function ContractCallTrace({
 						}`}
 						onClick={(event) => {
 							event.stopPropagation();
-							hasNestedElements && toggleCallCollapse(call.contractCallId);
+							hasNestedElements && toggleCallCollapse(call.callId);
 						}}
 					>
 						{hasNestedElements ? (
-							collapsedCalls[call.contractCallId] == true ? (
+							collapsedCalls[call.callId] == true ? (
 								<ChevronRightIcon />
 							) : (
 								<ChevronDownIcon />
@@ -132,26 +140,19 @@ export function ContractCallTrace({
 							''
 						)}
 					</div>
+
 					<ContractCallSignature contractCall={call} />
 					<span className="text-yellow-900">{'('}</span>
-					{call.additionalInfo?.functionArgumentsNames ? (
-						<span className="text-orange-500">
-							{call.additionalInfo.functionArgumentsNames.join(', ')}
-						</span>
+					{call.argumentsNames ? (
+						<span className="text-orange-500">{call.argumentsNames.join(', ')}</span>
 					) : (
-						call.additionalInfo?.functionArguments && (
-							<span className="text-orange-500">
-								{call.additionalInfo.functionArguments.map((arg) => shortenHash(arg)).join(', ')}
-							</span>
-						)
+						<></>
 					)}
 					<span className="text-yellow-900">{')'}</span>
-					{call.additionalInfo?.functionResult && call.additionalInfo?.functionReturnResultTypes ? (
+					{call.result && call.resultTypes ? (
 						<>
 							<span className="text-yellow-900">&nbsp;{'->'}&nbsp;</span>
-							<span className="text-pink-500">
-								{`(${call.additionalInfo?.functionReturnResultTypes.join(', ')})`}
-							</span>
+							<span className="text-pink-500">{`(${call.resultTypes.join(', ')})`}</span>
 						</>
 					) : (
 						<>
@@ -160,26 +161,32 @@ export function ContractCallTrace({
 					)}
 				</div>
 			</TraceLine>
-			{expandedCalls[call.contractCallId] && <ContractCallDetails call={call} />}{' '}
-			{collapsedCalls[call.contractCallId] != true && (
+			{expandedCalls[call.callId] && <ContractCallDetails call={call} />}{' '}
+			{collapsedCalls[call.callId] != true && (
 				<>
-					{call.nestedCallsIds.map((nestedCallId) => (
+					{call.functionCallId ? (
 						<CommonCallTrace
-							key={nestedCallId}
-							callId={nestedCallId}
+							callId={call.functionCallId}
 							nestingLevel={nestingLevel + 1}
-							executionFailed={executionFailed}
-							parentContractCall={call}
-							errorMessage={call.additionalInfo.errorMessage ?? undefined}
+							callType="function"
 						/>
-					))}
+					) : (
+						call.childrenCallIds.map((childCallId) => (
+							<CommonCallTrace
+								key={childCallId}
+								callId={childCallId}
+								nestingLevel={nestingLevel + 1}
+								callType="contract"
+							/>
+						))
+					)}
 				</>
 			)}
 		</Fragment>
 	);
 }
 
-function ContractCallDetails({ call }: { call: CallTrace }) {
+function ContractCallDetails({ call }: { call: ContractCall }) {
 	const { simulationDebuggerData } = useCallTrace();
 	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [
 		{
@@ -216,74 +223,66 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 		}
 	];
 
-	if (call.additionalInfo.erc20TokenName) {
+	if (call.erc20TokenName) {
 		details.push({
 			name: 'Token Name',
-			value: call.additionalInfo.erc20TokenName
+			value: call.erc20TokenName
 		});
 	}
 
-	if (call.additionalInfo.erc20TokenSymbol) {
+	if (call.erc20TokenSymbol) {
 		details.push({
 			name: 'Token Symbol',
-			value: call.additionalInfo.erc20TokenSymbol
+			value: call.erc20TokenSymbol
 		});
 	}
 
-	if (call.additionalInfo.entryPointFunctionName) {
+	if (call.entryPointName) {
 		details.push({
 			name: 'Function Name',
-			value: call.additionalInfo.entryPointFunctionName
+			value: call.entryPointName
 		});
 	}
 
-	if (call.additionalInfo.entryPointInterfaceName) {
+	if (call.entryPointInterfaceName) {
 		details.push({
 			name: 'Interface Name',
-			value: call.additionalInfo.entryPointInterfaceName
+			value: call.entryPointInterfaceName
 		});
 	}
 
-	if (call.additionalInfo.errorMessage) {
+	if (call.errorMessage) {
 		details.push({
 			name: 'Error Message',
-			value: call.additionalInfo.errorMessage
+			value: call.errorMessage
 		});
 	}
 
-	if (call.additionalInfo.cairoVersion) {
+	if (call.cairoVersion) {
 		details.push({
 			name: 'Cairo Version',
-			value: call.additionalInfo.cairoVersion
+			value: call.cairoVersion
 		});
 	}
 
-	if (call.additionalInfo.functionResult) {
+	if (call.result) {
 		details.unshift({
 			name: 'Raw Result',
-			value: JSON.stringify(call.additionalInfo.functionResult)
+			value: JSON.stringify(call.result)
 		});
 	}
 
-	if (call.additionalInfo.functionArguments) {
-		details.unshift({
-			name: 'Raw Arguments',
-			value: JSON.stringify(call.additionalInfo.functionArguments)
-		});
-	}
-
-	const callDebuggerData = call.additionalInfo.callDebuggerData;
-	const classDebuggerData =
-		simulationDebuggerData.classesDebuggerData[call.additionalInfo.classHash];
+	const callDebuggerData = call.callDebuggerData;
+	const classDebuggerData = simulationDebuggerData.classesDebuggerData[call.classHash];
 	const hasDebuggableInfo =
 		!!callDebuggerData && !!callDebuggerData.executionTrace && !!classDebuggerData;
 
 	let code: string | undefined = undefined;
 
-	let contractName: string | null = call.additionalInfo.contractName;
-	let entryPointInterfaceName: string | null = call.additionalInfo.entryPointInterfaceName;
+	let contractName: string | null = call.contractName ?? null;
+	let entryPointInterfaceName: string | null = call.entryPointInterfaceName ?? null;
 
-	const cairoLocation: CodeLocation | undefined = call.additionalInfo.cairoLocation;
+	const cairoLocation: CodeLocation | undefined = call.codeLocation ?? undefined;
 	const sourceCodeFiles: { [key: string]: string } | undefined = classDebuggerData?.sourceCode;
 
 	const findFilePath = (terms: string[], files: { [key: string]: string }): string | undefined => {
@@ -336,11 +335,11 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 				<div className="">
 					{!hasDebuggableInfo && noSourceCodeAlert}
 					<InfoBox details={details} />
-					{call.additionalInfo?.calldataDecoded && (
-						<CalldataTable calldata={call.additionalInfo.calldataDecoded} type={DataType.INPUT} />
+					{call?.calldataDecoded && (
+						<CalldataTable calldata={call.calldataDecoded} type={DataType.INPUT} />
 					)}
-					{call.additionalInfo?.functionResult && (
-						<CalldataTable calldata={call.additionalInfo.functionResult} type={DataType.OUTPUT} />
+					{call.decodedResult && (
+						<CalldataTable calldata={call.decodedResult} type={DataType.OUTPUT} />
 					)}
 				</div>
 
