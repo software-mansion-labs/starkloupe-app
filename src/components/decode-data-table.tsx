@@ -39,31 +39,46 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 					))}
 				</div>
 			);
-		} else if (isObject(value)) {
-			return (
-				<Table className="text-xs">
-					<TableHeader>
-						<TableRow>
-							{hasNameField && <TableHead>Name</TableHead>}
-							<TableHead>Type</TableHead>
-							<TableHead>Value</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody className="font-mono">
-						{Object.entries(value).map(([key, item]) => (
-							<TableRow key={key}>
-								<TableCell className="whitespace-break-spaces">
-									{(item as { name: string }).name}
-								</TableCell>
-								<TableCell className="whitespace-break-spaces">
-									{(item as { type: string }).type}
-								</TableCell>
-								<TableCell>{renderValue((item as { value: any }).value)}</TableCell>
+		} else if (typeof value === 'object' && value !== null) {
+			// Handle object values
+			if (isObject(value)) {
+				// Existing code for known object structure
+				return (
+					<Table className="text-xs">
+						<TableHeader>
+							<TableRow>
+								{hasNameField && <TableHead>Name</TableHead>}
+								<TableHead>Type</TableHead>
+								<TableHead>Value</TableHead>
 							</TableRow>
+						</TableHeader>
+						<TableBody className="font-mono">
+							{Object.entries(value).map(([key, item]) => (
+								<TableRow key={key}>
+									<TableCell className="whitespace-break-spaces">
+										{(item as { name: string }).name}
+									</TableCell>
+									<TableCell className="whitespace-break-spaces">
+										{(item as { typeName: string }).typeName}
+									</TableCell>
+									<TableCell>{renderValue((item as { value: any }).value)}</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				);
+			} else {
+				// Handle other objects
+				return (
+					<div className="pl-4">
+						{Object.entries(value).map(([key, val]) => (
+							<div key={key}>
+								{key}: {renderValue(val)}
+							</div>
 						))}
-					</TableBody>
-				</Table>
-			);
+					</div>
+				);
+			}
 		} else {
 			const formattedHexDecValue = formatHexDecValue(value);
 			return <span>{formattedHexDecValue}</span>;

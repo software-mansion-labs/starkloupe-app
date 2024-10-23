@@ -146,7 +146,7 @@ export function ContractCallTrace({
 						)
 					)}
 					<span className="text-yellow-900">{')'}</span>
-					{call.additionalInfo?.functionResult && call.additionalInfo?.functionReturnResultTypes ? (
+					{call.additionalInfo?.functionReturnResultTypes ? (
 						<>
 							<span className="text-yellow-900">&nbsp;{'->'}&nbsp;</span>
 							<span className="text-pink-500">
@@ -258,13 +258,6 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 		});
 	}
 
-	if (call.additionalInfo.functionResult) {
-		details.unshift({
-			name: 'Raw Result',
-			value: JSON.stringify(call.additionalInfo.functionResult)
-		});
-	}
-
 	if (call.additionalInfo.functionArguments) {
 		details.unshift({
 			name: 'Raw Arguments',
@@ -342,9 +335,9 @@ function ContractCallDetails({ call }: { call: CallTrace }) {
 							type={DataType.INPUT}
 						/>
 					)}
-					{call.additionalInfo?.functionResult && (
+					{call.additionalInfo?.functionResultDecoded && (
 						<DecodeDataTable
-							decodeData={call.additionalInfo.functionResult}
+							decodeData={call.additionalInfo.functionResultDecoded}
 							type={DataType.OUTPUT}
 						/>
 					)}
