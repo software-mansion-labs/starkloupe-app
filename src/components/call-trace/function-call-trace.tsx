@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-	CallTrace,
-	CodeLocation,
-	InternalFnCallIO,
-	InternalFnCallTrace,
-	DataType
-} from '@/lib/simulation';
+import { ContractCall, CodeLocation, InternalFnCallIO, FunctionCall } from '@/lib/simulation';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
@@ -20,17 +14,11 @@ import { getRawFunctionName } from '@/lib/utils';
 import { Card } from '../ui/card';
 
 export function FunctionCallTrace({
-	call,
-	nestingLevel,
-	executionFailed,
-	errorMessage,
-	contractCall
+	functionCallId,
+	nestingLevel
 }: {
-	call: InternalFnCallTrace;
+	functionCallId: number;
 	nestingLevel: number;
-	executionFailed: boolean;
-	errorMessage?: string;
-	contractCall: CallTrace;
 }) {
 	const {
 		collapsedCalls,
@@ -38,29 +26,37 @@ export function FunctionCallTrace({
 		expandedCalls,
 		toggleCallExpand,
 		setActiveTab,
-		traceLineElementRefs
+		functionCallsMap,
+		contractCallsMap,
+		isExecutionFailed,
+		traceLineElementRefs,
+		errorMessage
 	} = useCallTrace();
-	const { debugCall, checkIfDebuggable } = useDebugger();
-	const isDebuggable = checkIfDebuggable(call.data.id);
-	const contractCallId = call.data.id.split('-fp')[0];
-	const isParentContractCallDebuggable = checkIfDebuggable(contractCallId);
+	const { debugFunctionCall, isFunctionCallDebuggable, isContractCallDebuggable } = useDebugger();
+
+	const functionCall = functionCallsMap[functionCallId];
+	const contractCall = contractCallsMap[functionCall.contractCallId];
+	const isDebuggable = isFunctionCallDebuggable(functionCallId);
+	const isParentContractCallDebuggable = isContractCallDebuggable(functionCall.contractCallId);
+
 	const noCodeLocationAvaliable = isParentContractCallDebuggable && !isDebuggable;
-	if (!traceLineElementRefs.current[call.data.id]) {
-		traceLineElementRefs.current[call.data.id] = React.createRef<HTMLDivElement>();
+	if (!traceLineElementRefs.current[functionCallId]) {
+		traceLineElementRefs.current[functionCallId] = React.createRef<HTMLDivElement>();
 	}
+
 	return (
-		<React.Fragment key={call.data.id}>
+		<React.Fragment key={functionCallId}>
 			<TraceLine
-				isActive={expandedCalls[call.data.id]}
-				onClick={() => toggleCallExpand(call.data.id)}
-				ref={traceLineElementRefs.current[call.data.id]}
+				isActive={expandedCalls[functionCallId]}
+				onClick={() => toggleCallExpand(functionCallId)}
+				ref={traceLineElementRefs.current[functionCallId]}
 			>
 				{CallTypeChip('Function')}
-				{executionFailed && <div className="w-5 mr-0.5"></div>}
+				{isExecutionFailed && <div className="w-5 mr-0.5"></div>}
 
 				<DebugButton
 					onDebugClick={() => {
-						debugCall(call.data.id);
+						debugFunctionCall(functionCallId);
 						setActiveTab('debugger');
 					}}
 					isDebuggable={isDebuggable}
@@ -72,18 +68,18 @@ export function FunctionCallTrace({
 				>
 					<div
 						className={`w-5 h-5 p-1 mr-1  rounded-sm  ${
-							call.nestedCalls.length > 0 || call.data.isPanicResult
+							functionCall.childrenCallIds.length > 0 || functionCall.isDeepestPanicResult
 								? 'cursor-pointer hover:bg-neutral-200'
 								: ''
 						}`}
 						onClick={(event) => {
 							event.stopPropagation();
-							(call.nestedCalls.length > 0 || call.data.isPanicResult) &&
-								toggleCallCollapse(call.data.id);
+							(functionCall.childrenCallIds.length > 0 || functionCall.isDeepestPanicResult) &&
+								toggleCallCollapse(functionCallId);
 						}}
 					>
-						{call.nestedCalls.length > 0 || call.data.isPanicResult ? (
-							collapsedCalls[call.data.id] === true ? (
+						{functionCall.childrenCallIds.length > 0 || functionCall.isDeepestPanicResult ? (
+							collapsedCalls[functionCallId] === true ? (
 								<ChevronRightIcon />
 							) : (
 								<ChevronDownIcon />
@@ -92,27 +88,25 @@ export function FunctionCallTrace({
 							''
 						)}
 					</div>
-					<FnName fnName={call.data.fnName} />
-					<CallIO ios={call.data.arguments} />
+					<FnName fnName={functionCall.fnName} />
+					<CallIO ios={functionCall.arguments} />
 					&nbsp;{'->'}&nbsp;
-					<CallIO ios={call.data.results} />
+					<CallIO ios={functionCall.results} />
 				</div>
 			</TraceLine>
-			{expandedCalls[call.data.id] && (
-				<FunctionCallDetails call={call} contractCall={contractCall} />
+			{expandedCalls[functionCallId] && (
+				<FunctionCallDetails call={functionCall} contractCall={contractCall} />
 			)}{' '}
-			{collapsedCalls[call.data.id] != true && (
+			{collapsedCalls[functionCallId] != true && (
 				<>
-					{call.data.nestedCallsIds.map((nestedCallId) => (
+					{functionCall.childrenCallIds.map((nestedCallId) => (
 						<CommonCallTrace
 							key={nestedCallId}
 							callId={nestedCallId}
 							nestingLevel={nestingLevel + 1}
-							executionFailed={executionFailed}
-							parentContractCall={contractCall}
 						/>
 					))}
-					{call.data.isPanicResult && errorMessage && (
+					{functionCall.isDeepestPanicResult && errorMessage && (
 						<ErrorTraceLine
 							executionFailed
 							errorMessage={errorMessage}
@@ -154,13 +148,13 @@ function FunctionCallDetails({
 	call,
 	contractCall
 }: {
-	call: InternalFnCallTrace;
-	contractCall: CallTrace;
+	call: FunctionCall;
+	contractCall: ContractCall;
 }) {
 	const { simulationDebuggerData } = useCallTrace();
 	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [];
-	if (call.data.fnName) {
-		const rawFnName = getRawFunctionName(call.data.fnName);
+	if (call.fnName) {
+		const rawFnName = getRawFunctionName(call.fnName);
 		const splittedFnName = rawFnName.split('::');
 
 		details.push(
@@ -170,30 +164,30 @@ function FunctionCallDetails({
 			},
 			{
 				name: 'Interface Name',
-				value: call.data.fnName
+				value: call.fnName
 			}
 		);
 	}
-	if (call.data.arguments) {
+	if (call.arguments) {
 		details.push({
 			name: 'Raw Arguments',
-			value: JSON.stringify(call.data.arguments)
+			value: JSON.stringify(call.arguments)
 		});
 	}
 
-	if (call.data.results) {
+	if (call.results) {
 		details.push({
 			name: 'Raw Results',
-			value: JSON.stringify(call.data.results)
+			value: JSON.stringify(call.results)
 		});
 	}
 
 	let code: string | undefined = undefined;
 
-	const cairoLocation: CodeLocation | null = call.data.cairoLocation;
+	const cairoLocation: CodeLocation | null = call.codeLocation ?? null;
 	if (cairoLocation) {
 		code =
-			simulationDebuggerData.classesDebuggerData[contractCall.additionalInfo.classHash]?.sourceCode[
+			simulationDebuggerData.classesDebuggerData[contractCall.classHash]?.sourceCode[
 				cairoLocation.filePath
 			];
 	}

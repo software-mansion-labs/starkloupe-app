@@ -9,9 +9,9 @@ import React, {
 	useState
 } from 'react';
 import {
-	CallTrace,
-	CallsMap,
-	InternalFnCallTrace,
+	ContractCall,
+	ContractCallEvent,
+	FunctionCall,
 	SimulationDebuggerData,
 	SimulationResult
 } from '@/lib/simulation';
@@ -23,43 +23,47 @@ interface StringBooleanDict {
 export type TabId = 'call-trace' | 'events-list' | 'debugger';
 
 interface CallTraceContextProps {
+	contractCallsMap: { [key: number]: ContractCall };
+	functionCallsMap: { [key: number]: FunctionCall };
+	events: ContractCallEvent[];
 	simulationResult: SimulationResult;
-	callsMap: CallsMap;
 	collapsedCalls: StringBooleanDict;
 	expandedCalls: StringBooleanDict;
 	showEvents: boolean;
-	notCollapsedInternalFnCalls: StringBooleanDict;
 	simulationDebuggerData: SimulationDebuggerData;
 	activeTab: TabId;
+	isExecutionFailed: boolean;
+	errorMessage: string | undefined;
 	traceLineElementRefs: MutableRefObject<{
-		[key: string]: RefObject<HTMLDivElement>;
+		[key: number]: RefObject<HTMLDivElement>;
 	}>;
-	toggleCallCollapse: (id: string) => void;
+	toggleCallCollapse: (id: number) => void;
 	expandAll: () => void;
 	collapseAll: () => void;
-	toggleCallExpand: (id: string) => void;
-	toggleInternalFnCallCollapse: (id: string) => void;
+	toggleCallExpand: (id: number) => void;
 	setActiveTab: (tab: TabId) => void;
-	scrollToTraceLineElement: (key: string) => void;
+	scrollToTraceLineElement: (key: number) => void;
 }
 
 export const CallTraceContext = createContext<CallTraceContextProps>({
 	simulationResult: {} as SimulationResult,
-	callsMap: new Map(),
+	contractCallsMap: {},
+	functionCallsMap: {},
+	events: [],
 	collapsedCalls: {},
 	expandedCalls: {},
-	notCollapsedInternalFnCalls: {},
 	showEvents: true,
-	simulationDebuggerData: { classesDebuggerData: {} },
+	simulationDebuggerData: { classesDebuggerData: {}, debuggerTrace: [] },
 	activeTab: 'call-trace',
+	isExecutionFailed: false,
 	traceLineElementRefs: { current: {} },
+	errorMessage: undefined,
 	toggleCallCollapse: () => undefined,
 	expandAll: () => undefined,
 	collapseAll: () => undefined,
 	toggleCallExpand: () => undefined,
-	toggleInternalFnCallCollapse: () => undefined,
 	setActiveTab: () => undefined,
-	scrollToTraceLineElement: (key: string) => undefined
+	scrollToTraceLineElement: (key: number) => undefined
 });
 
 export const CallTraceContextProvider: React.FC<
@@ -69,29 +73,21 @@ export const CallTraceContextProvider: React.FC<
 	const [expandedCalls, setExpandedCalls] = useState<StringBooleanDict>({});
 	const [showEvents, setShowEvents] = useState<boolean>(true);
 	const [activeTab, setActiveTab] = useState<TabId>('call-trace');
-	const callsMap = useMemo(() => makeCallsMap(simulationResult), [simulationResult]);
+	const isExecutionFailed = simulationResult.executionResult.executionStatus === 'REVERTED';
+	const traceLineElementRefs = useRef<{ [callId: number]: React.RefObject<HTMLDivElement> }>({});
+	const errorMessage =
+		simulationResult.executionResult.executionStatus === 'REVERTED'
+			? simulationResult.executionResult.revertReason
+			: undefined;
 
-	const traceLineElementRefs = useRef<{ [callid: string]: React.RefObject<HTMLDivElement> }>({});
-	const notCollapsedInternalFnCallsIds = findCallPathWithError([simulationResult.callTrace]);
-	const initialNotCollapsedInternalFnCalls = notCollapsedInternalFnCallsIds
-		? notCollapsedInternalFnCallsIds.reduce((obj: StringBooleanDict, id) => {
-				obj[id] = true;
-				return obj;
-		  }, {})
-		: {};
-
-	const [notCollapsedInternalFnCalls, setNotCollapsedInternalFnCalls] = useState<StringBooleanDict>(
-		initialNotCollapsedInternalFnCalls
-	);
-
-	const scrollToTraceLineElement = (callId: string) => {
+	const scrollToTraceLineElement = (callId: number) => {
 		const element = traceLineElementRefs.current[callId]?.current;
 		if (element) {
 			element.scrollIntoView({ behavior: 'smooth' });
 		}
 	};
 
-	const toggleCallCollapse = (id: string) => {
+	const toggleCallCollapse = (id: number) => {
 		setCollapsedCalls((prevState) => {
 			return { ...prevState, [id]: !!!prevState[id] };
 		});
@@ -104,23 +100,22 @@ export const CallTraceContextProvider: React.FC<
 	const collapseAll = () => {
 		const newState: StringBooleanDict = {};
 
-		callsMap.forEach((value, key) => {
-			if (value && value.contractCall) {
-				if (value.contractCall.nestedCalls.length > 0 || value.contractCall.fnCalls.length > 0) {
-					newState[key] = true;
-				}
+		Object.entries(simulationResult.contractCallsMap).forEach(([contractCallId, contractCall]) => {
+			if (contractCall.childrenCallIds.length > 0 || contractCall.functionCallId) {
+				newState[contractCallId] = true;
 			}
 		});
+
+		Object.entries(simulationResult.functionCallsMap).forEach(([functionCallId, functionCall]) => {
+			if (functionCall.childrenCallIds.length > 0) {
+				newState[functionCallId] = true;
+			}
+		});
+
 		setCollapsedCalls(newState);
 	};
 
-	const toggleInternalFnCallCollapse = (id: string) => {
-		setNotCollapsedInternalFnCalls((prevState) => {
-			return { ...prevState, [id]: !!!prevState[id] };
-		});
-	};
-
-	const toggleCallExpand = (id: string) => {
+	const toggleCallExpand = (id: number) => {
 		setExpandedCalls((prevState) => {
 			return { ...prevState, [id]: !!!prevState[id] };
 		});
@@ -130,19 +125,21 @@ export const CallTraceContextProvider: React.FC<
 		<CallTraceContext.Provider
 			value={{
 				simulationResult,
-				callsMap,
+				contractCallsMap: simulationResult.contractCallsMap,
+				functionCallsMap: simulationResult.functionCallsMap,
+				events: simulationResult.events,
 				collapsedCalls,
 				expandedCalls,
 				showEvents,
 				simulationDebuggerData: simulationResult.simulationDebuggerData,
+				errorMessage,
+				activeTab,
+				isExecutionFailed,
+				traceLineElementRefs,
 				toggleCallCollapse,
 				toggleCallExpand,
 				collapseAll,
 				expandAll,
-				traceLineElementRefs,
-				notCollapsedInternalFnCalls,
-				toggleInternalFnCallCollapse,
-				activeTab,
 				setActiveTab,
 				scrollToTraceLineElement
 			}}
@@ -159,63 +156,3 @@ export const useCallTrace = () => {
 	}
 	return context;
 };
-
-function findCallPathWithError(calls: CallTrace[]): string[] | null {
-	for (let i = 0; i < calls.length; i++) {
-		const call = calls[i];
-		if (call.additionalInfo.errorMessage) {
-			if (call.fnCalls.length > 0) {
-				return findInternalFnCallPathWithError(call.fnCalls, []);
-			}
-			break;
-		} else {
-			const internalFnCallsIdTrace = findCallPathWithError(call.nestedCalls);
-			if (internalFnCallsIdTrace) return internalFnCallsIdTrace;
-		}
-	}
-	return null;
-}
-
-function findInternalFnCallPathWithError(
-	internalFnCalls: InternalFnCallTrace[],
-	internalFnCallsIdTrace: string[]
-): string[] | null {
-	for (let i = 0; i < internalFnCalls.length; i++) {
-		const internalCall = internalFnCalls[i];
-		if (internalCall.data.isPanicResult) {
-			return [...internalFnCallsIdTrace, internalCall.data.id];
-		}
-		if (internalCall.nestedCalls.length > 0) {
-			const currentInternalFnCallsIdTrace = findInternalFnCallPathWithError(
-				internalCall.nestedCalls,
-				[...internalFnCallsIdTrace, internalCall.data.id]
-			);
-			if (currentInternalFnCallsIdTrace) return currentInternalFnCallsIdTrace;
-		}
-	}
-	return null;
-}
-
-/**
- * Makes a map of call id to contract call or fn call
- */
-function makeCallsMap(simulationResult: SimulationResult): CallsMap {
-	const callsMap: CallsMap = new Map();
-	makeContractCallsMap([simulationResult.callTrace], callsMap);
-	return callsMap;
-}
-
-function makeContractCallsMap(contractCalls: CallTrace[], callsMap: CallsMap) {
-	for (const contractCall of contractCalls) {
-		callsMap.set(contractCall.contractCallId, { contractCall });
-		makeFnCallsMap(contractCall.fnCalls, callsMap);
-		makeContractCallsMap(contractCall.nestedCalls, callsMap);
-	}
-}
-
-function makeFnCallsMap(fnCalls: InternalFnCallTrace[], callsMap: CallsMap) {
-	for (const fnCall of fnCalls) {
-		callsMap.set(fnCall.data.id, { fnCall });
-		makeFnCallsMap(fnCall.nestedCalls, callsMap);
-	}
-}

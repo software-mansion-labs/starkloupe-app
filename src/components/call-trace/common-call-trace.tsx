@@ -1,64 +1,68 @@
-import { CallTraceContext } from '@/lib/context/call-trace-context-provider';
-import { useContext } from 'react';
+import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { ContractCallTrace } from './contract-call-trace';
 import { FunctionCallTrace } from './function-call-trace';
-import { CallTrace } from '@/lib/simulation';
 import { ErrorTraceLine } from './error-trace-line';
 
 export function CommonCallTrace({
 	callId,
 	nestingLevel,
-	executionFailed,
-	parentContractCall,
-	errorMessage
+	callType
 }: {
-	callId: string;
+	callId: number;
 	nestingLevel: number;
-	executionFailed: boolean;
-	parentContractCall: CallTrace;
-	errorMessage?: string;
+	callType?: 'function' | 'contract';
 }) {
-	const { callsMap } = useContext(CallTraceContext);
+	const { functionCallsMap, contractCallsMap, errorMessage } = useCallTrace();
 
-	const call = callsMap.get(callId);
+	if (!callType) {
+		const functionCall = functionCallsMap[callId];
+		const contractCall = contractCallsMap[callId];
 
-	if (call?.contractCall) {
-		return (
-			<ContractCallTrace
-				call={call.contractCall}
-				nestingLevel={nestingLevel}
-				executionFailed={executionFailed}
-			/>
-		);
-	} else if (call?.fnCall) {
-		return (
-			<>
-				{call.fnCall.isHidden ? (
-					<>
-						{call.fnCall.data.nestedCallsIds.map((nestedCallsId) => (
-							<CommonCallTrace
-								key={nestedCallsId}
-								callId={nestedCallsId}
-								nestingLevel={nestingLevel}
-								executionFailed={executionFailed}
-								parentContractCall={parentContractCall}
-								errorMessage={errorMessage}
-							/>
-						))}
-					</>
-				) : (
-					<FunctionCallTrace
-						call={call.fnCall}
+		if (functionCall) callType = 'function';
+		else if (contractCall) callType = 'contract';
+	}
+
+	if (callType === 'function') {
+		const functionCall = functionCallsMap[callId];
+		if (!functionCall.isHidden) {
+			return <FunctionCallTrace functionCallId={callId} nestingLevel={nestingLevel} />;
+		} else {
+			return (
+				<>
+					{functionCall.childrenCallIds.map((nestedCallId) => (
+						<CommonCallTrace key={nestedCallId} callId={nestedCallId} nestingLevel={nestingLevel} />
+					))}
+					{functionCall.isDeepestPanicResult && errorMessage && (
+						<ErrorTraceLine
+							executionFailed
+							errorMessage={errorMessage}
+							nestingLevel={nestingLevel}
+						/>
+					)}
+				</>
+			);
+		}
+	} else if (callType === 'contract') {
+		const contractCall = contractCallsMap[callId];
+		if (!contractCall.isHidden) {
+			return <ContractCallTrace contractCallId={callId} nestingLevel={nestingLevel} />;
+		} else {
+			return contractCall.functionCallId ? (
+				<CommonCallTrace
+					callId={contractCall.functionCallId}
+					nestingLevel={nestingLevel}
+					callType="function"
+				/>
+			) : (
+				contractCall.childrenCallIds.map((childCallId) => (
+					<CommonCallTrace
+						key={childCallId}
+						callId={childCallId}
 						nestingLevel={nestingLevel}
-						executionFailed={executionFailed}
-						contractCall={parentContractCall}
-						errorMessage={errorMessage}
+						callType="contract"
 					/>
-				)}
-				{call.fnCall.data.isPanicResult && errorMessage && (
-					<ErrorTraceLine executionFailed errorMessage={errorMessage} nestingLevel={nestingLevel} />
-				)}
-			</>
-		);
+				))
+			);
+		}
 	}
 }

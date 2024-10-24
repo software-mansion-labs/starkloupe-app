@@ -1,6 +1,5 @@
 import { SimulationResult } from '@/lib/simulation';
 import {
-	CallTraceContext,
 	CallTraceContextProvider,
 	TabId,
 	useCallTrace
@@ -14,8 +13,8 @@ import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import CalldataSearch from '../ui/calldata-search';
 import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
-import { Button } from '../ui/button';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { CommonCallTrace } from './common-call-trace';
 
 export function CallTraceRoot({ simulationResult }: { simulationResult: SimulationResult }) {
 	return (
@@ -29,7 +28,6 @@ export function CallTraceRoot({ simulationResult }: { simulationResult: Simulati
 
 function CallTraceRootContent() {
 	const { collapseAll, expandAll, activeTab, setActiveTab, simulationResult } = useCallTrace();
-	const executionFailed = simulationResult.executionResult.executionStatus === 'REVERTED';
 
 	return (
 		<div className="mt-12">
@@ -81,13 +79,9 @@ function CallTraceRootContent() {
 							</div>
 						</TooltipProvider>
 
-						<ScrollArea className="md:h-[calc(100vh-410px)] h-[calc(100vh-200px)]">
+						<ScrollArea className="md:h-[calc(100vh-430px)] h-[calc(100vh-200px)]">
 							<div className="text-xs px-0 py-2 overflow-y-auto">
-								<ContractCallTrace
-									call={simulationResult.callTrace}
-									nestingLevel={0}
-									executionFailed={executionFailed}
-								/>
+								<CommonCallTrace callId={1} nestingLevel={0} callType="contract" />
 								<ScrollBar orientation="horizontal" />
 							</div>
 						</ScrollArea>
@@ -96,7 +90,7 @@ function CallTraceRootContent() {
 				<TabsContent value="events-list">
 					<Card>
 						<CardContent className="p-0 py-2 text-xs">
-							<EventsList events={simulationResult.eventsTrace} />
+							<EventsList events={simulationResult.events} />
 						</CardContent>
 					</Card>
 				</TabsContent>

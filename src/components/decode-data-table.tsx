@@ -42,7 +42,6 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 		} else if (typeof value === 'object' && value !== null) {
 			// Handle object values
 			if (isObject(value)) {
-				// Existing code for known object structure
 				return (
 					<Table className="text-xs">
 						<TableHeader>

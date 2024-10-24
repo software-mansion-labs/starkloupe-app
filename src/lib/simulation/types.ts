@@ -57,15 +57,18 @@ export interface DecodedItem {
 export type DataDecoded = DecodedItem[];
 
 export interface DebuggerExecutionTraceEntryWithContractCall {
-	contractCall: { contractAddress: string; functionSelector: string };
-	contractCallId: string;
+	contractCallId: number;
+	reason: string;
 }
 
 export interface DebuggerExecutionTraceEntryWithLocation {
 	sierraIndex: number;
+	locationIndex: number;
 	results: InternalFnCallIO[];
 	arguments: InternalFnCallIO[];
-	locationIndex: number;
+	contractCallId: number;
+	fp: number;
+	functionCallId: number;
 }
 
 export type DebuggerExecutionTraceEntry =
@@ -74,41 +77,6 @@ export type DebuggerExecutionTraceEntry =
 
 export interface CallDebuggerData {
 	executionTrace: DebuggerExecutionTraceEntry[];
-}
-
-export interface CallTrace {
-	contractCallId: string;
-	entryPoint: EntryPoint;
-	result: CallResult;
-	fnCalls: InternalFnCallTrace[];
-	nestedCalls: CallTrace[];
-	additionalInfo: {
-		contractName: string | null;
-		entryPointFunctionName: string | null;
-		entryPointInterfaceName: string | null;
-		isErc20Token: boolean;
-		erc20TokenName: string | null;
-		erc20TokenSymbol: string | null;
-		errorMessage: string | null;
-		functionResultDecoded: DataDecoded | null;
-		functionReturnResultTypes: string[] | null;
-		functionArguments: string[] | null;
-		functionArgumentsNames: string[] | null;
-		calldataDecoded: DataDecoded | null;
-		cairoLocation?: CodeLocation; // Added on client side
-		callDebuggerData?: CallDebuggerData;
-		classHash: string; // 66 symbols format
-		cairoVersion: string;
-	};
-	nestedCallsIds: string[]; // Added on client side, list of function call id and contract call id
-}
-
-export interface EventTrace {
-	contractName: string | null;
-	eventName: string;
-	eventArgumentsNames: string[];
-	eventKeys: string[];
-	eventDatas: string[];
 }
 
 export interface ExecutionResultSucceeded {
@@ -135,17 +103,76 @@ export interface SimulationDebuggerData {
 	classesDebuggerData: {
 		[key: string]: ClassDebuggerData;
 	};
+	debuggerTrace: DebuggerExecutionTraceEntry[];
 }
 
-export type CallsMap = Map<
-	string,
-	| { contractCall: CallTrace; fnCall?: undefined }
-	| { fnCall: InternalFnCallTrace; contractCall?: undefined }
->;
+export interface ContractCall {
+	callId: number;
+	parentCallId: number;
+	childrenCallIds: number[];
+	functionCallId?: number | null;
+
+	entryPoint: EntryPoint;
+	result: CallResult;
+
+	contractName?: string | null;
+	entryPointName?: string | null;
+	entryPointSelector?: string | null;
+	entryPointInterfaceName?: string | null;
+	isErc20Token: boolean;
+	erc20TokenName?: string | null;
+	erc20TokenSymbol?: string | null;
+	errorMessage?: string | null;
+	callDebuggerData?: CallDebuggerData | null;
+	classHash: string;
+	sierraVersion?: string | null;
+	cairoVersion?: string | null;
+
+	resultTypes?: string[] | null;
+	argumentsNames?: string[] | null;
+	argumentsTypes?: string[] | null;
+	calldataDecoded?: CalldataDecoded | null;
+	decodedResult?: CalldataDecoded | null;
+
+	nestingLevel: number;
+	codeLocation?: CodeLocation | null;
+	debuggerTraceStepIndex: number | null;
+
+	isHidden: boolean;
+}
+
+export interface FunctionCall {
+	callId: number;
+	parentCallId: number;
+	childrenCallIds: number[];
+	contractCallId: number;
+	fnName: string;
+	fp: number;
+	isDeepestPanicResult: boolean;
+	debuggerTraceStepIndex: number | null;
+	codeLocation?: CodeLocation | null;
+	arguments: InternalFnCallIO[];
+	results: InternalFnCallIO[];
+	isHidden: boolean;
+}
+
+export interface ContractCallEvent {
+	contractCallId: number;
+	name: string;
+	keys: string[];
+	parameters: Parameter[];
+	data: string[];
+}
+
+export interface Parameter {
+	name: string;
+	typeName: string;
+}
 
 export interface SimulationResult {
-	callTrace: CallTrace;
-	eventsTrace: EventTrace[];
+	contractCallsMap: { [key: string]: ContractCall };
+	functionCallsMap: { [key: string]: FunctionCall };
+	events: ContractCallEvent[];
 	executionResult: ExecutionResultSucceeded | ExecutionResultReverted;
 	simulationDebuggerData: SimulationDebuggerData;
 }
@@ -165,24 +192,6 @@ export interface InternalFnCallIO {
 	typeName: string | null;
 	value: string[];
 	internalIODecoded: DataDecoded | null;
-}
-
-export interface InternalFnCallTrace {
-	data: {
-		id: string; // Function call id
-		fnName: string | null;
-		fp: number;
-		cairoLocation: CodeLocation | null;
-		arguments: InternalFnCallIO[];
-		argumentsDecoded: DataDecoded | null;
-		results: InternalFnCallIO[];
-		resultsDecoded: DataDecoded | null;
-		isPanicResult: boolean;
-		debuggerExecutionTraceStepIndex: number;
-		nestedCallsIds: string[]; // List of function call id and contract call id
-	};
-	nestedCalls: InternalFnCallTrace[];
-	isHidden?: boolean; // Added on client side to hide duplicated function calls
 }
 
 export interface TransactionSimulationResult {

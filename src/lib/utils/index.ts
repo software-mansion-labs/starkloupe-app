@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
 import {
-	CallTrace,
+	ContractCall,
 	SimulationPayloadWithCalldata,
 	TransactionSimulationResult
 } from '../simulation';
@@ -115,16 +115,19 @@ export function extractSimulationPayloadWithCalldata(
 	const rpcUrl = searchParams.get('rpcUrl');
 	const chainId = searchParams.get('chainId');
 
-	if ((rpcUrl || chainId) && senderAddress && calldata && blockNumber && transactionVersion) {
-		return {
+	if ((rpcUrl || chainId) && senderAddress && calldata && transactionVersion) {
+		const result: SimulationPayloadWithCalldata = {
 			senderAddress,
 			calldata: parseCalldata(calldata),
-			blockNumber: blockNumber ? parseInt(blockNumber) : undefined,
 			transactionVersion: parseInt(transactionVersion),
 			nonce: nonce ? parseInt(nonce) : undefined,
 			rpcUrl: rpcUrl ?? undefined,
 			chainId: chainId ?? undefined
 		};
+		if (blockNumber) {
+			result.blockNumber = parseInt(blockNumber);
+		}
+		return result;
 	}
 }
 
@@ -147,20 +150,14 @@ export function parseCalldata(calldata: string): string[] {
 	return calldata.split(',');
 }
 
-export const getContractName = ({ contractCall }: { contractCall: CallTrace }) => {
+export const getContractName = ({ contractCall }: { contractCall: ContractCall }) => {
 	let contractName: string | undefined = undefined;
-	if (contractCall.additionalInfo.contractName) {
-		contractName = contractCall.additionalInfo.contractName;
-	} else if (
-		contractCall.additionalInfo.erc20TokenName ||
-		contractCall.additionalInfo.erc20TokenSymbol
-	) {
-		contractName = [
-			contractCall.additionalInfo.erc20TokenName,
-			`(${contractCall.additionalInfo.erc20TokenSymbol})`
-		].join(' ');
-	} else if (contractCall.additionalInfo.entryPointInterfaceName) {
-		contractName = contractCall.additionalInfo.entryPointInterfaceName.split('::').pop();
+	if (contractCall.contractName) {
+		contractName = contractCall.contractName;
+	} else if (contractCall.erc20TokenName || contractCall.erc20TokenSymbol) {
+		contractName = [contractCall.erc20TokenName, `(${contractCall.erc20TokenSymbol})`].join(' ');
+	} else if (contractCall.entryPointInterfaceName) {
+		contractName = contractCall.entryPointInterfaceName.split('::').pop();
 	}
 
 	if (!contractName) {
@@ -170,7 +167,8 @@ export const getContractName = ({ contractCall }: { contractCall: CallTrace }) =
 };
 
 export function getRawFunctionName(fnName: string): string {
-	let rawFnName = fnName?.replace(/::?<([^<>]*)>/g, '');
+	if (!fnName) return '';
+	let rawFnName = fnName.replace(/::?<([^<>]*)>/g, '');
 	while (/<[^<>]*>/g.test(rawFnName)) {
 		rawFnName = rawFnName.replace(/::?<([^<>]*)>/g, '');
 	}
