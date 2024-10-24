@@ -34,9 +34,11 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 		if (Array.isArray(value)) {
 			return (
 				<div className="pl-4">
+					[
 					{value.map((item, index) => (
 						<div key={index}>{renderValue(item)}</div>
 					))}
+					]
 				</div>
 			);
 		} else if (typeof value === 'object' && value !== null) {
