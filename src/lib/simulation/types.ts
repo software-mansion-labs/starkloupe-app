@@ -131,8 +131,8 @@ export interface ContractCall {
 	resultTypes?: string[] | null;
 	argumentsNames?: string[] | null;
 	argumentsTypes?: string[] | null;
-	calldataDecoded?: CalldataDecoded | null;
-	decodedResult?: CalldataDecoded | null;
+	calldataDecoded?: DataDecoded | null;
+	decodedResult?: DataDecoded | null;
 
 	nestingLevel: number;
 	codeLocation?: CodeLocation | null;
