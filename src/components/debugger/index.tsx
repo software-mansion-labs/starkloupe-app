@@ -1,17 +1,13 @@
 import { DebuggerContext } from '@/lib/context/debugger-context-provider';
 import { useContext } from 'react';
 import { CodeViewer } from '../code-viewer/code-viewer';
-import {
-	ArrowUturnLeftIcon,
-	ArrowUturnRightIcon,
-	ExclamationTriangleIcon,
-	ArrowUturnDownIcon
-} from '@heroicons/react/24/outline';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { FilesExplorer } from '../code-viewer/file-explorer';
 import { ContractCallSignature } from '../ui/signature';
 import { ContractCall } from '@/lib/simulation';
 import Link from 'next/link';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 export function Debugger({}: {}) {
 	const {
@@ -107,38 +103,62 @@ function Controls({
 				<div>
 					Step {stepIndex + 1}/{totalSteps}
 				</div>
-				<div className="flex flex-row gap-1">
-					<div
-						onClick={() => previousStep()}
-						className={`w-5 h-5 p-0.5 rounded-sm select-none ${
-							stepIndex <= 0
-								? 'cursor-not-allowed opacity-60'
-								: 'cursor-pointer hover:bg-neutral-100'
-						}`}
-					>
-						<ArrowUturnLeftIcon className="w-4 h-4" />
+				<TooltipProvider>
+					<div className="flex flex-row gap-1">
+						<Tooltip delayDuration={100}>
+							<TooltipTrigger>
+								<div
+									onClick={() => previousStep()}
+									className={`w-5 h-5 p-0.5 rounded-sm select-none ${
+										stepIndex <= 0
+											? 'cursor-not-allowed opacity-60'
+											: 'cursor-pointer hover:bg-neutral-100'
+									}`}
+								>
+									<div className="icon">
+										<i className="codicon codicon-debug-step-out w-4 h-4 text-blue-500"></i>
+									</div>
+								</div>
+							</TooltipTrigger>
+							<TooltipContent>Step back</TooltipContent>
+						</Tooltip>
+						<Tooltip delayDuration={100}>
+							<TooltipTrigger>
+								<div
+									onClick={() => nextStep()}
+									className={`w-5 h-5 p-0.5 rounded-sm select-none ${
+										stepIndex >= totalSteps - 1
+											? 'cursor-not-allowed opacity-60'
+											: 'cursor-pointer hover:bg-neutral-100'
+									}`}
+								>
+									<div className="icon">
+										<i className="codicon codicon-debug-step-into w-4 h-4 text-blue-500"></i>
+									</div>
+								</div>
+							</TooltipTrigger>
+							<TooltipContent>Step</TooltipContent>
+						</Tooltip>
+						<Tooltip delayDuration={100}>
+							<TooltipTrigger>
+								{' '}
+								<div
+									onClick={() => stepOver()}
+									className={`w-5 h-5 p-0.5 rounded-sm select-none ${
+										stepIndex >= totalSteps - 1
+											? 'cursor-not-allowed opacity-60'
+											: 'cursor-pointer hover:bg-neutral-100'
+									}`}
+								>
+									<div className="icon">
+										<i className="codicon codicon-debug-step-over w-4 h-4 text-blue-500"></i>
+									</div>
+								</div>
+							</TooltipTrigger>
+							<TooltipContent>Step over</TooltipContent>
+						</Tooltip>
 					</div>
-					<div
-						onClick={() => nextStep()}
-						className={`w-5 h-5 p-0.5 rounded-sm select-none ${
-							stepIndex >= totalSteps - 1
-								? 'cursor-not-allowed opacity-60'
-								: 'cursor-pointer hover:bg-neutral-100'
-						}`}
-					>
-						<ArrowUturnRightIcon className="w-4 h-4" />
-					</div>
-					<div
-						onClick={() => stepOver()}
-						className={`w-5 h-5 p-0.5 rounded-sm select-none ${
-							stepIndex >= totalSteps - 1
-								? 'cursor-not-allowed opacity-60'
-								: 'cursor-pointer hover:bg-neutral-100'
-						}`}
-					>
-						<ArrowUturnDownIcon className="w-4 h-4" style={{ transform: 'scaleX(-1)' }} />
-					</div>
-				</div>
+				</TooltipProvider>
 			</div>
 		</div>
 	);
