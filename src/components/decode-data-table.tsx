@@ -1,58 +1,83 @@
 import { useState } from 'react';
-import { DecodedItem, CalldataDecoded, DataType } from '@/lib/simulation';
+import { DecodedItem, DataDecoded, DataType } from '@/lib/simulation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 import { Card } from './ui/card';
-export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; type: DataType }) {
+
+export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded; type: DataType }) {
+	const hasNameField = decodeData.some((item: DecodedItem) => 'name' in item);
 	const [displayFormat, setDisplayFormat] = useState<'hex' | 'dec'>('hex');
 
-	const isObjectArray = (value: any[]): boolean => {
+	const isObject = (value: any): boolean => {
 		return (
-			Array.isArray(value) &&
-			typeof value[0] === 'object' &&
-			'type' in value[0] &&
-			'name' in value[0] &&
-			'value' in value[0]
+			typeof value === 'object' &&
+			value !== null &&
+			(('name' in value && 'type_name' in value && 'value' in value) ||
+				Object.keys(value).every((key) => !isNaN(Number(key))))
 		);
 	};
 
 	const formatHexDecValue = (value: string): string => {
-		if (value.startsWith('0x') && displayFormat === 'dec') {
-			return BigInt(value).toString(10);
+		if (displayFormat === 'dec') {
+			if (value.startsWith('0x')) {
+				return BigInt(value).toString(10);
+			}
+		} else if (displayFormat === 'hex') {
+			if (/^\d+$/.test(value)) {
+				return '0x' + BigInt(value).toString(16);
+			}
 		}
 		return value;
 	};
 
 	const renderValue = (value: any): JSX.Element => {
 		if (Array.isArray(value)) {
-			if (isObjectArray(value)) {
+			return (
+				<div className="pl-4">
+					[
+					{value.map((item, index) => (
+						<div key={index}>{renderValue(item)}</div>
+					))}
+					]
+				</div>
+			);
+		} else if (typeof value === 'object' && value !== null) {
+			// Handle object values
+			if (isObject(value)) {
 				return (
 					<Table className="text-xs">
 						<TableHeader>
 							<TableRow>
-								<TableHead>Name</TableHead>
+								{hasNameField && <TableHead>Name</TableHead>}
 								<TableHead>Type</TableHead>
 								<TableHead>Value</TableHead>
 							</TableRow>
 						</TableHeader>
 						<TableBody className="font-mono">
-							{value.map((item: any, index: number) => (
-								<TableRow key={index}>
-									<TableCell className="whitespace-break-spaces">{item.name}</TableCell>
-									<TableCell className="whitespace-break-spaces">{item.type}</TableCell>
-									<TableCell>{renderValue(item.value)}</TableCell>
+							{Object.entries(value).map(([key, item]) => (
+								<TableRow key={key}>
+									<TableCell className="whitespace-break-spaces">
+										{(item as { name: string }).name}
+									</TableCell>
+									<TableCell className="whitespace-break-spaces">
+										{(item as { typeName: string }).typeName}
+									</TableCell>
+									<TableCell>{renderValue((item as { value: any }).value)}</TableCell>
 								</TableRow>
 							))}
 						</TableBody>
 					</Table>
 				);
 			} else {
+				// Handle other objects
 				return (
-					<ul>
-						{value.map((item: any, index: number) => (
-							<li key={index}>{renderValue(item)}</li>
+					<div className="pl-4">
+						{Object.entries(value).map(([key, val]) => (
+							<div key={key}>
+								{key}: {renderValue(val)}
+							</div>
 						))}
-					</ul>
+					</div>
 				);
 			}
 		} else {
@@ -96,7 +121,7 @@ export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; t
 						</TableRow>
 					</TableHeader>
 					<TableBody>
-						{calldata.map((item: DecodedItem, index: number) => (
+						{decodeData?.map((item: DecodedItem, index: number) => (
 							<TableRow key={index}>
 								{type === DataType.INPUT && (
 									<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
@@ -104,7 +129,7 @@ export function CalldataTable({ calldata, type }: { calldata: CalldataDecoded; t
 									</TableCell>
 								)}
 								<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
-									{item.type}
+									{item.typeName}
 								</TableCell>
 								<TableCell className="border-r border-neutral-200 last:border-r-0">
 									{renderValue(item.value)}

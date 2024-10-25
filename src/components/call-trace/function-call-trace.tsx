@@ -132,8 +132,8 @@ function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 							{io.value.length === 0
 								? 'None'
 								: io.value.length === 1
-								? io.value[0]
-								: `[${io.value.join(', ')}]`}
+									? io.value[0]
+									: `[${io.value.join(', ')}]`}
 						</span>
 						{i < ios.length - 1 ? <>,&nbsp;</> : ''}
 					</React.Fragment>

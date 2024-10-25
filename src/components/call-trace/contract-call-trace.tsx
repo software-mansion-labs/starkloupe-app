@@ -11,7 +11,7 @@ import { shortenHash } from '@/lib/utils';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { InfoBox } from '@/components/ui/info-box';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
-import { CalldataTable } from '../calldata-table';
+import { DecodeDataTable } from '../decode-data-table';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { CodeViewer } from '../code-viewer/code-viewer';
 import { DebuggerContext, useDebugger } from '@/lib/context/debugger-context-provider';
@@ -335,11 +335,11 @@ function ContractCallDetails({ call }: { call: ContractCall }) {
 				<div className="">
 					{!hasDebuggableInfo && noSourceCodeAlert}
 					<InfoBox details={details} />
-					{call?.calldataDecoded && (
-						<CalldataTable calldata={call.calldataDecoded} type={DataType.INPUT} />
+					{call.calldataDecoded && (
+						<DecodeDataTable decodeData={call.calldataDecoded} type={DataType.INPUT} />
 					)}
 					{call.decodedResult && (
-						<CalldataTable calldata={call.decodedResult} type={DataType.OUTPUT} />
+						<DecodeDataTable decodeData={call.decodedResult} type={DataType.OUTPUT} />
 					)}
 				</div>
 

@@ -43,6 +43,14 @@ export function hexToText(hex: string): string {
 	return text;
 }
 
+export function isHexFormat(value: string): boolean {
+	return typeof value === 'string' && /^0x[0-9a-fA-F]+$/.test(value);
+}
+
+export function isDecimalFormat(value: string): boolean {
+	return typeof value === 'string' && /^[0-9]+$/.test(value);
+}
+
 export function formatTimestamp(timestamp: number): string {
 	let dateObject = new Date(timestamp * 1000);
 
