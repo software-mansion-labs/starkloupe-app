@@ -1,5 +1,5 @@
 import { DebuggerContext } from '@/lib/context/debugger-context-provider';
-import { useContext } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import { CodeViewer } from '../code-viewer/code-viewer';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
@@ -96,6 +96,24 @@ function Controls({
 	totalSteps: number;
 	contractCall?: ContractCall;
 }) {
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key.toLowerCase() === 'b') {
+				previousStep();
+			} else if (event.key.toLowerCase() === 'n') {
+				nextStep();
+			} else if (event.key.toLowerCase() === 'o') {
+				event.preventDefault();
+				stepOver();
+			}
+		};
+
+		window.addEventListener('keydown', handleKeyDown);
+		return () => {
+			window.removeEventListener('keydown', handleKeyDown);
+		};
+	}, [previousStep, nextStep, stepOver]);
+
 	return (
 		<div className="flex flex-row border-b border-neutral-200 py-1 px-3 justify-between items-center">
 			<div>{contractCall && <ContractCallSignature contractCall={contractCall} />}</div>
@@ -120,7 +138,7 @@ function Controls({
 									</div>
 								</div>
 							</TooltipTrigger>
-							<TooltipContent>Step back</TooltipContent>
+							<TooltipContent>Step back (b)</TooltipContent>
 						</Tooltip>
 						<Tooltip delayDuration={100}>
 							<TooltipTrigger>
@@ -137,7 +155,7 @@ function Controls({
 									</div>
 								</div>
 							</TooltipTrigger>
-							<TooltipContent>Step</TooltipContent>
+							<TooltipContent>Step (n)</TooltipContent>
 						</Tooltip>
 						<Tooltip delayDuration={100}>
 							<TooltipTrigger>
@@ -155,7 +173,7 @@ function Controls({
 									</div>
 								</div>
 							</TooltipTrigger>
-							<TooltipContent>Step over</TooltipContent>
+							<TooltipContent>Step over (o)</TooltipContent>
 						</Tooltip>
 					</div>
 				</TooltipProvider>
