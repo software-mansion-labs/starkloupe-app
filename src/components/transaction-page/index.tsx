@@ -21,7 +21,7 @@ import { PlayIcon } from '@heroicons/react/24/outline';
 import { Error } from '../ui/error';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation';
 
 export function TransactionPage({
 	txHash,
@@ -42,17 +42,21 @@ export function TransactionPage({
 	const shouldSkipTracking = (): boolean => {
 		const queryParamsIncludesSkipTracking = searchParams.toString().includes('skip_tracking=true');
 		const cookies = document.cookie.split(';');
-		const skipBasedOnCookie = cookies.some(cookie => cookie.trim().startsWith('skip_tracking_pls=true'));
+		const skipBasedOnCookie = cookies.some((cookie) =>
+			cookie.trim().startsWith('skip_tracking_pls=true')
+		);
 		const skipBasedOnEnvVar = process.env.NEXT_PUBLIC_USE_TRACKING !== 'true';
 		return queryParamsIncludesSkipTracking || skipBasedOnCookie || skipBasedOnEnvVar;
-	}
+	};
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				if (chainId) {
 					const skipTracking = shouldSkipTracking();
-					setTransactionSimulation(await simulateTransactionByHash({ chainId, txHash, skipTracking }));
+					setTransactionSimulation(
+						await simulateTransactionByHash({ chainId, txHash, skipTracking })
+					);
 				} else if (rpcUrl) {
 					setTransactionSimulation(
 						await simulateCustomNetworkTransactionByHash({ txHash, rpcUrl })
@@ -69,7 +73,7 @@ export function TransactionPage({
 	return (
 		<>
 			<HeaderNav />
-			<main className="overflow-y-auto flex-grow">
+			<main className="overflow-y-auto flex-grow flex-col flex justify-between">
 				<Container className="py-6">
 					<div className="lg:flex flex-row items-baseline justify-between">
 						<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2 flex flex-nowrap items-center">
@@ -126,8 +130,9 @@ export function TransactionPage({
 						<Loader />
 					)}
 				</Container>
+
+				<Footer />
 			</main>
-			<Footer />
 		</>
 	);
 }

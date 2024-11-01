@@ -41,16 +41,7 @@ export function Footer() {
 		<footer>
 			<Container className="py-1 bg-neutral-50 border-t border-neutral-200">
 				<div className="flex flex-col md:flex-row md:justify-between md:items-center">
-					<div className="flex space-x-12 mb-4 md:mb-0 text-xs">
-						<a
-							href="https://t.me/walnuthq"
-							target="_blank"
-							rel="noopener noreferrer"
-							className="text-gray-500 hover:underline text-xs"
-						>
-							Join our Telegram for updates, support or some nutty vibes 🥜
-						</a>
-					</div>
+					<div className="flex space-x-12 mb-4 md:mb-0 text-xs"></div>
 					<div className="flex justify-end space-x-4 items-center">
 						<div className="flex justify-end mb-4 md:mb-0">
 							<a

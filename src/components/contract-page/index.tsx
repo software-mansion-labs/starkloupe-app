@@ -42,7 +42,7 @@ export function ContractPage({
 	return (
 		<>
 			<HeaderNav />
-			<main className="overflow-y-auto flex-grow">
+			<main className="overflow-y-auto flex-grow flex-col flex justify-between">
 				<Container className="py-6">
 					<div className="flex flex-row items-baseline justify-between">
 						<h1 className="text-xl font-medium leading-6 mt-4 mb-2 mr-2">
@@ -58,8 +58,8 @@ export function ContractPage({
 						<Loader />
 					)}
 				</Container>
+				<Footer />
 			</main>
-			<Footer />
 		</>
 	);
 }
