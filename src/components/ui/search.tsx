@@ -34,13 +34,19 @@ export function Search({
 	const [isMac, setIsMac] = useState(true);
 	const { networks } = useSettings();
 	const coreNetworks = 'sn_main, sn_sepolia';
-	const [allAvailableNetworksString, setAllAvailableNetworksString] = useState<string>(coreNetworks);
+	const [allAvailableNetworksString, setAllAvailableNetworksString] =
+		useState<string>(coreNetworks);
 
 	const fetchSearchDataResponse = async (value: string) => {
 		try {
-			const searchData: SearchDataResponse = await fetchSearchData({ hash: value, rpcUrls: networks.map((n) => n.rpcUrl) })
+			const searchData: SearchDataResponse = await fetchSearchData({
+				hash: value,
+				rpcUrls: networks.map((n) => n.rpcUrl)
+			});
 			setSearchDataResponse(searchData);
-			setDataResponseResults(searchData.transactions.length + searchData.classes.length + searchData.contracts.length);
+			setDataResponseResults(
+				searchData.transactions.length + searchData.classes.length + searchData.contracts.length
+			);
 		} catch (error: any) {
 			setDataResponseResults(0);
 			setError(error.toString());
@@ -49,7 +55,7 @@ export function Search({
 
 	useEffect(() => {
 		if (networks.length > 0) {
-			const networkNames = networks.map(network => network.networkName);
+			const networkNames = networks.map((network) => network.networkName);
 			setAllAvailableNetworksString(`${coreNetworks}, ${networkNames.join(', ')}`);
 		}
 	}, [networks]);
@@ -117,7 +123,7 @@ export function Search({
 					name="search"
 					onFocus={() => setOpen(true)}
 				/>
-				<div className="pointer-events-none border border-neutral-200 text-neutral-600 rounded-sm text-sm absolute right-0 inset-y-1.5 mr-1.5 p-1 flex items-center">
+				<div className="pointer-events-none border border-neutral-200 text-neutral-600 rounded-sm text-sm absolute right-0 inset-y-1.5 mr-1.5 p-1 hidden md:flex items-center">
 					{isMac ? '⌘K' : 'Ctrl+K'}
 				</div>
 			</div>
@@ -175,10 +181,11 @@ export function Search({
 						<div className="bg-gray-50 border-t ">
 							<CommandItem
 								className="ml-1.5 hover:bg-gray-50"
-								style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
+								style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
+							>
 								<p className="text-muted-foreground">
 									<span className="font-semibold">{dataResponseResults}</span>
-									&nbsp;{ dataResponseResults === 1 ? 'result' : 'results' } found on&nbsp;
+									&nbsp;{dataResponseResults === 1 ? 'result' : 'results'} found on&nbsp;
 									<span className="font-semibold">{allAvailableNetworksString}</span>
 									&nbsp;networks.&nbsp;
 									<Link href="/settings" className="underline">

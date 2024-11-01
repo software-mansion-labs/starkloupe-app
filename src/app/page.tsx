@@ -13,6 +13,7 @@ import { SimulateDialog } from '@/components/simulate-dialog';
 import { Button } from '@/components/ui/button';
 import { PlayIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
 import { Container } from '@/components/ui/container';
+import { HeaderNav } from '@/components/header';
 
 export default function Page() {
 	// const { status } = useSession();
@@ -26,32 +27,7 @@ export default function Page() {
 
 	return (
 		<div className="min-h-screen flex flex-col">
-			<Container>
-				<div className="flex h-16 items-center justify-between">
-					<div className="flex flex-1 justify-end space-x-2 lg:space-x-4 mx-4 md:mr-0">
-						<div className="hidden md:block">
-							<SimulateDialog
-								dialogTrigger={
-									<Button variant="outline">
-										<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
-									</Button>
-								}
-							/>
-						</div>
-					</div>
-					<div className="hidden md:block -mr-2">
-						<div className="flex items-center">
-							<div className="flex flex-row items-center ml-3">
-								<a href="/settings">
-									<Button variant="ghost" className="px-2">
-										<Cog6ToothIcon className="h-6 w-6" />
-									</Button>
-								</a>
-							</div>
-						</div>
-					</div>
-				</div>
-			</Container>
+			<HeaderNav isMainPage={true} />
 			<main className="overflow-hidden flex flex-col items-center justify-center gap-10 flex-auto relative">
 				{/* <IndexNav /> */}
 				<Image src={logoWalnut} alt="Walnut logo" unoptimized className="h-10 w-auto" />

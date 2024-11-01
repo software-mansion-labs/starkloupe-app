@@ -12,30 +12,34 @@ import { usePathname } from 'next/navigation';
 import { SimulateDialog } from './simulate-dialog';
 import { Container } from '@/components/ui/container';
 
-export function HeaderNav() {
+export function HeaderNav({ isMainPage = false }: { isMainPage?: boolean }) {
 	// const session = useSession();
 	// const pathname = usePathname();
 
 	return (
-		<Disclosure as="nav" className="bg-neutral-50 border-b border-neutral-200">
+		<Disclosure
+			as="nav"
+			className={`${!isMainPage && 'bg-neutral-50 border-b border-neutral-200'}`}
+		>
 			{({ open }) => (
 				<>
 					<Container>
 						<div className="flex h-16 items-center justify-between">
-							<div className="flex items-center">
-								<div className="flex-shrink-0">
-									<Link href="/">
-										<Image
-											src={logoWalnut}
-											alt="Walnut logo"
-											unoptimized
-											className="h-8 w-auto cursor-pointer"
-										/>
-									</Link>
-								</div>
-								<div className="hidden md:block">
-									<nav className="ml-10 flex items-center space-x-4 lg:space-x-6">
-										{/* {session.status === 'authenticated' ? (
+							{!isMainPage && (
+								<div className="flex items-center">
+									<div className="flex-shrink-0">
+										<Link href="/">
+											<Image
+												src={logoWalnut}
+												alt="Walnut logo"
+												unoptimized
+												className="h-8 w-auto cursor-pointer"
+											/>
+										</Link>
+									</div>
+									<div className="hidden md:block">
+										<nav className="ml-10 flex items-center space-x-4 lg:space-x-6">
+											{/* {session.status === 'authenticated' ? (
 											<Link
 												href="/monitoring"
 												className={`text-sm font-medium transition-colors hover:text-primary ${
@@ -47,7 +51,7 @@ export function HeaderNav() {
 										) : (
 											<></>
 										)} */}
-										{/* <Link
+											{/* <Link
 											href="/transactions/SN_MAIN"
 											className={`text-sm font-medium transition-colors hover:text-primary ${
 												pathname.startsWith('/transactions') ? '' : 'text-muted-foreground'
@@ -55,13 +59,17 @@ export function HeaderNav() {
 										>
 											Transactions
 										</Link> */}
-									</nav>
+										</nav>
+									</div>
 								</div>
-							</div>
+							)}
+
 							<div className="flex flex-1 justify-end space-x-2 lg:space-x-4 mx-4 md:mr-0">
-								<div className="w-auto max-w-xs md:w-80">
-									<Search className="w-full" placeholder="Search"></Search>
-								</div>
+								{!isMainPage && (
+									<div className="w-auto max-w-xs md:w-80">
+										<Search className="w-full" placeholder="Search"></Search>
+									</div>
+								)}
 								<div className="hidden md:block">
 									<SimulateDialog
 										dialogTrigger={
@@ -96,7 +104,7 @@ export function HeaderNav() {
 						</div>
 					</Container>
 
-					<Disclosure.Panel className="md:hidden fixed bg-neutral-50 inset-x-0 z-50 border-b border-neutral-200">
+					<Disclosure.Panel className="md:hidden fixed bg-neutral-50 inset-x-0 z-50 border-b border-t shadow-md border-neutral-200">
 						<div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
 							{/* {session.status === 'authenticated' ? (
 								<Link href="/monitoring">
@@ -105,7 +113,16 @@ export function HeaderNav() {
 							) : (
 								<></>
 							)} */}
-							<Button variant="ghost">Simulate transaction</Button>
+							<div>
+								<SimulateDialog
+									dialogTrigger={<Button variant="ghost">Simulate transaction</Button>}
+								/>
+							</div>
+							<div>
+								<a href="/settings">
+									<Button variant="ghost">Settings</Button>
+								</a>
+							</div>
 						</div>
 						{/* <div className="border-t border-neutral-100 pb-3 pt-4">
 							{session.status === 'authenticated' ? (
