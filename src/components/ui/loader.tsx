@@ -13,7 +13,10 @@ const Quotes = [
 	'Breaking down blocks and cracking open transactions, walnut style!'
 ];
 
-const Loader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(() => {
+const Loader = forwardRef<
+	HTMLDivElement,
+	HTMLAttributes<HTMLDivElement> & { randomQuote?: boolean }
+>(({ randomQuote = true }) => {
 	const [quote, setQuote] = useState('');
 
 	useEffect(() => {
@@ -22,7 +25,10 @@ const Loader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(() => 
 
 	return (
 		<div className="text-center my-16 text-gray-800">
-			<h3 className="text-md font-medium max-w-sm mx-auto whitespace-pre-line">{quote}</h3>
+			{randomQuote && (
+				<h3 className="text-md font-medium max-w-sm mx-auto whitespace-pre-line">{quote}</h3>
+			)}
+
 			<div className={'flex items-center justify-center mt-4 gap-2'}>
 				<span className="h-6 w-6 block rounded-full border-4 border-t-gray-800 animate-spin"></span>
 				loading...

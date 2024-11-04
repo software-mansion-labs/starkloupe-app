@@ -61,7 +61,7 @@ export function VerificationStatusPage({ verificationId }: { verificationId: str
 			<main className="overflow-y-auto flex-grow">
 				<Container className="py-6">
 					{isLoading ? (
-						<Loader />
+						<Loader randomQuote={false} />
 					) : (
 						<>
 							{error ? (
