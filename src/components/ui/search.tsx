@@ -148,17 +148,18 @@ export function Search({
 									))}
 								</CommandGroup>
 							)}
-							{/*
 							{searchDataResponse.classes?.length > 0 && (
 								<CommandGroup heading="Classes">
 									{searchDataResponse.classes.map((cls, index) => (
-										<SearchItem key={`${cls.hash}-${index}`} data={cls} type="classes" />
+										<SearchItem
+											key={`${cls.hash}-${index}`}
+											data={cls}
+											type="classes"
+											networks={networks}
+										/>
 									))}
 								</CommandGroup>
 							)}
-							*/}
-							{/* This is hot fix till we don't develop classes page*/}
-							{searchDataResponse.classes?.length > 0 && <CommandEmpty>Nothing found</CommandEmpty>}
 							{searchDataResponse.contracts?.length > 0 && (
 								<CommandGroup heading="Contracts">
 									{searchDataResponse.contracts.map((contract, index) => (
@@ -207,7 +208,7 @@ const SearchItem = ({
 	networks
 }: {
 	data: SearchData;
-	type: 'transactions' | 'contracts';
+	type: 'transactions' | 'contracts' | 'classes';
 	networks: Network[];
 }) => {
 	const handleSearchItem = useCallback(() => {
@@ -223,6 +224,8 @@ const SearchItem = ({
 			}
 		} else if (type === 'contracts') {
 			window.location.href = `/contracts/${data.source.chainId}/${data.hash}`;
+		} else if (type === 'classes') {
+			window.location.href = `/classes/${data.hash}`;
 		}
 	}, [data, type]);
 

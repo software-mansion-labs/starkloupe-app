@@ -12,6 +12,7 @@ type SettingsContextType = {
 	addNetwork: (network: Network) => void;
 	removeNetwork: (network: Network) => void;
 	getNetworkByRpcUrl: (rpcUrl: string) => Network | undefined;
+	isSettingsLoaded: boolean;
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -19,14 +20,17 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 const NETWORKS_STORAGE_KEY = 'networks';
 
 export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+	const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
 	const [networks, setNetworks] = useState<Network[]>([]);
 
 	useEffect(() => {
+		if (isSettingsLoaded) return;
 		const storedNetworks = localStorage.getItem(NETWORKS_STORAGE_KEY);
 		if (storedNetworks) {
 			setNetworks(JSON.parse(storedNetworks));
 		}
-	}, []);
+		setIsSettingsLoaded(true);
+	}, [isSettingsLoaded]);
 
 	const addNetwork = (network: Network) => {
 		const updatedNetworks = [...networks, network];
@@ -45,7 +49,9 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 	};
 
 	return (
-		<SettingsContext.Provider value={{ networks, addNetwork, removeNetwork, getNetworkByRpcUrl }}>
+		<SettingsContext.Provider
+			value={{ networks, addNetwork, removeNetwork, getNetworkByRpcUrl, isSettingsLoaded }}
+		>
 			{children}
 		</SettingsContext.Provider>
 	);

@@ -9,7 +9,7 @@ import { ChainId } from '@/lib/types';
 import { InfoBoxItem, InfoBox } from '../ui/info-box';
 import { Error } from '../ui/error';
 import { fetchContractDataByAddress, ContractResponseWithSourceCode } from '@/lib/contracts';
-import { ContractRoot } from '@/components/contract';
+import { ClassSourceCode } from '@/components/class-source-code';
 
 export function ContractPage({
 	chainId,
@@ -51,7 +51,11 @@ export function ContractPage({
 					</div>
 					{contractData && <ContractDetails contractData={contractData} />}
 					{contractData ? (
-						<ContractRoot contractData={contractData} />
+						<ClassSourceCode
+							isClassVerified={contractData.isClassVerified}
+							sourceCode={contractData.sourceCode ?? {}}
+							isContract={true}
+						/>
 					) : error ? (
 						<Error message={error} />
 					) : (
