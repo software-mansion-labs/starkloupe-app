@@ -27,6 +27,8 @@ import {
 	SelectTrigger,
 	SelectValue
 } from '@/components/ui/select';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 
 interface Chain {
 	chainId?: string;
@@ -67,6 +69,12 @@ export function SimulateDialog({
 }) {
 	const { networks } = useSettings();
 	const defaultTransactionVersion = '2';
+	const [alert, setAlert] = useState(false);
+	const validateHexFormat = (value: string) => /^0x[0-9a-fA-F]+$/.test(value);
+
+	const validateCalldata = useCallback((calldata: string[]) => {
+		return calldata.every((item) => validateHexFormat(item));
+	}, []);
 
 	const [_senderAddress, _setSenderAddress] = useState<string>(
 		simulationPayload?.senderAddress ?? ''
@@ -108,7 +116,7 @@ export function SimulateDialog({
 	function onDialogSubmit() {
 		const simulationPayload: SimulationPayloadWithCalldata = {
 			senderAddress: _senderAddress,
-			calldata: _calldata.split('\n'),
+			calldata: _calldata.trim().split('\n'),
 			blockNumber: _blockNumber.length > 0 ? parseInt(_blockNumber) : undefined,
 			transactionVersion: parseInt(_transactionVersion)
 		};
@@ -117,7 +125,17 @@ export function SimulateDialog({
 		} else if (_chain.network) {
 			simulationPayload.rpcUrl = _chain.network.rpcUrl;
 		}
-		openSimulationPage(simulationPayload);
+		if (
+			simulationPayload.senderAddress === '' ||
+			simulationPayload.calldata[0] === '' ||
+			isNaN(simulationPayload.transactionVersion) ||
+			!validateHexFormat(simulationPayload.senderAddress) ||
+			!validateCalldata(simulationPayload.calldata)
+		) {
+			setAlert(true);
+		} else {
+			openSimulationPage(simulationPayload);
+		}
 	}
 
 	const chainOptions = [
@@ -134,6 +152,66 @@ export function SimulateDialog({
 			});
 		}
 	}
+
+	const FieldAlert = () => {
+		const getValidationErrors = () => {
+			const errors = [];
+			const emptyFields = [];
+			if (!_senderAddress) emptyFields.push('Sender Address');
+			if (_calldata.trim() === '') emptyFields.push('Calldata');
+			if (!_transactionVersion) emptyFields.push('Transaction version');
+			if (emptyFields.length > 0) {
+				errors.push(
+					`The ${emptyFields.join(', ')} field${emptyFields.length > 1 ? 's' : ''} ${
+						emptyFields.length === 1 ? 'is' : 'are'
+					} required`
+				);
+			}
+			if (_senderAddress && !validateHexFormat(_senderAddress)) {
+				errors.push('Sender address must be a hexadecimal number starting with 0x');
+			}
+			if (_calldata.trim() !== '') {
+				const calldataArray = _calldata.trim().split(' ');
+				if (!validateCalldata(calldataArray)) {
+					errors.push('Calldata must be a list of hexadecimal numbers, each starting with 0x');
+				}
+			}
+			if (isNaN(parseInt(_transactionVersion))) {
+				errors.push('Transaction version must be a number');
+			}
+
+			return errors.join('. ');
+		};
+
+		const validationMessage = getValidationErrors();
+
+		if (!validationMessage) {
+			return null;
+		}
+
+		return (
+			<Alert variant="destructive" className="mt-4">
+				<ExclamationTriangleIcon className="h-4 w-4" />
+				<AlertTitle>Error</AlertTitle>
+				<AlertDescription>{validationMessage}</AlertDescription>
+			</Alert>
+		);
+	};
+
+	useEffect(() => {
+		if (
+			alert &&
+			!(
+				_senderAddress === '' ||
+				!validateHexFormat(_senderAddress) ||
+				_calldata.trim() === '' ||
+				!validateCalldata(_calldata.trim().split('\n')) ||
+				isNaN(parseInt(_transactionVersion))
+			)
+		) {
+			setAlert(false);
+		}
+	}, [_senderAddress, _calldata, _transactionVersion, alert, validateCalldata]);
 
 	return (
 		<Dialog>
@@ -152,7 +230,11 @@ export function SimulateDialog({
 							id="sender-address"
 							value={_senderAddress}
 							onChange={(e) => _setSenderAddress(e.target.value)}
-							className="col-span-3 font-mono"
+							className={`col-span-3 font-mono ${
+								alert &&
+								(_senderAddress === '' || !validateHexFormat(_senderAddress)) &&
+								' border-red-500'
+							}`}
 						/>
 					</div>
 					<div className="grid grid-cols-4 items-center gap-x-4 gap-y-2">
@@ -161,10 +243,17 @@ export function SimulateDialog({
 						</Label>
 						<Textarea
 							placeholder={`Enter raw calldata here. For example:\n\n0x0000000000000000000000000000000000000000000000000000000000000001\n0x014c52727fc025f10d431efafb3945a06601e3703fc06c934df177a6c30f3280\n0x02f67e6aeaad1ab7487a680eb9d3363a597afa7a3de33fa9bf3ae6edcb88435d\n0x0000000000000000000000000000000000000000000000000000000000000001\n0x000000000000000000000000000000000000000000000000000000000000002a`}
-							className="col-span-3 font-mono h-32"
+							className={`col-span-3 font-mono h-32 ${
+								alert &&
+								(_calldata.trim() === '' || !validateCalldata(_calldata.trim().split('\n'))) &&
+								' border-red-500'
+							}`}
 							id="calldata"
 							value={_calldata}
-							onChange={(e) => _setCalldata(e.target.value)}
+							onChange={(e) => {
+								_setCalldata(e.target.value);
+								console.log(_calldata);
+							}}
 						/>
 						<p className="text-xs text-muted-foreground col-span-3 col-start-2">
 							The calldata will be executed on the sender contract.
@@ -213,17 +302,19 @@ export function SimulateDialog({
 						<Input
 							id="tx-version"
 							value={_transactionVersion}
-							className="col-span-3 font-mono"
+							className={`col-span-3 font-mono ${
+								alert && isNaN(parseInt(_transactionVersion)) && ' border-red-500'
+							}`}
 							onChange={(e) => _setTransactionVersion(e.target.value)}
 						/>
 					</div>
 				</div>
+				{alert && <FieldAlert />}
+
 				<DialogFooter>
-					<DialogClose asChild>
-						<Button type="submit" onClick={onDialogSubmit}>
-							<PlayIcon className="w-4 h-4 mr-2"></PlayIcon> Run Simulation
-						</Button>
-					</DialogClose>
+					<Button type="submit" onClick={onDialogSubmit}>
+						<PlayIcon className="w-4 h-4 mr-2"></PlayIcon> Run Simulation
+					</Button>
 				</DialogFooter>
 			</DialogContent>
 		</Dialog>
