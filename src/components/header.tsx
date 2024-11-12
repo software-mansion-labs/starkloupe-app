@@ -5,17 +5,20 @@ import Link from 'next/link';
 import { Disclosure } from '@headlessui/react';
 import { Search } from '@/components/ui/search';
 import { Button } from '@/components/ui/button';
-import { Bars3Icon, XMarkIcon, PlayIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
+import { Bars3Icon, Cog6ToothIcon, PlayIcon, XMarkIcon } from '@heroicons/react/24/outline';
 import logoWalnut from '@/assets/wlnt-logo-beta-bw.svg';
-import { useSession } from 'next-auth/react';
-import { usePathname } from 'next/navigation';
 import { SimulateDialog } from './simulate-dialog';
 import { Container } from '@/components/ui/container';
+import { isTrackingActive } from '@/app/api/tracking-service';
+import { useEffect, useState } from 'react';
 
 export function HeaderNav({ isMainPage = false }: { isMainPage?: boolean }) {
 	// const session = useSession();
 	// const pathname = usePathname();
-
+	const [trackingActive, setTrackingActive] = useState(false);
+	useEffect(() => {
+		setTrackingActive(isTrackingActive());
+	}, []);
 	return (
 		<Disclosure
 			as="nav"
@@ -23,6 +26,13 @@ export function HeaderNav({ isMainPage = false }: { isMainPage?: boolean }) {
 		>
 			{({ open }) => (
 				<>
+					{!trackingActive &&
+						(<div className=" top-0 left-0 w-full h-5 bg-green-500 text-white flex items-center justify-between px-4 shadow-md z-50">
+							<div className="text-sm font-semibold">
+								NO TRACKING
+							</div>
+						</div>)
+					}
 					<Container>
 						<div className="flex h-16 items-center justify-between">
 							{!isMainPage && (

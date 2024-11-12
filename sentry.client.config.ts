@@ -3,16 +3,9 @@
 // https://docs.sentry.io/platforms/javascript/guides/nextjs/
 
 import * as Sentry from "@sentry/nextjs";
+import { isTrackingActive } from '@/app/api/tracking-service';
 
-// Sentry starts only on client if NEXT_PUBLIC_USE_SENTRY is set to 'prod'
-// Also to disable Sentry on client - set 'skip-sentry-pls=true' cookie
-const cookies = document.cookie.split(';');
-const shouldSkipSentry = cookies.some(cookie => cookie.trim().startsWith('skip_tracking_pls=true'));
-if (shouldSkipSentry) {
-    console.log('Sentry is disabled on client - skip_tracking_pls=true cookie is set');
-}
-const isProdEnv = process.env.NEXT_PUBLIC_USE_TRACKING === 'true';
-if (!shouldSkipSentry && isProdEnv) {
+if (isTrackingActive()) {
     Sentry.init({
         dsn: process.env.NEXT_PUBLIC_SENTRY_DSN_URL,
         // Add optional integrations for additional features
