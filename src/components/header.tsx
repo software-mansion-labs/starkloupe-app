@@ -15,7 +15,7 @@ import { useEffect, useState } from 'react';
 export function HeaderNav({ isMainPage = false }: { isMainPage?: boolean }) {
 	// const session = useSession();
 	// const pathname = usePathname();
-	const [trackingActive, setTrackingActive] = useState(false);
+	const [trackingActive, setTrackingActive] = useState(true);
 	useEffect(() => {
 		setTrackingActive(isTrackingActive());
 	}, []);
