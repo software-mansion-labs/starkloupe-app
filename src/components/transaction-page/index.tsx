@@ -5,7 +5,6 @@ import { HeaderNav } from '../header';
 import { Container } from '../ui/container';
 import { Footer } from '../footer';
 import { Loader } from '../ui/loader';
-import { useToast } from '../hooks/use-toast';
 import {
 	simulateCustomNetworkTransactionByHash,
 	simulateTransactionByHash,
@@ -14,14 +13,13 @@ import {
 import { formatTimestampToUTC, shortenHash } from '@/lib/utils';
 import { ChainId } from '@/lib/types';
 import { CallTraceRoot } from '@/components/call-trace';
-import { InfoBoxItem, InfoBox } from '../ui/info-box';
+import { InfoBox, InfoBoxItem } from '../ui/info-box';
 import { SimulateDialog } from '../simulate-dialog';
 import { Button } from '../ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
 import { Error } from '../ui/error';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
-import { useSearchParams } from 'next/navigation';
 
 export function TransactionPage({
 	txHash,
@@ -34,41 +32,30 @@ export function TransactionPage({
 }) {
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
 	const [error, setError] = useState<string | undefined>();
-	const { toast } = useToast();
-	const searchParams = useSearchParams();
-
+	const { trackingActive, isSettingsLoaded } = useSettings();
 	const shortHash = shortenHash(txHash);
-
-	const shouldSkipTracking = (): boolean => {
-		const queryParamsIncludesSkipTracking = searchParams.toString().includes('skip_tracking=true');
-		const cookies = document.cookie.split(';');
-		const skipBasedOnCookie = cookies.some((cookie) =>
-			cookie.trim().startsWith('skip_tracking_pls=true')
-		);
-		const skipBasedOnEnvVar = process.env.NEXT_PUBLIC_USE_TRACKING !== 'true';
-		return queryParamsIncludesSkipTracking || skipBasedOnCookie || skipBasedOnEnvVar;
-	};
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
+				const skipTracking = !trackingActive;
 				if (chainId) {
-					const skipTracking = shouldSkipTracking();
 					setTransactionSimulation(
 						await simulateTransactionByHash({ chainId, txHash, skipTracking })
 					);
 				} else if (rpcUrl) {
 					setTransactionSimulation(
-						await simulateCustomNetworkTransactionByHash({ txHash, rpcUrl })
+						await simulateCustomNetworkTransactionByHash({ txHash, rpcUrl, skipTracking })
 					);
 				}
 			} catch (error: any) {
 				setError(error.toString());
 			}
 		};
-
-		fetchData();
-	}, [chainId, txHash, rpcUrl]);
+		if (isSettingsLoaded) {
+			fetchData();
+		}
+	}, [chainId, txHash, rpcUrl, isSettingsLoaded]);
 
 	return (
 		<>

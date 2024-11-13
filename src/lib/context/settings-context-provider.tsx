@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
+import { isTrackingActive } from '@/app/api/tracking-service';
 
 export interface Network {
 	rpcUrl: string;
@@ -13,6 +14,7 @@ type SettingsContextType = {
 	removeNetwork: (network: Network) => void;
 	getNetworkByRpcUrl: (rpcUrl: string) => Network | undefined;
 	isSettingsLoaded: boolean;
+	trackingActive: boolean;
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -22,9 +24,11 @@ const NETWORKS_STORAGE_KEY = 'networks';
 export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [isSettingsLoaded, setIsSettingsLoaded] = useState(false);
 	const [networks, setNetworks] = useState<Network[]>([]);
+	const [trackingActive, setTrackingActive] = useState(true);
 
 	useEffect(() => {
 		if (isSettingsLoaded) return;
+		setTrackingActive(isTrackingActive());
 		const storedNetworks = localStorage.getItem(NETWORKS_STORAGE_KEY);
 		if (storedNetworks) {
 			setNetworks(JSON.parse(storedNetworks));
@@ -50,7 +54,7 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 
 	return (
 		<SettingsContext.Provider
-			value={{ networks, addNetwork, removeNetwork, getNetworkByRpcUrl, isSettingsLoaded }}
+			value={{ networks, addNetwork, removeNetwork, getNetworkByRpcUrl, isSettingsLoaded, trackingActive }}
 		>
 			{children}
 		</SettingsContext.Provider>

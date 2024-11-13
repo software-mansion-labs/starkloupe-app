@@ -3,9 +3,10 @@ import { fetchApi } from '@/lib/utils';
 import { SimulationPayloadWithCalldata, TransactionSimulationResult } from '@/lib/simulation';
 
 export async function simulateTransactionByData(
-	simulationPayload: SimulationPayloadWithCalldata
+	simulationPayload: SimulationPayloadWithCalldata,
+	skipTracking?: boolean
 ): Promise<TransactionSimulationResult> {
-	const transactionSimulationResult = await fetchApi<TransactionSimulationResult>(
+	return await fetchApi<TransactionSimulationResult>(
 		`/v1/simulate-transaction`,
 		{
 			method: 'POST',
@@ -20,39 +21,40 @@ export async function simulateTransactionByData(
 					chain_id: simulationPayload.chainId
 				}
 			},
-			renameToCamelCase: true
+			renameToCamelCase: true,
+			queryParams: skipTracking ? {skip_tracking: 'true'} : undefined
 		}
 	);
-	return transactionSimulationResult;
 }
 
 export async function simulateTransactionByHash({
 	chainId,
 	txHash,
-	skipTracking = false
+	skipTracking,
 }: {
 	chainId: ChainId;
 	txHash: string;
 	skipTracking?: boolean;
 }): Promise<TransactionSimulationResult> {
-	const transactionSimulationResult = await fetchApi<TransactionSimulationResult>(
+	return await fetchApi<TransactionSimulationResult>(
 		`/v1/${chainId}/simulate-transaction/${txHash}`,
 		{
 			renameToCamelCase: true,
-			queryParams: skipTracking ? { skip_tracking: 'true' } : undefined
+			queryParams: skipTracking ? {skip_tracking: 'true'} : undefined
 		}
 	);
-	return transactionSimulationResult;
 }
 
 export async function simulateCustomNetworkTransactionByHash({
 	rpcUrl,
-	txHash
+	txHash,
+	skipTracking
 }: {
 	rpcUrl: string;
 	txHash: string;
+	skipTracking?: boolean;
 }): Promise<TransactionSimulationResult> {
-	const transactionSimulationResult = await fetchApi<TransactionSimulationResult>(
+	return await fetchApi<TransactionSimulationResult>(
 		`/v1/simulate-transaction`,
 		{
 			method: 'POST',
@@ -62,8 +64,8 @@ export async function simulateCustomNetworkTransactionByHash({
 					rpc_url: rpcUrl,
 					tx_hash: txHash
 				}
-			}
+			},
+			queryParams: skipTracking ? {skip_tracking: 'true'} : undefined
 		}
 	);
-	return transactionSimulationResult;
 }

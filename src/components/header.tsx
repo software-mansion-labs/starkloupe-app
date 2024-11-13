@@ -9,16 +9,12 @@ import { Bars3Icon, Cog6ToothIcon, PlayIcon, XMarkIcon } from '@heroicons/react/
 import logoWalnut from '@/assets/wlnt-logo-beta-bw.svg';
 import { SimulateDialog } from './simulate-dialog';
 import { Container } from '@/components/ui/container';
-import { isTrackingActive } from '@/app/api/tracking-service';
-import { useEffect, useState } from 'react';
+import { useSettings } from '@/lib/context/settings-context-provider';
 
 export function HeaderNav({ isMainPage = false }: { isMainPage?: boolean }) {
 	// const session = useSession();
 	// const pathname = usePathname();
-	const [trackingActive, setTrackingActive] = useState(true);
-	useEffect(() => {
-		setTrackingActive(isTrackingActive());
-	}, []);
+	const { trackingActive } = useSettings();
 	return (
 		<Disclosure
 			as="nav"

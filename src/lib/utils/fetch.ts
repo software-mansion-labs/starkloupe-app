@@ -26,7 +26,7 @@ function makeApiRequest(input: string, params?: FetchApiParams) {
 			...headers
 		};
 	let queryString = '';
-	if (method === 'GET' && params?.queryParams) {
+	if (params?.queryParams) {
 		queryString = `?${Object.entries(params?.queryParams)
 			.map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(value)}`)
 			.join('&')}`;

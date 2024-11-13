@@ -16,6 +16,8 @@ import { TransactionDetails } from '../transaction-page';
 import { CallTraceRoot } from '../call-trace';
 import { Loader } from '../ui/loader';
 import { Error } from '../ui/error';
+import { isTrackingActive } from '@/app/api/tracking-service';
+import { useSettings } from '@/lib/context/settings-context-provider';
 
 export function SimulationPage({
 	simulationPayload
@@ -24,15 +26,16 @@ export function SimulationPage({
 }) {
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
 	const [error, setError] = useState<string | undefined>();
-
 	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const { trackingActive, isSettingsLoaded } = useSettings();
 
 	useEffect(() => {
 		const fetchData = async () => {
 			if (simulationPayload) {
 				try {
 					setIsLoading(true);
-					setTransactionSimulation(await simulateTransactionByData(simulationPayload));
+					const skipTracking = !trackingActive;
+					setTransactionSimulation(await simulateTransactionByData(simulationPayload, skipTracking));
 				} catch (err: any) {
 					setError(err.toString());
 				} finally {
@@ -42,9 +45,10 @@ export function SimulationPage({
 				setError('Invalid simulation parameters');
 			}
 		};
-
-		fetchData();
-	}, [simulationPayload]);
+		if (isSettingsLoaded) {
+			fetchData();
+		}
+	}, [simulationPayload, isSettingsLoaded]);
 
 	let content = null;
 	if (isLoading) {
