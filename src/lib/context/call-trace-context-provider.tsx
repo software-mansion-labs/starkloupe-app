@@ -69,7 +69,43 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 export const CallTraceContextProvider: React.FC<
 	PropsWithChildren<{ simulationResult: SimulationResult }>
 > = ({ children, simulationResult }) => {
-	const [collapsedCalls, setCollapsedCalls] = useState<StringBooleanDict>({});
+
+	// This collapses calls starting with "core".
+	// If call has children: only parent is collapsed
+	const initiallyCollapsed: StringBooleanDict = useMemo(() => {
+		try {
+			const collapsed: StringBooleanDict = {};
+			const processCalls = (calls: Array<any>, getName: (call: any) => string | undefined) => {
+				calls.forEach(call => {
+					const startsWithCore = getName(call)?.startsWith("core") ?? false;
+					let parentId = call.parentCallId;
+					let hasCollapsedAncestor = false;
+					while (parentId !== undefined) {
+						if (collapsed[parentId]) {
+							hasCollapsedAncestor = true;
+							break;
+						}
+						const parentCall =
+							simulationResult.contractCallsMap[parentId] ||
+							simulationResult.functionCallsMap[parentId];
+
+						parentId = parentCall?.parentCallId;
+					}
+					if (startsWithCore && !hasCollapsedAncestor) {
+						collapsed[call.callId] = true;
+					}
+				});
+			};
+			processCalls(Object.values(simulationResult.contractCallsMap), call => call.entryPointInterfaceName);
+			processCalls(Object.values(simulationResult.functionCallsMap), call => call.fnName);
+			return collapsed;
+		} catch (err) {
+			console.log('Collapsing calls error: ', err);
+			return {};
+		}
+	}, [simulationResult]);
+
+	const [collapsedCalls, setCollapsedCalls] = useState<StringBooleanDict>(() => initiallyCollapsed);
 	const [expandedCalls, setExpandedCalls] = useState<StringBooleanDict>({});
 	const [showEvents, setShowEvents] = useState<boolean>(true);
 	const [activeTab, setActiveTab] = useState<TabId>('call-trace');
