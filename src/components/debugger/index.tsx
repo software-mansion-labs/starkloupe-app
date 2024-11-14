@@ -1,4 +1,9 @@
 import { DebuggerContext } from '@/lib/context/debugger-context-provider';
+import {
+	ResizableHandle,
+	ResizablePanel,
+	ResizablePanelGroup
+} from '@/components/ui/resizable-panel';
 import { useContext, useEffect, useState } from 'react';
 import { CodeViewer } from '../code-viewer/code-viewer';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
@@ -8,6 +13,7 @@ import { ContractCallSignature } from '../ui/signature';
 import { ContractCall } from '@/lib/simulation';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { StepDetails } from './step-details';
 
 export function Debugger({}: {}) {
 	const {
@@ -28,13 +34,32 @@ export function Debugger({}: {}) {
 	if (!currentStep) return <></>; // unreachable
 
 	return (
-		<div className="w-full h-[500px] flex flex-row">
-			<FilesExplorer
-				classSourceCode={sourceCode}
-				activeFile={activeFile}
-				handleFileClick={setActiveFile}
-			/>
-			<div className="flex flex-col flex-grow">
+		<ResizablePanelGroup
+			direction="horizontal"
+			className="w-full h-[calc(100vh-400px)] min-h-[500px] flex flex-row"
+		>
+			<ResizablePanel
+				defaultSize={30}
+				minSize={20}
+				className="flex flex-col justify-between gap-4 border-r border-neutral-200"
+			>
+				<ResizablePanelGroup direction="vertical">
+					<ResizablePanel defaultSize={50} minSize={10}>
+						<FilesExplorer
+							className="flex h-full"
+							classSourceCode={sourceCode}
+							activeFile={activeFile}
+							handleFileClick={setActiveFile}
+						/>
+					</ResizablePanel>
+					<ResizableHandle withHandle />
+					<ResizablePanel defaultSize={50} minSize={10}>
+						<StepDetails className="flex h-full border-neutral-200" step={currentStep} />
+					</ResizablePanel>
+				</ResizablePanelGroup>
+			</ResizablePanel>
+			<ResizableHandle withHandle />
+			<ResizablePanel defaultSize={70} minSize={20} className="flex flex-col flex-grow">
 				<Controls
 					nextStep={nextStep}
 					previousStep={prevStep}
@@ -76,8 +101,8 @@ export function Debugger({}: {}) {
 						</Alert>
 					)}
 				</div>
-			</div>
-		</div>
+			</ResizablePanel>
+		</ResizablePanelGroup>
 	);
 }
 

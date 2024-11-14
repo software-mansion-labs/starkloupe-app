@@ -165,3 +165,20 @@ export interface SearchDataResponse {
 	classes: SearchData[];
 	contracts: SearchData[];
 }
+
+export const systemsTypeNames = [
+	'Const',
+	'Step',
+	'Hole',
+	'RangeCheck',
+	'RangeCheck96',
+	'Pedersen',
+	'Bitwise',
+	'EcOp',
+	'AddMod',
+	'MulMod',
+	'System',
+	'GasBuiltin',
+	'Poseidon',
+	'PanicResult'
+];

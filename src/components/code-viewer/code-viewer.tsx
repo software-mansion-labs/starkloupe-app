@@ -2,7 +2,7 @@
 import { Editor as MonacoEditor, Monaco, useMonaco } from '@monaco-editor/react';
 import { editor as Editor } from 'monaco-editor';
 import { cn } from '@/lib/utils';
-import { registerCairoLanguageSupport } from './cairoLangConfig';
+import { registerCairoLanguageSupport } from './cairo-lang-config';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { CodeLocation, InternalFnCallIO } from '@/lib/simulation';
 
