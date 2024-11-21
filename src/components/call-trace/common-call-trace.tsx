@@ -54,14 +54,23 @@ export function CommonCallTrace({
 					callType="function"
 				/>
 			) : (
-				contractCall.childrenCallIds.map((childCallId) => (
-					<CommonCallTrace
-						key={childCallId}
-						callId={childCallId}
-						nestingLevel={nestingLevel}
-						callType="contract"
-					/>
-				))
+				<>
+					{contractCall.childrenCallIds.map((childCallId) => (
+						<CommonCallTrace
+							key={childCallId}
+							callId={childCallId}
+							nestingLevel={nestingLevel}
+							callType="contract"
+						/>
+					))}
+					{contractCall.isDeepestPanicResult && errorMessage && (
+						<ErrorTraceLine
+							executionFailed
+							errorMessage={errorMessage}
+							nestingLevel={nestingLevel}
+						/>
+					)}
+				</>
 			);
 		}
 	}

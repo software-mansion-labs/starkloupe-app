@@ -1,12 +1,6 @@
 import React, { Fragment, useContext, useEffect } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
-import {
-	CodeLocation,
-	DataType,
-	CallType,
-	getContractCallId,
-	ContractCall
-} from '@/lib/simulation';
+import { CodeLocation, DataType, CallType, ContractCall } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { InfoBox } from '@/components/ui/info-box';
@@ -21,7 +15,7 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CommonCallTrace } from './common-call-trace';
 import { Card } from '../ui/card';
 import { ContractCallSignature } from '../ui/signature';
-import { FunctionCallTrace } from './function-call-trace';
+import { ErrorTraceLine } from './error-trace-line';
 
 export function ContractCallTrace({
 	contractCallId,
@@ -36,7 +30,6 @@ export function ContractCallTrace({
 		toggleCallCollapse,
 		toggleCallExpand,
 		setActiveTab,
-		simulationDebuggerData,
 		contractCallsMap,
 		isExecutionFailed,
 		traceLineElementRefs
@@ -58,9 +51,8 @@ export function ContractCallTrace({
 		call = firstChildCall;
 		callType = CallType.DCALL;
 	}
-	const hasNestedElements = call.childrenCallIds.length > 0 || call.functionCallId;
-
-	let entryPointFunctionName = call.entryPointName;
+	const hasNestedElements =
+		call.childrenCallIds.length > 0 || call.functionCallId || call.isDeepestPanicResult;
 
 	// The error column doesn't render in case the whole tx is successful
 	// If the tx is reverted, the error column will render for all call lines
@@ -171,14 +163,23 @@ export function ContractCallTrace({
 							callType="function"
 						/>
 					) : (
-						call.childrenCallIds.map((childCallId) => (
-							<CommonCallTrace
-								key={childCallId}
-								callId={childCallId}
-								nestingLevel={nestingLevel + 1}
-								callType="contract"
-							/>
-						))
+						<>
+							{call.childrenCallIds.map((childCallId) => (
+								<CommonCallTrace
+									key={childCallId}
+									callId={childCallId}
+									nestingLevel={nestingLevel + 1}
+									callType="contract"
+								/>
+							))}
+							{call.isDeepestPanicResult && call.errorMessage && (
+								<ErrorTraceLine
+									executionFailed
+									errorMessage={call.errorMessage}
+									nestingLevel={nestingLevel + 1}
+								/>
+							)}
+						</>
 					)}
 				</>
 			)}
