@@ -44,15 +44,6 @@ export function CommonCallTrace({
 		}
 	} else if (callType === 'contract') {
 		const contractCall = contractCallsMap[callId];
-		if (contractCall.isDeepestPanicResult) {
-			console.log(contractCall);
-			console.log(nestingLevel);
-			<ErrorTraceLine
-				errorMessage={errorMessage || ''}
-				nestingLevel={nestingLevel}
-				executionFailed={true}
-			/>;
-		}
 		if (!contractCall.isHidden) {
 			return <ContractCallTrace contractCallId={callId} nestingLevel={nestingLevel} />;
 		} else {
@@ -72,9 +63,13 @@ export function CommonCallTrace({
 							callType="contract"
 						/>
 					))}
-					{contractCall.isDeepestPanicResult &&
-						errorMessage &&
-						console.log('deepest contract call error ', nestingLevel)}
+					{contractCall.isDeepestPanicResult && errorMessage && (
+						<ErrorTraceLine
+							executionFailed
+							errorMessage={errorMessage}
+							nestingLevel={nestingLevel}
+						/>
+					)}
 				</>
 			);
 		}
