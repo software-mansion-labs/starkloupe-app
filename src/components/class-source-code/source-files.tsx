@@ -20,18 +20,17 @@ export function SourceFiles({ sourceCode }: { sourceCode: { [key: string]: strin
 	return (
 		<div className="flex text-xs">
 			{sourceCode ? (
-				<div className="w-full h-[500px] flex flex-row ">
+				<div className="w-full h-[500px] flex">
 					<FilesExplorer
+						className="border-r w-1/3"
 						showTitle={false}
 						classSourceCode={sourceCode}
 						activeFile={activeFile}
 						handleFileClick={handleFileClick}
 					/>
-					<div className="flex flex-col flex-grow">
-						{activeFile && (
-							<CodeViewer content={sourceCode[activeFile]} codeLocation={initialCodeLocation} />
-						)}
-					</div>
+					{activeFile && (
+						<CodeViewer content={sourceCode[activeFile]} codeLocation={initialCodeLocation} />
+					)}
 				</div>
 			) : (
 				<div className="flex items-center justify-center w-full h-full">
