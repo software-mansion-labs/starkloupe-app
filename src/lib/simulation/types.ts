@@ -127,6 +127,7 @@ export interface ContractCall {
 	classHash: string;
 	sierraVersion?: string | null;
 	cairoVersion?: string | null;
+	isDeepestPanicResult: boolean;
 
 	resultTypes?: string[] | null;
 	argumentsNames?: string[] | null;
