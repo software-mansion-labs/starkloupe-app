@@ -1,4 +1,15 @@
+export interface VerificationRequestRow {
+	id: string;
+	status?: 'pending' | 'success' | 'failed';
+	message?: string;
+	createdAt: string;
+	updatedAt: string;
+	cairoVersion?: string;
+	packageName?: string;
+}
+
 export interface VerificationStatusResponse {
+	verificationRequest?: VerificationRequestRow | null;
 	verificationStatuses: VerificationStatusRow[];
 	errorMessage?: string;
 }

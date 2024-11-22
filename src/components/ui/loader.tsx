@@ -15,8 +15,8 @@ const Quotes = [
 
 const Loader = forwardRef<
 	HTMLDivElement,
-	HTMLAttributes<HTMLDivElement> & { randomQuote?: boolean }
->(({ randomQuote = true }) => {
+	HTMLAttributes<HTMLDivElement> & { randomQuote?: boolean; text?: string }
+>(({ randomQuote = true, text }) => {
 	const [quote, setQuote] = useState('');
 
 	useEffect(() => {
@@ -31,7 +31,7 @@ const Loader = forwardRef<
 
 			<div className={'flex items-center justify-center mt-4 gap-2'}>
 				<span className="h-6 w-6 block rounded-full border-4 border-t-gray-800 animate-spin"></span>
-				loading...
+				{text ?? 'loading...'}
 			</div>
 		</div>
 	);
