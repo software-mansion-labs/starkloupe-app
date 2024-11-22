@@ -13,9 +13,11 @@ import { ClassSourceCode } from '@/components/class-source-code';
 
 export function ContractPage({
 	chainId,
+	rpcUrl,
 	contractAddress
 }: {
-	chainId: string;
+	chainId?: ChainId;
+	rpcUrl?: string;
 	contractAddress: string;
 }) {
 	const [contractData, setContractData] = useState<ContractResponseWithSourceCode>();
@@ -26,7 +28,8 @@ export function ContractPage({
 			try {
 				setContractData(
 					await fetchContractDataByAddress({
-						chainId: chainId as ChainId,
+						chainId,
+						rpcUrl,
 						contractAddress,
 						includeSourceCode: true
 					})
@@ -37,7 +40,7 @@ export function ContractPage({
 		};
 
 		fetchData();
-	}, [chainId, contractAddress]);
+	}, [chainId, rpcUrl, contractAddress]);
 
 	return (
 		<>
@@ -59,7 +62,7 @@ export function ContractPage({
 					) : error ? (
 						<Error message={error} />
 					) : (
-						<Loader />
+						<Loader randomQuote={false} />
 					)}
 				</Container>
 				<Footer />

@@ -223,7 +223,15 @@ const SearchItem = ({
 				}`;
 			}
 		} else if (type === 'contracts') {
-			window.location.href = `/contracts/${data.source.chainId}/${data.hash}`;
+			if (data.source.rpcUrl) {
+				window.location.href = `/contracts/${data.hash}?rpcUrl=${encodeURIComponent(
+					data.source.rpcUrl
+				)}`;
+			} else if (data.source.chainId) {
+				window.location.href = `/contracts/${
+					data.hash
+				}?chainId=${data.source.chainId.toUpperCase()}`;
+			}
 		} else if (type === 'classes') {
 			window.location.href = `/classes/${data.hash}`;
 		}

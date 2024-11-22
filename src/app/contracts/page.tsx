@@ -11,7 +11,7 @@ export default async function Page() {
 			<main className="overflow-y-auto flex-grow">
 				<Container className="py-6">
 					<h1 className="text-xl font-medium leading-6 mb-2">Contracts</h1>
-					<p>Use search bar at the top right to get details about a contracts.</p>
+					<p>Use search bar at the top right to get details about contracts.</p>
 				</Container>
 			</main>
 			<Footer />
