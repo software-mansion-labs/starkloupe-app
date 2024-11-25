@@ -1,7 +1,6 @@
 'use client';
 
 import * as React from 'react';
-import { CaretSortIcon, ChevronDownIcon, DotsHorizontalIcon } from '@radix-ui/react-icons';
 import {
 	// eslint-disable-next-line import/named
 	ColumnDef,
@@ -20,16 +19,6 @@ import {
 } from '@tanstack/react-table';
 import { TrashIcon } from '@heroicons/react/24/outline';
 import { Button } from '@/components/ui/button';
-import { Checkbox } from '@/components/ui/checkbox';
-import {
-	DropdownMenu,
-	DropdownMenuCheckboxItem,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuLabel,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger
-} from '@/components/ui/dropdown-menu';
 import { Input } from '@/components/ui/input';
 import {
 	Table,

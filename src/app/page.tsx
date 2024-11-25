@@ -1,18 +1,11 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import { Footer } from '@/components/footer';
 import Image from 'next/image';
 import logoWalnut from '@/assets/wlnt-logo-beta-bw.svg';
 import { Search } from '@/components/ui/search';
-import { IndexNav } from '@/components/index-page/index-nav';
 // import { useSession } from 'next-auth/react';
 import Link from 'next/link';
-import { SimulateDialog } from '@/components/simulate-dialog';
-import { Button } from '@/components/ui/button';
-import { PlayIcon, Cog6ToothIcon } from '@heroicons/react/24/outline';
-import { Container } from '@/components/ui/container';
 import { HeaderNav } from '@/components/header';
 
 export default function Page() {

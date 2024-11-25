@@ -2,8 +2,9 @@ import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { ContractCallTrace } from './contract-call-trace';
 import { FunctionCallTrace } from './function-call-trace';
 import { ErrorTraceLine } from './error-trace-line';
+import { memo, useMemo } from 'react';
 
-export function CommonCallTrace({
+export const CommonCallTrace = memo(function CommonCallTrace({
 	callId,
 	nestingLevel,
 	callType
@@ -21,6 +22,34 @@ export function CommonCallTrace({
 		if (functionCall) callType = 'function';
 		else if (contractCall) callType = 'contract';
 	}
+	const contractCallIdsArray = useMemo(() => {
+		if (!contractCallsMap[callId]) {
+			return null;
+		}
+		return contractCallsMap[callId].childrenCallIds.map((childCallId) => (
+			<CommonCallTrace
+				key={childCallId}
+				callId={childCallId}
+				nestingLevel={nestingLevel}
+				callType="contract"
+			/>
+		));
+		return null;
+	}, [contractCallsMap, nestingLevel, callId]);
+
+	const functionCallIdsList = useMemo(() => {
+		if (!functionCallsMap[callId]) {
+			return null;
+		}
+
+		if (functionCallsMap[callId].childrenCallIds) {
+			return functionCallsMap[callId].childrenCallIds.map((nestedCallId) => (
+				<CommonCallTrace key={nestedCallId} callId={nestedCallId} nestingLevel={nestingLevel} />
+			));
+		}
+
+		return null;
+	}, [functionCallsMap, callId, nestingLevel]);
 
 	if (callType === 'function') {
 		const functionCall = functionCallsMap[callId];
@@ -29,9 +58,7 @@ export function CommonCallTrace({
 		} else {
 			return (
 				<>
-					{functionCall.childrenCallIds.map((nestedCallId) => (
-						<CommonCallTrace key={nestedCallId} callId={nestedCallId} nestingLevel={nestingLevel} />
-					))}
+					{functionCallIdsList}
 					{functionCall.isDeepestPanicResult && errorMessage && (
 						<ErrorTraceLine
 							executionFailed
@@ -44,6 +71,7 @@ export function CommonCallTrace({
 		}
 	} else if (callType === 'contract') {
 		const contractCall = contractCallsMap[callId];
+
 		if (!contractCall.isHidden) {
 			return <ContractCallTrace contractCallId={callId} nestingLevel={nestingLevel} />;
 		} else {
@@ -55,14 +83,7 @@ export function CommonCallTrace({
 				/>
 			) : (
 				<>
-					{contractCall.childrenCallIds.map((childCallId) => (
-						<CommonCallTrace
-							key={childCallId}
-							callId={childCallId}
-							nestingLevel={nestingLevel}
-							callType="contract"
-						/>
-					))}
+					{contractCallIdsArray}
 					{contractCall.isDeepestPanicResult && errorMessage && (
 						<ErrorTraceLine
 							executionFailed
@@ -74,4 +95,4 @@ export function CommonCallTrace({
 			);
 		}
 	}
-}
+});

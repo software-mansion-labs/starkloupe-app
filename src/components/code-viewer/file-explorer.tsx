@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
-export function FilesExplorer({
+export const FilesExplorer = memo(function FilesExplorer({
 	showTitle = true,
 	classSourceCode,
 	activeFile,
@@ -36,4 +37,4 @@ export function FilesExplorer({
 			</ScrollArea>
 		</div>
 	);
-}
+});

@@ -2,9 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import {
 	Table,
 	TableBody,
-	TableCaption,
 	TableCell,
-	TableFooter,
 	TableHead,
 	TableHeader,
 	TableRow

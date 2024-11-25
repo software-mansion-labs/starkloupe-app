@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
+import React, { memo, useState, useCallback } from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { BugAntIcon } from '@heroicons/react/24/outline';
 
-export function DebugButton({
+export const DebugButton = memo(function DebugButton({
 	onDebugClick,
 	noCodeLocationAvaliable,
 	isDebuggable
@@ -46,14 +46,19 @@ export function DebugButton({
 		</>
 	);
 
+	const handleDebugClick = useCallback(
+		(event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+			event.stopPropagation();
+			if (isDebuggable) {
+				onDebugClick(event);
+			}
+		},
+		[isDebuggable, onDebugClick]
+	);
+
 	return (
 		<div
-			onClick={(event) => {
-				event.stopPropagation();
-				if (isDebuggable) {
-					onDebugClick(event);
-				}
-			}}
+			onClick={handleDebugClick}
 			className="w-5 h-5 p-0.5 rounded-sm cursor-pointer hover:bg-neutral-200"
 		>
 			{isDebuggable ? (
@@ -77,4 +82,4 @@ export function DebugButton({
 			)}
 		</div>
 	);
-}
+});

@@ -4,7 +4,7 @@ import {
 	ResizablePanel,
 	ResizablePanelGroup
 } from '@/components/ui/resizable-panel';
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useEffect, useState, memo } from 'react';
 import { CodeViewer } from '../code-viewer/code-viewer';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
@@ -15,7 +15,7 @@ import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { StepDetails } from './step-details';
 
-export function Debugger({}: {}) {
+export const Debugger = memo(function Debugger({}: {}) {
 	const {
 		currentStep,
 		classesDebuggerData,
@@ -104,7 +104,7 @@ export function Debugger({}: {}) {
 			</ResizablePanel>
 		</ResizablePanelGroup>
 	);
-}
+});
 
 function Controls({
 	nextStep,

@@ -1,4 +1,4 @@
-import React, { Fragment, useContext, useEffect } from 'react';
+import React, { Fragment, memo, useCallback, useMemo } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { CodeLocation, DataType, CallType, ContractCall } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
@@ -8,7 +8,7 @@ import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { DecodeDataTable } from '../decode-data-table';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { CodeViewer } from '../code-viewer/code-viewer';
-import { DebuggerContext, useDebugger } from '@/lib/context/debugger-context-provider';
+import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { DebugButton } from '@/components/call-trace/debug-btn';
 import { ErrorTooltip } from '@/components/error-tooltip';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -17,7 +17,7 @@ import { Card } from '../ui/card';
 import { ContractCallSignature } from '../ui/signature';
 import { ErrorTraceLine } from './error-trace-line';
 
-export function ContractCallTrace({
+export const ContractCallTrace = memo(function ContractCallTrace({
 	contractCallId,
 	nestingLevel
 }: {
@@ -84,6 +84,18 @@ export function ContractCallTrace({
 	if (!traceLineElementRefs.current[contractCallId]) {
 		traceLineElementRefs.current[contractCallId] = React.createRef<HTMLDivElement>();
 	}
+
+	const childrenCallIdsArray = useMemo(() => {
+		return call.childrenCallIds.map((childCallId) => (
+			<CommonCallTrace
+				key={childCallId}
+				callId={childCallId}
+				nestingLevel={nestingLevel + 1}
+				callType="contract"
+			/>
+		));
+	}, [call.childrenCallIds, nestingLevel]);
+
 	return (
 		<Fragment key={call.callId}>
 			<TraceLine
@@ -164,14 +176,7 @@ export function ContractCallTrace({
 						/>
 					) : (
 						<>
-							{call.childrenCallIds.map((childCallId) => (
-								<CommonCallTrace
-									key={childCallId}
-									callId={childCallId}
-									nestingLevel={nestingLevel + 1}
-									callType="contract"
-								/>
-							))}
+							{childrenCallIdsArray}
 							{call.isDeepestPanicResult && call.errorMessage && (
 								<ErrorTraceLine
 									executionFailed
@@ -185,9 +190,9 @@ export function ContractCallTrace({
 			)}
 		</Fragment>
 	);
-}
+});
 
-function ContractCallDetails({ call }: { call: ContractCall }) {
+const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: ContractCall }) {
 	const { simulationDebuggerData } = useCallTrace();
 	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [
 		{
@@ -286,13 +291,16 @@ function ContractCallDetails({ call }: { call: ContractCall }) {
 	const cairoLocation: CodeLocation | undefined = call.codeLocation ?? undefined;
 	const sourceCodeFiles: { [key: string]: string } | undefined = classDebuggerData?.sourceCode;
 
-	const findFilePath = (terms: string[], files: { [key: string]: string }): string | undefined => {
-		for (const term of terms) {
-			const filePath = Object.keys(files).find((path) => path.includes(`${term}.cairo`));
-			if (filePath) return filePath;
-		}
-		return undefined;
-	};
+	const findFilePath = useCallback(
+		(terms: string[], files: { [key: string]: string }): string | undefined => {
+			for (const term of terms) {
+				const filePath = Object.keys(files).find((path) => path.includes(`${term}.cairo`));
+				if (filePath) return filePath;
+			}
+			return undefined;
+		},
+		[]
+	);
 
 	if (sourceCodeFiles) {
 		if (cairoLocation) {
@@ -354,4 +362,4 @@ function ContractCallDetails({ call }: { call: ContractCall }) {
 			</div>
 		</div>
 	);
-}
+});

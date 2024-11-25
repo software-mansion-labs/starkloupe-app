@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo, useMemo } from 'react';
 import { ContractCall, CodeLocation, InternalFnCallIO, FunctionCall } from '@/lib/simulation';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
@@ -13,7 +13,7 @@ import { FnName } from '../ui/function-name';
 import { getRawFunctionName } from '@/lib/utils';
 import { Card } from '../ui/card';
 
-export function FunctionCallTrace({
+export const FunctionCallTrace = memo(function FunctionCallTrace({
 	functionCallId,
 	nestingLevel
 }: {
@@ -36,8 +36,14 @@ export function FunctionCallTrace({
 
 	const functionCall = functionCallsMap[functionCallId];
 	const contractCall = contractCallsMap[functionCall.contractCallId];
-	const isDebuggable = isFunctionCallDebuggable(functionCallId);
-	const isParentContractCallDebuggable = isContractCallDebuggable(functionCall.contractCallId);
+	const isDebuggable = useMemo(
+		() => isFunctionCallDebuggable(functionCallId),
+		[functionCallId, isFunctionCallDebuggable]
+	);
+	const isParentContractCallDebuggable = useMemo(
+		() => isContractCallDebuggable(functionCall.contractCallId),
+		[functionCall.contractCallId, isContractCallDebuggable]
+	);
 
 	const noCodeLocationAvaliable = isParentContractCallDebuggable && !isDebuggable;
 	if (!traceLineElementRefs.current[functionCallId]) {
@@ -117,34 +123,36 @@ export function FunctionCallTrace({
 			)}
 		</React.Fragment>
 	);
-}
-
-function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
-	const ioToSkip = ['RangeCheck', 'GasBuiltin'];
+});
+const ioToSkip = ['RangeCheck', 'GasBuiltin'];
+const CallIO = memo(function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
+	const iosList = useMemo(() => {
+		return ios.map((io, i) =>
+			ioToSkip.includes(io.typeName ?? '') ? null : (
+				<React.Fragment key={i}>
+					<span className="text-orange-500">{io.typeName}</span>:&nbsp;
+					<span className="text-orange-700">
+						{io.value.length === 0
+							? 'None'
+							: io.value.length === 1
+							? io.value[0]
+							: `[${io.value.join(', ')}]`}
+					</span>
+					{i < ios.length - 1 ? <>,&nbsp;</> : ''}
+				</React.Fragment>
+			)
+		);
+	}, [ios]);
 	return (
 		<>
 			<span className="text-yellow-900">{'('}</span>
-			{ios.map((io, i) =>
-				ioToSkip.includes(io.typeName ?? '') ? null : (
-					<React.Fragment key={i}>
-						<span className="text-orange-500">{io.typeName}</span>:&nbsp;
-						<span className="text-orange-700">
-							{io.value.length === 0
-								? 'None'
-								: io.value.length === 1
-									? io.value[0]
-									: `[${io.value.join(', ')}]`}
-						</span>
-						{i < ios.length - 1 ? <>,&nbsp;</> : ''}
-					</React.Fragment>
-				)
-			)}
+			{iosList}
 			<span className="text-yellow-900">{')'}</span>
 		</>
 	);
-}
+});
 
-function FunctionCallDetails({
+const FunctionCallDetails = memo(function FunctionCallDetails({
 	call,
 	contractCall
 }: {
@@ -208,4 +216,4 @@ function FunctionCallDetails({
 			</div>
 		</div>
 	);
-}
+});

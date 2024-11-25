@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext } from 'react';
+import React, { useState, useEffect, useRef, useContext, memo, useCallback } from 'react';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { ContractCall, FunctionCall } from '@/lib/simulation';
 import { ContractCallSignature } from './signature';
@@ -14,7 +14,7 @@ import {
 import { FnName } from './function-name';
 import { getContractName, getRawFunctionName } from '@/lib/utils';
 
-const CalldataSearch = () => {
+const CalldataSearch = memo(function CalldataSearch() {
 	const { contractCallsMap, functionCallsMap, toggleCallExpand, scrollToTraceLineElement } =
 		useCallTrace();
 
@@ -45,50 +45,51 @@ const CalldataSearch = () => {
 		};
 	}, []);
 
-	const searchCalls = (
-		term: string
-	): [number, { contractCall?: ContractCall; fnCall?: FunctionCall }][] => {
-		if (!term) return [];
+	const searchCalls = useCallback(
+		(term: string): [number, { contractCall?: ContractCall; fnCall?: FunctionCall }][] => {
+			if (!term) return [];
 
-		const contractCalls: [number, { contractCall?: ContractCall }][] = Array.from(
-			Object.entries(contractCallsMap)
-		)
-			.filter(([key, contractCall]) => {
-				let contractName: string = getContractName({ contractCall }).toLowerCase();
-				let contractAddress: string = contractCall.entryPoint.storageAddress.toLowerCase();
-				let entryPointName: string = contractCall.entryPointName?.toLowerCase() || '';
+			const contractCalls: [number, { contractCall?: ContractCall }][] = Array.from(
+				Object.entries(contractCallsMap)
+			)
+				.filter(([key, contractCall]) => {
+					let contractName: string = getContractName({ contractCall }).toLowerCase();
+					let contractAddress: string = contractCall.entryPoint.storageAddress.toLowerCase();
+					let entryPointName: string = contractCall.entryPointName?.toLowerCase() || '';
 
-				const lowercaseTerm = term.toLowerCase();
-				return (
-					contractName?.includes(lowercaseTerm) ||
-					contractAddress?.includes(lowercaseTerm) ||
-					entryPointName?.includes(lowercaseTerm)
-				);
-			})
-			.map(([key, contractCall]) => [parseInt(key), { contractCall }]);
+					const lowercaseTerm = term.toLowerCase();
+					return (
+						contractName?.includes(lowercaseTerm) ||
+						contractAddress?.includes(lowercaseTerm) ||
+						entryPointName?.includes(lowercaseTerm)
+					);
+				})
+				.map(([key, contractCall]) => [parseInt(key), { contractCall }]);
 
-		const functionCalls: [number, { fnCall?: FunctionCall }][] = Array.from(
-			Object.entries(functionCallsMap)
-		)
-			.filter(([key, functionCall]) => {
-				let contractName: string = getRawFunctionName(functionCall.fnName);
-				let splittedFnName: string[] = getRawFunctionName(functionCall.fnName).split('::');
-				let entryPointFunctionName: string | undefined = undefined;
+			const functionCalls: [number, { fnCall?: FunctionCall }][] = Array.from(
+				Object.entries(functionCallsMap)
+			)
+				.filter(([key, functionCall]) => {
+					let contractName: string = getRawFunctionName(functionCall.fnName);
+					let splittedFnName: string[] = getRawFunctionName(functionCall.fnName).split('::');
+					let entryPointFunctionName: string | undefined = undefined;
 
-				if (splittedFnName.length >= 2) {
-					contractName = splittedFnName[splittedFnName.length - 2].toLowerCase();
-					entryPointFunctionName = splittedFnName[splittedFnName.length - 1].toLowerCase();
-				}
+					if (splittedFnName.length >= 2) {
+						contractName = splittedFnName[splittedFnName.length - 2].toLowerCase();
+						entryPointFunctionName = splittedFnName[splittedFnName.length - 1].toLowerCase();
+					}
 
-				const lowercaseTerm = term.toLowerCase();
-				return (
-					contractName?.includes(lowercaseTerm) || entryPointFunctionName?.includes(lowercaseTerm)
-				);
-			})
-			.map(([key, functionCall]) => [parseInt(key), { fnCall: functionCall }]);
+					const lowercaseTerm = term.toLowerCase();
+					return (
+						contractName?.includes(lowercaseTerm) || entryPointFunctionName?.includes(lowercaseTerm)
+					);
+				})
+				.map(([key, functionCall]) => [parseInt(key), { fnCall: functionCall }]);
 
-		return [...contractCalls, ...functionCalls];
-	};
+			return [...contractCalls, ...functionCalls];
+		},
+		[contractCallsMap, functionCallsMap]
+	);
 
 	const handleSearchChange = (value: string) => {
 		setSearchTerm(value);
@@ -199,6 +200,6 @@ const CalldataSearch = () => {
 			</Command>
 		</div>
 	);
-};
+});
 
 export default CalldataSearch;

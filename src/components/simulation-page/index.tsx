@@ -16,7 +16,6 @@ import { TransactionDetails } from '../transaction-page';
 import { CallTraceRoot } from '../call-trace';
 import { Loader } from '../ui/loader';
 import { Error } from '../ui/error';
-import { isTrackingActive } from '@/app/api/tracking-service';
 import { useSettings } from '@/lib/context/settings-context-provider';
 
 export function SimulationPage({
@@ -35,7 +34,9 @@ export function SimulationPage({
 				try {
 					setIsLoading(true);
 					const skipTracking = !trackingActive;
-					setTransactionSimulation(await simulateTransactionByData(simulationPayload, skipTracking));
+					setTransactionSimulation(
+						await simulateTransactionByData(simulationPayload, skipTracking)
+					);
 				} catch (err: any) {
 					setError(err.toString());
 				} finally {

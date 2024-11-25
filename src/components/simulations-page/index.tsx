@@ -25,8 +25,6 @@ export function SimulationsPage({ projectSlug }: { projectSlug?: string }) {
 		fetchData();
 	}, [projectSlug]);
 
-	const [isAllVisible, setIsAllVisible] = useState<boolean>(true);
-
 	useEffect(() => {
 		if (!projectSlug && simulationsData?.project?.slug) {
 			const newUrl = `/monitoring/project/${simulationsData.project.slug}`;

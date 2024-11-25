@@ -4,7 +4,6 @@ import {
 	TabId,
 	useCallTrace
 } from '@/lib/context/call-trace-context-provider';
-import { ContractCallTrace } from './contract-call-trace';
 import { EventsList } from './event-entries';
 import { Debugger } from '@/components/debugger';
 import { DebuggerContextProvider } from '@/lib/context/debugger-context-provider';
@@ -15,6 +14,7 @@ import CalldataSearch from '../ui/calldata-search';
 import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { CommonCallTrace } from './common-call-trace';
+import { useCallback } from 'react';
 
 export function CallTraceRoot({ simulationResult }: { simulationResult: SimulationResult }) {
 	return (
@@ -28,10 +28,15 @@ export function CallTraceRoot({ simulationResult }: { simulationResult: Simulati
 
 function CallTraceRootContent() {
 	const { collapseAll, expandAll, activeTab, setActiveTab, simulationResult } = useCallTrace();
-
+	const onValueChange = useCallback(
+		(value: string) => {
+			setActiveTab(value as TabId);
+		},
+		[setActiveTab]
+	);
 	return (
 		<div className="mt-12">
-			<Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as TabId)}>
+			<Tabs value={activeTab} onValueChange={onValueChange}>
 				<TabsList>
 					<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
 					<TabsTrigger value="events-list">Events</TabsTrigger>

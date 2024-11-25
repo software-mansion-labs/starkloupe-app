@@ -15,8 +15,6 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from './ui/textarea';
 import { PlayIcon } from '@heroicons/react/24/solid';
 import { useCallback, useContext, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { DialogClose } from '@radix-ui/react-dialog';
 import { SimulationPayloadWithCalldata } from '@/lib/simulation';
 import { openSimulationPage } from '@/lib/utils';
 import { Network, useSettings } from '@/lib/context/settings-context-provider';
