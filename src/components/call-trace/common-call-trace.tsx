@@ -53,7 +53,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 
 	if (callType === 'function') {
 		const functionCall = functionCallsMap[callId];
-		if (!functionCall.isHidden) {
+		if (!functionCall.isHidden && !functionCall.isLoop) {
 			return <FunctionCallTrace functionCallId={callId} nestingLevel={nestingLevel} />;
 		} else {
 			return (

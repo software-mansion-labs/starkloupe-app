@@ -12,7 +12,7 @@ import {
 	CommandList
 } from './command';
 import { FnName } from './function-name';
-import { getContractName, getRawFunctionName } from '@/lib/utils';
+import { getContractName } from '@/lib/utils';
 
 const CalldataSearch = memo(function CalldataSearch() {
 	const { contractCallsMap, functionCallsMap, toggleCallExpand, scrollToTraceLineElement } =
@@ -70,8 +70,8 @@ const CalldataSearch = memo(function CalldataSearch() {
 				Object.entries(functionCallsMap)
 			)
 				.filter(([key, functionCall]) => {
-					let contractName: string = getRawFunctionName(functionCall.fnName);
-					let splittedFnName: string[] = getRawFunctionName(functionCall.fnName).split('::');
+					let contractName: string = functionCall.fnName;
+					let splittedFnName: string[] = functionCall.fnName.split('::');
 					let entryPointFunctionName: string | undefined = undefined;
 
 					if (splittedFnName.length >= 2) {
