@@ -157,7 +157,6 @@ export interface FunctionCall {
 	arguments: InternalFnCallIO[];
 	results: InternalFnCallIO[];
 	isHidden: boolean;
-	isLoop: boolean;
 }
 
 export interface ContractCallEvent {
