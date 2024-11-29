@@ -10,7 +10,6 @@ import { DebugButton } from './debug-btn';
 import { CommonCallTrace } from './common-call-trace';
 import { InfoBox } from '@/components/ui/info-box';
 import { FnName } from '../ui/function-name';
-import { getRawFunctionName } from '@/lib/utils';
 import { Card } from '../ui/card';
 
 export const FunctionCallTrace = memo(function FunctionCallTrace({
@@ -135,8 +134,8 @@ const CallIO = memo(function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 						{io.value.length === 0
 							? 'None'
 							: io.value.length === 1
-							? io.value[0]
-							: `[${io.value.join(', ')}]`}
+								? io.value[0]
+								: `[${io.value.join(', ')}]`}
 					</span>
 					{i < ios.length - 1 ? <>,&nbsp;</> : ''}
 				</React.Fragment>
@@ -162,8 +161,7 @@ const FunctionCallDetails = memo(function FunctionCallDetails({
 	const { simulationDebuggerData } = useCallTrace();
 	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [];
 	if (call.fnName) {
-		const rawFnName = getRawFunctionName(call.fnName);
-		const splittedFnName = rawFnName.split('::');
+		const splittedFnName = call.fnName.split('::');
 
 		details.push(
 			{

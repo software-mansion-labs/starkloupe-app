@@ -1,5 +1,3 @@
-import { getRawFunctionName } from '@/lib/utils';
-
 export function FnName({
 	fnName,
 	variant = 'trace-line'
@@ -8,8 +6,7 @@ export function FnName({
 	variant?: 'trace-line' | 'search-result';
 }) {
 	if (fnName) {
-		const rawFnName = getRawFunctionName(fnName);
-		const splittedFnName = rawFnName.split('::');
+		const splittedFnName = fnName.split('::');
 
 		return (
 			<>
@@ -24,7 +21,7 @@ export function FnName({
 						</span>
 					</>
 				) : (
-					<span className={`${variant === 'trace-line' && 'text-pink-500'}`}>{rawFnName}</span>
+					<span className={`${variant === 'trace-line' && 'text-pink-500'}`}>{fnName}</span>
 				)}
 			</>
 		);
