@@ -52,7 +52,7 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	events: [],
 	collapsedCalls: {},
 	expandedCalls: {},
-	showEvents: true,
+	showEvents: false, //Change this to true, once we decode the event
 	simulationDebuggerData: { classesDebuggerData: {}, debuggerTrace: [] },
 	activeTab: 'call-trace',
 	isExecutionFailed: false,
@@ -69,15 +69,14 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 export const CallTraceContextProvider: React.FC<
 	PropsWithChildren<{ simulationResult: SimulationResult }>
 > = ({ children, simulationResult }) => {
-
 	// This collapses calls starting with "core".
 	// If call has children: only parent is collapsed
 	const initiallyCollapsed: StringBooleanDict = useMemo(() => {
 		try {
 			const collapsed: StringBooleanDict = {};
 			const processCalls = (calls: Array<any>, getName: (call: any) => string | undefined) => {
-				calls.forEach(call => {
-					const startsWithCore = getName(call)?.startsWith("core") ?? false;
+				calls.forEach((call) => {
+					const startsWithCore = getName(call)?.startsWith('core') ?? false;
 					let parentId = call.parentCallId;
 					let hasCollapsedAncestor = false;
 					while (parentId !== undefined) {
@@ -96,8 +95,11 @@ export const CallTraceContextProvider: React.FC<
 					}
 				});
 			};
-			processCalls(Object.values(simulationResult.contractCallsMap), call => call.entryPointInterfaceName);
-			processCalls(Object.values(simulationResult.functionCallsMap), call => call.fnName);
+			processCalls(
+				Object.values(simulationResult.contractCallsMap),
+				(call) => call.entryPointInterfaceName
+			);
+			processCalls(Object.values(simulationResult.functionCallsMap), (call) => call.fnName);
 			return collapsed;
 		} catch (err) {
 			console.log('Collapsing calls error: ', err);
@@ -107,7 +109,7 @@ export const CallTraceContextProvider: React.FC<
 
 	const [collapsedCalls, setCollapsedCalls] = useState<StringBooleanDict>(() => initiallyCollapsed);
 	const [expandedCalls, setExpandedCalls] = useState<StringBooleanDict>({});
-	const [showEvents, setShowEvents] = useState<boolean>(true);
+	const [showEvents, setShowEvents] = useState<boolean>(false); //Set while decode events
 	const [activeTab, setActiveTab] = useState<TabId>('call-trace');
 	const isExecutionFailed = simulationResult.executionResult.executionStatus === 'REVERTED';
 	const traceLineElementRefs = useRef<{ [callId: number]: React.RefObject<HTMLDivElement> }>({});

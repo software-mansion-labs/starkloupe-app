@@ -39,7 +39,7 @@ function CallTraceRootContent() {
 			<Tabs value={activeTab} onValueChange={onValueChange}>
 				<TabsList>
 					<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
-					<TabsTrigger value="events-list">Events</TabsTrigger>
+					{/*<TabsTrigger value="events-list">Events</TabsTrigger>*/}
 					<TabsTrigger value="debugger">Debugger</TabsTrigger>
 				</TabsList>
 				<TabsContent value="call-trace">
@@ -92,6 +92,7 @@ function CallTraceRootContent() {
 						</ScrollArea>
 					</div>
 				</TabsContent>
+				{/*
 				<TabsContent value="events-list">
 					<Card>
 						<CardContent className="p-0 py-2 text-xs">
@@ -99,6 +100,7 @@ function CallTraceRootContent() {
 						</CardContent>
 					</Card>
 				</TabsContent>
+				*/}
 				<TabsContent value="debugger">
 					<Card className="text-xs">
 						<Debugger />
