@@ -66,7 +66,7 @@ export function SimulateDialog({
 	simulationPayload?: SimulationPayloadWithCalldata;
 }) {
 	const { networks } = useSettings();
-	const defaultTransactionVersion = '2';
+	const defaultTransactionVersion = '3';
 	const [alert, setAlert] = useState(false);
 	const validateHexFormat = (value: string) => /^0x[0-9a-fA-F]+$/.test(value);
 
