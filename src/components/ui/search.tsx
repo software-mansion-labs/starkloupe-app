@@ -18,6 +18,8 @@ import { Badge } from './badge';
 import { Network, useSettings } from '@/lib/context/settings-context-provider';
 import Link from 'next/link';
 import debounce from 'lodash/debounce';
+import { useUserContext } from '@/lib/context/user-context-provider';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export function Search({
 	className,
@@ -33,6 +35,7 @@ export function Search({
 	const [open, setOpen] = useState(false);
 	const [isMac, setIsMac] = useState(true);
 	const { networks } = useSettings();
+	const { isLogged } = useUserContext();
 	const coreNetworks = 'sn_main, sn_sepolia';
 	const [allAvailableNetworksString, setAllAvailableNetworksString] =
 		useState<string>(coreNetworks);
@@ -112,21 +115,34 @@ export function Search({
 			<label htmlFor="search" className="sr-only">
 				Search
 			</label>
-			<div className="relative flex-1">
-				<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-					<MagnifyingGlassIcon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-				</div>
-				<Input
-					className="pl-10"
-					placeholder={placeholder}
-					type="search"
-					name="search"
-					onFocus={() => setOpen(true)}
-				/>
-				<div className="pointer-events-none border border-neutral-200 text-neutral-600 rounded-sm text-sm absolute right-0 inset-y-1.5 mr-1.5 p-1 hidden md:flex items-center">
-					{isMac ? '⌘K' : 'Ctrl+K'}
-				</div>
-			</div>
+
+			<TooltipProvider>
+				<Tooltip delayDuration={50}>
+					<TooltipTrigger className={`relative flex-1`}>
+							<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+								<MagnifyingGlassIcon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+							</div>
+							<Input
+								disabled={!isLogged}
+								className="pl-10 flex-1"
+								placeholder={placeholder}
+								type="search"
+								name="search"
+								onFocus={() => setOpen(true)}
+							/>
+							<div className="pointer-events-none border border-neutral-200 text-neutral-600 rounded-sm text-sm absolute right-0 inset-y-1.5 mr-1.5 p-1 hidden md:flex items-center">
+								{isMac ? '⌘K' : 'Ctrl+K'}
+							</div>
+					</TooltipTrigger>
+					<TooltipContent hidden={isLogged}>
+						Please sign up to use this feature.
+					</TooltipContent>
+				</Tooltip>
+			</TooltipProvider>
+
+
+
+
 			<CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
 				<CommandInput
 					placeholder="Search for transaction or contract"

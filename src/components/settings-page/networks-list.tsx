@@ -29,8 +29,9 @@ import {
 	TableRow
 } from '@/components/ui/table';
 
-import { Network, useSettings } from '@/lib/context/settings-context-provider';
+import { AddNetwork, Network, useSettings } from '@/lib/context/settings-context-provider';
 import { Label } from '../ui/label';
+import { toast } from '@/components/hooks/use-toast';
 
 export const columns = (removeNetwork: (network: Network) => void): ColumnDef<Network>[] => [
 	{
@@ -64,7 +65,7 @@ export function NetworksList() {
 	const [sorting, setSorting] = React.useState<SortingState>([]);
 	const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
 	const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-	const [newNetwork, setNewNetwork] = React.useState<Network>({
+	const [newNetwork, setNewNetwork] = React.useState<AddNetwork>({
 		rpcUrl: '',
 		networkName: ''
 	});
@@ -87,15 +88,30 @@ export function NetworksList() {
 	});
 
 	const handleAddNetwork = () => {
-		const invalidUrls = ['localhost', '127.0.0.0', '0.0.0.0'];
-		if (newNetwork.networkName && newNetwork.rpcUrl) {
-			const url = new URL(newNetwork.rpcUrl);
-			if (invalidUrls.includes(url.hostname)) {
-				alert('Error: Only hosted networks are supported.');
-				return;
+		if (networks.find((n) => n.rpcUrl === newNetwork.rpcUrl)) {
+			toast({
+				title: 'Network already exists!',
+				description: 'This network is already added.',
+			});
+			return;
+		}
+		try {
+			const invalidUrls = ['localhost', '127.0.0.0', '0.0.0.0'];
+			if (newNetwork.networkName && newNetwork.rpcUrl) {
+				const url = new URL(newNetwork.rpcUrl);
+				if (invalidUrls.includes(url.hostname)) {
+					alert('Error: Only hosted networks are supported.');
+					return;
+				}
+				addNetwork({ ...newNetwork });
+				setNewNetwork({ rpcUrl: '', networkName: '' });
 			}
-			addNetwork({ ...newNetwork });
-			setNewNetwork({ rpcUrl: '', networkName: '' });
+		} catch (err) {
+			toast({
+				title: 'Add network failed!',
+				description: 'Is the network URL correct?',
+				className: 'text-red-500',
+			})
 		}
 	};
 
@@ -123,7 +139,7 @@ export function NetworksList() {
 					/>
 				</div>
 				<div className="flex justify-end">
-					<Button onClick={handleAddNetwork}>Add Network</Button>
+					<Button onClick={handleAddNetwork} disabled={!newNetwork.rpcUrl || !newNetwork.networkName}>Add Network</Button>
 				</div>
 			</div>
 			<div className="rounded-md border">

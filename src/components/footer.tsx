@@ -53,8 +53,8 @@ export function Footer() {
 								Docs
 							</a>
 						</div>
-						<Separator orientation="vertical" className="h-4" />
-						<div className="flex justify-center space-x-4 items-center">
+						<Separator orientation="vertical" className="h-4 mb-4 md:mb-0" />
+						<div className="flex justify-center space-x-4 items-center mb-4 md:mb-0">
 							{navigation.map((item) => (
 								<a
 									key={item.name}

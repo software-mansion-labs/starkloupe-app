@@ -5,22 +5,24 @@ import Link from 'next/link';
 import { Disclosure } from '@headlessui/react';
 import { Search } from '@/components/ui/search';
 import { Button } from '@/components/ui/button';
-import { Bars3Icon, Cog6ToothIcon, PlayIcon, XMarkIcon } from '@heroicons/react/24/outline';
+import { PlayIcon } from '@heroicons/react/24/outline';
 import logoWalnut from '@/assets/wlnt-logo-beta-bw.svg';
 import { SimulateDialog } from './simulate-dialog';
 import { Container } from '@/components/ui/container';
+import { UserSection } from '@/components/auth/user-section';
+import { useUserContext } from '@/lib/context/user-context-provider';
 import { useSettings } from '@/lib/context/settings-context-provider';
+import { isAuthorizationRequiredFeatureActive } from '@/app/api/feature-flag-service';
 
-export function HeaderNav({ isMainPage = false }: { isMainPage?: boolean }) {
-	// const session = useSession();
-	// const pathname = usePathname();
+export function HeaderNav({ isMainPage = false, hideUserSection = false }: { isMainPage?: boolean, hideUserSection?: boolean }) {
+	const { isLogged } = useUserContext();
 	const { trackingActive } = useSettings();
 	return (
 		<Disclosure
 			as="nav"
 			className={`${!isMainPage && 'bg-neutral-50 border-b border-neutral-200'}`}
 		>
-			{({ open }) => (
+			{() => (
 				<>
 					{!trackingActive &&
 						(<div className=" top-0 left-0 w-full h-5 bg-green-500 text-white flex items-center justify-between px-4 shadow-md z-50">
@@ -77,35 +79,35 @@ export function HeaderNav({ isMainPage = false }: { isMainPage?: boolean }) {
 									</div>
 								)}
 								<div className="hidden md:block">
-									<SimulateDialog
-										dialogTrigger={
+									{isLogged ?
+										(<SimulateDialog dialogTrigger={
 											<Button variant="outline">
-												<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
+												<PlayIcon className="mr-2 h-4 w-4"/> Simulate transaction
+											</Button>}/>)
+										:
+										(<Link href="/login">
+											<Button variant="outline">
+												<PlayIcon className="mr-2 h-4 w-4"/> Simulate transaction
 											</Button>
-										}
-									/>
+										</Link>)
+									}
 								</div>
 							</div>
-							<div className="hidden md:block -mr-2">
-								<div className="flex items-center">
-									<div className="flex flex-row items-center ml-3">
-										<a href="/settings">
-											<Button variant="ghost" className="px-2">
-												<Cog6ToothIcon className="h-6 w-6" />
-											</Button>
-										</a>
+							{!hideUserSection && isAuthorizationRequiredFeatureActive() && (
+								<div className="hidden md:block -mr-2">
+									<div className="flex items-center">
+										<div className="flex flex-row items-center ml-3">
+											<UserSection/>
+										</div>
 									</div>
 								</div>
-							</div>
+							)}
 							<div className="-mr-2 flex md:hidden">
-								{/* Mobile menu button */}
-								<Disclosure.Button>
-									{open ? (
-										<XMarkIcon className="block h-6 w-6" aria-hidden="true" />
-									) : (
-										<Bars3Icon className="block h-6 w-6" aria-hidden="true" />
-									)}
-								</Disclosure.Button>
+								<div className="flex items-center">
+									<div className="flex flex-row items-center m-2">
+										<UserSection/>
+									</div>
+								</div>
 							</div>
 						</div>
 					</Container>

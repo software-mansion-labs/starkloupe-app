@@ -4,25 +4,17 @@ import { Footer } from '@/components/footer';
 import Image from 'next/image';
 import logoWalnut from '@/assets/wlnt-logo-beta-bw.svg';
 import { Search } from '@/components/ui/search';
-// import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import { HeaderNav } from '@/components/header';
 
-export default function Page() {
-	// const { status } = useSession();
-	// const router = useRouter();
+export const runtime = 'edge';
 
-	// useEffect(() => {
-	// 	if (status === 'authenticated') {
-	// 		router.push('/monitoring');
-	// 	}
-	// }, [status, router]);
+export default function Page() {
 
 	return (
 		<div className="min-h-screen flex flex-col">
 			<HeaderNav isMainPage={true} />
 			<main className="overflow-hidden flex flex-col items-center justify-center gap-10 flex-auto relative">
-				{/* <IndexNav /> */}
 				<Image src={logoWalnut} alt="Walnut logo" unoptimized className="h-10 w-auto" />
 				<div className="w-[38rem] max-w-[92%] text-center">
 					<Search placeholder={`Search for transaction or contract`}></Search>

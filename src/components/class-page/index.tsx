@@ -12,12 +12,12 @@ import { fetchClassDataByHash, GetClassResponse } from '@/lib/classes';
 import { useSettings } from '@/lib/context/settings-context-provider';
 
 export function ClassPage({ classHash }: { classHash: string }) {
-	const { networks, isSettingsLoaded } = useSettings();
+	const { networks } = useSettings();
 	const [classData, setClassData] = useState<GetClassResponse>();
 	const [error, setError] = useState<string | undefined>();
 
 	useEffect(() => {
-		if (!isSettingsLoaded) return;
+		if (!networks) return;
 		const fetchData = async () => {
 			try {
 				setClassData(
@@ -33,7 +33,7 @@ export function ClassPage({ classHash }: { classHash: string }) {
 		};
 
 		fetchData();
-	}, [classHash, networks, isSettingsLoaded]);
+	}, [classHash, networks]);
 
 	return (
 		<>

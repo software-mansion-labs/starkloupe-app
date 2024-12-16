@@ -26,7 +26,7 @@ export function SimulationPage({
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
 	const [error, setError] = useState<string | undefined>();
 	const [isLoading, setIsLoading] = useState<boolean>(false);
-	const { trackingActive, isSettingsLoaded } = useSettings();
+	const { trackingActive, trackingFlagLoaded } = useSettings();
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -46,10 +46,10 @@ export function SimulationPage({
 				setError('Invalid simulation parameters');
 			}
 		};
-		if (isSettingsLoaded) {
+		if (trackingFlagLoaded) {
 			fetchData();
 		}
-	}, [simulationPayload, isSettingsLoaded]);
+	}, [simulationPayload, trackingFlagLoaded]);
 
 	let content = null;
 	if (isLoading) {

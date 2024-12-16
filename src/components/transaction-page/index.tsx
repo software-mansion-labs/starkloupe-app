@@ -20,6 +20,8 @@ import { PlayIcon } from '@heroicons/react/24/outline';
 import { Error } from '../ui/error';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
+import { useUserContext } from '@/lib/context/user-context-provider';
+import Link from 'next/link';
 
 export function TransactionPage({
 	txHash,
@@ -31,8 +33,9 @@ export function TransactionPage({
 	rpcUrl?: string;
 }) {
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
+	const { isLogged } = useUserContext();
 	const [error, setError] = useState<string | undefined>();
-	const { trackingActive, isSettingsLoaded } = useSettings();
+	const { trackingActive, trackingFlagLoaded } = useSettings();
 	const shortHash = shortenHash(txHash);
 
 	useEffect(() => {
@@ -52,10 +55,10 @@ export function TransactionPage({
 				setError(error.toString());
 			}
 		};
-		if (isSettingsLoaded) {
+		if (trackingFlagLoaded) {
 			fetchData();
 		}
-	}, [chainId, txHash, rpcUrl, isSettingsLoaded]);
+	}, [chainId, txHash, rpcUrl, trackingFlagLoaded]);
 
 	return (
 		<>
@@ -81,7 +84,8 @@ export function TransactionPage({
 							</CopyToClipboardElement>
 						</h1>
 
-						{transactionSimulation && (
+						{ transactionSimulation && (
+							isLogged ? (
 							<SimulateDialog
 								title="Re-simulate transaction"
 								description="Edit the transaction details below and click “Run Simulation” to re-simulate."
@@ -103,7 +107,13 @@ export function TransactionPage({
 									rpcUrl: rpcUrl,
 									blockNumber: transactionSimulation.blockNumber
 								}}
-							/>
+							/>) : (
+								<Link href="/login">
+									<Button variant="outline">
+										<PlayIcon className="mr-2 h-4 w-4"/> Re-simulate transaction
+									</Button>
+								</Link>
+							)
 						)}
 					</div>
 					{transactionSimulation && (
