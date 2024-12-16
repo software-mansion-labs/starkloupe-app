@@ -17,7 +17,7 @@ export interface LoggedUser {
 // If TEST_USER env variable is set, it will return this user
 export const getLoggedUser = async (): Promise<LoggedUser | undefined> => {
     const testUser = process.env.TEST_USER ?? '';
-    if (testUser) {
+    if (testUser || !isAuthorizationRequiredFeatureActive()) {
         console.log('Returning Testuser');
         return {
             // Application will treat user as having global org, but won't be able to do any actions related with Logto (inviting members, generating API KEY, etc.)
