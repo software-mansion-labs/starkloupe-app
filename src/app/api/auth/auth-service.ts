@@ -2,6 +2,7 @@
 import { getLogtoContext } from '@logto/next/server-actions';
 import { logtoClientNextConfig } from '@/app/api/logto-config';
 import { isAuthorizationRequiredFeatureActive } from '@/app/api/feature-flag-service';
+import { isTrackingActive } from '@/app/api/tracking-service';
 
 export interface LoggedUser {
     // User global organization IDs
@@ -18,13 +19,16 @@ export interface LoggedUser {
 export const getLoggedUser = async (): Promise<LoggedUser | undefined> => {
     const testUser = process.env.TEST_USER ?? '';
     if (testUser || !isAuthorizationRequiredFeatureActive()) {
-        console.log('Returning Testuser');
-        return {
-            // Application will treat user as having global org, but won't be able to do any actions related with Logto (inviting members, generating API KEY, etc.)
-            organizationIds: ['testuser-org'],
-            userId: 'testuser',
-            name: 'Testuser',
-        };
+        // temporary for testing
+        if (isTrackingActive()) {
+            console.log('Returning Testuser');
+            return {
+                // Application will treat user as having global org, but won't be able to do any actions related with Logto (inviting members, generating API KEY, etc.)
+                organizationIds: ['testuser-org'],
+                userId: 'testuser',
+                name: 'Testuser',
+            };
+        }
     }
     const {claims} = await getLogtoContext(logtoClientNextConfig);
     if (claims) {
