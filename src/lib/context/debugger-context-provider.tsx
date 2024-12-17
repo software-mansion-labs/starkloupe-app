@@ -55,28 +55,32 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 		useContext(CallTraceContext);
 
 	const [currentStepIndex, _setCurrentStepIndex] = useState(
-		findInitialIndex(simulationDebuggerData.debuggerTrace)
+		simulationDebuggerData.debuggerTrace.length > 0
+			? findInitialIndex(simulationDebuggerData.debuggerTrace)
+			: 0
 	);
 	const [currentStep, _setCurrentStep] = useState(
-		simulationDebuggerData.debuggerTrace[currentStepIndex]
+		simulationDebuggerData.debuggerTrace.length > 0
+			? simulationDebuggerData.debuggerTrace[currentStepIndex]
+			: undefined
 	);
 
-	const initialDebuggerData = getDebuggerDataForStep(
-		contractCallsMap,
-		simulationResult.simulationDebuggerData,
-		currentStep
-	);
+	const initialDebuggerData =
+		currentStep &&
+		getDebuggerDataForStep(contractCallsMap, simulationResult.simulationDebuggerData, currentStep);
 
-	const [activeFile, setActiveFile] = useState<string | undefined>(initialDebuggerData.activeFile);
+	const [activeFile, setActiveFile] = useState<string | undefined>(
+		initialDebuggerData && initialDebuggerData.activeFile
+	);
 	const [contractCall, setContractCall] = useState<ContractCall | undefined>(
-		initialDebuggerData.contractCall
+		initialDebuggerData && initialDebuggerData.contractCall
 	);
 	const [codeLocation, setCodeLocation] = useState<CodeLocation | undefined>(
-		initialDebuggerData.codeLocation
+		initialDebuggerData && initialDebuggerData.codeLocation
 	);
-	const [sourceCode, setSourceCode] = useState<{
-		[key: string]: string;
-	}>(initialDebuggerData.classSourceCode);
+	const [sourceCode, setSourceCode] = useState<{ [key: string]: string }>(
+		initialDebuggerData?.classSourceCode || {} // Default to an empty object if classSourceCode is not available
+	);
 
 	function setCurrentStepIndex(index: number) {
 		_setCurrentStepIndex(index);
@@ -208,6 +212,7 @@ function findInitialIndex(executionTrace: DebuggerExecutionTraceEntry[]) {
 			return i;
 		}
 	}
+
 	return 0;
 }
 

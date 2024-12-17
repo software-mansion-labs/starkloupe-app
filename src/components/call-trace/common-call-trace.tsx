@@ -23,7 +23,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 		else if (contractCall) callType = 'contract';
 	}
 	const contractCallIdsArray = useMemo(() => {
-		if (!contractCallsMap[callId]) {
+		if (contractCallsMap && !contractCallsMap[callId]) {
 			return null;
 		}
 		return contractCallsMap[callId].childrenCallIds.map((childCallId) => (
@@ -38,7 +38,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 	}, [contractCallsMap, nestingLevel, callId]);
 
 	const functionCallIdsList = useMemo(() => {
-		if (!functionCallsMap[callId]) {
+		if (functionCallsMap && !functionCallsMap[callId]) {
 			return null;
 		}
 
@@ -51,7 +51,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 		return null;
 	}, [functionCallsMap, callId, nestingLevel]);
 
-	if (callType === 'function') {
+	if (functionCallsMap && functionCallsMap[callId] && callType === 'function') {
 		const functionCall = functionCallsMap[callId];
 		if (!functionCall.isHidden) {
 			return <FunctionCallTrace functionCallId={callId} nestingLevel={nestingLevel} />;
@@ -69,9 +69,8 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 				</>
 			);
 		}
-	} else if (callType === 'contract') {
+	} else if (contractCallsMap && contractCallsMap[callId] && callType === 'contract') {
 		const contractCall = contractCallsMap[callId];
-
 		if (!contractCall.isHidden) {
 			return <ContractCallTrace contractCallId={callId} nestingLevel={nestingLevel} />;
 		} else {
