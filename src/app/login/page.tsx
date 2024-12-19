@@ -28,7 +28,7 @@ export default function Page() {
 					<div className="relative z-20 flex items-center text-lg font-medium">
 						<Image src={logoWalnutWhite} alt="Walnut logo" unoptimized className="h-10 w-auto" />
 					</div>
-					<div className="w-full mt-auto relative z-20 max-w-2xl xl:max-w-none  xl:px-16 xl:py-24">
+					<div className="w-full mt-auto relative z-20 max-w-2xl pr-16 py-16">
 						<figure className="relative isolate pt-6 sm:pt-12">
 							<svg
 								fill="none"
@@ -42,13 +42,12 @@ export default function Page() {
 								/>
 								<use x={86} href="#b56e9dab-6ccb-4d32-ad02-6b4bb5d9bbeb" />
 							</svg>
-							<blockquote className="text-xl/8 font-semibold text-white sm:text-2xl/9">
+							<blockquote className="text-lg/7 text-white">
 								<p>
-									We’re building Walnut to help smart contract developers like you create better,
-									more resilient applications on Starknet. If there’s anything we can assist with,
-									<a href="https://t.me/walnuthq" className="text-blue-400 underline">
-										{' '}
-										don’t hesitate to reach out—we’re here for you
+									We’re building Walnut to help smart contract developers create better and more
+									resilient Starknet applications. If you need assistance,{' '}
+									<a href="https://t.me/walnuthq" className="underline" target="_blank">
+										reach out anytime
 									</a>
 									.
 								</p>
@@ -60,7 +59,22 @@ export default function Page() {
 								</Avatar>
 								<div>
 									<div className="font-semibold text-white">Roman Mazur</div>
-									<div className="mt-1 text-gray-400">Walnut CEO</div>
+
+									<a
+										href="https://twitter.com/romanmazur"
+										target="_blank"
+										className="mt-1 flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-300"
+									>
+										<svg
+											className="h-4 w-4"
+											fill="currentColor"
+											viewBox="0 0 24 24"
+											aria-hidden="true"
+										>
+											<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+										</svg>
+										@romanmazur
+									</a>
 								</div>
 							</figcaption>
 						</figure>
@@ -77,7 +91,7 @@ export default function Page() {
 						<div className="flex flex-col space-y-2 text-center">
 							<h1 className="text-2xl font-semibold tracking-tight">Sign up to Walnut</h1>
 							<p className="text-md text-muted-foreground">
-								Please sign up with Github and start debugging
+								Sign in with Github and start debugging.
 							</p>
 						</div>
 						<div className="flex flex-col">
