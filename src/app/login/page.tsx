@@ -28,24 +28,6 @@ export default function Page() {
 					<div className="relative z-20 flex items-center text-lg font-medium">
 						<Image src={logoWalnutWhite} alt="Walnut logo" unoptimized className="h-10 w-auto" />
 					</div>
-					<div className="relative z-20 mt-auto">
-						<blockquote className="space-y-2">
-							<p className="text-lg">
-								We’re building Walnut to help smart contract developers like you create better, more
-								resilient applications on Starknet. If there’s anything we can assist with, don’t
-								hesitate to reach out—we’re here for you.
-							</p>
-							<footer className="text-sm text-white flex items-center">
-								<Avatar className="h-8 w-8">
-									<AvatarImage src="https://pbs.twimg.com/profile_images/1165175389133688832/J6fWCiVz_400x400.jpg" />
-									<AvatarFallback>Roman Mazur</AvatarFallback>
-								</Avatar>
-								<Link href="https://x.com/romanmazur" className="ml-2">
-									<span>Roman Mazur - Walnut CEO</span>
-								</Link>
-							</footer>
-						</blockquote>
-					</div>
 					<div className="w-full mt-auto relative z-20 max-w-2xl xl:max-w-none  xl:px-16 xl:py-24">
 						<figure className="relative isolate pt-6 sm:pt-12">
 							<svg
