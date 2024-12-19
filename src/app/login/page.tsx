@@ -16,9 +16,9 @@ export default function Page() {
 	const { isLogged } = useUserContext();
 	const router = useRouter();
 	useEffect(() => {
-		if (isLogged) {
-			router.push('/');
-		}
+		// if (isLogged) {
+		// 	router.push('/');
+		// }
 	}, [isLogged, router]);
 	return (
 		<>
@@ -46,7 +46,7 @@ export default function Page() {
 								<p>
 									We’re building Walnut to help smart contract developers create better and more
 									resilient Starknet applications. If you need assistance,{' '}
-									<a href="https://t.me/walnuthq" className="underline" target="_blank">
+									<a href="https://t.me/walnuthq" className="underline">
 										reach out anytime
 									</a>
 									.
@@ -62,7 +62,6 @@ export default function Page() {
 
 									<a
 										href="https://twitter.com/romanmazur"
-										target="_blank"
 										className="mt-1 flex items-center gap-1.5 text-sm text-gray-400 hover:text-gray-300"
 									>
 										<svg

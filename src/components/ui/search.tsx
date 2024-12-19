@@ -40,21 +40,24 @@ export function Search({
 	const [allAvailableNetworksString, setAllAvailableNetworksString] =
 		useState<string>(coreNetworks);
 
-	const fetchSearchDataResponse = async (value: string) => {
-		try {
-			const searchData: SearchDataResponse = await fetchSearchData({
-				hash: value,
-				rpcUrls: networks.map((n) => n.rpcUrl)
-			});
-			setSearchDataResponse(searchData);
-			setDataResponseResults(
-				searchData.transactions.length + searchData.classes.length + searchData.contracts.length
-			);
-		} catch (error: any) {
-			setDataResponseResults(0);
-			setError(error.toString());
-		}
-	};
+	const fetchSearchDataResponse = useCallback(
+		async (value: string) => {
+			try {
+				const searchData: SearchDataResponse = await fetchSearchData({
+					hash: value,
+					rpcUrls: networks.map((n) => n.rpcUrl)
+				});
+				setSearchDataResponse(searchData);
+				setDataResponseResults(
+					searchData.transactions.length + searchData.classes.length + searchData.contracts.length
+				);
+			} catch (error: any) {
+				setDataResponseResults(0);
+				setError(error.toString());
+			}
+		},
+		[networks]
+	);
 
 	useEffect(() => {
 		if (networks.length > 0) {
@@ -72,15 +75,12 @@ export function Search({
 		} else {
 			setSearchValue('');
 		}
-	}, [searchValue, open]);
+	}, [searchValue, open, fetchSearchDataResponse]);
 
-	const debounceSearch = useCallback(
-		debounce((value: string) => {
-			console.log('Search value:', value); // Here you log the search value
-			setSearchValue(value);
-		}, 500),
-		[]
-	);
+	const debounceSearch = debounce((value: string) => {
+		console.log('Search value:', value); // Here you log the search value
+		setSearchValue(value);
+	}, 500);
 
 	useEffect(() => {
 		return () => {
@@ -119,29 +119,24 @@ export function Search({
 			<TooltipProvider>
 				<Tooltip delayDuration={50}>
 					<TooltipTrigger className={`relative flex-1`}>
-							<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-								<MagnifyingGlassIcon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-							</div>
-							<Input
-								disabled={!isLogged}
-								className="pl-10 flex-1"
-								placeholder={placeholder}
-								type="search"
-								name="search"
-								onFocus={() => setOpen(true)}
-							/>
-							<div className="pointer-events-none border border-neutral-200 text-neutral-600 rounded-sm text-sm absolute right-0 inset-y-1.5 mr-1.5 p-1 hidden md:flex items-center">
-								{isMac ? '⌘K' : 'Ctrl+K'}
-							</div>
+						<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+							<MagnifyingGlassIcon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+						</div>
+						<Input
+							disabled={!isLogged}
+							className="pl-10 flex-1"
+							placeholder={placeholder}
+							type="search"
+							name="search"
+							onFocus={() => setOpen(true)}
+						/>
+						<div className="pointer-events-none border border-neutral-200 text-neutral-600 rounded-sm text-sm absolute right-0 inset-y-1.5 mr-1.5 p-1 hidden md:flex items-center">
+							{isMac ? '⌘K' : 'Ctrl+K'}
+						</div>
 					</TooltipTrigger>
-					<TooltipContent hidden={isLogged}>
-						Please sign up to use this feature.
-					</TooltipContent>
+					<TooltipContent hidden={isLogged}>Please sign up to use this feature.</TooltipContent>
 				</Tooltip>
 			</TooltipProvider>
-
-
-
 
 			<CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
 				<CommandInput
