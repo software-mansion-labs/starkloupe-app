@@ -58,7 +58,7 @@ export function TransactionPage({
 		if (trackingFlagLoaded) {
 			fetchData();
 		}
-	}, [chainId, txHash, rpcUrl, trackingFlagLoaded]);
+	}, [chainId, txHash, rpcUrl, trackingFlagLoaded, trackingActive]);
 
 	return (
 		<>
@@ -84,37 +84,38 @@ export function TransactionPage({
 							</CopyToClipboardElement>
 						</h1>
 
-						{ transactionSimulation && (
-							isLogged ? (
-							<SimulateDialog
-								title="Re-simulate transaction"
-								description="Edit the transaction details below and click “Run Simulation” to re-simulate."
-								dialogTrigger={
-									<Button
-										variant="outline"
-										disabled={
-											!transactionSimulation || transactionSimulation.transactionType === 'DECLARE'
-										}
-									>
-										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
-									</Button>
-								}
-								simulationPayload={{
-									senderAddress: transactionSimulation.senderAddress,
-									calldata: transactionSimulation.calldata,
-									chainId: chainId,
-									transactionVersion: transactionSimulation.transactionVersion,
-									rpcUrl: rpcUrl,
-									blockNumber: transactionSimulation.blockNumber
-								}}
-							/>) : (
+						{transactionSimulation &&
+							(isLogged ? (
+								<SimulateDialog
+									title="Re-simulate transaction"
+									description="Edit the transaction details below and click “Run Simulation” to re-simulate."
+									dialogTrigger={
+										<Button
+											variant="outline"
+											disabled={
+												!transactionSimulation ||
+												transactionSimulation.transactionType === 'DECLARE'
+											}
+										>
+											<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+										</Button>
+									}
+									simulationPayload={{
+										senderAddress: transactionSimulation.senderAddress,
+										calldata: transactionSimulation.calldata,
+										chainId: chainId,
+										transactionVersion: transactionSimulation.transactionVersion,
+										rpcUrl: rpcUrl,
+										blockNumber: transactionSimulation.blockNumber
+									}}
+								/>
+							) : (
 								<Link href="/login">
 									<Button variant="outline">
-										<PlayIcon className="mr-2 h-4 w-4"/> Re-simulate transaction
+										<PlayIcon className="mr-2 h-4 w-4" /> Re-simulate transaction
 									</Button>
 								</Link>
-							)
-						)}
+							))}
 					</div>
 					{transactionSimulation && (
 						<TransactionDetails txSimResult={transactionSimulation} rpcUrl={rpcUrl} />

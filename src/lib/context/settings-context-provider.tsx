@@ -1,9 +1,13 @@
 'use client';
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useUserContext } from '@/lib/context/user-context-provider';
 import { toast } from '@/components/hooks/use-toast';
-import { createNetworkApi, deleteNetworkApi, getNetworksApi } from '@/app/api/monitoring-api-service';
+import {
+	createNetworkApi,
+	deleteNetworkApi,
+	getNetworksApi
+} from '@/app/api/monitoring-api-service';
 import { isTrackingActive } from '@/app/api/tracking-service';
 
 export interface Network {
@@ -31,41 +35,42 @@ type SettingsContextType = {
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
 
 export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-	const [ networks, setNetworks ] = useState<Network[]>([]);
+	const [networks, setNetworks] = useState<Network[]>([]);
 	const { isLogged, organizationId } = useUserContext();
-	const [ trackingActive, setTrackingActive ] = useState<boolean>(true);
-	const [ trackingFlagLoaded, setTrackingFlagLoaded ] = useState<boolean>(false);
+	const [trackingActive, setTrackingActive] = useState<boolean>(true);
+	const [trackingFlagLoaded, setTrackingFlagLoaded] = useState<boolean>(false);
 
 	useEffect(() => {
 		setTrackingActive(isTrackingActive());
 		setTrackingFlagLoaded(true);
 	}, []);
 
-	useEffect(() => {
-		if (isLogged) {
-			getNetworks();
-		}
-	}, [isLogged, organizationId]);
-
-	const getNetworks = async () => {
+	const getNetworks = useCallback(async () => {
 		const networks = await getNetworksApi(organizationId);
 		if (networks) {
 			setNetworks(networks);
 		}
-	}
+	}, [organizationId]);
+
+	useEffect(() => {
+		if (isLogged) {
+			getNetworks();
+		}
+	}, [getNetworks, isLogged, organizationId]);
+
 	const addNetwork = async (network: AddNetwork) => {
 		const created = await createNetworkApi(network.networkName, network.rpcUrl, organizationId);
 		if (created) {
 			toast({
 				title: `Network ${network.networkName} added!`,
-				description: 'Network added successfully.',
+				description: 'Network added successfully.'
 			});
 			await getNetworks();
 		} else {
 			toast({
 				title: 'Add network failed!',
 				description: 'There was an error while adding the network.',
-				className: 'text-red-500',
+				className: 'text-red-500'
 			});
 		}
 	};
@@ -75,7 +80,7 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 		if (deletedRes.succeed) {
 			toast({
 				title: `Network ${network.networkName} removed!`,
-				description: 'Network removed successfully.',
+				description: 'Network removed successfully.'
 			});
 			await getNetworks();
 		} else {
@@ -83,13 +88,13 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 				toast({
 					title: 'Remove network failed!',
 					description: 'This network is used by monitoring.',
-					className: 'text-red-500',
+					className: 'text-red-500'
 				});
 			} else {
 				toast({
 					title: 'Remove network failed!',
 					description: 'There was an error while removing the network.',
-					className: 'text-red-500',
+					className: 'text-red-500'
 				});
 			}
 		}
@@ -100,7 +105,16 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 	};
 
 	return (
-		<SettingsContext.Provider value={{ networks, addNetwork, removeNetwork, getNetworkByRpcUrl, trackingActive, trackingFlagLoaded }}>
+		<SettingsContext.Provider
+			value={{
+				networks,
+				addNetwork,
+				removeNetwork,
+				getNetworkByRpcUrl,
+				trackingActive,
+				trackingFlagLoaded
+			}}
+		>
 			{children}
 		</SettingsContext.Provider>
 	);

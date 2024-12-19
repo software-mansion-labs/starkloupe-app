@@ -49,7 +49,7 @@ export function SimulationPage({
 		if (trackingFlagLoaded) {
 			fetchData();
 		}
-	}, [simulationPayload, trackingFlagLoaded]);
+	}, [simulationPayload, trackingActive, trackingFlagLoaded]);
 
 	let content = null;
 	if (isLoading) {
