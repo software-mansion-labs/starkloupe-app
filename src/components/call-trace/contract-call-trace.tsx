@@ -41,16 +41,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 	const firstChildCall = contractCallsMap[firstChildCallId];
 
 	let callType = call.entryPoint.callType;
-	if (
-		callType === CallType.CALL &&
-		call.childrenCallIds.length > 0 &&
-		firstChildCall.entryPoint.callType === CallType.DELEGATE &&
-		call.entryPoint.storageAddress === firstChildCall.entryPoint.storageAddress &&
-		call.entryPoint.entryPointSelector === firstChildCall.entryPoint.entryPointSelector
-	) {
-		call = firstChildCall;
-		callType = CallType.DCALL;
-	}
+
 	const hasNestedElements =
 		call.childrenCallIds.length > 0 || call.functionCallId || call.isDeepestPanicResult;
 

@@ -27,8 +27,7 @@ export enum EntryPointType {
 
 export enum CallType {
 	CALL = 'Call',
-	DELEGATE = 'Delegate',
-	DCALL = 'DCall'
+	DELEGATE = 'Delegate'
 }
 
 export enum DataType {
