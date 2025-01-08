@@ -123,12 +123,14 @@ function Controls({
 }) {
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+				return;
+			}
 			if (event.key.toLowerCase() === 'b') {
 				previousStep();
 			} else if (event.key.toLowerCase() === 'n') {
 				nextStep();
 			} else if (event.key.toLowerCase() === 'o') {
-				event.preventDefault();
 				stepOver();
 			}
 		};
