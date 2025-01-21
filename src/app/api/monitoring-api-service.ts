@@ -52,8 +52,8 @@ export const createMonitoringApiKeyApi = async (network: 'SN_MAIN' | 'SN_SEPOLIA
 
 export const createNetworkApi = async (networkName: string, rpcUrl: string, organizationId: string): Promise<boolean> => {
     const res = await callMonitoringApi(`${process.env.WALNUT_MAIN_API_URL}/organization/${organizationId}/network`, 'POST', {
-        networkName,
-        rpcUrl,
+        networkName: networkName.trim(),
+        rpcUrl: rpcUrl.trim(),
     });
     return res.ok;
 }
