@@ -24,6 +24,7 @@ export interface VerificationStatusRow {
 	projectId?: number;
 	createdAt: string;
 	updatedAt: string;
+	profiles: [string];
 }
 
 export enum VerificationStatus {
