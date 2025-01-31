@@ -93,6 +93,7 @@ export function VerificationStatusPage({ verificationId }: { verificationId: str
 													<TableRow>
 														<TableHead>Status</TableHead>
 														<TableHead>Class hash</TableHead>
+														<TableHead>Build profiles</TableHead>
 														<TableHead>Message</TableHead>
 														<TableHead className="text-right">Updated At</TableHead>
 													</TableRow>
@@ -105,13 +106,16 @@ export function VerificationStatusPage({ verificationId }: { verificationId: str
 																	row.status === VerificationStatus.success
 																		? 'text-green-500'
 																		: row.status === VerificationStatus.failed
-																		? 'text-red-500'
-																		: 'text-blue-500'
+																			? 'text-red-500'
+																			: 'text-blue-500'
 																}
 															>
 																{row.status}
 															</TableCell>
 															<TableCell className="font-mono">{row.classHash}</TableCell>
+															<TableCell className="font-mono">
+																{row.profiles?.join(', ') || ''}
+															</TableCell>
 															<TableCell>{row.message}</TableCell>
 															<TableCell className="text-right font-mono">
 																{new Date(row.updatedAt).toLocaleString()}
