@@ -163,9 +163,8 @@ export interface EventCall {
 	callId: number;
 	contractCallId: number;
 	name: string;
-	keys: string[];
-	parameters: Parameter[];
-	data: string[];
+	selector: string;
+	datas?: DataDecoded | null;
 	isHidden: boolean;
 }
 
