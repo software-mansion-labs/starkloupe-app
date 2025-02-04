@@ -1,7 +1,6 @@
 import React, { memo } from 'react';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
-import { useDebugger } from '@/lib/context/debugger-context-provider';
 
 export const EventCallTrace = memo(function EventCallTrace({
 	eventCallId,
@@ -32,11 +31,11 @@ export const EventCallTrace = memo(function EventCallTrace({
 					<div className={`w-5 h-5 p-1 mr-1`}></div>
 					<span className="text-pink-600">{eventCall.name}</span> (
 					{eventCall.parameters.map((param, index) => (
-						<div key={index}>
-							<span className="text-orange-600">{param.name}</span>:{' '}
+						<span key={index}>
+							<span className="text-orange-600">{param.name}</span>:&nbsp;
 							<span className="text-green-600">{param.typeName}</span>
-							{index < eventCall.parameters.length - 1 && ' , '}{' '}
-						</div>
+							{index < eventCall.parameters.length - 1 && <span>,&nbsp;</span>}
+						</span>
 					))}
 					)
 				</div>
