@@ -10,8 +10,8 @@ import React, {
 } from 'react';
 import {
 	ContractCall,
-	ContractCallEvent,
 	FunctionCall,
+	EventCall,
 	SimulationDebuggerData,
 	SimulationResult
 } from '@/lib/simulation';
@@ -20,16 +20,15 @@ interface StringBooleanDict {
 	[key: string]: boolean;
 }
 
-export type TabId = 'call-trace' | 'events-list' | 'debugger';
+export type TabId = 'call-trace' | 'debugger';
 
 interface CallTraceContextProps {
 	contractCallsMap: { [key: number]: ContractCall };
 	functionCallsMap: { [key: number]: FunctionCall };
-	events: ContractCallEvent[];
+	eventCallsMap: { [key: string]: EventCall };
 	simulationResult: SimulationResult;
 	collapsedCalls: StringBooleanDict;
 	expandedCalls: StringBooleanDict;
-	showEvents: boolean;
 	simulationDebuggerData: SimulationDebuggerData;
 	activeTab: TabId;
 	isExecutionFailed: boolean;
@@ -49,10 +48,9 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	simulationResult: {} as SimulationResult,
 	contractCallsMap: {},
 	functionCallsMap: {},
-	events: [],
+	eventCallsMap: {},
 	collapsedCalls: {},
 	expandedCalls: {},
-	showEvents: false, //Change this to true, once we decode the event
 	simulationDebuggerData: { classesDebuggerData: {}, debuggerTrace: [] },
 	activeTab: 'call-trace',
 	isExecutionFailed: false,
@@ -109,7 +107,6 @@ export const CallTraceContextProvider: React.FC<
 
 	const [collapsedCalls, setCollapsedCalls] = useState<StringBooleanDict>(() => initiallyCollapsed);
 	const [expandedCalls, setExpandedCalls] = useState<StringBooleanDict>({});
-	const [showEvents, setShowEvents] = useState<boolean>(false); //Set while decode events
 	const [activeTab, setActiveTab] = useState<TabId>('call-trace');
 	const isExecutionFailed = simulationResult.executionResult.executionStatus === 'REVERTED';
 	const traceLineElementRefs = useRef<{ [callId: number]: React.RefObject<HTMLDivElement> }>({});
@@ -142,6 +139,11 @@ export const CallTraceContextProvider: React.FC<
 			if (contractCall.childrenCallIds.length > 0 || contractCall.functionCallId) {
 				newState[contractCallId] = true;
 			}
+			if (contractCall.eventCallIds.length > 0) {
+				contractCall.eventCallIds.forEach((eventCallId) => {
+					newState[eventCallId] = true;
+				});
+			}
 		});
 
 		Object.entries(simulationResult.functionCallsMap).forEach(([functionCallId, functionCall]) => {
@@ -165,10 +167,9 @@ export const CallTraceContextProvider: React.FC<
 				simulationResult,
 				contractCallsMap: simulationResult.contractCallsMap,
 				functionCallsMap: simulationResult.functionCallsMap,
-				events: simulationResult.events,
+				eventCallsMap: simulationResult.eventCallsMap,
 				collapsedCalls,
 				expandedCalls,
-				showEvents,
 				simulationDebuggerData: simulationResult.simulationDebuggerData,
 				errorMessage,
 				activeTab,

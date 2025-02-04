@@ -110,6 +110,7 @@ export interface ContractCall {
 	parentCallId: number;
 	childrenCallIds: number[];
 	functionCallId?: number | null;
+	eventCallIds: number[];
 
 	entryPoint: EntryPoint;
 	result: CallResult;
@@ -158,12 +159,13 @@ export interface FunctionCall {
 	isHidden: boolean;
 }
 
-export interface ContractCallEvent {
+export interface EventCall {
+	callId: number;
 	contractCallId: number;
 	name: string;
-	keys: string[];
-	parameters: Parameter[];
-	data: string[];
+	selector: string;
+	datas?: DataDecoded | null;
+	isHidden: boolean;
 }
 
 export interface Parameter {
@@ -174,7 +176,7 @@ export interface Parameter {
 export interface SimulationResult {
 	contractCallsMap: { [key: string]: ContractCall };
 	functionCallsMap: { [key: string]: FunctionCall };
-	events: ContractCallEvent[];
+	eventCallsMap: { [key: string]: EventCall };
 	executionResult: ExecutionResultSucceeded | ExecutionResultReverted;
 	simulationDebuggerData: SimulationDebuggerData;
 }
