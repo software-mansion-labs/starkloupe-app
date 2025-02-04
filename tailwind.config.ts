@@ -64,11 +64,16 @@ module.exports = {
 				'accordion-up': {
 					from: { height: 'var(--radix-accordion-content-height)' },
 					to: { height: 0 }
-				}
+				},
+				'highlight': {
+					'0%': { backgroundColor: 'rgba(192,192,192, 0.5)' },
+					'100%': { backgroundColor: 'transparent' },
+				},
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
-				'accordion-up': 'accordion-up 0.2s ease-out'
+				'accordion-up': 'accordion-up 0.2s ease-out',
+				'highlight': 'highlight 1s ease-in-out',
 			}
 		}
 	},

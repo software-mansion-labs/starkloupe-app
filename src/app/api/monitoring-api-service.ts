@@ -124,3 +124,95 @@ const unauthorizedCallMonitoringApi = async (url: string, method: string, body?:
         body: body ? JSON.stringify(body) : undefined,
     });
 }
+
+export type MonitoringErrorType = {
+    id: string,
+    error: string,
+    totalCount: number,
+    usersCount: number,
+    lastOccurrenceDate: Date,
+    firstOccurrenceDate: Date,
+}
+
+export type MonitoringEventType = {
+    id: string,
+    senderAddress: string,
+    calldataHex: string,
+    date: Date,
+    blockNumber: number,
+}
+
+export const getMonitoringEventsApi = async (projectId: string, errorId: string, offset: number): Promise<MonitoringEventType[]> => {
+    const res =  await callMonitoringApi(`${process.env.WALNUT_MAIN_API_URL}/organization/${projectId}/monitoring/${projectId}/events/${errorId}/?offset=${offset}`, 'GET');
+    if (res.ok) {
+        return (await res.json()).map((_: any) => ({
+            id: _.id,
+            senderAddress: _.senderAddress,
+            calldataHex: JSON.parse(_.calldataHex),
+            date: new Date(_.date),
+            blockNumber: parseInt(_.blockNumber),
+        })) as MonitoringEventType[];
+    }
+    throw new Error('Failed to fetch monitoring events!');
+}
+
+export const getMonitoringErrorsApi = async (projectId: string, offset: number): Promise<MonitoringErrorType[]> => {
+    const res =  await callMonitoringApi(`${process.env.WALNUT_MAIN_API_URL}/organization/${projectId}/monitoring/${projectId}/events?offset=${offset}`, 'GET');
+    if (res.ok) {
+        return (await res.json()).map((_: any) => ({
+            id: _.id,
+            error: _.error,
+            totalCount: parseInt(_.totalCount),
+            usersCount: parseInt(_.usersCount),
+            lastOccurrenceDate: new Date(_.lastOccurrenceDate),
+            firstOccurrenceDate: new Date(_.firstOccurrenceDate)
+        })) as MonitoringErrorType[];
+    }
+    throw new Error('Failed to fetch monitoring errors!');
+}
+
+export type MonitoringErrorsOverview = {
+    uniqueErrorsCount: number,
+    totalErrorsCount: number,
+    uniqueSendersCount: number,
+    latestErrorDate: Date | undefined,
+    network: 'SN_MAIN' | 'SN_TESTNET' | undefined,
+    projectName?: string,
+}
+
+export const getMonitoringErrorsOverviewApi = async (projectId: string): Promise<MonitoringErrorsOverview> => {
+    const res =  await callMonitoringApi(`${process.env.WALNUT_MAIN_API_URL}/organization/${projectId}/monitoring/${projectId}/events/overview`, 'GET');
+    if (res.ok) {
+        const resData = await res.json();
+        return {
+            uniqueErrorsCount: parseInt(resData.uniqueErrorsCount),
+            totalErrorsCount: parseInt(resData.totalErrorsCount),
+            uniqueSendersCount: parseInt(resData.uniqueSendersCount),
+            latestErrorDate: resData.latestErrorDate ? new Date(resData.latestErrorDate) : undefined,
+            network: resData.network,
+            projectName: resData.projectName ?? undefined,
+        } as MonitoringErrorsOverview;
+    }
+    throw new Error('Failed to fetch monitoring events overview!');
+}
+
+export type MonitoringErrorEventsOverview = {
+    totalCount: number,
+    uniqueSendersCount: number,
+    error: string,
+    firstOccurrenceDate: Date,
+}
+
+export const getMonitoringErrorEventsOverviewApi = async (projectId: string, errorId: string): Promise<MonitoringErrorEventsOverview> => {
+    const res =  await callMonitoringApi(`${process.env.WALNUT_MAIN_API_URL}/organization/${projectId}/monitoring/${projectId}/events/${errorId}/overview`, 'GET');
+    if (res.ok) {
+        const resData = await res.json();
+        return {
+            totalCount: parseInt(resData.totalCount),
+            uniqueSendersCount: parseInt(resData.uniqueSendersCount),
+            error: resData.error,
+            firstOccurrenceDate: new Date(resData.firstOccurrenceDate),
+        } as MonitoringErrorEventsOverview;
+    }
+    throw new Error('Failed to fetch monitoring error  overview!');
+}
