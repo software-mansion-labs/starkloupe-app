@@ -181,7 +181,12 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 						</>
 					)}
 					{call.eventCallIds.map((eventCallId) => (
-						<CommonCallTrace callId={eventCallId} nestingLevel={nestingLevel} callType="event" />
+						<CommonCallTrace
+							key={eventCallId}
+							callId={eventCallId}
+							nestingLevel={nestingLevel + 1}
+							callType="event"
+						/>
 					))}
 				</>
 			)}
