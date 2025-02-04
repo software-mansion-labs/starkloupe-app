@@ -4,11 +4,10 @@ import {
 	TabId,
 	useCallTrace
 } from '@/lib/context/call-trace-context-provider';
-import { EventsList } from './event-entries';
 import { Debugger } from '@/components/debugger';
 import { DebuggerContextProvider } from '@/lib/context/debugger-context-provider';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import CalldataSearch from '../ui/calldata-search';
 import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
@@ -92,15 +91,6 @@ function CallTraceRootContent() {
 						</ScrollArea>
 					</div>
 				</TabsContent>
-				{/*
-				<TabsContent value="events-list">
-					<Card>
-						<CardContent className="p-0 py-2 text-xs">
-							<EventsList events={simulationResult.events} />
-						</CardContent>
-					</Card>
-				</TabsContent>
-				*/}
 				<TabsContent value="debugger">
 					<Card className="text-xs">
 						<Debugger />
