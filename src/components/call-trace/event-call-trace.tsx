@@ -42,7 +42,7 @@ export const EventCallTrace = memo(function EventCallTrace({
 					<span className="text-pink-600">{call.name}</span> (
 					{(call.datas ?? []).map((param, index) => (
 						<span key={index}>
-							<span className="text-green-500">{param.name}</span>:&nbsp;
+							<span className="text-green-600">{param.name}</span>:&nbsp;
 							<span className="text-orange-500">{param.typeName}</span>
 							{index < (call.datas?.length ?? 0) - 1 && <span>,&nbsp;</span>}
 						</span>

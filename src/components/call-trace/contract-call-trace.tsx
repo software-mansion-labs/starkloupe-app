@@ -142,7 +142,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 					<ContractCallSignature contractCall={call} />
 					<span className="text-yellow-900">{'('}</span>
 					{call.argumentsNames ? (
-						<span className="text-green-500">{call.argumentsNames.join(', ')}</span>
+						<span className="text-green-600">{call.argumentsNames.join(', ')}</span>
 					) : (
 						<></>
 					)}
