@@ -7,10 +7,12 @@ import {
     MonitoringErrorEventsOverview,
     MonitoringEventType
 } from '@/app/api/monitoring-api-service';
-import { useSearchParams } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Footer } from '@/components/footer';
 import { EventsTable } from '@/components/monitoring/events-table';
+import { Button } from '@/components/ui/button';
+import { ArrowUturnLeftIcon } from '@heroicons/react/16/solid';
 
 export const runtime = 'edge';
 
@@ -20,6 +22,7 @@ const EventsPage = ({ params }: { params: { project_id: string, error_id: string
     const [monitoringEventsOverview, setMonitoringEventsOverview] = useState<MonitoringErrorEventsOverview | undefined>(undefined);
     const [events, setEvents] = useState<MonitoringEventType[]>([]);
     const searchParams = useSearchParams();
+    const router = useRouter();
 
     const [firstLoadDone, setFirstLoadDone] = useState<boolean>(false);
 
@@ -93,13 +96,21 @@ const EventsPage = ({ params }: { params: { project_id: string, error_id: string
         setPage(page + 1);
     };
 
+    const goBack = () => {
+        router.push(`/monitoring/${params.project_id}/dashboard`);
+    };
+
     return (
         <div className="min-h-screen flex flex-col">
             <HeaderNav/>
             <main className="flex flex-col pb-4 sm:pb-6 lg:pb-8 flex-1">
                 <section className="border-grid border-b px-4 sm:px-6 lg:px-8">
                     <div className="container-wrapper">
-                        <div className="flex flex-col items-start gap-1 py-8 md:py-10 lg:py-12">
+                        <div className="flex flex-col items-start gap-1 py-8 md:py-10 lg:py-8">
+                            <Button variant="outline" className="text-sm px-3 py-1 h-auto mb-2"
+                                    onClick={goBack}>
+                                <ArrowUturnLeftIcon className="mr-2 h-4 w-4"/> Back
+                            </Button>
                             <h1 className="text-3xl font-bold leading-tight tracking-tighter md:text-4xl lg:leading-[1.1]">
                                 Error details
                             </h1>
