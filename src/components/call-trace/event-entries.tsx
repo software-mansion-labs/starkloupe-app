@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { getContractName } from '@/lib/utils';
-import { DataType, ContractCallEvent } from '@/lib/simulation';
+import { DataType, ContractCallEvent, DecodedItem } from '@/lib/simulation';
 import { DecodeDataTable } from '../decode-data-table';
 
 export function EventsList({ events }: { events: ContractCallEvent[] }) {
@@ -34,13 +34,15 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 						style={{ marginLeft: CALL_NESTING_SPACE_BUMP }}
 						className="flex flex-row items-center trace-line_content"
 					>
-						{contractCall && (
+						{event.contractCallId != 0 ? (
 							<span className="text-blue-600">{getContractName({ contractCall })}</span>
+						) : (
+							<span className="text-blue-600">{`StarkGate: ETH Token`}</span>
 						)}
 						{'.'}
 						<span className="text-pink-500">{event.name}</span>
 						<span className="text-yellow-900">{'('}</span>
-						{(event.datas ?? []).map((param, index) => (
+						{(event.datas ?? []).map((param: DecodedItem, index: number) => (
 							<span key={index}>
 								<span className="text-green-600">{param.name}</span>:&nbsp;
 								<span className="text-orange-500">{param.typeName}</span>
