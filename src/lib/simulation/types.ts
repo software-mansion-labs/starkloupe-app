@@ -159,13 +159,11 @@ export interface FunctionCall {
 	isHidden: boolean;
 }
 
-export interface EventCall {
-	callId: number;
+export interface ContractCallEvent {
 	contractCallId: number;
 	name: string;
 	selector: string;
 	datas?: DataDecoded | null;
-	isHidden: boolean;
 }
 
 export interface Parameter {
@@ -176,7 +174,7 @@ export interface Parameter {
 export interface SimulationResult {
 	contractCallsMap: { [key: string]: ContractCall };
 	functionCallsMap: { [key: string]: FunctionCall };
-	eventCallsMap: { [key: string]: EventCall };
+	events: ContractCallEvent[];
 	executionResult: ExecutionResultSucceeded | ExecutionResultReverted;
 	simulationDebuggerData: SimulationDebuggerData;
 }

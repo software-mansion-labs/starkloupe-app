@@ -4,10 +4,11 @@ import {
 	TabId,
 	useCallTrace
 } from '@/lib/context/call-trace-context-provider';
+import { EventsList } from './event-entries';
 import { Debugger } from '@/components/debugger';
 import { DebuggerContextProvider } from '@/lib/context/debugger-context-provider';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import CalldataSearch from '../ui/calldata-search';
 import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
@@ -38,7 +39,7 @@ function CallTraceRootContent() {
 			<Tabs value={activeTab} onValueChange={onValueChange}>
 				<TabsList>
 					<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
-					{/*<TabsTrigger value="events-list">Events</TabsTrigger>*/}
+					<TabsTrigger value="events-list">Events</TabsTrigger>
 					<TabsTrigger value="debugger">Debugger</TabsTrigger>
 				</TabsList>
 				<TabsContent value="call-trace">
@@ -90,6 +91,13 @@ function CallTraceRootContent() {
 							</div>
 						</ScrollArea>
 					</div>
+				</TabsContent>
+				<TabsContent value="events-list">
+					<Card>
+						<CardContent className="p-0 py-2 text-xs">
+							<EventsList events={simulationResult.events} />
+						</CardContent>
+					</Card>
 				</TabsContent>
 				<TabsContent value="debugger">
 					<Card className="text-xs">

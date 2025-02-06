@@ -11,7 +11,7 @@ import React, {
 import {
 	ContractCall,
 	FunctionCall,
-	EventCall,
+	ContractCallEvent,
 	SimulationDebuggerData,
 	SimulationResult
 } from '@/lib/simulation';
@@ -20,12 +20,12 @@ interface StringBooleanDict {
 	[key: string]: boolean;
 }
 
-export type TabId = 'call-trace' | 'debugger';
+export type TabId = 'call-trace' | 'events-list' | 'debugger';
 
 interface CallTraceContextProps {
 	contractCallsMap: { [key: number]: ContractCall };
 	functionCallsMap: { [key: number]: FunctionCall };
-	eventCallsMap: { [key: string]: EventCall };
+	events: ContractCallEvent[];
 	simulationResult: SimulationResult;
 	collapsedCalls: StringBooleanDict;
 	expandedCalls: StringBooleanDict;
@@ -48,7 +48,7 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	simulationResult: {} as SimulationResult,
 	contractCallsMap: {},
 	functionCallsMap: {},
-	eventCallsMap: {},
+	events: [],
 	collapsedCalls: {},
 	expandedCalls: {},
 	simulationDebuggerData: { classesDebuggerData: {}, debuggerTrace: [] },
@@ -107,6 +107,7 @@ export const CallTraceContextProvider: React.FC<
 
 	const [collapsedCalls, setCollapsedCalls] = useState<StringBooleanDict>(() => initiallyCollapsed);
 	const [expandedCalls, setExpandedCalls] = useState<StringBooleanDict>({});
+	const [showEvents, setShowEvents] = useState<boolean>(true);
 	const [activeTab, setActiveTab] = useState<TabId>('call-trace');
 	const isExecutionFailed = simulationResult.executionResult.executionStatus === 'REVERTED';
 	const traceLineElementRefs = useRef<{ [callId: number]: React.RefObject<HTMLDivElement> }>({});
@@ -139,11 +140,6 @@ export const CallTraceContextProvider: React.FC<
 			if (contractCall.childrenCallIds.length > 0 || contractCall.functionCallId) {
 				newState[contractCallId] = true;
 			}
-			if (contractCall.eventCallIds.length > 0) {
-				contractCall.eventCallIds.forEach((eventCallId) => {
-					newState[eventCallId] = true;
-				});
-			}
 		});
 
 		Object.entries(simulationResult.functionCallsMap).forEach(([functionCallId, functionCall]) => {
@@ -167,7 +163,7 @@ export const CallTraceContextProvider: React.FC<
 				simulationResult,
 				contractCallsMap: simulationResult.contractCallsMap,
 				functionCallsMap: simulationResult.functionCallsMap,
-				eventCallsMap: simulationResult.eventCallsMap,
+				events: simulationResult.events,
 				collapsedCalls,
 				expandedCalls,
 				simulationDebuggerData: simulationResult.simulationDebuggerData,
