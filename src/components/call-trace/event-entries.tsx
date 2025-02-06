@@ -1,9 +1,8 @@
 import React, { memo } from 'react';
-import { ContractCallEvent } from '@/lib/simulation';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { getContractName } from '@/lib/utils';
-import { DataType } from '@/lib/simulation';
+import { DataType, ContractCallEvent } from '@/lib/simulation';
 import { DecodeDataTable } from '../decode-data-table';
 
 export function EventsList({ events }: { events: ContractCallEvent[] }) {
