@@ -161,6 +161,7 @@ export interface FunctionCall {
 
 export interface ContractCallEvent {
 	contractCallId: number;
+	contractName: string;
 	name: string;
 	selector: string;
 	datas?: DataDecoded | null;

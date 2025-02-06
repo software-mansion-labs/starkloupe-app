@@ -1,7 +1,7 @@
 import React, { memo } from 'react';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
-import { getContractName } from '@/lib/utils';
+import { getContractName, shortenHash } from '@/lib/utils';
 import { DataType, ContractCallEvent, DecodedItem } from '@/lib/simulation';
 import { DecodeDataTable } from '../decode-data-table';
 
@@ -18,7 +18,10 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 		if (!traceLineElementRefs.current[key]) {
 			traceLineElementRefs.current[key] = React.createRef<HTMLDivElement>();
 		}
-		const contractCall = event.contractCallId && contractCallsMap[event.contractCallId];
+
+		const contractName = event.contractName?.startsWith('0x')
+			? shortenHash(event.contractName)
+			: event.contractName;
 
 		return (
 			<React.Fragment key={key}>
@@ -34,11 +37,7 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 						style={{ marginLeft: CALL_NESTING_SPACE_BUMP }}
 						className="flex flex-row items-center trace-line_content"
 					>
-						{event.contractCallId != 0 ? (
-							<span className="text-blue-600">{getContractName({ contractCall })}</span>
-						) : (
-							<span className="text-blue-600">{`StarkGate: ETH Token`}</span>
-						)}
+						{event.contractName && <span className="text-blue-600">{contractName}</span>}
 						{'.'}
 						<span className="text-pink-500">{event.name}</span>
 						<span className="text-yellow-900">{'('}</span>
