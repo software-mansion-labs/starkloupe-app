@@ -43,10 +43,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 	let callType = call.entryPoint.callType;
 
 	const hasNestedElements =
-		call.childrenCallIds.length > 0 ||
-		call.eventCallIds.length > 0 ||
-		call.functionCallId ||
-		call.isDeepestPanicResult;
+		call.childrenCallIds.length > 0 || call.functionCallId || call.isDeepestPanicResult;
 
 	// The error column doesn't render in case the whole tx is successful
 	// If the tx is reverted, the error column will render for all call lines
@@ -180,14 +177,6 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 							)}
 						</>
 					)}
-					{call.eventCallIds.map((eventCallId) => (
-						<CommonCallTrace
-							key={eventCallId}
-							callId={eventCallId}
-							nestingLevel={nestingLevel + 1}
-							callType="event"
-						/>
-					))}
 				</>
 			)}
 		</Fragment>
