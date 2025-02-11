@@ -8,10 +8,7 @@ import { isLogged } from '@/app/api/auth/auth-service';
 export async function middleware(request: NextRequest) {
     const isUserLogged = await isLogged();
     const openPageOrGoToLoginIfNotLogged = async (url: URL) => {
-        if (url.pathname.startsWith('/monitoring')) {
-            return isUserLogged ? NextResponse.next() : NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/login`);
-        }
-        return NextResponse.next();
+        return isUserLogged ? NextResponse.next() : NextResponse.redirect(`${process.env.NEXT_PUBLIC_APP_BASE_URL}/login`);
     };
     const url = new URL(request.url);
     switch (url.pathname) {
