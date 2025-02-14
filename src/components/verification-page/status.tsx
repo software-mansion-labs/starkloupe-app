@@ -62,6 +62,26 @@ export function VerificationStatusPage({ verificationId }: { verificationId: str
 		return () => clearInterval(interval);
 	}, [fetchStatus, isPending]);
 
+	const formatOutput = (output: string): string => {
+		try {
+			const parsed = JSON.parse(output);
+			// If the parsed result is still a string, it means the JSON might be double-encoded.
+			if (typeof parsed === 'string') {
+				try {
+					const doubleParsed = JSON.parse(parsed);
+					return JSON.stringify(doubleParsed, null, 2);
+				} catch {
+					// If second parse fails, fallback to unescaping newline sequences.
+					return parsed.replace(/\\n/g, '\n');
+				}
+			}
+			return JSON.stringify(parsed, null, 2);
+		} catch (err) {
+			// If initial parsing fails, simply replace literal "\n" escapes with line breaks.
+			return output.replace(/\\n/g, '\n');
+		}
+	};
+
 	return (
 		<>
 			<HeaderNav />
@@ -76,55 +96,54 @@ export function VerificationStatusPage({ verificationId }: { verificationId: str
 							) : (
 								<div className="flex flex-col gap-4">
 									<div className="font-mono text-sm">Verification ID: {verificationId}</div>
-									{verificationRequest && verificationRequest.status === 'pending' && (
-										<Loader randomQuote={false} text="verifying..." />
-									)}
-									{verificationRequest && verificationRequest.status === 'failed' && (
+									{verificationRows.length === 0 &&
+										verificationRequest &&
+										verificationRequest.status === 'pending' && (
+											<Loader randomQuote={false} text="verifying..." />
+										)}
+									{verificationRequest && verificationRequest.status === 'failed' ? (
 										<Error
 											errorTitle="Verification failed"
 											title={false}
-											message={verificationRequest.message ?? 'Verification failed'}
+											message={formatOutput(verificationRequest.message ?? 'Verification failed')}
 										/>
-									)}
-									{verificationRows.length > 0 && (
-										<div className="rounded border">
-											<Table>
-												<TableHeader>
-													<TableRow>
-														<TableHead>Status</TableHead>
-														<TableHead>Class hash</TableHead>
-														<TableHead>Build profiles</TableHead>
-														<TableHead>Message</TableHead>
-														<TableHead className="text-right">Updated At</TableHead>
-													</TableRow>
-												</TableHeader>
-												<TableBody>
-													{verificationRows.map((row) => (
-														<TableRow key={row.id}>
-															<TableCell
-																className={
-																	row.status === VerificationStatus.success
-																		? 'text-green-500'
-																		: row.status === VerificationStatus.failed
+									) : (
+										verificationRows.length > 0 && (
+											<div className="rounded border">
+												<Table>
+													<TableHeader>
+														<TableRow>
+															<TableHead>Status</TableHead>
+															<TableHead>Class hash</TableHead>
+															<TableHead>Build profiles</TableHead>
+															<TableHead>Message</TableHead>
+														</TableRow>
+													</TableHeader>
+													<TableBody>
+														{verificationRows.map((row) => (
+															<TableRow key={row.id}>
+																<TableCell
+																	className={
+																		row.status === VerificationStatus.success
+																			? 'text-green-500'
+																			: row.status === VerificationStatus.failed
 																			? 'text-red-500'
 																			: 'text-blue-500'
-																}
-															>
-																{row.status}
-															</TableCell>
-															<TableCell className="font-mono">{row.classHash}</TableCell>
-															<TableCell className="font-mono">
-																{row.profiles?.join(', ') || ''}
-															</TableCell>
-															<TableCell>{row.message}</TableCell>
-															<TableCell className="text-right font-mono">
-																{new Date(row.updatedAt).toLocaleString()}
-															</TableCell>
-														</TableRow>
-													))}
-												</TableBody>
-											</Table>
-										</div>
+																	}
+																>
+																	{row.status}
+																</TableCell>
+																<TableCell className="font-mono">{row.classHash}</TableCell>
+																<TableCell className="font-mono">
+																	{row.profiles?.join(', ') || ''}
+																</TableCell>
+																<TableCell>{row.message}</TableCell>
+															</TableRow>
+														))}
+													</TableBody>
+												</Table>
+											</div>
+										)
 									)}
 								</div>
 							)}
