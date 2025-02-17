@@ -1,6 +1,7 @@
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { ContractCallTrace } from './contract-call-trace';
 import { FunctionCallTrace } from './function-call-trace';
+import { EventCallTrace } from './event-call-trace';
 import { ErrorTraceLine } from './error-trace-line';
 import { memo, useMemo } from 'react';
 
@@ -11,16 +12,18 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 }: {
 	callId: number;
 	nestingLevel: number;
-	callType?: 'function' | 'contract';
+	callType?: 'event' | 'function' | 'contract';
 }) {
-	const { functionCallsMap, contractCallsMap, errorMessage } = useCallTrace();
+	const { eventCallsMap, functionCallsMap, contractCallsMap, errorMessage } = useCallTrace();
 
 	if (!callType) {
 		const functionCall = functionCallsMap[callId];
 		const contractCall = contractCallsMap[callId];
+		const eventCall = eventCallsMap[callId];
 
 		if (functionCall) callType = 'function';
 		else if (contractCall) callType = 'contract';
+		else if (eventCall) callType = 'event';
 	}
 	const contractCallIdsArray = useMemo(() => {
 		if (contractCallsMap && !contractCallsMap[callId]) {
@@ -51,7 +54,9 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 		return null;
 	}, [functionCallsMap, callId, nestingLevel]);
 
-	if (functionCallsMap && functionCallsMap[callId] && callType === 'function') {
+	if (eventCallsMap && eventCallsMap[callId] && callType === 'event') {
+		return <EventCallTrace eventCallId={callId} nestingLevel={nestingLevel} />;
+	} else if (functionCallsMap && functionCallsMap[callId] && callType === 'function') {
 		const functionCall = functionCallsMap[callId];
 		if (!functionCall.isHidden) {
 			return <FunctionCallTrace functionCallId={callId} nestingLevel={nestingLevel} />;

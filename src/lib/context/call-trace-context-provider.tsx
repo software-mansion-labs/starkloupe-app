@@ -11,6 +11,7 @@ import React, {
 import {
 	ContractCall,
 	FunctionCall,
+	EventCall,
 	ContractCallEvent,
 	SimulationDebuggerData,
 	SimulationResult
@@ -25,6 +26,7 @@ export type TabId = 'call-trace' | 'events-list' | 'debugger';
 interface CallTraceContextProps {
 	contractCallsMap: { [key: number]: ContractCall };
 	functionCallsMap: { [key: number]: FunctionCall };
+	eventCallsMap: { [key: number]: EventCall };
 	events: ContractCallEvent[];
 	simulationResult: SimulationResult;
 	collapsedCalls: StringBooleanDict;
@@ -48,6 +50,7 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	simulationResult: {} as SimulationResult,
 	contractCallsMap: {},
 	functionCallsMap: {},
+	eventCallsMap: {},
 	events: [],
 	collapsedCalls: {},
 	expandedCalls: {},
@@ -163,6 +166,7 @@ export const CallTraceContextProvider: React.FC<
 				simulationResult,
 				contractCallsMap: simulationResult.contractCallsMap,
 				functionCallsMap: simulationResult.functionCallsMap,
+				eventCallsMap: simulationResult.eventCallsMap,
 				events: simulationResult.events,
 				collapsedCalls,
 				expandedCalls,
