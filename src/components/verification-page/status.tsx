@@ -112,11 +112,7 @@ export function VerificationStatusPage({ verificationId }: { verificationId: str
 															<TableCell className="text-blue-500">
 																{verificationRequest.status}
 															</TableCell>
-															<TableCell>
-																{
-																	'Your verification request has been received and is now being processed. We are currently building the project as part of this process.'
-																}
-															</TableCell>
+															<TableCell>{'Project is being processed. Please wait.'}</TableCell>
 														</TableRow>
 													</TableBody>
 												</Table>
