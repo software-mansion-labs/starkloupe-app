@@ -10,7 +10,6 @@ import { HeaderNav } from '@/components/header';
 export const runtime = 'edge';
 
 export default function Page() {
-
 	return (
 		<div className="min-h-screen flex flex-col">
 			<HeaderNav isMainPage={true} />

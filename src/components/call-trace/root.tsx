@@ -84,7 +84,7 @@ function CallTraceRootContent() {
 							</div>
 						</TooltipProvider>
 
-						<ScrollArea className="md:h-[calc(100vh-430px)] h-[calc(100vh-200px)]">
+						<ScrollArea className="h-[calc(100vh-450px)]">
 							<div className="text-xs px-0 py-2 overflow-y-auto">
 								<CommonCallTrace callId={1} nestingLevel={0} callType="contract" />
 								<ScrollBar orientation="horizontal" />
@@ -93,14 +93,14 @@ function CallTraceRootContent() {
 					</div>
 				</TabsContent>
 				<TabsContent value="events-list">
-					<Card>
+					<Card className="text-xs h-[calc(100vh-407px)]">
 						<CardContent className="p-0 py-2 text-xs">
 							<EventsList events={simulationResult.events} />
 						</CardContent>
 					</Card>
 				</TabsContent>
 				<TabsContent value="debugger">
-					<Card className="text-xs">
+					<Card className="text-xs h-[calc(100vh-407px)]">
 						<Debugger />
 					</Card>
 				</TabsContent>

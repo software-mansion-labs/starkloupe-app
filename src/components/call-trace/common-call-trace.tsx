@@ -5,10 +5,12 @@ import { ErrorTraceLine } from './error-trace-line';
 import { memo, useMemo } from 'react';
 
 export const CommonCallTrace = memo(function CommonCallTrace({
+	previewMode,
 	callId,
 	nestingLevel,
 	callType
 }: {
+	previewMode?: boolean;
 	callId: number;
 	nestingLevel: number;
 	callType?: 'function' | 'contract';
@@ -28,6 +30,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 		}
 		return contractCallsMap[callId].childrenCallIds.map((childCallId) => (
 			<CommonCallTrace
+				previewMode={previewMode}
 				key={childCallId}
 				callId={childCallId}
 				nestingLevel={nestingLevel}
@@ -35,7 +38,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 			/>
 		));
 		return null;
-	}, [contractCallsMap, nestingLevel, callId]);
+	}, [contractCallsMap, nestingLevel, callId, previewMode]);
 
 	const functionCallIdsList = useMemo(() => {
 		if (functionCallsMap && !functionCallsMap[callId]) {
@@ -44,17 +47,28 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 
 		if (functionCallsMap[callId].childrenCallIds) {
 			return functionCallsMap[callId].childrenCallIds.map((nestedCallId) => (
-				<CommonCallTrace key={nestedCallId} callId={nestedCallId} nestingLevel={nestingLevel} />
+				<CommonCallTrace
+					previewMode={previewMode}
+					key={nestedCallId}
+					callId={nestedCallId}
+					nestingLevel={nestingLevel}
+				/>
 			));
 		}
 
 		return null;
-	}, [functionCallsMap, callId, nestingLevel]);
+	}, [functionCallsMap, callId, nestingLevel, previewMode]);
 
 	if (functionCallsMap && functionCallsMap[callId] && callType === 'function') {
 		const functionCall = functionCallsMap[callId];
 		if (!functionCall.isHidden) {
-			return <FunctionCallTrace functionCallId={callId} nestingLevel={nestingLevel} />;
+			return (
+				<FunctionCallTrace
+					previewMode={previewMode}
+					functionCallId={callId}
+					nestingLevel={nestingLevel}
+				/>
+			);
 		} else {
 			return (
 				<>
@@ -72,10 +86,17 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 	} else if (contractCallsMap && contractCallsMap[callId] && callType === 'contract') {
 		const contractCall = contractCallsMap[callId];
 		if (!contractCall.isHidden) {
-			return <ContractCallTrace contractCallId={callId} nestingLevel={nestingLevel} />;
+			return (
+				<ContractCallTrace
+					previewMode={previewMode}
+					contractCallId={callId}
+					nestingLevel={nestingLevel}
+				/>
+			);
 		} else {
 			return contractCall.functionCallId ? (
 				<CommonCallTrace
+					previewMode={previewMode}
 					callId={contractCall.functionCallId}
 					nestingLevel={nestingLevel}
 					callType="function"

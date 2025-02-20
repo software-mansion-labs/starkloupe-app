@@ -19,10 +19,12 @@ import { ErrorTraceLine } from './error-trace-line';
 
 export const ContractCallTrace = memo(function ContractCallTrace({
 	contractCallId,
-	nestingLevel
+	nestingLevel,
+	previewMode
 }: {
 	contractCallId: number;
 	nestingLevel: number;
+	previewMode?: boolean;
 }) {
 	const {
 		expandedCalls,
@@ -34,7 +36,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 		isExecutionFailed,
 		traceLineElementRefs
 	} = useCallTrace();
-	const { debugContractCall, isContractCallDebuggable } = useDebugger();
+	const { debugContractCall, isContractCallDebuggable, currentStep } = useDebugger();
 
 	let call = contractCallsMap[contractCallId];
 	const firstChildCallId = call.childrenCallIds[0];
@@ -79,38 +81,54 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 	const childrenCallIdsArray = useMemo(() => {
 		return call.childrenCallIds.map((childCallId) => (
 			<CommonCallTrace
+				previewMode={previewMode}
 				key={childCallId}
 				callId={childCallId}
 				nestingLevel={nestingLevel + 1}
 				callType="contract"
 			/>
 		));
-	}, [call.childrenCallIds, nestingLevel]);
+	}, [call.childrenCallIds, nestingLevel, previewMode]);
 
 	return (
 		<Fragment key={call.callId}>
 			<TraceLine
-				isActive={expandedCalls[call.callId]}
+				previewMod={previewMode}
+				className={`${
+					previewMode
+						? isDebuggable
+							? currentStep?.withLocation?.contractCallId === call.callId
+								? 'bg-neutral-100'
+								: 'hover:!bg-neutral-50'
+							: 'hover:!bg-neutral-50'
+						: ''
+				}`}
+				isActive={!previewMode && expandedCalls[call.callId]}
 				onClick={() => {
-					toggleCallExpand(call.callId);
+					if (previewMode) {
+						debugContractCall(call.callId);
+					} else {
+						toggleCallExpand(call.callId);
+					}
 				}}
 				ref={traceLineElementRefs.current[contractCallId]}
 			>
-				{CallTypeChip(callType)}
+				{!previewMode && CallTypeChip(callType)}
 
 				{/* Error column
 				 * Empty in most lines,
 				 * or exclamation triangle icon in case of error on the line
 				 */}
 				{errorColumn}
-
-				<DebugButton
-					onDebugClick={() => {
-						debugContractCall(call.callId);
-						setActiveTab('debugger');
-					}}
-					isDebuggable={isDebuggable}
-				/>
+				{!previewMode && (
+					<DebugButton
+						onDebugClick={() => {
+							debugContractCall(call.callId);
+							setActiveTab('debugger');
+						}}
+						isDebuggable={isDebuggable}
+					/>
+				)}
 
 				<div
 					style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
@@ -118,7 +136,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 				>
 					<div
 						className={`w-5 h-5 p-1 mr-1  rounded-sm  ${
-							hasNestedElements ? 'cursor-pointer hover:bg-neutral-200' : ''
+							hasNestedElements ? 'cursor-pointer hover:!bg-neutral-50' : ''
 						}`}
 						onClick={(event) => {
 							event.stopPropagation();
@@ -137,14 +155,14 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 					</div>
 
 					<ContractCallSignature contractCall={call} />
-					<span className="text-yellow-900">{'('}</span>
-					{call.argumentsNames ? (
+					{!previewMode && <span className="text-yellow-900">{'('}</span>}
+					{!previewMode && call.argumentsNames ? (
 						<span className="text-green-600">{call.argumentsNames.join(', ')}</span>
 					) : (
 						<></>
 					)}
-					<span className="text-yellow-900">{')'}</span>
-					{call.result && call.resultTypes ? (
+					{!previewMode && <span className="text-yellow-900">{')'}</span>}
+					{!previewMode && call.result && call.resultTypes ? (
 						<>
 							<span className="text-yellow-900">&nbsp;{'->'}&nbsp;</span>
 							<span className="text-pink-500">{`(${call.resultTypes.join(', ')})`}</span>
@@ -156,11 +174,12 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 					)}
 				</div>
 			</TraceLine>
-			{expandedCalls[call.callId] && <ContractCallDetails call={call} />}{' '}
+			{expandedCalls[call.callId] && !previewMode && <ContractCallDetails call={call} />}{' '}
 			{collapsedCalls[call.callId] != true && (
 				<>
 					{call.functionCallId ? (
 						<CommonCallTrace
+							previewMode={previewMode}
 							callId={call.functionCallId}
 							nestingLevel={nestingLevel + 1}
 							callType="function"

@@ -8,13 +8,17 @@ export const CALL_NESTING_SPACE_BUMP: number = 16; // in pixels
 
 export const TraceLine = React.forwardRef<
 	HTMLDivElement,
-	React.ComponentPropsWithoutRef<'div'> & { isUnclickable?: boolean; isActive?: boolean }
->(({ className, isUnclickable, isActive, ...props }, ref) => {
+	React.ComponentPropsWithoutRef<'div'> & {
+		isUnclickable?: boolean;
+		isActive?: boolean;
+		previewMod?: boolean;
+	}
+>(({ className, isUnclickable, isActive, previewMod = false, ...props }, ref) => {
 	return (
 		<div
 			ref={ref}
 			className={clsx(
-				`py-0.5 px-4 flex flex-row items-center font-mono border-y-2 ${
+				`${previewMod ? '' : 'py-0.5'} px-4 flex flex-row items-center font-mono border-y-2 ${
 					isActive ? 'border-neutral-300 trace-line--selected' : 'border-transparent'
 				} ${isUnclickable ? '' : 'hover:bg-neutral-100 cursor-pointer'}`,
 				className

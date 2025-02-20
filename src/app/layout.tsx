@@ -16,12 +16,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 	return (
 		<html lang="en" className="h-full ">
 			<body className={`${inter.className} h-full`}>
-			<UserContextProvider>
-				<SettingsContextProvider>
-					<div className="h-screen flex flex-col">{children}</div>
-				</SettingsContextProvider>
-				<Toaster />
-			</UserContextProvider>
+				<UserContextProvider>
+					<SettingsContextProvider>
+						<div className="flex flex-col w-full min-h-screen">{children}</div>
+					</SettingsContextProvider>
+					<Toaster />
+				</UserContextProvider>
 			</body>
 		</html>
 	);
