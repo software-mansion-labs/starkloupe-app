@@ -62,7 +62,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 		return null;
 	}, [functionCallsMap, callId, nestingLevel, previewMode]);
 
-	if (eventCallsMap && eventCallsMap[callId] && callType === 'event') {
+	if (eventCallsMap && eventCallsMap[callId] && callType === 'event' && !previewMode) {
 		return <EventCallTrace eventCallId={callId} nestingLevel={nestingLevel} />;
 	} else if (functionCallsMap && functionCallsMap[callId] && callType === 'function') {
 		const functionCall = functionCallsMap[callId];
