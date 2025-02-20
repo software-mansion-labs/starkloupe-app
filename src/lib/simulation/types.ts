@@ -148,6 +148,7 @@ export interface FunctionCall {
 	callId: number;
 	parentCallId: number;
 	childrenCallIds: number[];
+	eventCallIds: number[];
 	contractCallId: number;
 	fnName: string;
 	fp: number;
@@ -159,14 +160,28 @@ export interface FunctionCall {
 	isHidden: boolean;
 }
 
+export interface EventCall {
+	callId: number;
+	contractCallId: number;
+	functionCallId: number;
+	name: string;
+	selector: string;
+	members: EventField[];
+	isHidden: boolean;
+}
+
 export interface ContractCallEvent {
 	contractCallId: number;
 	contractName: string;
+	functionCallId: number;
 	name: string;
 	selector: string;
 	datas?: DataDecoded | null;
 }
-
+export interface EventField {
+	name: string;
+	type: string;
+}
 export interface Parameter {
 	name: string;
 	typeName: string;
@@ -175,6 +190,7 @@ export interface Parameter {
 export interface SimulationResult {
 	contractCallsMap: { [key: string]: ContractCall };
 	functionCallsMap: { [key: string]: FunctionCall };
+	eventCallsMap: { [key: string]: EventCall };
 	events: ContractCallEvent[];
 	executionResult: ExecutionResultSucceeded | ExecutionResultReverted;
 	simulationDebuggerData: SimulationDebuggerData;
