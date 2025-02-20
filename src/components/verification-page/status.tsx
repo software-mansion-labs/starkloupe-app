@@ -99,7 +99,24 @@ export function VerificationStatusPage({ verificationId }: { verificationId: str
 									{verificationRows.length === 0 &&
 										verificationRequest &&
 										verificationRequest.status === 'pending' && (
-											<Loader randomQuote={false} text="verifying..." />
+											<div className="rounded border">
+												<Table>
+													<TableHeader>
+														<TableRow>
+															<TableHead>Status</TableHead>
+															<TableHead>Message</TableHead>
+														</TableRow>
+													</TableHeader>
+													<TableBody>
+														<TableRow key={verificationRequest.id}>
+															<TableCell className="text-blue-500">
+																{verificationRequest.status}
+															</TableCell>
+															<TableCell>{'Project is being processed. Please wait.'}</TableCell>
+														</TableRow>
+													</TableBody>
+												</Table>
+											</div>
 										)}
 									{verificationRequest && verificationRequest.status === 'failed' ? (
 										<Error

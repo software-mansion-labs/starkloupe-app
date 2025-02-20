@@ -8,12 +8,11 @@ import { useContext, useEffect, useState, memo } from 'react';
 import { CodeViewer } from '../code-viewer/code-viewer';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
-import { FilesExplorer } from '../code-viewer/file-explorer';
 import { ContractCallSignature } from '../ui/signature';
 import { ContractCall } from '@/lib/simulation';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import { StepDetails } from './step-details';
+import Sidebar from '../code-viewer/sidebar';
 
 export const Debugger = memo(function Debugger({}: {}) {
 	const {
@@ -41,24 +40,11 @@ export const Debugger = memo(function Debugger({}: {}) {
 			<ResizablePanel
 				defaultSize={30}
 				minSize={20}
-				className="flex flex-col justify-between gap-4 border-r border-neutral-200"
+				className="flex flex-col justify-between gap-4 border-neutral-200"
 			>
-				<ResizablePanelGroup direction="vertical">
-					<ResizablePanel defaultSize={50} minSize={10}>
-						<FilesExplorer
-							className="flex h-full"
-							classSourceCode={sourceCode}
-							activeFile={activeFile}
-							handleFileClick={setActiveFile}
-						/>
-					</ResizablePanel>
-					<ResizableHandle withHandle />
-					<ResizablePanel defaultSize={50} minSize={10}>
-						<StepDetails className="flex h-full border-neutral-200" step={currentStep} />
-					</ResizablePanel>
-				</ResizablePanelGroup>
+				<Sidebar handleFileClick={setActiveFile} />
 			</ResizablePanel>
-			<ResizableHandle withHandle />
+			<ResizableHandle withHandle className="w-[1px]" />
 			<ResizablePanel defaultSize={70} minSize={20} className="flex flex-col flex-grow">
 				<Controls
 					nextStep={nextStep}

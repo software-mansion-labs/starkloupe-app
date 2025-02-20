@@ -13,9 +13,11 @@ import { FnName } from '../ui/function-name';
 import { Card } from '../ui/card';
 
 export const FunctionCallTrace = memo(function FunctionCallTrace({
+	previewMode,
 	functionCallId,
 	nestingLevel
 }: {
+	previewMode?: boolean;
 	functionCallId: number;
 	nestingLevel: number;
 }) {
@@ -31,7 +33,8 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 		traceLineElementRefs,
 		errorMessage
 	} = useCallTrace();
-	const { debugFunctionCall, isFunctionCallDebuggable, isContractCallDebuggable } = useDebugger();
+	const { debugFunctionCall, isFunctionCallDebuggable, isContractCallDebuggable, currentStep } =
+		useDebugger();
 
 	const functionCall = functionCallsMap[functionCallId];
 	const contractCall = contractCallsMap[functionCall.contractCallId];
@@ -52,21 +55,41 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 	return (
 		<React.Fragment key={functionCallId}>
 			<TraceLine
-				isActive={expandedCalls[functionCallId]}
-				onClick={() => toggleCallExpand(functionCallId)}
+				previewMod={previewMode}
+				className={`${
+					previewMode
+						? isDebuggable
+							? currentStep?.withLocation?.functionCallId === functionCallId ||
+							  currentStep?.withContractCall?.contractCallId
+								? 'bg-neutral-100'
+								: 'hover:!bg-neutral-50'
+							: 'hover:!bg-neutral-50'
+						: ''
+				}`}
+				isActive={!previewMode && expandedCalls[functionCallId]}
+				onClick={() => {
+					if (previewMode) {
+						debugFunctionCall(functionCallId);
+					} else {
+						toggleCallExpand(functionCallId);
+					}
+				}}
 				ref={traceLineElementRefs.current[functionCallId]}
 			>
-				{CallTypeChip('Function')}
-				{isExecutionFailed && <div className="w-5 mr-0.5"></div>}
+				{!previewMode && CallTypeChip('Function')}
 
-				<DebugButton
-					onDebugClick={() => {
-						debugFunctionCall(functionCallId);
-						setActiveTab('debugger');
-					}}
-					isDebuggable={isDebuggable}
-					noCodeLocationAvaliable={noCodeLocationAvaliable}
-				/>
+				{isExecutionFailed && <div className="w-5 mr-0.5"></div>}
+				{!previewMode && (
+					<DebugButton
+						onDebugClick={() => {
+							debugFunctionCall(functionCallId);
+							setActiveTab('debugger');
+						}}
+						isDebuggable={isDebuggable}
+						noCodeLocationAvaliable={noCodeLocationAvaliable}
+					/>
+				)}
+
 				<div
 					style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
 					className="flex flex-row items-center"
@@ -74,7 +97,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 					<div
 						className={`w-5 h-5 p-1 mr-1  rounded-sm  ${
 							functionCall.childrenCallIds.length > 0 || functionCall.isDeepestPanicResult
-								? 'cursor-pointer hover:bg-neutral-200'
+								? 'cursor-pointer hover:!bg-neutral-50'
 								: ''
 						}`}
 						onClick={(event) => {
@@ -94,18 +117,19 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 						)}
 					</div>
 					<FnName fnName={functionCall.fnName} />
-					<CallIO ios={functionCall.arguments} />
-					&nbsp;{'->'}&nbsp;
-					<CallIO ios={functionCall.results} />
+					{!previewMode && <CallIO ios={functionCall.arguments} />}
+					{!previewMode && <>&nbsp;{'->'}&nbsp;</>}
+					{!previewMode && <CallIO ios={functionCall.results} />}
 				</div>
 			</TraceLine>
-			{expandedCalls[functionCallId] && (
+			{expandedCalls[functionCallId] && !previewMode && (
 				<FunctionCallDetails call={functionCall} contractCall={contractCall} />
 			)}{' '}
 			{collapsedCalls[functionCallId] != true && (
 				<>
 					{functionCall.childrenCallIds.map((nestedCallId) => (
 						<CommonCallTrace
+							previewMode={previewMode}
 							key={nestedCallId}
 							callId={nestedCallId}
 							nestingLevel={nestingLevel + 1}
@@ -134,8 +158,8 @@ const CallIO = memo(function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 						{io.value.length === 0
 							? 'None'
 							: io.value.length === 1
-								? io.value[0]
-								: `[${io.value.join(', ')}]`}
+							? io.value[0]
+							: `[${io.value.join(', ')}]`}
 					</span>
 					{i < ios.length - 1 ? <>,&nbsp;</> : ''}
 				</React.Fragment>
