@@ -37,7 +37,9 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 						style={{ marginLeft: CALL_NESTING_SPACE_BUMP }}
 						className="flex flex-row items-center trace-line_content"
 					>
-						{event.contractName && <span className="text-blue-600">{contractName}</span>}
+						{event.contractName && (
+							<span className="text-blue-600 whitespace-nowrap">{contractName}</span>
+						)}
 						{'.'}
 						<span className="text-pink-500">{event.name}</span>
 						<span className="text-yellow-900">{'('}</span>
