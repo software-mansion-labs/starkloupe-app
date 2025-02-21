@@ -93,10 +93,13 @@ function CallTraceRootContent() {
 					</div>
 				</TabsContent>
 				<TabsContent value="events-list">
-					<Card className="text-xs h-[calc(100vh-407px)]">
-						<CardContent className="p-0 py-2 text-xs">
-							<EventsList events={simulationResult.events} />
-						</CardContent>
+					<Card>
+						<ScrollArea className="text-xs h-[calc(100vh-407px)]">
+							<div className="p-0 py-2 overflow-y-auto">
+								<EventsList events={simulationResult.events} />
+							</div>
+							<ScrollBar orientation="horizontal" />
+						</ScrollArea>
 					</Card>
 				</TabsContent>
 				<TabsContent value="debugger">
