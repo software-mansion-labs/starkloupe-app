@@ -167,11 +167,14 @@ export interface EventCall {
 	name: string;
 	selector: string;
 	members: EventField[];
+	keys?: DataDecoded | null;
+	datas?: DataDecoded | null;
 	isHidden: boolean;
 }
 
 export interface ContractCallEvent {
 	contractCallId: number;
+	contractAddress: string;
 	contractName: string;
 	functionCallId: number;
 	name: string;

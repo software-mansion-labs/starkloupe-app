@@ -1,13 +1,13 @@
 import React, { memo } from 'react';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
-import { getContractName, shortenHash } from '@/lib/utils';
+import { shortenHash } from '@/lib/utils';
+import { InfoBox } from '@/components/ui/info-box';
 import { DataType, ContractCallEvent, DecodedItem } from '@/lib/simulation';
 import { DecodeDataTable } from '../decode-data-table';
 
 export function EventsList({ events }: { events: ContractCallEvent[] }) {
-	const { toggleCallExpand, traceLineElementRefs, expandedCalls, contractCallsMap } =
-		useCallTrace();
+	const { toggleCallExpand, traceLineElementRefs, expandedCalls } = useCallTrace();
 
 	if (events.length === 0) {
 		return <div className="px-4 py-2 text-sm">No events emitted during this transaction.</div>;
@@ -60,10 +60,21 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 }
 
 const EventDetails = memo(function EventCallDetails({ call }: { call: ContractCallEvent }) {
+	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [];
+
+	details.push(
+		{
+			name: 'Contract Address',
+			value: call.contractAddress
+		},
+		{ name: 'Event Selector', value: call.selector }
+	);
+
 	return (
 		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-2 px-4 ">
 			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
 				<div className=""></div>
+				<InfoBox details={details} />
 				{call.datas && <DecodeDataTable decodeData={call.datas} type={DataType.INPUT} />}
 			</div>
 		</div>
