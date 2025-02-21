@@ -1,6 +1,9 @@
 import React, { memo } from 'react';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
+import { InfoBox } from '@/components/ui/info-box';
+import { FunctionCall, EventCall, ContractCall } from '@/lib/simulation';
+import { shortenHash } from '@/lib/utils';
 
 export const EventCallTrace = memo(function EventCallTrace({
 	eventCallId,
@@ -14,19 +17,25 @@ export const EventCallTrace = memo(function EventCallTrace({
 		toggleCallExpand,
 		expandedCalls,
 		contractCallsMap,
+		functionCallsMap,
 		eventCallsMap,
 		traceLineElementRefs
 	} = useCallTrace();
 
-	const call = eventCallsMap[eventCallId];
+	const eventCall = eventCallsMap[eventCallId];
+	const contractCall = contractCallsMap[eventCall.contractCallId];
 
 	if (!traceLineElementRefs.current[eventCallId]) {
 		traceLineElementRefs.current[eventCallId] = React.createRef<HTMLDivElement>();
 	}
 
 	return (
-		<React.Fragment key={call.callId}>
-			<TraceLine isUnclickable>
+		<React.Fragment key={eventCallId}>
+			<TraceLine
+				isActive={expandedCalls[eventCallId]}
+				onClick={() => toggleCallExpand(eventCallId)}
+				ref={traceLineElementRefs.current[eventCallId]}
+			>
 				{CallTypeChip('Event')}
 
 				{/* Error column */}
@@ -40,17 +49,82 @@ export const EventCallTrace = memo(function EventCallTrace({
 					className="flex flex-row items-center"
 				>
 					<div className={`w-5 h-5 p-1 mr-1`}></div>
-					<span className="text-pink-600">{call.name}</span> (
-					{(call.members ?? []).map((member, index) => (
+					<span className="text-pink-600">{eventCall.name}</span> (
+					{(eventCall.members ?? []).map((member, index) => (
 						<span key={index}>
 							<span className="text-green-600">{member.name}</span>:&nbsp;
 							<span className="text-orange-500">{member.type}</span>
-							{index < (call.members?.length ?? 0) - 1 && <span>,&nbsp;</span>}
+							{index < (eventCall.members?.length ?? 0) - 1 && <span>,&nbsp;</span>}
 						</span>
 					))}
 					)
 				</div>
 			</TraceLine>
+			{expandedCalls[eventCallId] && (
+				<EventCallDetails call={eventCall} contractCall={contractCall} />
+			)}{' '}
 		</React.Fragment>
+	);
+});
+
+const EventCallDetails = memo(function EventCallDetails({
+	call,
+	contractCall
+}: {
+	call: EventCall;
+	contractCall: ContractCall;
+}) {
+	let contractName: string | undefined = undefined;
+	if (contractCall.contractName) {
+		contractName = contractCall.contractName;
+	} else if (contractCall.erc20TokenName || contractCall.erc20TokenSymbol) {
+		contractName = [contractCall.erc20TokenName, `(${contractCall.erc20TokenSymbol})`].join(' ');
+	} else if (contractCall.entryPointInterfaceName) {
+		contractName = contractCall.entryPointInterfaceName.split('::').pop();
+	}
+
+	if (!contractName) {
+		contractName = shortenHash(contractCall.entryPoint.storageAddress, 13);
+	}
+
+	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [];
+
+	details.push(
+		{
+			name: 'Contract Name',
+			value: contractName
+		},
+		{
+			name: 'Contract Address',
+			value: contractCall.entryPoint.storageAddress
+		},
+		{
+			name: 'Class Hash',
+			value: contractCall.entryPoint.classHash
+		}
+	);
+
+	if (contractCall.entryPointName) {
+		details.push({
+			name: 'Function Name',
+			value: contractCall.entryPointName
+		});
+	}
+
+	if (call.selector) {
+		details.push({
+			name: 'Event Selector',
+			value: call.selector
+		});
+	}
+
+	return (
+		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4">
+			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
+				<div className="">
+					<InfoBox details={details} />
+				</div>
+			</div>
+		</div>
 	);
 });
