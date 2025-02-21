@@ -2,7 +2,7 @@ import React, { memo } from 'react';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { InfoBox } from '@/components/ui/info-box';
-import { FunctionCall, EventCall, ContractCall } from '@/lib/simulation';
+import { EventCall, ContractCall } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
 
 export const EventCallTrace = memo(function EventCallTrace({
@@ -17,7 +17,6 @@ export const EventCallTrace = memo(function EventCallTrace({
 		toggleCallExpand,
 		expandedCalls,
 		contractCallsMap,
-		functionCallsMap,
 		eventCallsMap,
 		traceLineElementRefs
 	} = useCallTrace();

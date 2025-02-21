@@ -7,8 +7,7 @@ import { DataType, ContractCallEvent, DecodedItem } from '@/lib/simulation';
 import { DecodeDataTable } from '../decode-data-table';
 
 export function EventsList({ events }: { events: ContractCallEvent[] }) {
-	const { toggleCallExpand, traceLineElementRefs, expandedCalls, contractCallsMap } =
-		useCallTrace();
+	const { toggleCallExpand, traceLineElementRefs, expandedCalls } = useCallTrace();
 
 	if (events.length === 0) {
 		return <div className="px-4 py-2 text-sm">No events emitted during this transaction.</div>;
