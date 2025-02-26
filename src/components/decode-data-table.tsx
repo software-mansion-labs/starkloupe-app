@@ -5,7 +5,7 @@ import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 import { Card } from './ui/card';
 
 export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded; type: DataType }) {
-	const hasNameField = decodeData.some((item: DecodedItem) => 'name' in item);
+	const hasNameField = decodeData.some((item: DecodedItem) => item.name != null);
 	const [displayFormat, setDisplayFormat] = useState<'hex' | 'dec'>('hex');
 
 	const isObject = (value: any): boolean => {
@@ -56,9 +56,11 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 						<TableBody className="font-mono">
 							{Object.entries(value).map(([key, item]) => (
 								<TableRow key={key}>
-									<TableCell className="whitespace-break-spaces">
-										{(item as { name: string }).name}
-									</TableCell>
+									{(item as { name: string }).name != null && (
+										<TableCell className="whitespace-break-spaces">
+											{(item as { name: string }).name}
+										</TableCell>
+									)}
 									<TableCell className="whitespace-break-spaces">
 										{(item as { typeName: string }).typeName}
 									</TableCell>
@@ -89,9 +91,7 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 	return (
 		<div className="my-4">
 			<div className="flex flex-raw items-center mb-1">
-				<div className="font-medium uppercase mr-2">
-					{type === DataType.INPUT ? 'Input params' : 'Output params'}
-				</div>
+				<div className="font-medium uppercase mr-2">{type}</div>
 				<ToggleGroup
 					type="single"
 					size={'sm'}

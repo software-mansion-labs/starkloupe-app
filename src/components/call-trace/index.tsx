@@ -33,7 +33,7 @@ type CallTypeChipKind = CallType | 'Function' | 'Error' | 'Event';
 export function CallTypeChip(kind: CallTypeChipKind) {
 	let callTypeCellClass: { [key: string]: string } = {
 		['Call']: 'bg-green-100 border-green-400 text-green-900',
-		['Delegate']: 'bg-blue-100 border-blue-400 text-blue-900',
+		['Delegate']: 'bg-orange-100 border-orange-400 text-orange-900',
 		['Event']: 'bg-blue-100 border-blue-400 text-blue-900',
 		['Error']: 'border-red-900 text-red-900',
 		['Function']: 'bg-purple-100 border-purple-400 text-purple-900'
