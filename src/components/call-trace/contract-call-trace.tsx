@@ -187,7 +187,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 					) : (
 						<>
 							{childrenCallIdsArray}
-							{call.isDeepestPanicResult && call.errorMessage && (
+							{call.isDeepestPanicResult && call.errorMessage && !previewMode && (
 								<ErrorTraceLine
 									executionFailed
 									errorMessage={call.errorMessage}

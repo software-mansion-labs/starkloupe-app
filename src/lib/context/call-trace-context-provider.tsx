@@ -78,9 +78,19 @@ export const CallTraceContextProvider: React.FC<
 			const processCalls = (calls: Array<any>, getName: (call: any) => string | undefined) => {
 				calls.forEach((call) => {
 					const startsWithCore = getName(call)?.startsWith('core') ?? false;
+					let hasDeepestPanicChild = false;
+					if (call.childrenCallIds) {
+						hasDeepestPanicChild = call.childrenCallIds.some((childId: number) => {
+							const childCall =
+								simulationResult.contractCallsMap[childId] ||
+								simulationResult.functionCallsMap[childId];
+							return childCall?.isDeepestPanicResult === true;
+						});
+					}
+					const isPanicCall = call.isDeepestPanicResult === true;
 					let parentId = call.parentCallId;
 					let hasCollapsedAncestor = false;
-					while (parentId !== undefined) {
+					while (parentId !== undefined && !isPanicCall && !hasDeepestPanicChild) {
 						if (collapsed[parentId]) {
 							hasCollapsedAncestor = true;
 							break;
@@ -91,7 +101,7 @@ export const CallTraceContextProvider: React.FC<
 
 						parentId = parentCall?.parentCallId;
 					}
-					if (startsWithCore && !hasCollapsedAncestor) {
+					if (startsWithCore && !hasCollapsedAncestor && !isPanicCall && !hasDeepestPanicChild) {
 						collapsed[call.callId] = true;
 					}
 				});

@@ -78,7 +78,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 			return (
 				<>
 					{functionCallIdsList}
-					{functionCall.isDeepestPanicResult && errorMessage && (
+					{functionCall.isDeepestPanicResult && errorMessage && !previewMode && (
 						<ErrorTraceLine
 							executionFailed
 							errorMessage={errorMessage}
@@ -109,7 +109,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 			) : (
 				<>
 					{contractCallIdsArray}
-					{contractCall.isDeepestPanicResult && errorMessage && (
+					{contractCall.isDeepestPanicResult && errorMessage && !previewMode && (
 						<ErrorTraceLine
 							executionFailed
 							errorMessage={errorMessage}
