@@ -32,7 +32,8 @@ export enum CallType {
 
 export enum DataType {
 	INPUT = 'INPUT',
-	OUTPUT = 'OUTPUT'
+	OUTPUT = 'OUTPUT',
+	DATAS = 'DATAS'
 }
 
 export interface EntryPoint {
@@ -167,7 +168,6 @@ export interface EventCall {
 	name: string;
 	selector: string;
 	members: EventField[];
-	keys?: DataDecoded | null;
 	datas?: DataDecoded | null;
 	isHidden: boolean;
 }

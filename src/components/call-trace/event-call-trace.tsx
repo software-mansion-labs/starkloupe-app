@@ -2,8 +2,9 @@ import React, { memo } from 'react';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { InfoBox } from '@/components/ui/info-box';
-import { EventCall, ContractCall } from '@/lib/simulation';
+import { EventCall, ContractCall, DataType } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
+import { DecodeDataTable } from '../decode-data-table';
 
 export const EventCallTrace = memo(function EventCallTrace({
 	eventCallId,
@@ -123,6 +124,7 @@ const EventCallDetails = memo(function EventCallDetails({
 				<div className="">
 					<InfoBox details={details} />
 				</div>
+				{call.datas && <DecodeDataTable decodeData={call.datas} type={DataType.DATAS} />}
 			</div>
 		</div>
 	);
