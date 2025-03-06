@@ -226,6 +226,8 @@ export interface TransactionSimulationResult {
 	transactionVersion: number;
 	transactionType: string;
 	chainId?: string;
+	transactionIndexInBlock?: number;
+	totalTransactionsInBlock?: number;
 }
 
 export interface SimulationPayloadWithCalldata {

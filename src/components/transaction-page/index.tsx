@@ -22,6 +22,7 @@ import { useSettings } from '@/lib/context/settings-context-provider';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import { useUserContext } from '@/lib/context/user-context-provider';
 import Link from 'next/link';
+import { log } from 'console';
 
 export function TransactionPage({
 	txHash,
@@ -166,12 +167,36 @@ export function TransactionDetails({
 		});
 	}
 
-	details = details.concat([
-		{
+	if (txSimResult.blockNumber) {
+		details.push({
 			name: 'Block',
 			value: txSimResult.blockNumber.toString(),
 			isCopyable: true
-		},
+		});
+	}
+
+	if (
+		txSimResult.transactionIndexInBlock !== undefined &&
+		txSimResult.transactionIndexInBlock !== null &&
+		txSimResult.totalTransactionsInBlock
+	) {
+		const index = txSimResult.transactionIndexInBlock + 1;
+		let suffix = 'th';
+		if (index % 10 === 1 && index % 100 !== 11) {
+			suffix = 'st';
+		} else if (index % 10 === 2 && index % 100 !== 12) {
+			suffix = 'nd';
+		} else if (index % 10 === 3 && index % 100 !== 13) {
+			suffix = 'rd';
+		}
+
+		details.push({
+			name: 'Position in block',
+			value: `${index}${suffix} out of ${txSimResult.totalTransactionsInBlock}`
+		});
+	}
+
+	details = details.concat([
 		{
 			name: 'Timestamp',
 			value: formatTimestampToUTC(txSimResult.blockTimestamp)
