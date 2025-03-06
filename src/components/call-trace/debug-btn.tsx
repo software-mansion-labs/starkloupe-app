@@ -35,7 +35,7 @@ export const DebugButton = memo(function DebugButton({
 			This contract source code is not verified. To run the debugger, first verify the source code
 			by following{' '}
 			<a
-				href="https://docs.walnut.dev/verify-contract-classes"
+				href={'https://docs.walnut.dev/verify-starknet-contracts-in-walnut'}
 				target="_blank"
 				className="text-blue-500 cursor-pointer"
 				rel="noreferrer"

@@ -336,7 +336,7 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 			<AlertTitle>No source code for this contract</AlertTitle>
 			<AlertDescription>
 				<a
-					href={'https://docs.walnut.dev/verify-contract-classes'}
+					href={'https://docs.walnut.dev/verify-starknet-contracts-in-walnut'}
 					className="text-blue-500 cursor-pointer"
 					target="_blank"
 					rel="noreferrer"

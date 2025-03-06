@@ -77,7 +77,7 @@ export const Debugger = memo(function Debugger({}: {}) {
 									verify the contract on Walnut by following{' '}
 									<Link
 										className="underline-offset-4 hover:underline text-pink-500"
-										href="https://docs.walnut.dev/verify-contract-classes"
+										href={'https://docs.walnut.dev/verify-starknet-contracts-in-walnut'}
 									>
 										this guide
 									</Link>

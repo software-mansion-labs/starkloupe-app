@@ -56,7 +56,7 @@ export function SourceFiles({
 						<p>
 							<span>Follow </span>
 							<a
-								href={'https://docs.walnut.dev/verify-contract-classes'}
+								href={'https://docs.walnut.dev/verify-starknet-contracts-in-walnut'}
 								className="text-blue-500 cursor-pointer"
 								target="_blank"
 								rel="noopener noreferrer"
