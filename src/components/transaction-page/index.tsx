@@ -180,11 +180,19 @@ export function TransactionDetails({
 		txSimResult.transactionIndexInBlock !== null &&
 		txSimResult.totalTransactionsInBlock
 	) {
+		const index = txSimResult.transactionIndexInBlock + 1;
+		let suffix = 'th';
+		if (index % 10 === 1 && index % 100 !== 11) {
+			suffix = 'st';
+		} else if (index % 10 === 2 && index % 100 !== 12) {
+			suffix = 'nd';
+		} else if (index % 10 === 3 && index % 100 !== 13) {
+			suffix = 'rd';
+		}
+
 		details.push({
-			name: 'Transaction index',
-			value: `${txSimResult.transactionIndexInBlock + 1} out of ${
-				txSimResult.totalTransactionsInBlock
-			}`
+			name: 'Position in block',
+			value: `${index}${suffix} out of ${txSimResult.totalTransactionsInBlock}`
 		});
 	}
 
