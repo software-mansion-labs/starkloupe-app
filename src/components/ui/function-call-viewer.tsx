@@ -185,7 +185,7 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 					>
 						{value.typeName}:{' '}
 					</span>
-					{value.value}
+					{typeof value.value === 'boolean' ? (value.value ? 'true' : 'false') : value.value}
 				</span>
 			);
 		}
