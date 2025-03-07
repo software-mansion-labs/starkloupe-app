@@ -3,6 +3,7 @@ import { DecodedItem, DataDecoded, DataType } from '@/lib/simulation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 import { Card } from './ui/card';
+import { ScrollArea } from './ui/scroll-area';
 
 export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded; type: DataType }) {
 	const hasNameField = decodeData.some((item: DecodedItem) => item.name != null);
@@ -109,35 +110,37 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 					</ToggleGroupItem>
 				</ToggleGroup>
 			</div>
-			<Card className="overflow-x-scroll">
-				<Table className="w-auto py-0.5 px-2 text-xs">
-					<TableHeader>
-						<TableRow>
-							{type === DataType.INPUT && (
-								<TableHead className="whitespace-break-spaces">Name</TableHead>
-							)}
-							<TableHead>Type</TableHead>
-							<TableHead>Value</TableHead>
-						</TableRow>
-					</TableHeader>
-					<TableBody>
-						{decodeData?.map((item: DecodedItem, index: number) => (
-							<TableRow key={index}>
+			<Card>
+				<ScrollArea>
+					<Table className="w-auto py-0.5 px-2 text-xs">
+						<TableHeader>
+							<TableRow>
 								{type === DataType.INPUT && (
-									<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
-										{item.name}
-									</TableCell>
+									<TableHead className="whitespace-break-spaces">Name</TableHead>
 								)}
-								<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
-									{item.typeName}
-								</TableCell>
-								<TableCell className="border-r border-neutral-200 last:border-r-0">
-									{renderValue(item.value)}
-								</TableCell>
+								<TableHead>Type</TableHead>
+								<TableHead>Value</TableHead>
 							</TableRow>
-						))}
-					</TableBody>
-				</Table>
+						</TableHeader>
+						<TableBody>
+							{decodeData?.map((item: DecodedItem, index: number) => (
+								<TableRow key={index}>
+									{type === DataType.INPUT && (
+										<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
+											{item.name}
+										</TableCell>
+									)}
+									<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
+										{item.typeName}
+									</TableCell>
+									<TableCell className="border-r border-neutral-200 last:border-r-0 w-full">
+										{renderValue(item.value)}
+									</TableCell>
+								</TableRow>
+							))}
+						</TableBody>
+					</Table>
+				</ScrollArea>
 			</Card>
 		</div>
 	);
