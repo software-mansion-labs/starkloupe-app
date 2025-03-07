@@ -13,6 +13,7 @@ import { ContractCall } from '@/lib/simulation';
 import Link from 'next/link';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import Sidebar from '../code-viewer/sidebar';
+import { WALNUT_VERIFY_DOCS_URL } from '@/lib/config';
 
 export const Debugger = memo(function Debugger({}: {}) {
 	const {
@@ -77,7 +78,7 @@ export const Debugger = memo(function Debugger({}: {}) {
 									verify the contract on Walnut by following{' '}
 									<Link
 										className="underline-offset-4 hover:underline text-pink-500"
-										href="https://docs.walnut.dev/verify-contract-classes"
+										href={WALNUT_VERIFY_DOCS_URL}
 									>
 										this guide
 									</Link>

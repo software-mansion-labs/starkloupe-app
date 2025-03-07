@@ -16,6 +16,7 @@ import { CommonCallTrace } from './common-call-trace';
 import { Card } from '../ui/card';
 import { ContractCallSignature } from '../ui/signature';
 import { ErrorTraceLine } from './error-trace-line';
+import { WALNUT_VERIFY_DOCS_URL } from '@/lib/config';
 
 export const ContractCallTrace = memo(function ContractCallTrace({
 	contractCallId,
@@ -336,7 +337,7 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 			<AlertTitle>No source code for this contract</AlertTitle>
 			<AlertDescription>
 				<a
-					href={'https://docs.walnut.dev/verify-contract-classes'}
+					href={WALNUT_VERIFY_DOCS_URL}
 					className="text-blue-500 cursor-pointer"
 					target="_blank"
 					rel="noreferrer"
