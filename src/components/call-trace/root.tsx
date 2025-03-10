@@ -94,7 +94,7 @@ function CallTraceRootContent() {
 				</TabsContent>
 				<TabsContent value="events-list">
 					<Card>
-						<ScrollArea className="text-xs h-[calc(100vh-407px)]">
+						<ScrollArea className="text-xs h-[calc(100vh-409px)]">
 							<div className="p-0 py-2 overflow-y-auto">
 								<EventsList events={simulationResult.events} />
 							</div>
