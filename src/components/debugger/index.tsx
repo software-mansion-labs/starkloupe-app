@@ -34,19 +34,15 @@ export const Debugger = memo(function Debugger({}: {}) {
 	if (!currentStep) return <></>; // unreachable
 
 	return (
-		<ResizablePanelGroup
-			direction="horizontal"
-			className="w-full h-[calc(100vh-400px)] min-h-[500px] flex flex-row"
-		>
+		<ResizablePanelGroup direction="horizontal" className="w-full flex flex-row">
 			<ResizablePanel
 				defaultSize={30}
-				minSize={20}
 				className="flex flex-col justify-between gap-4 border-neutral-200"
 			>
 				<Sidebar handleFileClick={setActiveFile} />
 			</ResizablePanel>
 			<ResizableHandle withHandle className="w-[1px]" />
-			<ResizablePanel defaultSize={70} minSize={20} className="flex flex-col flex-grow">
+			<ResizablePanel defaultSize={70} className="flex flex-col flex-grow">
 				<Controls
 					nextStep={nextStep}
 					previousStep={prevStep}

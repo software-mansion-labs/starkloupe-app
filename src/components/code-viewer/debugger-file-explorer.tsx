@@ -41,7 +41,7 @@ export const DebuggerFilesExplorer = memo(function FilesExplorer({
 					}}
 					className="w-full px-2 py-1 flex items-center justify-between h-[32px]  hover:bg-neutral-50"
 				>
-					<span className="font-medium uppercase">File explorer</span>
+					<span className="font-medium uppercase whitespace-nowrap">File explorer</span>
 					<ChevronRight className="w-4 h-4" />
 				</button>
 			</div>
@@ -60,7 +60,7 @@ export const DebuggerFilesExplorer = memo(function FilesExplorer({
 					}}
 					className="w-full px-2 py-1 flex items-center justify-between h-[32px] hover:bg-neutral-50"
 				>
-					<span className="font-medium uppercase">File Explorer</span>
+					<span className="font-medium uppercase whitespace-nowrap">File Explorer</span>
 					<ChevronDown className="w-4 h-4" />
 				</button>
 

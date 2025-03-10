@@ -27,7 +27,7 @@ export const CallTracePreview = memo(function FilesExplorer({
 					}}
 					className="w-full px-2 py-1 flex items-center justify-between hover:bg-neutral-50  h-full "
 				>
-					<span className="font-medium uppercase">Call Trace Preview</span>
+					<span className="font-medium uppercase whitespace-nowrap">Call Trace Preview</span>
 					<ChevronRight className="w-4 h-4" />
 				</button>
 			</div>
@@ -44,7 +44,7 @@ export const CallTracePreview = memo(function FilesExplorer({
 					}}
 					className="w-full px-2 py-1 flex items-center justify-between hover:bg-neutral-50  h-[32px]"
 				>
-					<span className="font-medium uppercase">Call trace preview</span>
+					<span className="font-medium uppercase whitespace-nowrap">Call trace preview</span>
 					<ChevronDown className="w-4 h-4" />
 				</button>
 
