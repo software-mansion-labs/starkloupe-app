@@ -5,9 +5,17 @@ import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 import { Card } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
 
-export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded; type: DataType }) {
+export function DecodeDataTable({
+	rawData,
+	decodeData,
+	type
+}: {
+	rawData?: string[];
+	decodeData: DataDecoded;
+	type: DataType;
+}) {
 	const hasNameField = decodeData.some((item: DecodedItem) => item.name != null);
-	const [displayFormat, setDisplayFormat] = useState<'hex' | 'dec'>('hex');
+	const [displayFormat, setDisplayFormat] = useState<'auto' | 'hex' | 'dec' | 'raw'>('auto');
 
 	const isObject = (value: any): boolean => {
 		return (
@@ -18,14 +26,22 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 		);
 	};
 
-	const formatHexDecValue = (value: string): string => {
-		if (displayFormat === 'dec') {
-			if (value.startsWith('0x')) {
-				return BigInt(value).toString(10);
+	const formatValue = (value: any): string => {
+		if (displayFormat == 'auto') {
+			if (typeof value === 'boolean') {
+				return value ? 'true' : 'false';
 			}
 		} else if (displayFormat === 'hex') {
-			if (/^\d+$/.test(value)) {
+			if (typeof value === 'boolean') {
+				return value ? '0x1' : '0x0';
+			} else if (/^\d+$/.test(value)) {
 				return '0x' + BigInt(value).toString(16);
+			}
+		} else if (displayFormat === 'dec') {
+			if (typeof value === 'boolean') {
+				return value ? '1' : '0';
+			} else if (value.startsWith('0x')) {
+				return BigInt(value).toString(10);
 			}
 		}
 		return value;
@@ -49,7 +65,7 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 					<Table className="text-xs">
 						<TableHeader>
 							<TableRow>
-								{hasNameField && <TableHead>Name</TableHead>}
+								{type === DataType.CALLDATA && <TableHead>Name</TableHead>}
 								<TableHead>Type</TableHead>
 								<TableHead>Value</TableHead>
 							</TableRow>
@@ -57,7 +73,7 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 						<TableBody className="font-mono">
 							{Object.entries(value).map(([key, item]) => (
 								<TableRow key={key}>
-									{(item as { name: string }).name != null && (
+									{type === DataType.CALLDATA && (item as { name: string }).name != null && (
 										<TableCell className="whitespace-break-spaces">
 											{(item as { name: string }).name}
 										</TableCell>
@@ -84,8 +100,8 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 				);
 			}
 		} else {
-			const formattedHexDecValue = formatHexDecValue(value);
-			return <span>{formattedHexDecValue}</span>;
+			const formattedValue = formatValue(value);
+			return <span>{formattedValue}</span>;
 		}
 	};
 
@@ -98,49 +114,79 @@ export function DecodeDataTable({ decodeData, type }: { decodeData: DataDecoded;
 					size={'sm'}
 					variant="outline"
 					className="mb-1"
-					defaultValue="hex"
+					defaultValue="auto"
 					aria-label="Hex or Decimal Toggle"
-					onValueChange={(value) => setDisplayFormat(value as 'hex' | 'dec')}
+					onValueChange={(value) => setDisplayFormat(value as 'auto' | 'hex' | 'dec' | 'raw')}
 				>
+					<ToggleGroupItem value="auto" aria-label="Auto">
+						Auto
+					</ToggleGroupItem>
 					<ToggleGroupItem value="hex" aria-label="Hexadecimal">
 						Hex
 					</ToggleGroupItem>
 					<ToggleGroupItem value="dec" aria-label="Decimal">
 						Decimal
 					</ToggleGroupItem>
+					{type === DataType.CALLDATA && (
+						<ToggleGroupItem value="raw" aria-label="Raw">
+							Raw
+						</ToggleGroupItem>
+					)}
 				</ToggleGroup>
 			</div>
 			<Card>
-				<ScrollArea>
-					<Table className="w-auto py-0.5 px-2 text-xs">
-						<TableHeader>
-							<TableRow>
-								{type === DataType.INPUT && (
-									<TableHead className="whitespace-break-spaces">Name</TableHead>
-								)}
-								<TableHead>Type</TableHead>
-								<TableHead>Value</TableHead>
-							</TableRow>
-						</TableHeader>
-						<TableBody>
-							{decodeData?.map((item: DecodedItem, index: number) => (
-								<TableRow key={index}>
-									{type === DataType.INPUT && (
-										<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
-											{item.name}
-										</TableCell>
-									)}
-									<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
-										{item.typeName}
-									</TableCell>
-									<TableCell className="border-r border-neutral-200 last:border-r-0 w-full">
-										{renderValue(item.value)}
-									</TableCell>
+				{displayFormat === 'raw' && type === DataType.CALLDATA && rawData && rawData.length > 0 ? (
+					<ScrollArea>
+						<Table className="w-auto py-0.5 px-2 text-xs w-full">
+							<TableHeader>
+								<TableRow>
+									<TableHead className="whitespace-break-spaces">Value</TableHead>
 								</TableRow>
-							))}
-						</TableBody>
-					</Table>
-				</ScrollArea>
+							</TableHeader>
+							<TableBody>
+								{rawData.map((item: string, index: number) => (
+									<TableRow key={index}>
+										<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
+											{item}
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</ScrollArea>
+				) : (
+					<ScrollArea>
+						{' '}
+						<Table className="w-auto py-0.5 px-2 text-xs">
+							<TableHeader>
+								<TableRow>
+									{type === DataType.CALLDATA && (
+										<TableHead className="whitespace-break-spaces">Name</TableHead>
+									)}
+									<TableHead>Type</TableHead>
+									<TableHead>Value</TableHead>
+								</TableRow>
+							</TableHeader>
+							<TableBody>
+								{decodeData.map((item: DecodedItem, index: number) => (
+									<TableRow key={index}>
+										{type === DataType.CALLDATA && (
+											<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
+												{item.name}
+											</TableCell>
+										)}
+										<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
+											{item.typeName}
+										</TableCell>
+										<TableCell className="border-r border-neutral-200 last:border-r-0 w-full">
+											{renderValue(item.value)}
+										</TableCell>
+									</TableRow>
+								))}
+							</TableBody>
+						</Table>
+					</ScrollArea>
+				)}
 			</Card>
 		</div>
 	);
