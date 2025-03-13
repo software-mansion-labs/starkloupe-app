@@ -5,33 +5,26 @@ import { HeaderNav } from '../header';
 import { Container } from '../ui/container';
 import { Footer } from '../footer';
 import { Loader } from '../ui/loader';
-import { ChainId } from '@/lib/types';
 import { InfoBoxItem, InfoBox } from '../ui/info-box';
 import { Error } from '../ui/error';
-import { fetchContractDataByAddress, ContractResponseWithSourceCode } from '@/lib/contracts';
+import { fetchContractDataByAddress, GetContractResponse } from '@/lib/contracts';
 import { ClassSourceCode } from '@/components/class-source-code';
+import { useSettings } from '@/lib/context/settings-context-provider';
 
-export function ContractPage({
-	chainId,
-	rpcUrl,
-	contractAddress
-}: {
-	chainId?: ChainId;
-	rpcUrl?: string;
-	contractAddress: string;
-}) {
-	const [contractData, setContractData] = useState<ContractResponseWithSourceCode>();
+export function ContractPage({ contractAddress }: { contractAddress: string }) {
+	const { networks } = useSettings();
+	const [contractData, setContractData] = useState<GetContractResponse>();
 	const [error, setError] = useState<string | undefined>();
 
 	useEffect(() => {
+		if (!networks) return;
 		const fetchData = async () => {
 			try {
 				setContractData(
 					await fetchContractDataByAddress({
-						chainId,
-						rpcUrl,
 						contractAddress,
-						includeSourceCode: true
+						includeSourceCode: true,
+						rpcUrls: networks.map((n) => n.rpcUrl)
 					})
 				);
 			} catch (error: any) {
@@ -40,7 +33,7 @@ export function ContractPage({
 		};
 
 		fetchData();
-	}, [chainId, rpcUrl, contractAddress]);
+	}, [contractAddress, networks]);
 
 	return (
 		<>
@@ -55,7 +48,7 @@ export function ContractPage({
 					{contractData && <ContractDetails contractData={contractData} />}
 					{contractData ? (
 						<ClassSourceCode
-							isClassVerified={contractData.isClassVerified}
+							isClassVerified={contractData.verified}
 							sourceCode={contractData.sourceCode ?? {}}
 							isContract={true}
 						/>
@@ -71,17 +64,46 @@ export function ContractPage({
 	);
 }
 
-function ContractDetails({ contractData }: { contractData: ContractResponseWithSourceCode }) {
+function ContractDetails({ contractData }: { contractData: GetContractResponse }) {
+	const { networks } = useSettings();
+
 	const details: InfoBoxItem[] = [
 		{
 			name: 'Class hash',
 			value: contractData.classHash
 		},
 		{
+			name: 'Cairo version',
+			value: contractData.cairoVersion
+		},
+
+		{
 			name: 'Verified on Walnut',
-			value: contractData.isClassVerified.toString()
+			value: contractData.verified.toString()
 		}
 	];
+
+	if (contractData.deployedSources.length > 0) {
+		const deployedOnNetworks = [];
+		for (const source of contractData.deployedSources) {
+			if (source.chainId) {
+				deployedOnNetworks.push(source.chainId);
+			} else {
+				const networkInSettings = (networks ?? []).find(
+					(network) => network.rpcUrl === source.rpcUrl
+				);
+				if (networkInSettings) {
+					deployedOnNetworks.push(networkInSettings.networkName);
+				} else {
+					deployedOnNetworks.push(source.rpcUrl);
+				}
+			}
+		}
+		details.push({
+			name: 'Deployed on networks',
+			value: deployedOnNetworks.join(', ')
+		});
+	}
 
 	return (
 		<div className="mt-4">

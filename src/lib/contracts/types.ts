@@ -1,6 +1,13 @@
-export interface ContractResponseWithSourceCode {
-	chainId: string;
+export interface Source {
+	chainId?: string;
+	rpcUrl?: string;
+	value: string;
+}
+
+export interface GetContractResponse {
+	verified: boolean;
+	deployedSources: Source[];
+	cairoVersion: string;
 	classHash: string;
-	isClassVerified: boolean;
-	sourceCode: { [key: string]: string } | undefined;
+	sourceCode?: Record<string, string>;
 }

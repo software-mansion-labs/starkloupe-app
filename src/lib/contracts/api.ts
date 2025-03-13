@@ -1,33 +1,24 @@
-import { ChainId } from '@/lib/types';
 import { fetchApi } from '@/lib/utils';
-import { ContractResponseWithSourceCode } from '.';
+import { GetContractResponse } from '.';
 
 export async function fetchContractDataByAddress({
-	chainId,
-	rpcUrl,
 	contractAddress,
-	includeSourceCode
+	includeSourceCode,
+	rpcUrls
 }: {
-	chainId?: ChainId;
-	rpcUrl?: string;
 	contractAddress: string;
 	includeSourceCode: boolean;
-}): Promise<ContractResponseWithSourceCode> {
+	rpcUrls: string[];
+}): Promise<GetContractResponse> {
 	const queryParams: Record<string, string> = {
 		include_source_code: includeSourceCode ? 'true' : 'false'
 	};
-	if (chainId) {
-		queryParams.chain_id = chainId;
+	if (rpcUrls.length > 0) {
+		queryParams.rpc_urls = rpcUrls.join(',');
 	}
-	if (rpcUrl) {
-		queryParams.rpc_url = rpcUrl;
-	}
-	const contractData = await fetchApi<ContractResponseWithSourceCode>(
-		`/v1/contracts/${contractAddress}`,
-		{
-			queryParams,
-			renameToCamelCase: true
-		}
-	);
+	const contractData = await fetchApi<GetContractResponse>(`/v1/contracts/${contractAddress}`, {
+		renameToCamelCase: true,
+		queryParams
+	});
 	return contractData;
 }
