@@ -15,7 +15,7 @@ export function DecodeDataTable({
 	type: DataType;
 }) {
 	const hasNameField = decodeData.some((item: DecodedItem) => item.name != null);
-	const [displayFormat, setDisplayFormat] = useState<'auto' | 'hex' | 'dec' | 'raw'>('auto');
+	const [displayFormat, setDisplayFormat] = useState<'auto' | 'raw'>('auto');
 
 	const isObject = (value: any): boolean => {
 		return (
@@ -31,19 +31,8 @@ export function DecodeDataTable({
 			if (typeof value === 'boolean') {
 				return value ? 'true' : 'false';
 			}
-		} else if (displayFormat === 'hex') {
-			if (typeof value === 'boolean') {
-				return value ? '0x1' : '0x0';
-			} else if (/^\d+$/.test(value)) {
-				return '0x' + BigInt(value).toString(16);
-			}
-		} else if (displayFormat === 'dec') {
-			if (typeof value === 'boolean') {
-				return value ? '1' : '0';
-			} else if (value.startsWith('0x')) {
-				return BigInt(value).toString(10);
-			}
 		}
+
 		return value;
 	};
 
@@ -109,30 +98,24 @@ export function DecodeDataTable({
 		<div className="my-4">
 			<div className="flex flex-raw items-center mb-1">
 				<div className="font-medium uppercase mr-2">{type}</div>
-				<ToggleGroup
-					type="single"
-					size={'sm'}
-					variant="outline"
-					className="mb-1"
-					defaultValue="auto"
-					aria-label="Hex or Decimal Toggle"
-					onValueChange={(value) => setDisplayFormat(value as 'auto' | 'hex' | 'dec' | 'raw')}
-				>
-					<ToggleGroupItem value="auto" aria-label="Auto">
-						Auto
-					</ToggleGroupItem>
-					<ToggleGroupItem value="hex" aria-label="Hexadecimal">
-						Hex
-					</ToggleGroupItem>
-					<ToggleGroupItem value="dec" aria-label="Decimal">
-						Decimal
-					</ToggleGroupItem>
-					{type === DataType.CALLDATA && (
+				{type === DataType.CALLDATA && (
+					<ToggleGroup
+						type="single"
+						size={'sm'}
+						variant="outline"
+						className="mb-1"
+						defaultValue="auto"
+						aria-label="Native or Raw Toggle"
+						onValueChange={(value) => setDisplayFormat(value as 'auto' | 'raw')}
+					>
+						<ToggleGroupItem value="auto" aria-label="Auto">
+							Auto
+						</ToggleGroupItem>
 						<ToggleGroupItem value="raw" aria-label="Raw">
 							Raw
 						</ToggleGroupItem>
-					)}
-				</ToggleGroup>
+					</ToggleGroup>
+				)}
 			</div>
 			<Card>
 				{displayFormat === 'raw' && type === DataType.CALLDATA && rawData && rawData.length > 0 ? (
