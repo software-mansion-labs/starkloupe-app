@@ -1,4 +1,4 @@
-import { PropsWithChildren, createContext, useContext, useState } from 'react';
+import { PropsWithChildren, createContext, useContext, useMemo, useState } from 'react';
 import {
 	ClassDebuggerData,
 	CodeLocation,
@@ -21,14 +21,18 @@ interface DebuggerContextProps {
 	sourceCode: {
 		[key: string]: string;
 	};
+	availableBreakpoints: { [key: string]: { [key: string]: number[] } };
 	debugFunctionCall: (functionCallId: number) => void;
 	debugContractCall: (contractCallId: number) => void;
 	nextStep: () => void;
 	prevStep: () => void;
 	stepOver: () => void;
+	runToBreakpoint: () => void;
 	setActiveFile: (filePath: string) => void;
 	isFunctionCallDebuggable: (functionCallId: number) => boolean;
 	isContractCallDebuggable: (contractCallId: number) => boolean;
+	fileBreakpoints: { [key: string]: { [key: string]: number[] } };
+	toggleBreakpoint: (lineNumber: number, activeFile: string, classHash: string) => void;
 }
 
 export const DebuggerContext = createContext<DebuggerContextProps>({
@@ -40,19 +44,54 @@ export const DebuggerContext = createContext<DebuggerContextProps>({
 	sourceCode: {},
 	contractCall: undefined,
 	codeLocation: undefined,
+	availableBreakpoints: {},
 	debugFunctionCall: () => undefined,
 	debugContractCall: () => undefined,
 	nextStep: () => undefined,
 	prevStep: () => undefined,
 	stepOver: () => undefined,
+	runToBreakpoint: () => undefined,
 	setActiveFile: () => undefined,
 	isFunctionCallDebuggable: () => false,
-	isContractCallDebuggable: () => false
+	isContractCallDebuggable: () => false,
+	fileBreakpoints: {},
+	toggleBreakpoint: () => undefined
 });
 
 export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
 	const { contractCallsMap, functionCallsMap, simulationResult, simulationDebuggerData } =
 		useContext(CallTraceContext);
+
+	const availableBreakpoints = useMemo(() => {
+		const breakpoints: { [key: string]: { [key: string]: number[] } } = {};
+
+		for (const classHash in simulationDebuggerData.classesDebuggerData) {
+			breakpoints[classHash] = {};
+			if (simulationDebuggerData.classesDebuggerData[classHash]) {
+				for (const sierraIndex in simulationDebuggerData.classesDebuggerData[classHash]
+					.sierraStatementsToCairoInfo) {
+					const info =
+						simulationDebuggerData.classesDebuggerData[classHash].sierraStatementsToCairoInfo[
+							sierraIndex
+						];
+					for (const cairoLocation of info.cairoLocations) {
+						if (!breakpoints[classHash][cairoLocation.filePath]) {
+							breakpoints[classHash][cairoLocation.filePath] = [];
+						}
+						const start = cairoLocation.start.line;
+						const end = cairoLocation.end.line;
+						for (let i = start; i <= end; i++) {
+							if (!breakpoints[classHash][cairoLocation.filePath].includes(i)) {
+								breakpoints[classHash][cairoLocation.filePath].push(i);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return breakpoints;
+	}, [simulationDebuggerData]);
 
 	const [currentStepIndex, _setCurrentStepIndex] = useState(
 		simulationDebuggerData.debuggerTrace.length > 0
@@ -72,6 +111,45 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 	const [activeFile, setActiveFile] = useState<string | undefined>(
 		initialDebuggerData && initialDebuggerData.activeFile
 	);
+	const [fileBreakpoints, setFileBreakpoints] = useState<{
+		[key: string]: { [key: string]: number[] };
+	}>({});
+
+	const toggleBreakpoint = (lineNumber: number, activeFile: string, classHash: string) => {
+		setFileBreakpoints((prev) => {
+			const newFileBreakpoints = JSON.parse(JSON.stringify(prev));
+
+			if (!newFileBreakpoints[classHash]) {
+				newFileBreakpoints[classHash] = {};
+			}
+
+			if (!newFileBreakpoints[classHash][activeFile]) {
+				newFileBreakpoints[classHash][activeFile] = [];
+			}
+
+			const breakpointIndex = newFileBreakpoints[classHash][activeFile].indexOf(lineNumber);
+
+			if (breakpointIndex !== -1) {
+				newFileBreakpoints[classHash][activeFile] = newFileBreakpoints[classHash][
+					activeFile
+				].filter((bp: number) => bp !== lineNumber);
+			} else {
+				newFileBreakpoints[classHash][activeFile] = [
+					...newFileBreakpoints[classHash][activeFile],
+					lineNumber
+				];
+			}
+			if (newFileBreakpoints[classHash][activeFile].length === 0) {
+				delete newFileBreakpoints[classHash][activeFile];
+
+				if (Object.keys(newFileBreakpoints[classHash]).length === 0) {
+					delete newFileBreakpoints[classHash];
+				}
+			}
+
+			return newFileBreakpoints;
+		});
+	};
 	const [contractCall, setContractCall] = useState<ContractCall | undefined>(
 		initialDebuggerData && initialDebuggerData.contractCall
 	);
@@ -112,6 +190,33 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 		) {
 			setCurrentStepIndex(contractCall.debuggerTraceStepIndex);
 		}
+	};
+
+	const runToBreakpoint = () => {
+		for (let i = currentStepIndex + 1; i < simulationDebuggerData.debuggerTrace.length; i++) {
+			if (simulationDebuggerData.debuggerTrace[i].withLocation) {
+				const step = simulationDebuggerData.debuggerTrace[i].withLocation!;
+				const contractCall = contractCallsMap[step.contractCallId];
+				const classHash = contractCall.classHash;
+				const classDebuggerData =
+					simulationResult.simulationDebuggerData.classesDebuggerData[classHash];
+				const info = classDebuggerData.sierraStatementsToCairoInfo[step.sierraIndex];
+				const location = info.cairoLocations[step.locationIndex];
+				const linesRange = Array.from(
+					{ length: location.end.line - location.start.line + 1 },
+					(_, k) => k + location.start.line
+				);
+				if (
+					fileBreakpoints[classHash] &&
+					fileBreakpoints[classHash][location.filePath] &&
+					fileBreakpoints[classHash][location.filePath].some((line) => linesRange.includes(line))
+				) {
+					setCurrentStepIndex(i);
+					return;
+				}
+			}
+		}
+		setCurrentStepIndex(simulationDebuggerData.debuggerTrace.length - 1);
 	};
 
 	const nextStep = () => {
@@ -184,12 +289,16 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 				prevStep,
 				stepOver,
 				setActiveFile,
+				availableBreakpoints,
 				activeFile,
 				contractCall,
 				codeLocation,
 				sourceCode,
 				isContractCallDebuggable,
-				isFunctionCallDebuggable
+				isFunctionCallDebuggable,
+				runToBreakpoint,
+				fileBreakpoints,
+				toggleBreakpoint
 			}}
 		>
 			{children}

@@ -4,7 +4,7 @@ import {
 	ResizablePanel,
 	ResizablePanelGroup
 } from '@/components/ui/resizable-panel';
-import { useContext, useEffect, useState, memo } from 'react';
+import { useContext, useEffect, memo } from 'react';
 import { CodeViewer } from '../code-viewer/code-viewer';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
@@ -18,7 +18,6 @@ import { WALNUT_VERIFY_DOCS_URL } from '@/lib/config';
 export const Debugger = memo(function Debugger({}: {}) {
 	const {
 		currentStep,
-		classesDebuggerData,
 		activeFile,
 		setActiveFile,
 		nextStep,
@@ -28,7 +27,8 @@ export const Debugger = memo(function Debugger({}: {}) {
 		totalSteps,
 		contractCall,
 		codeLocation,
-		sourceCode
+		sourceCode,
+		runToBreakpoint
 	} = useContext(DebuggerContext);
 
 	if (!currentStep) return <></>; // unreachable
@@ -49,6 +49,7 @@ export const Debugger = memo(function Debugger({}: {}) {
 					stepIndex={currentStepIndex}
 					totalSteps={totalSteps}
 					contractCall={contractCall}
+					runToBreakpoint={runToBreakpoint}
 					stepOver={stepOver}
 				/>
 				<div className="flex-grow">
@@ -95,7 +96,8 @@ function Controls({
 	stepOver,
 	stepIndex,
 	totalSteps,
-	contractCall
+	contractCall,
+	runToBreakpoint
 }: {
 	nextStep: () => void;
 	previousStep: () => void;
@@ -103,6 +105,7 @@ function Controls({
 	stepIndex: number;
 	totalSteps: number;
 	contractCall?: ContractCall;
+	runToBreakpoint: () => void;
 }) {
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
@@ -184,6 +187,24 @@ function Controls({
 								</div>
 							</TooltipTrigger>
 							<TooltipContent>Step over (o)</TooltipContent>
+						</Tooltip>
+						<Tooltip delayDuration={100}>
+							<TooltipTrigger>
+								{' '}
+								<div
+									onClick={() => runToBreakpoint()}
+									className={`w-5 h-5 p-0.5 rounded-sm select-none ${
+										stepIndex >= totalSteps - 1
+											? 'cursor-not-allowed opacity-60'
+											: 'cursor-pointer hover:bg-neutral-100'
+									}`}
+								>
+									<div className="icon">
+										<i className="codicon codicon-play w-4 h-4 text-blue-500"></i>
+									</div>
+								</div>
+							</TooltipTrigger>
+							<TooltipContent>Run</TooltipContent>
 						</Tooltip>
 					</div>
 				</TooltipProvider>

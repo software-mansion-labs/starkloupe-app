@@ -3,36 +3,72 @@ import { Editor as MonacoEditor, Monaco, useMonaco } from '@monaco-editor/react'
 import { editor as Editor } from 'monaco-editor';
 import { cn } from '@/lib/utils';
 import { registerCairoLanguageSupport } from './cairo-lang-config';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { CodeLocation, InternalFnCallIO } from '@/lib/simulation';
+import { DebuggerContext } from '@/lib/context/debugger-context-provider';
 
 export function CodeViewer({
 	content,
-	codeLocation,
 	highlightClass,
 	args,
-	results
+	results,
+	codeLocation
 }: {
 	content: string;
-	codeLocation: CodeLocation | undefined;
 	highlightClass?: string;
 	args?: InternalFnCallIO[];
 	results?: InternalFnCallIO[];
+	codeLocation: CodeLocation | undefined;
 }) {
+	const { activeFile, contractCall, availableBreakpoints, fileBreakpoints, toggleBreakpoint } =
+		useContext(DebuggerContext);
+
+	const classAvailableBreakpoints = contractCall
+		? availableBreakpoints[contractCall.classHash]
+		: undefined;
+	const classFileBreakpoints = contractCall ? fileBreakpoints[contractCall.classHash] : undefined;
+	const classHash = contractCall ? contractCall.classHash : undefined;
+
 	if (!highlightClass) highlightClass = 'bg-neutral-300 bg-opacity-40';
 
 	const editorRef = useRef<Editor.IStandaloneCodeEditor>();
 	const [editorDecorations, setEditorDecorations] =
 		useState<Editor.IEditorDecorationsCollection | null>(null);
+	const breakpointDecorationsRef = useRef<string[]>([]);
 	const monaco = useMonaco();
 
-	const handleEditorDidMount = async (editor: Editor.IStandaloneCodeEditor, monaco: Monaco) => {
-		editorRef.current = editor;
-		registerCairoLanguageSupport(monaco as any);
-		if (codeLocation) {
-			highlightCodeLocation(codeLocation, args ?? [], results ?? [], editor, monaco, false);
+	const activeFileRef = useRef<string | undefined>(activeFile);
+	const classHashRef = useRef<string | undefined>(classHash);
+
+	useEffect(() => {
+		activeFileRef.current = activeFile;
+	}, [activeFile]);
+
+	useEffect(() => {
+		classHashRef.current = classHash;
+	}, [classHash]);
+
+	const [hoverLine, setHoverLine] = useState<number | null>(null);
+
+	const breakPointsLinesRef = useRef<number[] | undefined>(
+		classAvailableBreakpoints && activeFile && classAvailableBreakpoints[activeFile]
+			? classAvailableBreakpoints[activeFile].map((bp) => bp + 1)
+			: undefined
+	);
+
+	const getCurrentFileBreakpoints = useCallback((): number[] => {
+		if (!activeFileRef.current) return [];
+
+		const fileEntry = classFileBreakpoints && classFileBreakpoints[activeFileRef.current];
+
+		return fileEntry ? fileEntry.map((bp) => bp + 1) : [];
+	}, [classFileBreakpoints]);
+
+	useEffect(() => {
+		if (classAvailableBreakpoints && activeFile && classAvailableBreakpoints[activeFile]) {
+			breakPointsLinesRef.current = classAvailableBreakpoints[activeFile].map((bp) => bp + 1);
 		}
-	};
+	}, [activeFile, classAvailableBreakpoints]);
 
 	const highlightCodeLocation = useCallback(
 		(
@@ -114,7 +150,9 @@ export function CodeViewer({
 				const decorations = [
 					{
 						range: range,
-						options: { inlineClassName: highlightClass }
+						options: {
+							inlineClassName: highlightClass
+						}
 					}
 				];
 				if (isDisplayIoValues) {
@@ -125,16 +163,119 @@ export function CodeViewer({
 							codeLocation.end.line + 1,
 							codeLocation.end.col + 2
 						),
-						options: { inlineClassName: 'io-values' }
+						options: {
+							inlineClassName: 'io-values'
+						}
 					});
 				}
 				const editorDecorations = editor.createDecorationsCollection(decorations);
-
 				setEditorDecorations(editorDecorations);
 			});
 		},
 		[editorDecorations, highlightClass]
 	);
+
+	const handleEditorDidMount = useCallback(
+		async (editor: Editor.IStandaloneCodeEditor, monaco: Monaco) => {
+			editorRef.current = editor;
+			registerCairoLanguageSupport(monaco as any);
+
+			editor.onMouseMove((e) => {
+				if (e.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
+					const lineNumber = e.target.position?.lineNumber;
+
+					if (!lineNumber) return;
+
+					const isBreakpointLine = breakPointsLinesRef.current
+						? breakPointsLinesRef.current.some((bp: number) => bp === lineNumber)
+						: null;
+
+					if (isBreakpointLine && lineNumber !== hoverLine) {
+						setHoverLine(lineNumber);
+					} else if (!isBreakpointLine && hoverLine) {
+						setHoverLine(null);
+					}
+				} else if (hoverLine) {
+					setHoverLine(null);
+				}
+			});
+
+			editor.onMouseLeave(() => {
+				if (hoverLine) setHoverLine(null);
+			});
+
+			editor.onMouseDown((e) => {
+				if (e.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
+					const lineNumber = e.target.position?.lineNumber;
+
+					if (!lineNumber) return;
+
+					const validBreakpointLine = breakPointsLinesRef.current
+						? breakPointsLinesRef.current.some((bp: number) => bp === lineNumber)
+						: null;
+
+					if (
+						validBreakpointLine &&
+						toggleBreakpoint &&
+						activeFileRef.current &&
+						classHashRef.current
+					) {
+						toggleBreakpoint(lineNumber - 1, activeFileRef.current, classHashRef.current);
+					} else {
+						console.log(`Line ${lineNumber} is not a valid breakpoint line`);
+					}
+				}
+			});
+
+			if (codeLocation) {
+				highlightCodeLocation(codeLocation, args ?? [], results ?? [], editor, monaco, false);
+			}
+		},
+		[codeLocation, hoverLine, toggleBreakpoint, highlightCodeLocation, args, results]
+	);
+
+	const updateBreakpointDecorations = useCallback(
+		(currentHoverLine: number | null) => {
+			if (!editorRef.current || !monaco || !activeFileRef.current) return;
+
+			const currentFileBreakpoints = getCurrentFileBreakpoints();
+			const decorations = [
+				...currentFileBreakpoints.map((line) => ({
+					range: new monaco.Range(line, 1, line, 1),
+					options: {
+						isWholeLine: false,
+						glyphMarginClassName: 'breakpoint-active',
+						glyphMarginHoverMessage: { value: 'Delete breakpoint' }
+					}
+				})),
+				...(currentHoverLine &&
+				!currentFileBreakpoints.includes(currentHoverLine) &&
+				breakPointsLinesRef.current &&
+				breakPointsLinesRef.current.some((bp: number) => bp === currentHoverLine)
+					? [
+							{
+								range: new monaco.Range(currentHoverLine, 1, currentHoverLine, 1),
+								options: {
+									isWholeLine: false,
+									glyphMarginClassName: 'breakpoint-hover',
+									glyphMarginHoverMessage: { value: 'Add breakpoint' }
+								}
+							}
+					  ]
+					: [])
+			];
+
+			breakpointDecorationsRef.current = editorRef.current.deltaDecorations(
+				breakpointDecorationsRef.current,
+				decorations
+			);
+		},
+		[monaco, getCurrentFileBreakpoints]
+	);
+
+	useEffect(() => {
+		updateBreakpointDecorations(hoverLine);
+	}, [classFileBreakpoints, hoverLine, updateBreakpointDecorations, activeFile]);
 
 	const [prevCodeValue, setPrevCodeValue] = useState<string | null>(null);
 
@@ -156,6 +297,29 @@ export function CodeViewer({
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [codeLocation, args, results]);
+
+	useEffect(() => {
+		const styleId = 'breakpoint-style';
+		if (!document.getElementById(styleId)) {
+			const style = document.createElement('style');
+			style.id = styleId;
+			style.innerHTML = `
+				.breakpoint-active {
+					background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle fill='%23E51400' cx='8' cy='8' r='4'/%3E%3C/svg%3E") center center no-repeat;
+					cursor: pointer;
+				}
+				.breakpoint-hover:hover {
+					background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle fill='%23888888' cx='8' cy='8' r='4'/%3E%3C/svg%3E") center center no-repeat;
+					cursor: pointer;
+					opacity: 0.5;
+				}
+				.monaco-editor .margin-view-overlays .cgmr {
+					cursor: pointer;
+				}
+			`;
+			document.head.appendChild(style);
+		}
+	}, []);
 
 	const isRangeVisible = (startLine: number, endLine: number) => {
 		const editor = editorRef.current;
@@ -188,18 +352,21 @@ export function CodeViewer({
 				padding: 0 4px;
 				border: 1px dashed #ab008a;
 			}
-    	`;
+		`;
 	}
 
 	return (
 		<MonacoEditor
-			// @ts-ignore: SCEditor is not TS-friendly
 			onMount={handleEditorDidMount}
 			options={{
 				minimap: { enabled: false },
 				wordBreak: 'keepAll',
 				readOnly: true,
-				smoothScrolling: true
+				glyphMargin: true,
+				smoothScrolling: true,
+				lineNumbers: 'on',
+				lineNumbersMinChars: 3,
+				lineDecorationsWidth: 15
 			}}
 			value={content}
 			language={'cairo'}
