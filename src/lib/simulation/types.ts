@@ -31,7 +31,7 @@ export enum CallType {
 }
 
 export enum DataType {
-	INPUT = 'INPUT',
+	CALLDATA = 'CALLDATA',
 	OUTPUT = 'OUTPUT',
 	DATAS = 'DATAS'
 }
