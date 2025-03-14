@@ -219,10 +219,6 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 			value: call.entryPoint.initialGas.toString()
 		},
 		{
-			name: 'Calldata',
-			value: JSON.stringify(call.entryPoint.calldata)
-		},
-		{
 			name: 'Contract Address',
 			value: call.entryPoint.storageAddress
 		},
@@ -355,8 +351,12 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 				<div className="">
 					{!hasDebuggableInfo && noSourceCodeAlert}
 					<InfoBox details={details} />
-					{call.calldataDecoded && (
-						<DecodeDataTable decodeData={call.calldataDecoded} type={DataType.INPUT} />
+					{call.entryPoint.calldata && call.calldataDecoded && (
+						<DecodeDataTable
+							rawData={call.entryPoint.calldata}
+							decodeData={call.calldataDecoded}
+							type={DataType.CALLDATA}
+						/>
 					)}
 					{call.decodedResult && (
 						<DecodeDataTable decodeData={call.decodedResult} type={DataType.OUTPUT} />
