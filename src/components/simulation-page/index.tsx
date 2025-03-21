@@ -67,7 +67,24 @@ export function SimulationPage({
 			</>
 		);
 	}
+	const handleReSimulateClick = () => {
+		if (transactionSimulation) {
+			const params = new URLSearchParams();
+			params.set('senderAddress', transactionSimulation.senderAddress);
 
+			if (transactionSimulation.calldata && transactionSimulation.calldata.length > 0) {
+				params.set('calldata', transactionSimulation.calldata.join(','));
+			}
+
+			if (transactionSimulation.transactionVersion)
+				params.set('transactionVersion', transactionSimulation.transactionVersion.toString());
+			if (transactionSimulation.blockNumber)
+				params.set('blockNumber', transactionSimulation.blockNumber.toString());
+			if (simulationPayload?.chainId) params.set('chainId', simulationPayload?.chainId);
+			else if (simulationPayload?.rpcUrl) params.set('rpcUrl', simulationPayload?.rpcUrl);
+			window.location.href = `/simulate-transaction?${params.toString()}`;
+		}
+	};
 	return (
 		<>
 			<HeaderNav />
@@ -75,16 +92,9 @@ export function SimulationPage({
 				<Container className="py-6">
 					<div className="flex flex-row items-baseline justify-between">
 						<h1 className="text-xl font-medium leading-6 mt-4 mr-2">Transaction simulation</h1>
-						<SimulateDialog
-							title="Re-simulate transaction"
-							description="Edit the invoke transaction details below and click “Run Simulation” to re-simulate."
-							dialogTrigger={
-								<Button variant="outline" disabled={isLoading}>
-									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
-								</Button>
-							}
-							simulationPayload={simulationPayload}
-						/>
+						<Button variant="outline" disabled={isLoading} onClick={handleReSimulateClick}>
+							<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+						</Button>
 					</div>
 					{content}
 				</Container>

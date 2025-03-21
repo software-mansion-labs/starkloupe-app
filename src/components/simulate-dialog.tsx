@@ -92,7 +92,7 @@ export function SimulateDialog({
 		} else {
 			throw new Error('Chain is not defined');
 		}
-                if (
+		if (
 			simulationPayload.senderAddress === '' ||
 			simulationPayload.calldata[0] === '' ||
 			isNaN(simulationPayload.transactionVersion) ||
@@ -101,7 +101,7 @@ export function SimulateDialog({
 		) {
 			setAlert(true);
 		} else {
-			openSimulationPage(simulationPayload);
+			// openSimulationPage(simulationPayload);
 		}
 	}
 
@@ -231,7 +231,10 @@ export function SimulateDialog({
 						<Label htmlFor="chain-id" className="text-right">
 							Network
 						</Label>
-						<NetworksSelect simulationPayload={simulationPayload} onChainChangedCallback={onChainChangedCallback}/>
+						<NetworksSelect
+							simulationPayload={simulationPayload}
+							onChainChangedCallback={onChainChangedCallback}
+						/>
 					</div>
 					<div className="grid grid-cols-4 items-center gap-4">
 						<Label htmlFor="tx-version" className="text-right">

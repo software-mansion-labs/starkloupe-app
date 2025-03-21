@@ -7,6 +7,7 @@ import {
 } from '@/components/ui/select';
 import { Network, useSettings } from '@/lib/context/settings-context-provider';
 import { SimulationPayloadWithCalldata } from '@/lib/simulation';
+import { SimulationPayload } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 
 export interface Chain {
@@ -19,7 +20,7 @@ export function NetworksSelect({
 	onChainChangedCallback,
 	selectedChain
 }: {
-	simulationPayload?: SimulationPayloadWithCalldata;
+	simulationPayload?: SimulationPayloadWithCalldata | SimulationPayload;
 	onChainChangedCallback: (chain: Chain) => void;
 	selectedChain?: Chain;
 }) {
@@ -27,7 +28,7 @@ export function NetworksSelect({
 
 	function extractChain(
 		networks: Network[],
-		simulationPayload?: SimulationPayloadWithCalldata
+		simulationPayload?: SimulationPayloadWithCalldata | SimulationPayload
 	): Chain {
 		if (simulationPayload) {
 			if (simulationPayload.chainId) {
@@ -51,31 +52,37 @@ export function NetworksSelect({
 		{ value: 'SN_SEPOLIA', label: 'SN_SEPOLIA' },
 		...networks.map((network) => ({ value: network.networkName, label: network.networkName }))
 	];
+
 	const defaultChain = extractChain(networks, simulationPayload);
 	const [_chain, _setChain] = useState<Chain>(defaultChain);
 
 	function handleChainChange(value: string) {
 		if (value === 'SN_MAIN' || value === 'SN_SEPOLIA') {
 			_setChain({ chainId: value });
+			onChainChangedCallback({ chainId: value });
 		} else {
 			const network = networks.find((n) => n.networkName === value);
 			if (network) {
 				_setChain({ network });
+				onChainChangedCallback({ network });
 			} else if (value === defaultChain.network?.networkName) {
 				_setChain(defaultChain);
+				onChainChangedCallback(defaultChain);
 			}
 		}
 	}
 
 	useEffect(() => {
-		if (selectedChain) {
-			_setChain(selectedChain);
+		if (simulationPayload?.chainId) {
+			_setChain({
+				chainId: simulationPayload?.chainId
+			});
+			onChainChangedCallback({ chainId: simulationPayload?.chainId });
+		} else {
+			_setChain({ chainId: 'SN_MAIN' });
+			onChainChangedCallback({ chainId: 'SN_MAIN' });
 		}
-	}, [selectedChain]);
-
-	useEffect(() => {
-		onChainChangedCallback(_chain);
-	}, [_chain, onChainChangedCallback]);
+	}, [simulationPayload]);
 
 	return (
 		<Select
