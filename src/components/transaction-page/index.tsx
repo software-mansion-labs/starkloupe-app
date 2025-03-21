@@ -37,10 +37,10 @@ export function TransactionPage({
 	const { isLogged } = useUserContext();
 	const [error, setError] = useState<string | undefined>();
 	const { trackingActive, trackingFlagLoaded } = useSettings();
-	const [l2TxHash, setL2TxHash] = useState<string>(txHash);
+	const [l2TxHash, setL2TxHash] = useState<string>();
 	const [l1TxHash, setL1TxHash] = useState<string | undefined>();
 	const [l1TxHashShort, setL1TxHashShort] = useState<string | undefined>();
-	const [l2TxHashShort, setL2TxHashShort] = useState<string>(shortenHash(txHash));
+	const [l2TxHashShort, setL2TxHashShort] = useState<string>(shortenHash());
 
 	useEffect(() => {
 		const fetchData = async () => {
@@ -89,23 +89,25 @@ export function TransactionPage({
 				<Container className="py-6">
 					<div className="lg:flex flex-row items-baseline justify-between">
 						<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
-							<h1 className="text-base font-medium leading-6 flex flex-nowrap items-center">
-								Transaction{' '}
-								<CopyToClipboardElement
-									value={l2TxHash}
-									toastDescription="The address has been copied."
-									className="hidden lg:block"
-								>
-									{l2TxHash}
-								</CopyToClipboardElement>
-								<CopyToClipboardElement
-									value={txHash}
-									toastDescription="The address has been copied."
-									className="lg:hidden"
-								>
-									{l2TxHashShort}
-								</CopyToClipboardElement>
-							</h1>
+							{l2TxHash && (
+								<h1 className="text-base font-medium leading-6 flex flex-nowrap items-center">
+									Transaction{' '}
+									<CopyToClipboardElement
+										value={l2TxHash}
+										toastDescription="The address has been copied."
+										className="hidden lg:block"
+									>
+										{l2TxHash}
+									</CopyToClipboardElement>
+									<CopyToClipboardElement
+										value={txHash}
+										toastDescription="The address has been copied."
+										className="lg:hidden"
+									>
+										{l2TxHashShort}
+									</CopyToClipboardElement>
+								</h1>
+							)}
 							{l1TxHash && (
 								<h2 className="text-base leading-6 flex flex-nowrap items-center">
 									Corresponding L1 Transaction{' '}
