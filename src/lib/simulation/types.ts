@@ -228,6 +228,8 @@ export interface TransactionSimulationResult {
 	chainId?: string;
 	transactionIndexInBlock?: number;
 	totalTransactionsInBlock?: number;
+	l1TxHash?: string;
+	l2TxHash?: string;
 }
 
 export interface SimulationPayloadWithCalldata {
