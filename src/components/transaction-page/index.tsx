@@ -40,7 +40,7 @@ export function TransactionPage({
 	const [l2TxHash, setL2TxHash] = useState<string>();
 	const [l1TxHash, setL1TxHash] = useState<string | undefined>();
 	const [l1TxHashShort, setL1TxHashShort] = useState<string | undefined>();
-	const [l2TxHashShort, setL2TxHashShort] = useState<string>(shortenHash());
+	const [l2TxHashShort, setL2TxHashShort] = useState<string>();
 
 	useEffect(() => {
 		const fetchData = async () => {
