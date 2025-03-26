@@ -64,6 +64,7 @@ export function TransactionPage({
 	const handleReSimulateClick = () => {
 		if (transactionSimulation) {
 			const params = new URLSearchParams();
+			params.set('txHash', txHash);
 			params.set('senderAddress', transactionSimulation.senderAddress);
 
 			if (transactionSimulation.calldata && transactionSimulation.calldata.length > 0) {

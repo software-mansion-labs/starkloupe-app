@@ -19,7 +19,7 @@ export default function Page({
 	const [simulationPayload, setSimulationPayload] = useState<SimulationPayload | undefined>(
 		undefined
 	);
-
+	const [txHash, setTxHash] = useState<string | undefined>(undefined);
 	useEffect(() => {
 		if (searchParams && Object.keys(searchParams).length > 0) {
 			const senderAddress = searchParams.senderAddress as string;
@@ -29,6 +29,11 @@ export default function Page({
 			const chainId = searchParams.chainId as string;
 			const rpcUrl = searchParams.rpcUrl as string;
 			const nonce = searchParams.nonce as string;
+			const txHashParams = searchParams.txHash as string;
+
+			if (txHashParams) {
+				setTxHash(txHashParams);
+			}
 
 			if ((chainId || rpcUrl) && senderAddress && calldata && transactionVersion) {
 				const parsedCalldata = calldata.split(',');
@@ -60,6 +65,7 @@ export default function Page({
 
 	return (
 		<SimulateTransactionPage
+			txHash={txHash}
 			simulationPayload={simulationPayload}
 			title={simulationPayload && 'Re-simulate'}
 			description={

@@ -10,7 +10,12 @@ import { Label } from '@/components/ui/label';
 import { ArrowLeftIcon, PlayIcon } from '@heroicons/react/24/solid';
 import { useCallback, useEffect, useState } from 'react';
 import { SimulationPayloadWithCalldata } from '@/lib/simulation';
-import { openSimulationPage, SimpleContractCall, SimulationPayload } from '@/lib/utils';
+import {
+	openSimulationPage,
+	shortenHash,
+	SimpleContractCall,
+	SimulationPayload
+} from '@/lib/utils';
 import { Chain, NetworksSelect } from '@/components/networks-select';
 import { Textarea } from '../ui/textarea';
 import { fetchContractFunctions } from '@/lib/contracts';
@@ -22,20 +27,20 @@ import {
 	SelectTrigger,
 	SelectValue
 } from '@/components/ui/select';
+import CopyToClipboardElement from '../ui/copy-to-clipboard';
+import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 
 export function SimulateTransactionPage({
+	txHash,
 	title = 'Simulate transaction',
 	description = 'Configure your invoke transaction for simulation.',
 	simulationPayload
 }: {
+	txHash?: string;
 	title?: string;
 	description?: string;
 	simulationPayload?: SimulationPayload;
 }) {
-	const [view, setView] = useState<'networks' | 'monitoring' | 'members'>('networks');
-	const changeTabCallback = (tab: 'networks' | 'monitoring' | 'members') => {
-		setView(tab);
-	};
 	const defaultTransactionVersion = 3;
 	const [alert, setAlert] = useState(false);
 	const validateHexFormat = (value: string) => /^0x[0-9a-fA-F]+$/.test(value);
@@ -66,9 +71,19 @@ export function SimulateTransactionPage({
 	);
 	const [_chain, _setChain] = useState<Chain | undefined>(undefined);
 
-	const onChainChangedCallback = (chain: Chain) => {
+	const onChainChangedCallback = async (chain: Chain) => {
 		_setChain(chain);
 		_setContractCallsFunctions({});
+
+		if (chain?.chainId) {
+			const validContracts = _contractCalls.filter(
+				(call) => call.address && validateHexFormat(call.address)
+			);
+
+			for (const call of validContracts) {
+				await fetchFunctionsForContractAddress(call.address, chain.chainId);
+			}
+		}
 	};
 
 	const handleNumberOfContractsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -127,39 +142,59 @@ export function SimulateTransactionPage({
 	}, [simulationPayload]);
 
 	useEffect(() => {
-		if (_contractCalls.length > 0 && _chain?.chainId) {
-			const loadContractFunctions = async () => {
-				setIsLoadingFunctions(true);
-				try {
-					const allContractFunctions = { ..._contractCallsFunctions };
-					let functionsLoaded = false;
+		const initializeContractFunctions = async () => {
+			if (_chain && _contractCalls && _contractCalls.length > 0) {
+				const validContracts = _contractCalls.filter(
+					(call) => call.address && validateHexFormat(call.address)
+				);
 
-					for (const call of _contractCalls) {
-						if (call.address && validateHexFormat(call.address)) {
-							try {
-								const functions = await getFunctionNames(call.address);
-
-								if (functions && functions.entry_point_datas) {
-									allContractFunctions[call.address] = functions.entry_point_datas;
-									functionsLoaded = true;
-								}
-							} catch (error) {
-								console.log(error);
-							}
-						}
+				if (validContracts.length > 0) {
+					setIsLoadingFunctions(true);
+					try {
+						await Promise.all(
+							validContracts.map((call) =>
+								fetchFunctionsForContractAddress(call.address, _chain.chainId)
+							)
+						);
+					} finally {
+						setIsLoadingFunctions(false);
 					}
-
-					if (functionsLoaded) {
-						_setContractCallsFunctions(allContractFunctions);
-					}
-				} finally {
-					setIsLoadingFunctions(false);
 				}
-			};
+			}
+		};
 
-			loadContractFunctions();
+		initializeContractFunctions();
+	}, [_chain]);
+
+	const fetchFunctionsForContractAddress = async (
+		contractAddress: string,
+		chainIdOverride?: string
+	) => {
+		const chainId = chainIdOverride || _chain?.chainId;
+
+		if (!chainId || !validateHexFormat(contractAddress)) {
+			return;
 		}
-	}, [_chain, _contractCalls]);
+
+		setIsLoadingFunctions(true);
+		try {
+			const result = await fetchContractFunctions({
+				contractAddress,
+				network: chainId
+			});
+
+			if (result && result.entry_point_datas) {
+				_setContractCallsFunctions((prev) => ({
+					...prev,
+					[contractAddress]: result.entry_point_datas
+				}));
+			}
+		} catch (error) {
+			console.log('Error fetching functions:', error);
+		} finally {
+			setIsLoadingFunctions(false);
+		}
+	};
 
 	useEffect(() => {
 		if (_contractCalls.length === _numberOfContracts) return;
@@ -182,16 +217,31 @@ export function SimulateTransactionPage({
 	}, [_numberOfContracts]);
 
 	function onDialogSubmit() {
-		const allCallsValid = _contractCalls.every(
-			(call) => validateHexFormat(call.address) && call.function_name && call.calldata.trim() !== ''
+		const processedCalls = _contractCalls.map((call) => ({
+			...call,
+			calldata: call.calldata.trim() === '' ? '0x0' : call.calldata
+		}));
+
+		const allCallsValid = processedCalls.every(
+			(call) => validateHexFormat(call.address) && call.function_name
 		);
 
-		const allCalldataValid = _contractCalls.every((call) => {
+		const allCalldataValid = processedCalls.every((call) => {
+			if (call.calldata.trim() === '0x0') {
+				return true;
+			}
+
 			const calldataLines = call.calldata
 				.trim()
 				.split('\n')
 				.filter((line) => line.trim() !== '');
-			return calldataLines.length > 0 && validateCalldata(calldataLines);
+			return (
+				validateCalldata(calldataLines) &&
+				calldataLines.length ===
+					_contractCallsFunctions[call.address].find(
+						(item: string) => item[0] === call.function_name
+					)?.[1]?.inputs?.length
+			);
 		});
 
 		if (!allCallsValid || !allCalldataValid) {
@@ -201,7 +251,7 @@ export function SimulateTransactionPage({
 
 		const simulationPayload: SimulationPayload = {
 			senderAddress: _senderAddress,
-			calls: _contractCalls,
+			calls: processedCalls,
 			blockNumber: _blockNumber.length > 0 ? parseInt(_blockNumber) : undefined,
 			transactionVersion: _transactionVersion
 		};
@@ -246,11 +296,6 @@ export function SimulateTransactionPage({
 				emptyFields.push('Entry Point');
 			}
 
-			const hasEmptyCalldata = _contractCalls.some((call) => call.calldata.trim() === '');
-			if (hasEmptyCalldata) {
-				emptyFields.push('Calldata');
-			}
-
 			if (!_transactionVersion) emptyFields.push('Transaction version');
 
 			if (emptyFields.length > 0) {
@@ -277,8 +322,13 @@ export function SimulateTransactionPage({
 						.trim()
 						.split('\n')
 						.filter((line) => line.trim() !== '');
-					if (calldataArray.length === 0) {
-						errors.push(`Calldata in call #${index + 1} cannot be empty`);
+					if (
+						calldataArray.length !==
+						_contractCallsFunctions[call.address].find(
+							(item: string) => item[0] === call.function_name
+						)?.[1]?.inputs?.length
+					) {
+						errors.push(`Calldata in call #${index + 1} `);
 					} else if (!validateCalldata(calldataArray)) {
 						errors.push(
 							`Calldata in call #${
@@ -304,7 +354,8 @@ export function SimulateTransactionPage({
 
 		return (
 			<div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-				<p>{validationMessage}</p>
+				<p>Error!</p>
+				<p>Your form contains errors. Scroll up to see them.</p>
 			</div>
 		);
 	};
@@ -320,7 +371,14 @@ export function SimulateTransactionPage({
 					.trim()
 					.split('\n')
 					.filter((line) => line.trim() !== '');
-				return calldataLines.length > 0 && validateCalldata(calldataLines);
+				return (
+					calldataLines.length > 0 &&
+					validateCalldata(calldataLines) &&
+					calldataLines.length ===
+						_contractCallsFunctions[call.address].find(
+							(item: string) => item[0] === call.function_name
+						)?.[1]?.inputs?.length
+				);
 			});
 
 			if (
@@ -356,29 +414,31 @@ export function SimulateTransactionPage({
 
 		newCalls[index] = {
 			...newCalls[index],
-			address: newAddress
+			address: newAddress,
+			function_name: '',
+			calldata: ''
 		};
 
 		_setContractCalls(newCalls);
 
 		if (newAddress && validateHexFormat(newAddress) && newAddress !== oldAddress) {
-			const functions = await getFunctionNames(newAddress);
-
-			if (functions && functions.entry_point_datas) {
-				const newFunctions = { ..._contractCallsFunctions };
-				newFunctions[newAddress] = functions.entry_point_datas;
-				_setContractCallsFunctions(newFunctions);
-			}
+			await fetchFunctionsForContractAddress(newAddress);
 		}
 	};
 
 	const handleFunctionNameChange = (index: number, newFunctionName: string) => {
-		const newCalls = [..._contractCalls];
-		newCalls[index] = {
-			...newCalls[index],
-			function_name: newFunctionName
-		};
-		_setContractCalls(newCalls);
+		_setContractCalls((prevCalls) => {
+			return prevCalls.map((call, idx) => {
+				if (idx === index) {
+					return {
+						...call,
+						address: call.address,
+						function_name: newFunctionName
+					};
+				}
+				return call;
+			});
+		});
 	};
 
 	const handleCalldataChange = (index: number, newCalldata: string) => {
@@ -393,7 +453,7 @@ export function SimulateTransactionPage({
 	return (
 		<>
 			<HeaderNav />
-			<main className="overflow-y-auto xl:flex xl:justify-between flex-grow relative">
+			<main className="overflow-y-scroll h-[calc(100vh-650px)] xl:flex xl:justify-between flex-grow relative">
 				<div className="left-8 px-4 py-8 xl:block hidden">
 					<Button onClick={() => window.history.back()} variant="outline">
 						<ArrowLeftIcon className="w-4 h-4 mr-2" /> Back
@@ -408,13 +468,23 @@ export function SimulateTransactionPage({
 				<div className="w-full flex justify-center">
 					<div className="w-full max-w-5xl px-4 py-8">
 						<div className="mb-6">
-							<div className="flex flex-col gap-4">
-								<h1 className="text-3xl font-semibold">{title}</h1>
+							<div className="flex flex-col gap-2">
+								<h1 className="text-xl font-medium flex flex-nowrap items-center">
+									{title}
+									{txHash && (
+										<CopyToClipboardElement
+											value={txHash}
+											toastDescription="The address has been copied."
+										>
+											{shortenHash(txHash)}
+										</CopyToClipboardElement>
+									)}
+								</h1>
 								<h3 className="text-gray-600">{description}</h3>
 							</div>
 						</div>
 
-						<div className="rounded-lg py-6">
+						<div className="rounded-lg py-4">
 							<div className="grid gap-6">
 								<div className="grid grid-cols-4 items-center gap-4">
 									<Label htmlFor="chain-id" className="text-right">
@@ -440,6 +510,11 @@ export function SimulateTransactionPage({
 											' border-red-500'
 										}`}
 									/>
+									{alert && (_senderAddress === '' || !validateHexFormat(_senderAddress)) && (
+										<p className="text-xs text-muted-foreground text-red-500 col-span-3 col-start-2">
+											Sender address is required.
+										</p>
+									)}
 								</div>
 
 								<div className="grid grid-cols-4 items-center gap-4">
@@ -458,55 +533,134 @@ export function SimulateTransactionPage({
 									/>
 								</div>
 
-								{_contractCalls.map((call, index) => (
-									<fieldset key={index} className="border border-gray-200 rounded-md p-4">
-										<legend className="px-2 font-medium text-sm">Call #{index + 1}</legend>
-										<div className="grid gap-4">
-											<div className="grid grid-cols-4 items-center gap-4">
-												<Label htmlFor={`contract-address-${index}`} className="text-right">
-													Contract address
-												</Label>
-												<Input
-													id={`contract-address-${index}`}
-													value={call.address}
-													onChange={(e) => handleContractAddressChange(index, e.target.value)}
-													className={`col-span-3 font-mono ${
-														alert && index === 0 && !call.address && ' border-red-500'
-													}`}
+								{_contractCalls.map((call, index) => {
+									return (
+										<fieldset key={index} className="border border-gray-200 rounded-md p-4">
+											<legend className="px-2 font-medium text-sm">Call #{index + 1}</legend>
+											<div className="grid gap-4">
+												<div className="grid grid-cols-4 items-center gap-x-4 gap-y-2">
+													<Label htmlFor={`contract-address-${index}`} className="text-right">
+														Contract address
+													</Label>
+													<Input
+														id={`contract-address-${index}`}
+														value={call.address}
+														onChange={(e) => handleContractAddressChange(index, e.target.value)}
+														className={`col-span-3 font-mono ${
+															alert &&
+															(!call.address || !validateHexFormat(call.address)) &&
+															' border-red-500'
+														}`}
+													/>
+													{alert && !call.address && (
+														<p className="text-xs text-muted-foreground col-span-3 col-start-2">
+															Contract address is required.
+														</p>
+													)}
+												</div>
+												<EntryPointSelect
+													entryPoints={call.address ? _contractCallsFunctions[call.address] : null}
+													value={call.function_name}
+													isLoading={isLoadingFunctions}
+													isError={call.function_name === ''}
+													onChange={(value) => handleFunctionNameChange(index, value)}
 												/>
-											</div>
-											<EntryPointSelect
-												entryPoints={call.address ? _contractCallsFunctions[call.address] : null}
-												value={call.function_name}
-												isLoading={isLoadingFunctions}
-												onChange={(value) => handleFunctionNameChange(index, value)}
-											/>
-											<div className="grid grid-cols-4 items-center gap-4">
-												<Label htmlFor={`calldata-${index}`} className="text-right">
-													Calldata
-												</Label>
-												<Textarea
-													id={`calldata-${index}`}
-													value={call.calldata}
-													placeholder={`Enter raw calldata here. For example:\n\n0x0000000000000000000000000000000000000000000000000000000000000001\n0x014c52727fc025f10d431efafb3945a06601e3703fc06c934df177a6c30f3280\n0x02f67e6aeaad1ab7487a680eb9d3363a597afa7a3de33fa9bf3ae6edcb88435d\n0x0000000000000000000000000000000000000000000000000000000000000001\n0x000000000000000000000000000000000000000000000000000000000000002a`}
-													className={`col-span-3 font-mono h-32 ${
-														alert &&
-														call.address &&
-														(call.calldata.trim() === '' ||
-															!validateCalldata(
+												<div className="grid grid-cols-4 items-center gap-4">
+													<Label htmlFor={`calldata-${index}`} className="text-right">
+														Calldata
+													</Label>
+													<Textarea
+														disabled={call.function_name === ''}
+														id={`calldata-${index}`}
+														value={call.calldata}
+														placeholder={`Enter raw calldata here. For example:\n\n0x0000000000000000000000000000000000000000000000000000000000000001\n0x014c52727fc025f10d431efafb3945a06601e3703fc06c934df177a6c30f3280\n0x02f67e6aeaad1ab7487a680eb9d3363a597afa7a3de33fa9bf3ae6edcb88435d\n0x0000000000000000000000000000000000000000000000000000000000000001\n0x000000000000000000000000000000000000000000000000000000000000002a`}
+														className={`col-span-3 font-mono h-32 ${
+															alert &&
+															call.address &&
+															call.calldata.trim() !== '' &&
+															(!validateCalldata(
 																call.calldata
 																	.trim()
 																	.split('\n')
 																	.filter((line) => line.trim() !== '')
-															)) &&
-														' border-red-500'
-													}`}
-													onChange={(e) => handleCalldataChange(index, e.target.value)}
-												/>
+															) ||
+																(call.function_name &&
+																	_contractCallsFunctions[call.address] &&
+																	_contractCallsFunctions[call.address].find(
+																		(item: string) => item[0] === call.function_name
+																	)?.[1]?.inputs?.length !==
+																		call.calldata
+																			.trim()
+																			.split('\n')
+																			.filter((line) => line.trim() !== '').length))
+																? 'border-red-500'
+																: ''
+														}`}
+														onChange={(e) => handleCalldataChange(index, e.target.value)}
+													/>
+													{alert &&
+														call.calldata !== '' &&
+														!validateCalldata(
+															call.calldata
+																.trim()
+																.split('\n')
+																.filter((line) => line.trim() !== '')
+														) && (
+															<p className="text-xs text-red-500 col-span-3 col-start-2">
+																Calldata must be a list of hexadecimal numbers, each starting with
+																0x on a new line.
+															</p>
+														)}
+													{(() => {
+														const calldataLines = call.calldata.trim()
+															? call.calldata
+																	.trim()
+																	.split('\n')
+																	.filter((line) => line.trim() !== '')
+															: [];
+
+														const selectedFunction =
+															call.function_name && _contractCallsFunctions[call.address]
+																? _contractCallsFunctions[call.address].find(
+																		(item: string) => item[0] === call.function_name
+																  )?.[1]
+																: null;
+
+														const expectedArgsCount = selectedFunction?.inputs?.length || 0;
+														const actualArgsCount = calldataLines.length;
+
+														const hasInvalidCalldataFormat =
+															call.calldata !== '' && !validateCalldata(calldataLines);
+														const hasIncorrectArgsCount =
+															call.calldata !== '' &&
+															call.function_name &&
+															selectedFunction &&
+															expectedArgsCount !== actualArgsCount;
+														if (alert) {
+															if (hasInvalidCalldataFormat) {
+																return (
+																	<p className="text-xs text-red-500 col-span-3 col-start-2">
+																		Calldata must be a list of hexadecimal numbers, each starting
+																		with 0x on a new line.
+																	</p>
+																);
+															} else if (hasIncorrectArgsCount) {
+																return (
+																	<p className="text-xs text-red-500 col-span-3 col-start-2">
+																		{selectedFunction?.name || 'Function'} expects{' '}
+																		{expectedArgsCount} args, but {actualArgsCount} provided
+																	</p>
+																);
+															}
+														}
+
+														return null;
+													})()}
+												</div>
 											</div>
-										</div>
-									</fieldset>
-								))}
+										</fieldset>
+									);
+								})}
 
 								<div className="grid grid-cols-4 items-center gap-x-4 gap-y-2">
 									<Label htmlFor="block-number" className="text-right">

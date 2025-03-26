@@ -8,6 +8,8 @@ import {
 import { useEffect, useState } from 'react';
 import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { Label } from '@/components/ui/label';
+import { Input } from './ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 
 interface FunctionInput {
 	name: string;
@@ -43,12 +45,14 @@ export function EntryPointSelect({
 	entryPoints,
 	value,
 	onChange,
-	isLoading = false
+	isLoading = false,
+	isError = false
 }: {
 	entryPoints: EntryPointItem[] | null;
 	value: string;
 	onChange: (value: string) => void;
 	isLoading?: boolean;
+	isError?: boolean;
 }) {
 	const normalizedInputValue = normalizeHexValue(value);
 
@@ -97,6 +101,9 @@ export function EntryPointSelect({
 	}, [entryPoints]);
 
 	useEffect(() => {
+		if (entryPointsOptions.length === 0) {
+			setSafeValue('');
+		}
 		const option = entryPointsOptions.find(
 			(option) => option.normalizedValue === normalizedInputValue
 		);
@@ -122,7 +129,7 @@ export function EntryPointSelect({
 				setSafeValue('');
 			}
 		}
-	}, [entryPointsOptions, normalizedInputValue, value, onChange]);
+	}, [entryPointsOptions, normalizedInputValue, onChange, value]);
 
 	const getSignatureString = () => {
 		if (!selectedOption?.data) return null;
@@ -137,32 +144,45 @@ export function EntryPointSelect({
 	const handleValueChange = (newValue: string) => {
 		onChange(newValue);
 	};
-
-	return isLoading ? (
-		<div className="grid grid-cols-4 !items-center gap-4">
-			<Label className="text-right">Entrypoint</Label>
-			<div className="col-span-3">
-				<ArrowPathIcon className="w-5 h-5 animate-spin" />
-			</div>
-		</div>
-	) : (
+	return (
 		<>
-			<div className="grid grid-cols-4 !items-center gap-4">
+			<div className="grid grid-cols-4 !items-center gap-x-4 gap-y-2">
 				<Label className="text-right">Entrypoint</Label>
 				<Select
 					value={safeValue}
 					onValueChange={handleValueChange}
-					disabled={isLoading || entryPointsOptions.length === 0}
+					disabled={entryPointsOptions.length === 0}
 				>
-					<SelectTrigger className="col-span-3 font-mono">
-						<SelectValue placeholder="Select an entry point">
-							{selectedOption
-								? selectedOption.label
-								: isLoading
-								? 'Loading entry points...'
-								: 'Select an entry point'}
-						</SelectValue>
-					</SelectTrigger>
+					<TooltipProvider>
+						<Tooltip>
+							<TooltipTrigger className="col-span-3">
+								<SelectTrigger className={` font-mono ${isError && 'border-red-500'}`}>
+									<SelectValue
+										placeholder={
+											isLoading
+												? 'Loading entrypoints...'
+												: !entryPointsOptions || entryPointsOptions.length === 0
+												? 'No entrypoins'
+												: 'Select an entrypoint'
+										}
+									>
+										{selectedOption
+											? selectedOption.label
+											: isLoading
+											? 'Loading entrypoints...'
+											: 'Select an entrypoint'}
+									</SelectValue>
+								</SelectTrigger>
+							</TooltipTrigger>
+
+							{entryPointsOptions.length === 0 && !isLoading && (
+								<TooltipContent>
+									<p>Enter a valid contract address above to see available entrypoints.</p>
+								</TooltipContent>
+							)}
+						</Tooltip>
+					</TooltipProvider>
+
 					<SelectContent>
 						{isLoading ? (
 							<div className="p-2 text-sm text-gray-500">Loading entry points...</div>
@@ -178,13 +198,27 @@ export function EntryPointSelect({
 						)}
 					</SelectContent>
 				</Select>
+				{isError && (
+					<p className="text-xs text-red-500 text-muted-foreground col-span-3 col-start-2">
+						Entrypoint is required.
+					</p>
+				)}
 			</div>
-			<div className="grid grid-cols-4 !items-center gap-4">
+			<div className="grid grid-cols-4 items-center gap-y-2 gap-x-4">
 				<Label className="text-right">Entrypoint signature</Label>
-				{selectedOption?.data && (
-					<div className="mt-2 p-2 col-span-3 font-semibold border border-dashed border-gray-300 break-words rounded font-mono text-sm">
-						{getSignatureString()}
-					</div>
+				{selectedOption?.data ? (
+					<Input value={getSignatureString() || ''} className="col-span-3 font-mono" readOnly />
+				) : (
+					<>
+						<Input
+							placeholder={'Select an Entrypoint above to see the signature'}
+							className="col-span-3 font-mono"
+							readOnly
+						/>
+						<p className="text-xs text-muted-foreground col-span-3 col-start-2">
+							Automatically generated based on the selected Entrypoint.
+						</p>
+					</>
 				)}
 			</div>
 		</>
