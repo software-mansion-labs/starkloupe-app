@@ -3,13 +3,12 @@
 import { HeaderNav } from '../header';
 import { Container } from '../ui/container';
 import { Footer } from '../footer';
-
+import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeftIcon, PlayIcon } from '@heroicons/react/24/solid';
 import { useCallback, useEffect, useState } from 'react';
-import { SimulationPayloadWithCalldata } from '@/lib/simulation';
 import {
 	openSimulationPage,
 	shortenHash,
@@ -28,7 +27,7 @@ import {
 	SelectValue
 } from '@/components/ui/select';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
-import { useCallTrace } from '@/lib/context/call-trace-context-provider';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 
 export function SimulateTransactionPage({
 	txHash,
@@ -324,7 +323,7 @@ export function SimulateTransactionPage({
 						.filter((line) => line.trim() !== '');
 					if (
 						calldataArray.length !==
-						_contractCallsFunctions[call.address].find(
+						_contractCallsFunctions[call.address]?.find(
 							(item: string) => item[0] === call.function_name
 						)?.[1]?.inputs?.length
 					) {
@@ -348,15 +347,18 @@ export function SimulateTransactionPage({
 
 		const validationMessage = getValidationErrors();
 
+		console.log('validationMessage', validationMessage);
+
 		if (!validationMessage) {
 			return null;
 		}
 
 		return (
-			<div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-				<p>Error!</p>
-				<p>Your form contains errors. Scroll up to see them.</p>
-			</div>
+			<Alert variant="destructive" className="mt-4">
+				<AlertCircle className="h-4 w-4" />
+				<AlertTitle>Error</AlertTitle>
+				<AlertDescription>Your form contains errors. Scroll up to see them.</AlertDescription>
+			</Alert>
 		);
 	};
 
@@ -375,7 +377,7 @@ export function SimulateTransactionPage({
 					calldataLines.length > 0 &&
 					validateCalldata(calldataLines) &&
 					calldataLines.length ===
-						_contractCallsFunctions[call.address].find(
+						_contractCallsFunctions[call.address]?.find(
 							(item: string) => item[0] === call.function_name
 						)?.[1]?.inputs?.length
 				);
@@ -496,7 +498,7 @@ export function SimulateTransactionPage({
 									/>
 								</div>
 
-								<div className="grid grid-cols-4 items-center gap-4">
+								<div className="grid grid-cols-4 items-center gap-y-2 gap-x-4">
 									<Label htmlFor="sender-address" className="text-right">
 										Sender address
 									</Label>
@@ -553,7 +555,7 @@ export function SimulateTransactionPage({
 														}`}
 													/>
 													{alert && !call.address && (
-														<p className="text-xs text-muted-foreground col-span-3 col-start-2">
+														<p className="text-xs text-red-500 col-span-3 col-start-2">
 															Contract address is required.
 														</p>
 													)}
@@ -562,10 +564,10 @@ export function SimulateTransactionPage({
 													entryPoints={call.address ? _contractCallsFunctions[call.address] : null}
 													value={call.function_name}
 													isLoading={isLoadingFunctions}
-													isError={call.function_name === ''}
+													isError={alert && call.function_name === ''}
 													onChange={(value) => handleFunctionNameChange(index, value)}
 												/>
-												<div className="grid grid-cols-4 items-center gap-4">
+												<div className="grid grid-cols-4 items-center gap-y-2 gap-x-4">
 													<Label htmlFor={`calldata-${index}`} className="text-right">
 														Calldata
 													</Label>
@@ -573,7 +575,7 @@ export function SimulateTransactionPage({
 														disabled={call.function_name === ''}
 														id={`calldata-${index}`}
 														value={call.calldata}
-														placeholder={`Enter raw calldata here. For example:\n\n0x0000000000000000000000000000000000000000000000000000000000000001\n0x014c52727fc025f10d431efafb3945a06601e3703fc06c934df177a6c30f3280\n0x02f67e6aeaad1ab7487a680eb9d3363a597afa7a3de33fa9bf3ae6edcb88435d\n0x0000000000000000000000000000000000000000000000000000000000000001\n0x000000000000000000000000000000000000000000000000000000000000002a`}
+														placeholder={`Enter raw calldata here. For example:\n\n0x0000000000000000000000000000000000000000000000000000000000000001\n0x014c52727fc025f10d431efafb3945a06601e3703fc06c934df177a6c30f3280\n0x02f67e6aeaad1ab7487a680eb9d3363a597afa7a3de33fa9bf3ae6edcb88435d`}
 														className={`col-span-3 font-mono h-32 ${
 															alert &&
 															call.address &&
@@ -647,8 +649,10 @@ export function SimulateTransactionPage({
 															} else if (hasIncorrectArgsCount) {
 																return (
 																	<p className="text-xs text-red-500 col-span-3 col-start-2">
-																		{selectedFunction?.name || 'Function'} expects{' '}
-																		{expectedArgsCount} args, but {actualArgsCount} provided
+																		<span className="font-mono font-semibold">
+																			{selectedFunction?.name || 'Function'}
+																		</span>{' '}
+																		expects {expectedArgsCount} args, but {actualArgsCount} provided
 																	</p>
 																);
 															}
@@ -700,13 +704,12 @@ export function SimulateTransactionPage({
 									</div>
 								</div>
 
-								<div className="flex justify-end mt-4">
+								{alert && <FieldAlert />}
+								<div className="flex justify-end mt-4 mb-12">
 									<Button type="submit" onClick={onDialogSubmit}>
 										<PlayIcon className="w-4 h-4 mr-2" /> Run Simulation
 									</Button>
 								</div>
-
-								{alert && <FieldAlert />}
 							</div>
 						</div>
 					</div>
