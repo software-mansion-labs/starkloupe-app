@@ -86,7 +86,7 @@ export function formatTimestampToUTC(timestamp: number): string {
 	return formatter.format(dateObject);
 }
 
-export function useChain(): { chainId: ChainId; chainName: string } {
+export function useStarknetChain(): { chainId: ChainId; chainName: string } {
 	const path = usePathname();
 	const isSepolia = path.includes('SN_SEPOLIA');
 	const chainId = isSepolia ? ChainId.SN_SEPOLIA : ChainId.SN_MAIN;
