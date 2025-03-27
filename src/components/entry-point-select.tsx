@@ -160,17 +160,17 @@ export function EntryPointSelect({
 									<SelectValue
 										placeholder={
 											isLoading
-												? 'Loading entrypoints...'
+												? 'Loading Entrypoints...'
 												: !entryPointsOptions || entryPointsOptions.length === 0
-												? 'No entrypoins'
-												: 'Select an entrypoint'
+												? 'No Entrypoint'
+												: 'Select an Entrypoint'
 										}
 									>
 										{selectedOption
 											? selectedOption.label
 											: isLoading
-											? 'Loading entrypoints...'
-											: 'Select an entrypoint'}
+											? 'Loading Entrypoints...'
+											: 'Select an Entrypoint'}
 									</SelectValue>
 								</SelectTrigger>
 							</TooltipTrigger>
@@ -185,7 +185,7 @@ export function EntryPointSelect({
 
 					<SelectContent>
 						{isLoading ? (
-							<div className="p-2 text-sm text-gray-500">Loading entry points...</div>
+							<div className="p-2 text-sm text-gray-500">Loading Entrypoints...</div>
 						) : entryPointsOptions.length > 0 ? (
 							entryPointsOptions.map((option) => (
 								<SelectItem key={option.value} value={option.value}>
@@ -194,7 +194,7 @@ export function EntryPointSelect({
 								</SelectItem>
 							))
 						) : (
-							<div className="p-2 text-sm text-gray-500">No entry points available</div>
+							<div className="p-2 text-sm text-gray-500">No Entryoints available</div>
 						)}
 					</SelectContent>
 				</Select>
