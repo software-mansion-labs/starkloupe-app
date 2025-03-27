@@ -600,19 +600,6 @@ export function SimulateTransactionPage({
 														}`}
 														onChange={(e) => handleCalldataChange(index, e.target.value)}
 													/>
-													{alert &&
-														call.calldata !== '' &&
-														!validateCalldata(
-															call.calldata
-																.trim()
-																.split('\n')
-																.filter((line) => line.trim() !== '')
-														) && (
-															<p className="text-xs text-red-500 col-span-3 col-start-2">
-																Calldata must be a list of hexadecimal numbers, each starting with
-																0x on a new line.
-															</p>
-														)}
 													{(() => {
 														const calldataLines = call.calldata.trim()
 															? call.calldata

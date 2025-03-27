@@ -110,9 +110,7 @@ export function TransactionPage({
 								<Button
 									onClick={handleReSimulateClick}
 									variant="outline"
-									disabled={
-										!transactionSimulation || transactionSimulation.transactionType === 'DECLARE'
-									}
+									disabled={transactionSimulation.transactionType !== 'INVOKE'}
 								>
 									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
 								</Button>

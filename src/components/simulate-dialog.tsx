@@ -14,19 +14,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from './ui/textarea';
 import { PlayIcon } from '@heroicons/react/24/solid';
-import { useCallback, useContext, useEffect, useState } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { DialogClose } from '@radix-ui/react-dialog';
+import { useCallback, useEffect, useState } from 'react';
 import { SimulationPayloadWithCalldata } from '@/lib/simulation';
-import { openSimulationPage } from '@/lib/utils';
-import { Network, useSettings } from '@/lib/context/settings-context-provider';
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue
-} from '@/components/ui/select';
 import { Chain, NetworksSelect } from '@/components/networks-select';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
@@ -100,8 +89,6 @@ export function SimulateDialog({
 			!validateCalldata(simulationPayload.calldata)
 		) {
 			setAlert(true);
-		} else {
-			// openSimulationPage(simulationPayload);
 		}
 	}
 

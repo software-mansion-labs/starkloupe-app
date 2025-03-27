@@ -61,8 +61,6 @@ export default function Page({
 		}
 	}, [searchParams]);
 
-	console.log('simulationPayload', simulationPayload);
-
 	return (
 		<SimulateTransactionPage
 			txHash={txHash}
