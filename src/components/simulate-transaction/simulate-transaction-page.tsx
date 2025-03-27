@@ -73,6 +73,14 @@ export function SimulateTransactionPage({
 	const onChainChangedCallback = async (chain: Chain) => {
 		_setChain(chain);
 		_setContractCallsFunctions({});
+		_setContractCalls((prev) => {
+			const newCalls = prev.map((item) => ({
+				...item,
+				function_name: ''
+			}));
+
+			return newCalls;
+		});
 
 		if (chain?.chainId) {
 			const validContracts = _contractCalls.filter(
@@ -237,7 +245,7 @@ export function SimulateTransactionPage({
 			return (
 				validateCalldata(calldataLines) &&
 				calldataLines.length ===
-					_contractCallsFunctions[call.address].find(
+					_contractCallsFunctions[call.address]?.find(
 						(item: string) => item[0] === call.function_name
 					)?.[1]?.inputs?.length
 			);
