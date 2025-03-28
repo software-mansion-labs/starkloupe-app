@@ -9,7 +9,6 @@ import {
 	SimulationPayloadWithCalldata,
 	TransactionSimulationResult
 } from '@/lib/simulation';
-import { SimulateDialog } from '../simulate-dialog';
 import { Button } from '../ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
 import { TransactionDetails } from '../transaction-page';
