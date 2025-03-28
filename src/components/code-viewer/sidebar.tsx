@@ -2,7 +2,6 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import { ResizablePanelGroup, ResizableHandle, ResizablePanel } from '../ui/resizable-panel';
 import { StepDetails } from '../debugger/step-details';
 import CallTracePreview from './call-trace-preview';
-import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { DebuggerContext } from '@/lib/context/debugger-context-provider';
 import { DebuggerFilesExplorer } from './debugger-file-explorer';
 
@@ -20,7 +19,8 @@ export default function Sidebar({
 }: {
 	handleFileClick: (filePath: string) => void;
 }) {
-	const { sourceCode, activeFile, currentStep } = useContext(DebuggerContext);
+	const { sourceCode, activeFile, currentStep, classesDebuggerData, currentStepIndex } =
+		useContext(DebuggerContext);
 	const inspectorFilePanelRef = useRef<PanelHandle>(null);
 	const inspectorCallTracePanelRef = useRef<PanelHandle>(null);
 	const inspectorStepDetailsPanelRef = useRef<PanelHandle>(null);
@@ -103,7 +103,9 @@ export default function Sidebar({
 				collapsedSize={5}
 			>
 				<DebuggerFilesExplorer
+					currentStepIndex={currentStepIndex}
 					className="flex h-full"
+					classesDebuggerData={classesDebuggerData}
 					classSourceCode={sourceCode}
 					activeFile={activeFile}
 					handleFileClick={handleFileClick}

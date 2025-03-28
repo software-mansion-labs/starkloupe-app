@@ -147,7 +147,18 @@ function Controls({
 									}`}
 								>
 									<div className="icon">
-										<i className="codicon codicon-debug-step-out w-4 h-4 text-blue-500"></i>
+										<svg
+											className=" w-4 h-4 text-blue-500"
+											viewBox="0 0 16 16"
+											xmlns="http://www.w3.org/2000/svg"
+											fill="#3b82f6"
+										>
+											<path
+												fillRule="evenodd"
+												clipRule="evenodd"
+												d="M8 1h-.542L3.553 4.905l1.061 1.06 2.637-2.61v6.177h1.498V3.355l2.637 2.61 1.061-1.06L8.542 1H8zm1.956 12.013a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"
+											/>
+										</svg>
 									</div>
 								</div>
 							</TooltipTrigger>
@@ -164,7 +175,18 @@ function Controls({
 									}`}
 								>
 									<div className="icon">
-										<i className="codicon codicon-debug-step-into w-4 h-4 text-blue-500"></i>
+										<svg
+											className=" w-4 h-4 text-blue-500"
+											viewBox="0 0 16 16"
+											xmlns="http://www.w3.org/2000/svg"
+											fill="#3b82f6"
+										>
+											<path
+												fillRule="evenodd"
+												clipRule="evenodd"
+												d="M8 9.532h.542l3.905-3.905-1.061-1.06-2.637 2.61V1H7.251v6.177l-2.637-2.61-1.061 1.06 3.905 3.905H8zm1.956 3.481a2 2 0 1 1-4 0 2 2 0 0 1 4 0z"
+											/>
+										</svg>
 									</div>
 								</div>
 							</TooltipTrigger>
@@ -182,7 +204,18 @@ function Controls({
 									}`}
 								>
 									<div className="icon">
-										<i className="codicon codicon-debug-step-over w-4 h-4 text-blue-500"></i>
+										<svg
+											className=" w-4 h-4 text-blue-500"
+											viewBox="0 0 16 16"
+											xmlns="http://www.w3.org/2000/svg"
+											fill="#3b82f6"
+										>
+											<path
+												fillRule="evenodd"
+												clipRule="evenodd"
+												d="M14.25 5.75v-4h-1.5v2.542c-1.145-1.359-2.911-2.209-4.84-2.209-3.177 0-5.92 2.307-6.16 5.398l-.02.269h1.501l.022-.226c.212-2.195 2.202-3.94 4.656-3.94 1.736 0 3.244.875 4.05 2.166h-2.83v1.5h4.163l.962-.975V5.75h-.004zM8 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z"
+											/>
+										</svg>
 									</div>
 								</div>
 							</TooltipTrigger>
@@ -200,7 +233,18 @@ function Controls({
 									}`}
 								>
 									<div className="icon">
-										<i className="codicon codicon-play w-4 h-4 text-blue-500"></i>
+										<svg
+											className=" w-4 h-4 text-blue-500"
+											viewBox="0 0 16 16"
+											xmlns="http://www.w3.org/2000/svg"
+											fill="#3b82f6"
+										>
+											<path
+												fillRule="evenodd"
+												clipRule="evenodd"
+												d="M4.25 3l1.166-.624 8 5.333v1.248l-8 5.334-1.166-.624V3zm1.5 1.401v7.864l5.898-3.932L5.75 4.401z"
+											/>
+										</svg>
 									</div>
 								</div>
 							</TooltipTrigger>

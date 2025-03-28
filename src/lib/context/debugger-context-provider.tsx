@@ -29,6 +29,7 @@ interface DebuggerContextProps {
 	stepOver: () => void;
 	runToBreakpoint: () => void;
 	setActiveFile: (filePath: string) => void;
+	setCurrentContractCall: (contractCall: ContractCall) => void;
 	isFunctionCallDebuggable: (functionCallId: number) => boolean;
 	isContractCallDebuggable: (contractCallId: number) => boolean;
 	fileBreakpoints: { [key: string]: { [key: string]: number[] } };
@@ -52,6 +53,7 @@ export const DebuggerContext = createContext<DebuggerContextProps>({
 	stepOver: () => undefined,
 	runToBreakpoint: () => undefined,
 	setActiveFile: () => undefined,
+	setCurrentContractCall: () => undefined,
 	isFunctionCallDebuggable: () => false,
 	isContractCallDebuggable: () => false,
 	fileBreakpoints: {},
@@ -153,6 +155,7 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 	const [contractCall, setContractCall] = useState<ContractCall | undefined>(
 		initialDebuggerData && initialDebuggerData.contractCall
 	);
+
 	const [codeLocation, setCodeLocation] = useState<CodeLocation | undefined>(
 		initialDebuggerData && initialDebuggerData.codeLocation
 	);
@@ -172,6 +175,27 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 		setSourceCode(classSourceCode);
 		setActiveFile(activeFile);
 		setCodeLocation(codeLocation);
+	}
+
+	function setCurrentContractCall(currentContractCall: ContractCall) {
+		let newStep;
+		if (
+			currentContractCall &&
+			currentContractCall.debuggerTraceStepIndex !== null &&
+			currentContractCall.debuggerTraceStepIndex !== undefined
+		) {
+			newStep = simulationDebuggerData.debuggerTrace[currentContractCall.debuggerTraceStepIndex];
+			if (newStep) {
+				const { contractCall, classSourceCode, activeFile, codeLocation } = getDebuggerDataForStep(
+					contractCallsMap,
+					simulationResult.simulationDebuggerData,
+					newStep
+				);
+				setContractCall(contractCall);
+				setSourceCode(classSourceCode);
+				setActiveFile(activeFile);
+			}
+		}
 	}
 
 	const debugFunctionCall = (functionCallId: number) => {
@@ -296,6 +320,7 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 				sourceCode,
 				isContractCallDebuggable,
 				isFunctionCallDebuggable,
+				setCurrentContractCall,
 				runToBreakpoint,
 				fileBreakpoints,
 				toggleBreakpoint

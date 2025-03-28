@@ -35,20 +35,41 @@ export function TransactionPage({
 	const { isLogged } = useUserContext();
 	const [error, setError] = useState<string | undefined>();
 	const { trackingActive, trackingFlagLoaded } = useSettings();
-	const shortHash = shortenHash(txHash);
+	const [l2TxHash, setL2TxHash] = useState<string>();
+	const [l1TxHash, setL1TxHash] = useState<string | undefined>();
+	const [l1TxHashShort, setL1TxHashShort] = useState<string | undefined>();
+	const [l2TxHashShort, setL2TxHashShort] = useState<string>();
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				const skipTracking = !trackingActive;
 				if (chainId) {
-					setTransactionSimulation(
-						await simulateTransactionByHash({ chainId, txHash, skipTracking })
-					);
+					const simulation = await simulateTransactionByHash({ chainId, txHash, skipTracking });
+					setTransactionSimulation(simulation);
+					if (simulation.l2TxHash) {
+						setL2TxHash(simulation.l2TxHash);
+						setL2TxHashShort(shortenHash(simulation.l2TxHash));
+					}
+					if (simulation.l1TxHash) {
+						setL1TxHash(simulation.l1TxHash);
+						setL1TxHashShort(shortenHash(simulation.l1TxHash));
+					}
 				} else if (rpcUrl) {
-					setTransactionSimulation(
-						await simulateCustomNetworkTransactionByHash({ txHash, rpcUrl, skipTracking })
-					);
+					const simulation = await simulateCustomNetworkTransactionByHash({
+						txHash,
+						rpcUrl,
+						skipTracking
+					});
+					setTransactionSimulation(simulation);
+					if (simulation.l2TxHash) {
+						setL2TxHash(simulation.l2TxHash);
+						setL2TxHashShort(shortenHash(simulation.l2TxHash));
+					}
+					if (simulation.l1TxHash) {
+						setL1TxHash(simulation.l1TxHash);
+						setL1TxHashShort(shortenHash(simulation.l1TxHash));
+					}
 				}
 			} catch (error: any) {
 				setError(error.toString());
@@ -85,23 +106,46 @@ export function TransactionPage({
 			<main className="overflow-y-auto flex-grow flex-col flex justify-between">
 				<Container className="py-6">
 					<div className="lg:flex flex-row items-baseline justify-between">
-						<h1 className="text-l font-medium leading-6 mt-4 mb-2 mr-2 flex flex-nowrap items-center">
-							Transaction{' '}
-							<CopyToClipboardElement
-								value={txHash}
-								toastDescription="The address has been copied."
-								className="hidden lg:block"
-							>
-								{txHash}
-							</CopyToClipboardElement>
-							<CopyToClipboardElement
-								value={txHash}
-								toastDescription="The address has been copied."
-								className=" lg:hidden"
-							>
-								{shortHash}
-							</CopyToClipboardElement>
-						</h1>
+						<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
+							{l2TxHash && (
+								<h1 className="text-base font-medium leading-6 flex flex-nowrap items-center">
+									Transaction{' '}
+									<CopyToClipboardElement
+										value={l2TxHash}
+										toastDescription="The address has been copied."
+										className="hidden lg:block"
+									>
+										{l2TxHash}
+									</CopyToClipboardElement>
+									<CopyToClipboardElement
+										value={txHash}
+										toastDescription="The address has been copied."
+										className="lg:hidden"
+									>
+										{l2TxHashShort}
+									</CopyToClipboardElement>
+								</h1>
+							)}
+							{l1TxHash && (
+								<h2 className="text-base leading-6 flex flex-nowrap items-center">
+									Corresponding L1 Transaction{' '}
+									<CopyToClipboardElement
+										value={l1TxHash}
+										toastDescription="The address has been copied."
+										className="hidden lg:block"
+									>
+										{l1TxHash}
+									</CopyToClipboardElement>
+									<CopyToClipboardElement
+										value={txHash}
+										toastDescription="The address has been copied."
+										className="lg:hidden"
+									>
+										{l1TxHashShort}
+									</CopyToClipboardElement>
+								</h2>
+							)}
+						</div>
 
 						{transactionSimulation &&
 							(isLogged ? (
@@ -170,11 +214,22 @@ export function TransactionDetails({
 	}
 
 	if (txSimResult.blockNumber) {
-		details.push({
-			name: 'Block',
-			value: txSimResult.blockNumber.toString(),
-			isCopyable: true
-		});
+		if (
+			txSimResult.l1TxHash &&
+			txSimResult.simulationResult.executionResult.executionStatus === 'REVERTED'
+		) {
+			details.push({
+				name: 'Simulated at block',
+				value: txSimResult.blockNumber.toString(),
+				isCopyable: true
+			});
+		} else {
+			details.push({
+				name: 'Block',
+				value: txSimResult.blockNumber.toString(),
+				isCopyable: true
+			});
+		}
 	}
 
 	if (
