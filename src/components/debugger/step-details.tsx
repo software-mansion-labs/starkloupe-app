@@ -37,12 +37,13 @@ export function StepDetails({ step, className, toggleExpand }: StepDetailsProps)
 	}
 
 	const stepWithLocation = step.withLocation;
-	if (!stepWithLocation) return;
+
 	let functionName: string | undefined = undefined;
 	let args: InternalFnCallIO[] = [];
 	let result: InternalFnCallIO[] = [];
 
-	const functionCallDetails = simulationResult.functionCallsMap[stepWithLocation.functionCallId];
+	const functionCallDetails =
+		stepWithLocation && simulationResult.functionCallsMap[stepWithLocation.functionCallId];
 	if (functionCallDetails) {
 		const fullFnName = functionCallDetails?.fnName;
 		functionName =
@@ -76,7 +77,12 @@ export function StepDetails({ step, className, toggleExpand }: StepDetailsProps)
 				<ChevronDown className="w-4 h-4" />
 			</button>
 			<ScrollArea className="flex-1">
-				<FunctionCallViewer data={filteredStepInfo} />
+				{stepWithLocation ? (
+					<FunctionCallViewer data={filteredStepInfo} />
+				) : (
+					<div className="flex px-2 py-1">No Function Call Details</div>
+				)}
+
 				<ScrollBar orientation="horizontal" />
 			</ScrollArea>
 		</div>

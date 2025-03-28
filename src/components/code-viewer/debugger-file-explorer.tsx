@@ -117,73 +117,77 @@ export const DebuggerFilesExplorer = memo(function FilesExplorer({
 				<ScrollArea className="flex-1">
 					<div className="min-w-full">
 						<div className="flex flex-col pb-2">
-							{contracts.map((contract) => {
-								let currentContractCall = Object.values(contractCallsMap).find(
-									(item) => item.classHash === contract?.classHash
-								);
-								let contractName = currentContractCall
-									? getContractName({ contractCall: currentContractCall })
-									: '';
-								return (
-									<React.Fragment key={contract?.classHash}>
-										<TooltipProvider>
-											<Tooltip delayDuration={100}>
-												<TooltipTrigger>
-													<div
-														className={`py-1 px-4 transition-colors cursor-pointer whitespace-nowrap flex items-center gap-2  ${
-															contract?.classHash && openContracts[contract?.classHash]
-																? 'bg-neutral-100'
-																: 'hover:bg-neutral-50'
-														}`}
-														onClick={() =>
-															contract?.classHash && toggleContract(contract?.classHash)
-														}
-													>
-														{contract?.classHash && openContracts[contract?.classHash] ? (
-															<ChevronDown className="w-4 h-4" />
-														) : (
-															<ChevronRight className="w-4 h-4" />
-														)}
-														<span className="uppercase">
-															Contract: {contractName} (
-															{`${contract?.entryPoint.storageAddress.slice(
-																0,
-																4
-															)}...${contract?.entryPoint.storageAddress.slice(-4)}`}
-															)
-														</span>
-													</div>
-												</TooltipTrigger>
-												<TooltipContent>
-													<p>{contract?.entryPoint.storageAddress}</p>
-												</TooltipContent>
-											</Tooltip>
-										</TooltipProvider>
+							{contracts.length > 0 ? (
+								contracts.map((contract) => {
+									let currentContractCall = Object.values(contractCallsMap).find(
+										(item) => item.classHash === contract?.classHash
+									);
+									let contractName = currentContractCall
+										? getContractName({ contractCall: currentContractCall })
+										: '';
+									return (
+										<React.Fragment key={contract?.classHash}>
+											<TooltipProvider>
+												<Tooltip delayDuration={100}>
+													<TooltipTrigger>
+														<div
+															className={`py-1 px-4 transition-colors cursor-pointer whitespace-nowrap flex items-center gap-2  ${
+																contract?.classHash && openContracts[contract?.classHash]
+																	? 'bg-neutral-100'
+																	: 'hover:bg-neutral-50'
+															}`}
+															onClick={() =>
+																contract?.classHash && toggleContract(contract?.classHash)
+															}
+														>
+															{contract?.classHash && openContracts[contract?.classHash] ? (
+																<ChevronDown className="w-4 h-4" />
+															) : (
+																<ChevronRight className="w-4 h-4" />
+															)}
+															<span className="uppercase">
+																Contract: {contractName} (
+																{`${contract?.entryPoint.storageAddress.slice(
+																	0,
+																	4
+																)}...${contract?.entryPoint.storageAddress.slice(-4)}`}
+																)
+															</span>
+														</div>
+													</TooltipTrigger>
+													<TooltipContent>
+														<p>{contract?.entryPoint.storageAddress}</p>
+													</TooltipContent>
+												</Tooltip>
+											</TooltipProvider>
 
-										{contract?.classHash &&
-											openContracts[contract?.classHash] &&
-											Object.keys(classesDebuggerData[contract?.classHash].sourceCode).map(
-												(file) => (
-													<div
-														key={file}
-														className={cn(
-															'py-1 pr-4 pl-8 transition-colors',
-															activeFile === file && contract.callId === contractCall?.callId
-																? 'bg-neutral-100'
-																: 'cursor-pointer hover:bg-neutral-50'
-														)}
-														onClick={() => {
-															setCurrentContractCall(contract);
-															handleFileClick(file);
-														}}
-													>
-														{file}
-													</div>
-												)
-											)}
-									</React.Fragment>
-								);
-							})}
+											{contract?.classHash &&
+												openContracts[contract?.classHash] &&
+												Object.keys(classesDebuggerData[contract?.classHash].sourceCode).map(
+													(file) => (
+														<div
+															key={file}
+															className={cn(
+																'py-1 pr-4 pl-8 transition-colors',
+																activeFile === file && contract.callId === contractCall?.callId
+																	? 'bg-neutral-100'
+																	: 'cursor-pointer hover:bg-neutral-50'
+															)}
+															onClick={() => {
+																setCurrentContractCall(contract);
+																handleFileClick(file);
+															}}
+														>
+															{file}
+														</div>
+													)
+												)}
+										</React.Fragment>
+									);
+								})
+							) : (
+								<div className="flex px-2 py-1">No available files</div>
+							)}
 						</div>
 					</div>
 					<ScrollBar orientation="horizontal" />
