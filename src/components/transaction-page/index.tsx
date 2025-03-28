@@ -14,7 +14,6 @@ import { formatTimestampToUTC, shortenHash } from '@/lib/utils';
 import { ChainId } from '@/lib/types';
 import { CallTraceRoot } from '@/components/call-trace';
 import { InfoBox, InfoBoxItem } from '../ui/info-box';
-import { SimulateDialog } from '../simulate-dialog';
 import { Button } from '../ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
 import { Error } from '../ui/error';
@@ -22,7 +21,6 @@ import { useSettings } from '@/lib/context/settings-context-provider';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import { useUserContext } from '@/lib/context/user-context-provider';
 import Link from 'next/link';
-import { log } from 'console';
 
 export function TransactionPage({
 	txHash,

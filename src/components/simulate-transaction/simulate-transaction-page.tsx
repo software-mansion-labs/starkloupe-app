@@ -42,9 +42,9 @@ export function SimulateTransactionPage({
 }) {
 	const defaultTransactionVersion = 3;
 	const [alert, setAlert] = useState(false);
-	const validateHexFormat = (value: string) => /^0x[0-9a-fA-F]+$/.test(value);
+	const validateHexFormat = (value: string) => /^0x[0-9a-fA-F]+$/.test(value) || value === '';
 	const validateCalldata = useCallback((calldata: string[]) => {
-		return calldata.length > 0 && calldata.every((item) => validateHexFormat(item));
+		return calldata.every((item) => validateHexFormat(item));
 	}, []);
 	const [isLoadingFunctions, setIsLoadingFunctions] = useState(false);
 
@@ -226,7 +226,7 @@ export function SimulateTransactionPage({
 	function onDialogSubmit() {
 		const processedCalls = _contractCalls.map((call) => ({
 			...call,
-			calldata: call.calldata.trim() === '' ? '0x0' : call.calldata
+			calldata: call.calldata.trim() === '' ? '' : call.calldata
 		}));
 
 		const allCallsValid = processedCalls.every(
@@ -234,7 +234,7 @@ export function SimulateTransactionPage({
 		);
 
 		const allCalldataValid = processedCalls.every((call) => {
-			if (call.calldata.trim() === '0x0') {
+			if (call.calldata.trim() === '') {
 				return true;
 			}
 
@@ -355,8 +355,6 @@ export function SimulateTransactionPage({
 
 		const validationMessage = getValidationErrors();
 
-		console.log('validationMessage', validationMessage);
-
 		if (!validationMessage) {
 			return null;
 		}
@@ -382,7 +380,6 @@ export function SimulateTransactionPage({
 					.split('\n')
 					.filter((line) => line.trim() !== '');
 				return (
-					calldataLines.length > 0 &&
 					validateCalldata(calldataLines) &&
 					calldataLines.length ===
 						_contractCallsFunctions[call.address]?.find(
@@ -403,20 +400,6 @@ export function SimulateTransactionPage({
 			}
 		}
 	}, [_senderAddress, _contractCalls, _transactionVersion, alert, validateCalldata]);
-
-	const getFunctionNames = async (contractAddress: string) => {
-		if (!_chain?.chainId || !validateHexFormat(contractAddress)) return null;
-
-		try {
-			const result = await fetchContractFunctions({
-				contractAddress,
-				network: _chain.chainId
-			});
-			return result;
-		} catch (error) {
-			return null;
-		}
-	};
 
 	const handleContractAddressChange = async (index: number, newAddress: string) => {
 		const newCalls = [..._contractCalls];

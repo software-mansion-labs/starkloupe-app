@@ -1,12 +1,7 @@
 'use client';
 
 import { SimulateTransactionPage } from '@/components/simulate-transaction/simulate-transaction-page';
-import {
-	extractSimulationPayload,
-	SimulationPayload,
-	parseCalldata,
-	parseContractCalls
-} from '@/lib/utils';
+import { SimulationPayload, parseContractCalls } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 
 export const runtime = 'edge';

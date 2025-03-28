@@ -77,7 +77,7 @@ export function EntryPointSelect({
 		| undefined
 	>(undefined);
 
-	const [safeValue, setSafeValue] = useState<string>('');
+	const [entrypointValue, setEntrypointValue] = useState<string>('');
 
 	useEffect(() => {
 		if (!entryPoints) {
@@ -102,7 +102,7 @@ export function EntryPointSelect({
 
 	useEffect(() => {
 		if (entryPointsOptions.length === 0) {
-			setSafeValue('');
+			setEntrypointValue('');
 		}
 		const option = entryPointsOptions.find(
 			(option) => option.normalizedValue === normalizedInputValue
@@ -112,7 +112,7 @@ export function EntryPointSelect({
 		setSelectedOption(option);
 
 		if (option) {
-			setSafeValue(option.value);
+			setEntrypointValue(option.value);
 			if (option.value !== value && normalizedInputValue === option.normalizedValue) {
 				onChange(option.value);
 			}
@@ -120,13 +120,13 @@ export function EntryPointSelect({
 			if (value && entryPointsOptions.length > 0) {
 				const optionByName = entryPointsOptions.find((option) => option.label === value);
 				if (optionByName) {
-					setSafeValue(optionByName.value);
+					setEntrypointValue(optionByName.value);
 					onChange(optionByName.value);
 				} else {
-					setSafeValue('');
+					setEntrypointValue('');
 				}
 			} else {
-				setSafeValue('');
+				setEntrypointValue('');
 			}
 		}
 	}, [entryPointsOptions, normalizedInputValue, onChange, value]);
@@ -149,7 +149,7 @@ export function EntryPointSelect({
 			<div className="grid grid-cols-4 !items-center gap-x-4 gap-y-2">
 				<Label className="text-right">Entrypoint</Label>
 				<Select
-					value={safeValue}
+					value={entrypointValue}
 					onValueChange={handleValueChange}
 					disabled={entryPointsOptions.length === 0}
 				>

@@ -4,11 +4,7 @@ import { twMerge } from 'tailwind-merge';
 import { ChainId } from '../types';
 export * from './fetch';
 
-import {
-	ContractCall,
-	SimulationPayloadWithCalldata,
-	TransactionSimulationResult
-} from '../simulation';
+import { ContractCall, SimulationPayloadWithCalldata } from '../simulation';
 
 export interface SimpleContractCall {
 	address: string;
@@ -154,40 +150,6 @@ export function extractSimulationPayloadWithCalldata(
 	return undefined;
 }
 
-export function extractSimulationPayload(
-	searchParams: URLSearchParams
-): SimulationPayload | undefined {
-	const senderAddress = searchParams.get('senderAddress');
-	const calldata = searchParams.get('calldata');
-	const blockNumber = searchParams.get('blockNumber');
-	const transactionVersion = searchParams.get('transactionVersion');
-	const nonce = searchParams.get('nonce');
-	const rpcUrl = searchParams.get('rpcUrl');
-	const chainId = searchParams.get('chainId');
-
-	if ((rpcUrl || chainId) && senderAddress && calldata && transactionVersion) {
-		const parsedCalldata = parseCalldata(calldata);
-		const calls = parseContractCalls(parsedCalldata);
-
-		const result: SimulationPayload = {
-			senderAddress,
-			calls,
-			transactionVersion: parseInt(transactionVersion),
-			nonce: nonce ? parseInt(nonce) : undefined,
-			rpcUrl: rpcUrl ?? undefined,
-			chainId: chainId ?? undefined
-		};
-
-		if (blockNumber) {
-			result.blockNumber = parseInt(blockNumber);
-		}
-
-		return result;
-	}
-
-	return undefined;
-}
-
 export function serializeContractCalls(calls: SimpleContractCall[]): string[] {
 	const result: string[] = [];
 	result.push('0x' + calls.length.toString(16));
@@ -243,20 +205,6 @@ export function parseContractCalls(calldata: string[]): SimpleContractCall[] {
 	}
 
 	return result;
-}
-
-export function convertToSimulationPayload(
-	oldPayload: SimulationPayloadWithCalldata
-): SimulationPayload {
-	return {
-		senderAddress: oldPayload.senderAddress,
-		calls: parseContractCalls(oldPayload.calldata),
-		blockNumber: oldPayload.blockNumber,
-		transactionVersion: oldPayload.transactionVersion,
-		nonce: oldPayload.nonce,
-		rpcUrl: oldPayload.rpcUrl,
-		chainId: oldPayload.chainId
-	};
 }
 
 export function openSimulationPage(simulationPayload: SimulationPayload): void {
