@@ -215,11 +215,11 @@ export function EntryPointSelect({
 							className="col-span-3 font-mono"
 							readOnly
 						/>
-						<p className="text-xs text-muted-foreground col-span-3 col-start-2">
-							Automatically generated based on the selected Entrypoint.
-						</p>
 					</>
 				)}
+				<p className="text-xs text-muted-foreground col-span-3 col-start-2">
+					Automatically generated based on the selected Entrypoint.
+				</p>
 			</div>
 		</>
 	);

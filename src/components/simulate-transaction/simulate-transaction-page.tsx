@@ -76,7 +76,8 @@ export function SimulateTransactionPage({
 		_setContractCalls((prev) => {
 			const newCalls = prev.map((item) => ({
 				...item,
-				function_name: ''
+				function_name: '',
+				calldata: ''
 			}));
 
 			return newCalls;
@@ -242,13 +243,7 @@ export function SimulateTransactionPage({
 				.trim()
 				.split('\n')
 				.filter((line) => line.trim() !== '');
-			return (
-				validateCalldata(calldataLines) &&
-				calldataLines.length ===
-					_contractCallsFunctions[call.address]?.find(
-						(item: string) => item[0] === call.function_name
-					)?.[1]?.inputs?.length
-			);
+			return validateCalldata(calldataLines);
 		});
 
 		if (!allCallsValid || !allCalldataValid) {
@@ -329,14 +324,7 @@ export function SimulateTransactionPage({
 						.trim()
 						.split('\n')
 						.filter((line) => line.trim() !== '');
-					if (
-						calldataArray.length !==
-						_contractCallsFunctions[call.address]?.find(
-							(item: string) => item[0] === call.function_name
-						)?.[1]?.inputs?.length
-					) {
-						errors.push(`Calldata in call #${index + 1} `);
-					} else if (!validateCalldata(calldataArray)) {
+					if (!validateCalldata(calldataArray)) {
 						errors.push(
 							`Calldata in call #${
 								index + 1
@@ -358,7 +346,6 @@ export function SimulateTransactionPage({
 		if (!validationMessage) {
 			return null;
 		}
-
 		return (
 			<Alert variant="destructive" className="mt-4">
 				<AlertCircle className="h-4 w-4" />
@@ -423,11 +410,19 @@ export function SimulateTransactionPage({
 		_setContractCalls((prevCalls) => {
 			return prevCalls.map((call, idx) => {
 				if (idx === index) {
-					return {
-						...call,
-						address: call.address,
-						function_name: newFunctionName
-					};
+					if (newFunctionName === simulationPayload?.calls[index].function_name) {
+						return {
+							...call,
+							address: call.address,
+							function_name: newFunctionName
+						};
+					} else {
+						return {
+							calldata: '',
+							address: call.address,
+							function_name: newFunctionName
+						};
+					}
 				}
 				return call;
 			});
@@ -571,21 +566,12 @@ export function SimulateTransactionPage({
 															alert &&
 															call.address &&
 															call.calldata.trim() !== '' &&
-															(!validateCalldata(
+															!validateCalldata(
 																call.calldata
 																	.trim()
 																	.split('\n')
 																	.filter((line) => line.trim() !== '')
-															) ||
-																(call.function_name &&
-																	_contractCallsFunctions[call.address] &&
-																	_contractCallsFunctions[call.address].find(
-																		(item: string) => item[0] === call.function_name
-																	)?.[1]?.inputs?.length !==
-																		call.calldata
-																			.trim()
-																			.split('\n')
-																			.filter((line) => line.trim() !== '').length))
+															)
 																? 'border-red-500'
 																: ''
 														}`}
@@ -611,26 +597,13 @@ export function SimulateTransactionPage({
 
 														const hasInvalidCalldataFormat =
 															call.calldata !== '' && !validateCalldata(calldataLines);
-														const hasIncorrectArgsCount =
-															call.calldata !== '' &&
-															call.function_name &&
-															selectedFunction &&
-															expectedArgsCount !== actualArgsCount;
+
 														if (alert) {
 															if (hasInvalidCalldataFormat) {
 																return (
 																	<p className="text-xs text-red-500 col-span-3 col-start-2">
 																		Calldata must be a list of hexadecimal numbers, each starting
 																		with 0x on a new line.
-																	</p>
-																);
-															} else if (hasIncorrectArgsCount) {
-																return (
-																	<p className="text-xs text-red-500 col-span-3 col-start-2">
-																		<span className="font-mono font-semibold">
-																			{selectedFunction?.name || 'Function'}
-																		</span>{' '}
-																		expects {expectedArgsCount} args, but {actualArgsCount} provided
 																	</p>
 																);
 															}
