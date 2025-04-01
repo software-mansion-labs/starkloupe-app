@@ -10,6 +10,7 @@ import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { Label } from '@/components/ui/label';
 import { Input } from './ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Chain } from './networks-select';
 
 interface FunctionInput {
 	name: string;
@@ -45,11 +46,13 @@ export function EntryPointSelect({
 	entryPoints,
 	value,
 	onChange,
+	chain,
 	isLoading = false,
 	isError = false
 }: {
 	entryPoints: EntryPointItem[] | null;
 	value: string;
+	chain: Chain | undefined;
 	onChange: (value: string) => void;
 	isLoading?: boolean;
 	isError?: boolean;
@@ -162,15 +165,11 @@ export function EntryPointSelect({
 											isLoading
 												? 'Loading Entrypoints...'
 												: !entryPointsOptions || entryPointsOptions.length === 0
-												? 'No Entrypoint'
+												? `This contract is not deployed on ${chain?.chainId}.`
 												: 'Select an Entrypoint'
 										}
 									>
-										{selectedOption
-											? selectedOption.label
-											: isLoading
-											? 'Loading Entrypoints...'
-											: 'Select an Entrypoint'}
+										{selectedOption ? selectedOption.label : 'Select an Entrypoint'}
 									</SelectValue>
 								</SelectTrigger>
 							</TooltipTrigger>

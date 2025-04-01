@@ -18,11 +18,13 @@ export interface Chain {
 export function NetworksSelect({
 	simulationPayload,
 	onChainChangedCallback,
-	selectedChain
+	selectedChain,
+	isLoading
 }: {
 	simulationPayload?: SimulationPayloadWithCalldata | SimulationPayload;
 	onChainChangedCallback: (chain: Chain) => void;
 	selectedChain?: Chain;
+	isLoading?: boolean;
 }) {
 	const { networks } = useSettings();
 
@@ -86,6 +88,7 @@ export function NetworksSelect({
 
 	return (
 		<Select
+			disabled={isLoading}
 			value={_chain.chainId ?? _chain.network?.networkName}
 			onValueChange={(value) => handleChainChange(value)}
 		>

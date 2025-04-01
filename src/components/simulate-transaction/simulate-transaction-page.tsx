@@ -46,7 +46,8 @@ export function SimulateTransactionPage({
 	const validateCalldata = useCallback((calldata: string[]) => {
 		return calldata.every((item) => validateHexFormat(item));
 	}, []);
-	const [isLoadingFunctions, setIsLoadingFunctions] = useState(false);
+	const [isLoading, setIsLoading] = useState(false);
+	const [isLoadingFunctions, setIsLoadingFunctions] = useState<{ [key: string]: boolean }>({});
 
 	const [_senderAddress, _setSenderAddress] = useState<string>(
 		simulationPayload?.senderAddress ?? ''
@@ -72,28 +73,13 @@ export function SimulateTransactionPage({
 
 	const onChainChangedCallback = async (chain: Chain) => {
 		_setChain(chain);
-		_setContractCallsFunctions({});
 		_setContractCalls((prev) => {
 			const newCalls = prev.map((item) => ({
-				...item,
-				function_name: '',
-				calldata: ''
+				...item
 			}));
-
 			return newCalls;
 		});
-
-		if (chain?.chainId) {
-			const validContracts = _contractCalls.filter(
-				(call) => call.address && validateHexFormat(call.address)
-			);
-
-			for (const call of validContracts) {
-				await fetchFunctionsForContractAddress(call.address, chain.chainId);
-			}
-		}
 	};
-
 	const handleNumberOfContractsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const inputValue = e.target.value;
 
@@ -101,25 +87,6 @@ export function SimulateTransactionPage({
 
 		_setNumberOfContracts(numValue);
 	};
-
-	function validateContractCalls(calls: SimpleContractCall[]): boolean {
-		if (calls.length === 0) {
-			return false;
-		}
-
-		return calls.every((call) => {
-			if (!validateHexFormat(call.address)) {
-				return false;
-			}
-			const calldata = call.calldata.trim();
-			if (calldata === '') {
-				return false;
-			}
-
-			const calldataLines = calldata.split('\n').filter((line) => line.trim() !== '');
-			return calldataLines.length > 0 && validateCalldata(calldataLines);
-		});
-	}
 
 	useEffect(() => {
 		if (!simulationPayload) return;
@@ -150,6 +117,7 @@ export function SimulateTransactionPage({
 	}, [simulationPayload]);
 
 	useEffect(() => {
+		_setContractCallsFunctions({});
 		const initializeContractFunctions = async () => {
 			if (_chain && _contractCalls && _contractCalls.length > 0) {
 				const validContracts = _contractCalls.filter(
@@ -157,20 +125,20 @@ export function SimulateTransactionPage({
 				);
 
 				if (validContracts.length > 0) {
-					setIsLoadingFunctions(true);
+					setIsLoading(true);
+					const uniqueContracts = Array.from(
+						new Map(validContracts.map((call) => [call.address, call])).values()
+					);
 					try {
 						await Promise.all(
-							validContracts.map((call) =>
-								fetchFunctionsForContractAddress(call.address, _chain.chainId)
-							)
+							uniqueContracts.map((call) => fetchFunctionsForContractAddress(call.address))
 						);
 					} finally {
-						setIsLoadingFunctions(false);
+						setIsLoading(false);
 					}
 				}
 			}
 		};
-
 		initializeContractFunctions();
 	}, [_chain]);
 
@@ -184,7 +152,10 @@ export function SimulateTransactionPage({
 			return;
 		}
 
-		setIsLoadingFunctions(true);
+		setIsLoadingFunctions((prev) => ({
+			...prev,
+			[contractAddress]: true
+		}));
 		try {
 			const result = await fetchContractFunctions({
 				contractAddress,
@@ -199,8 +170,27 @@ export function SimulateTransactionPage({
 			}
 		} catch (error) {
 			console.log('Error fetching functions:', error);
+
+			if (error instanceof Error && error.message === 'ABI not found for contract address') {
+				_setContractCallsFunctions((prev) => {
+					const { contractAddress, ...rest } = prev;
+					return rest;
+				});
+				_setContractCalls((prev) => {
+					const newState = prev.map((item) => {
+						if (item.address === contractAddress) {
+							item.function_name = '';
+						}
+						return item;
+					});
+					return newState;
+				});
+			}
 		} finally {
-			setIsLoadingFunctions(false);
+			setIsLoadingFunctions((prev) => ({
+				...prev,
+				[contractAddress]: false
+			}));
 		}
 	};
 
@@ -395,8 +385,7 @@ export function SimulateTransactionPage({
 		newCalls[index] = {
 			...newCalls[index],
 			address: newAddress,
-			function_name: '',
-			calldata: ''
+			function_name: ''
 		};
 
 		_setContractCalls(newCalls);
@@ -418,7 +407,7 @@ export function SimulateTransactionPage({
 						};
 					} else {
 						return {
-							calldata: '',
+							calldata: call.calldata,
 							address: call.address,
 							function_name: newFunctionName
 						};
@@ -479,6 +468,7 @@ export function SimulateTransactionPage({
 										Network
 									</Label>
 									<NetworksSelect
+										isLoading={isLoading}
 										simulationPayload={simulationPayload}
 										onChainChangedCallback={onChainChangedCallback}
 									/>
@@ -498,9 +488,14 @@ export function SimulateTransactionPage({
 											' border-red-500'
 										}`}
 									/>
-									{alert && (_senderAddress === '' || !validateHexFormat(_senderAddress)) && (
+									{alert && _senderAddress === '' && (
 										<p className="text-xs text-muted-foreground text-red-500 col-span-3 col-start-2">
 											Sender address is required.
+										</p>
+									)}
+									{alert && !validateHexFormat(_senderAddress) && (
+										<p className="text-xs text-muted-foreground text-red-500 col-span-3 col-start-2">
+											Sender address must be a hexadecimal number.
 										</p>
 									)}
 								</div>
@@ -545,11 +540,17 @@ export function SimulateTransactionPage({
 															Contract address is required.
 														</p>
 													)}
+													{alert && !validateHexFormat(call.address) && (
+														<p className="text-xs text-red-500 col-span-3 col-start-2">
+															Contract address must be a hexadecimal number.
+														</p>
+													)}
 												</div>
 												<EntryPointSelect
+													chain={_chain}
 													entryPoints={call.address ? _contractCallsFunctions[call.address] : null}
 													value={call.function_name}
-													isLoading={isLoadingFunctions}
+													isLoading={call.address ? isLoadingFunctions[call.address] : false}
 													isError={alert && call.function_name === ''}
 													onChange={(value) => handleFunctionNameChange(index, value)}
 												/>
@@ -584,16 +585,6 @@ export function SimulateTransactionPage({
 																	.split('\n')
 																	.filter((line) => line.trim() !== '')
 															: [];
-
-														const selectedFunction =
-															call.function_name && _contractCallsFunctions[call.address]
-																? _contractCallsFunctions[call.address].find(
-																		(item: string) => item[0] === call.function_name
-																  )?.[1]
-																: null;
-
-														const expectedArgsCount = selectedFunction?.inputs?.length || 0;
-														const actualArgsCount = calldataLines.length;
 
 														const hasInvalidCalldataFormat =
 															call.calldata !== '' && !validateCalldata(calldataLines);
