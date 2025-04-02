@@ -62,8 +62,8 @@ export function SimulateTransactionPage({
 		{}
 	);
 
-	const [_blockNumber, _setBlockNumber] = useState<string>(
-		simulationPayload?.blockNumber?.toString() ?? ''
+	const [_blockNumber, _setBlockNumber] = useState<number | ''>(
+		simulationPayload?.blockNumber ?? ''
 	);
 
 	const [_transactionVersion, _setTransactionVersion] = useState<number>(
@@ -88,11 +88,27 @@ export function SimulateTransactionPage({
 		_setNumberOfContracts(numValue);
 	};
 
+	const handleBlockNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+		const inputValue = e.target.value;
+
+		if (inputValue === '') {
+			_setBlockNumber('');
+			return;
+		}
+
+		if (/^0$|^[1-9]\d*$/.test(inputValue)) {
+			const numValue = parseInt(inputValue, 10);
+			_setBlockNumber(numValue);
+		} else {
+			e.target.value = _blockNumber !== null ? _blockNumber.toString() : '';
+		}
+	};
+
 	useEffect(() => {
 		if (!simulationPayload) return;
 
 		_setSenderAddress(simulationPayload.senderAddress ?? '');
-		_setBlockNumber(simulationPayload.blockNumber?.toString() ?? '');
+		_setBlockNumber(simulationPayload.blockNumber ?? '');
 
 		if (simulationPayload.chainId) {
 			_setChain({ chainId: simulationPayload.chainId });
@@ -244,7 +260,7 @@ export function SimulateTransactionPage({
 		const simulationPayload: SimulationPayload = {
 			senderAddress: _senderAddress,
 			calls: processedCalls,
-			blockNumber: _blockNumber.length > 0 ? parseInt(_blockNumber) : undefined,
+			blockNumber: _blockNumber === '' ? undefined : _blockNumber,
 			transactionVersion: _transactionVersion
 		};
 
@@ -531,7 +547,9 @@ export function SimulateTransactionPage({
 														onChange={(e) => handleContractAddressChange(index, e.target.value)}
 														className={`col-span-3 font-mono ${
 															alert &&
-															(!call.address || !validateHexFormat(call.address)) &&
+															(!call.address ||
+																!validateHexFormat(call.address) ||
+																!_contractCallsFunctions[call.address]) &&
 															' border-red-500'
 														}`}
 													/>
@@ -545,6 +563,14 @@ export function SimulateTransactionPage({
 															Contract address must be a hexadecimal number.
 														</p>
 													)}
+													{alert &&
+														!_contractCallsFunctions[call.address] &&
+														call.address &&
+														validateHexFormat(call.address) && (
+															<p className="text-xs text-red-500 col-span-3 col-start-2">
+																This contract is not deployed on {_chain?.chainId}.
+															</p>
+														)}
 												</div>
 												<EntryPointSelect
 													chain={_chain}
@@ -613,12 +639,12 @@ export function SimulateTransactionPage({
 										Block number
 									</Label>
 									<Input
-										min={0}
-										type="number"
+										type="text"
+										inputMode="numeric"
 										id="block-number"
-										value={_blockNumber}
-										onChange={(e) => _setBlockNumber(e.target.value)}
-										className="col-span-3 font-mono"
+										value={_blockNumber ?? ''}
+										onChange={handleBlockNumberChange}
+										className="col-span-3 font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
 										placeholder="Latest"
 									/>
 									<p className="text-xs text-muted-foreground col-span-3 col-start-2">

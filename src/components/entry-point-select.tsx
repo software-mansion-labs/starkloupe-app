@@ -156,31 +156,23 @@ export function EntryPointSelect({
 					onValueChange={handleValueChange}
 					disabled={entryPointsOptions.length === 0}
 				>
-					<TooltipProvider>
-						<Tooltip>
-							<TooltipTrigger className="col-span-3">
-								<SelectTrigger className={` font-mono ${isError && 'border-red-500'}`}>
-									<SelectValue
-										placeholder={
-											isLoading
-												? 'Loading Entrypoints...'
-												: !entryPointsOptions || entryPointsOptions.length === 0
-												? `This contract is not deployed on ${chain?.chainId}.`
-												: 'Select an Entrypoint'
-										}
-									>
-										{selectedOption ? selectedOption.label : 'Select an Entrypoint'}
-									</SelectValue>
-								</SelectTrigger>
-							</TooltipTrigger>
-
-							{entryPointsOptions.length === 0 && !isLoading && (
-								<TooltipContent>
-									<p>Enter a valid contract address above to see available entrypoints.</p>
-								</TooltipContent>
-							)}
-						</Tooltip>
-					</TooltipProvider>
+					<SelectTrigger
+						disabled={entryPointsOptions.length === 0}
+						className={` col-span-3 font-mono ${isError && 'border-red-500'}`}
+					>
+						<SelectValue
+							className="col-span-3"
+							placeholder={
+								isLoading
+									? 'Loading Entrypoints...'
+									: !entryPointsOptions || entryPointsOptions.length === 0
+									? `Enter a valid contract address above to see available entrypoints.`
+									: 'Select an Entrypoint'
+							}
+						>
+							{selectedOption ? selectedOption.label : 'Select an Entrypoint'}
+						</SelectValue>
+					</SelectTrigger>
 
 					<SelectContent>
 						{isLoading ? (
@@ -212,6 +204,7 @@ export function EntryPointSelect({
 						<Input
 							placeholder={'Select an Entrypoint above to see the signature'}
 							className="col-span-3 font-mono"
+							disabled={true}
 							readOnly
 						/>
 					</>
