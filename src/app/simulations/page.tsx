@@ -10,6 +10,5 @@ export default function Page() {
 	const searchParams = useSearchParams();
 
 	const simulationPayload = extractSimulationPayloadWithCalldata(searchParams);
-
 	return <SimulationPage simulationPayload={simulationPayload} />;
 }

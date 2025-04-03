@@ -1,13 +1,26 @@
 import { type ClassValue, clsx } from 'clsx';
 import { usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
-import {
-	ContractCall,
-	SimulationPayloadWithCalldata,
-	TransactionSimulationResult
-} from '../simulation';
 import { ChainId } from '../types';
 export * from './fetch';
+
+import { ContractCall, SimulationPayloadWithCalldata } from '../simulation';
+
+export interface SimpleContractCall {
+	address: string;
+	function_name: string;
+	calldata: string;
+}
+
+export interface SimulationPayload {
+	senderAddress: string;
+	calls: SimpleContractCall[];
+	blockNumber?: number;
+	transactionVersion: number;
+	nonce?: number;
+	rpcUrl?: string;
+	chainId?: string;
+}
 
 export function cn(...inputs: ClassValue[]) {
 	return twMerge(clsx(inputs));
@@ -120,33 +133,100 @@ export function extractSimulationPayloadWithCalldata(
 	const chainId = searchParams.get('chainId');
 
 	if ((rpcUrl || chainId) && senderAddress && calldata && transactionVersion) {
+		const parsedCalldata = parseCalldata(calldata);
+
 		const result: SimulationPayloadWithCalldata = {
 			senderAddress,
-			calldata: parseCalldata(calldata),
+			calldata: parsedCalldata,
 			transactionVersion: parseInt(transactionVersion),
 			nonce: nonce ? parseInt(nonce) : undefined,
 			rpcUrl: rpcUrl ?? undefined,
 			chainId: chainId ?? undefined
 		};
+
 		if (blockNumber) {
 			result.blockNumber = parseInt(blockNumber);
 		}
+
 		return result;
 	}
+
+	return undefined;
 }
 
-export function openSimulationPage(simulationPayload: SimulationPayloadWithCalldata) {
+export function serializeContractCalls(calls: SimpleContractCall[]): string[] {
+	const result: string[] = [];
+	result.push('0x' + calls.length.toString(16));
+
+	for (const call of calls) {
+		result.push(call.address);
+		result.push(call.function_name);
+		const calldataLines = call.calldata
+			.trim()
+			.split('\n')
+			.filter((line) => line.trim() !== '');
+		result.push('0x' + calldataLines.length.toString(16));
+
+		for (const line of calldataLines) {
+			result.push(line.trim());
+		}
+	}
+
+	return result;
+}
+
+export function parseContractCalls(calldata: string[]): SimpleContractCall[] {
+	const result: SimpleContractCall[] = [];
+
+	if (!calldata || calldata.length === 0) {
+		return result;
+	}
+
+	const numContracts = parseInt(calldata[0], 16);
+
+	let index = 1;
+	for (let i = 0; i < numContracts; i++) {
+		if (index >= calldata.length) break;
+		const address = calldata[index++];
+
+		if (index >= calldata.length) break;
+		const function_name = calldata[index++];
+
+		if (index >= calldata.length) break;
+		const numCalldataElements = parseInt(calldata[index++], 16);
+
+		const contractCalldata: string[] = [];
+		for (let j = 0; j < numCalldataElements; j++) {
+			if (index >= calldata.length) break;
+			contractCalldata.push(calldata[index++]);
+		}
+
+		result.push({
+			address,
+			function_name,
+			calldata: contractCalldata.join('\n')
+		});
+	}
+
+	return result;
+}
+
+export function openSimulationPage(simulationPayload: SimulationPayload): void {
+	const serializedCalls = serializeContractCalls(simulationPayload.calls);
+
 	const params = new URLSearchParams({
 		senderAddress: simulationPayload.senderAddress,
-		calldata: simulationPayload.calldata.join(','),
+		calldata: serializedCalls.join(','),
 		transactionVersion: simulationPayload.transactionVersion.toString()
 	});
+
 	if (simulationPayload.blockNumber !== undefined)
 		params.set('blockNumber', simulationPayload.blockNumber.toString());
 	if (simulationPayload.nonce !== undefined)
 		params.set('nonce', simulationPayload.nonce.toString());
 	if (simulationPayload.chainId) params.set('chainId', simulationPayload.chainId);
 	if (simulationPayload.rpcUrl) params.set('rpcUrl', simulationPayload.rpcUrl);
+
 	window.location.href = `/simulations?${params.toString()}`;
 }
 

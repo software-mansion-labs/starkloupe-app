@@ -7,14 +7,19 @@ import { Search } from '@/components/ui/search';
 import { Button } from '@/components/ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
 import logoWalnut from '@/assets/wlnt-logo-beta-bw.svg';
-import { SimulateDialog } from './simulate-dialog';
 import { Container } from '@/components/ui/container';
 import { UserSection } from '@/components/auth/user-section';
 import { useUserContext } from '@/lib/context/user-context-provider';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { isAuthorizationRequiredFeatureActive } from '@/app/api/feature-flag-service';
 
-export function HeaderNav({ isMainPage = false, hideUserSection = false }: { isMainPage?: boolean, hideUserSection?: boolean }) {
+export function HeaderNav({
+	isMainPage = false,
+	hideUserSection = false
+}: {
+	isMainPage?: boolean;
+	hideUserSection?: boolean;
+}) {
 	const { isLogged } = useUserContext();
 	const { trackingActive } = useSettings();
 	return (
@@ -24,13 +29,11 @@ export function HeaderNav({ isMainPage = false, hideUserSection = false }: { isM
 		>
 			{() => (
 				<>
-					{!trackingActive &&
-						(<div className=" top-0 left-0 w-full h-5 bg-green-500 text-white flex items-center justify-between px-4 shadow-md z-50">
-							<div className="text-sm font-semibold">
-								NO TRACKING
-							</div>
-						</div>)
-					}
+					{!trackingActive && (
+						<div className=" top-0 left-0 w-full h-5 bg-green-500 text-white flex items-center justify-between px-4 shadow-md z-50">
+							<div className="text-sm font-semibold">NO TRACKING</div>
+						</div>
+					)}
 					<Container>
 						<div className="flex h-16 items-center justify-between">
 							{!isMainPage && (
@@ -79,25 +82,27 @@ export function HeaderNav({ isMainPage = false, hideUserSection = false }: { isM
 									</div>
 								)}
 								<div className="hidden md:block">
-									{isLogged ?
-										(<SimulateDialog dialogTrigger={
+									{isLogged ? (
+										<Button
+											variant="outline"
+											onClick={() => (window.location.href = `/simulate-transaction`)}
+										>
+											<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
+										</Button>
+									) : (
+										<Link href="/login">
 											<Button variant="outline">
-												<PlayIcon className="mr-2 h-4 w-4"/> Simulate transaction
-											</Button>}/>)
-										:
-										(<Link href="/login">
-											<Button variant="outline">
-												<PlayIcon className="mr-2 h-4 w-4"/> Simulate transaction
+												<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
 											</Button>
-										</Link>)
-									}
+										</Link>
+									)}
 								</div>
 							</div>
 							{!hideUserSection && isAuthorizationRequiredFeatureActive() && (
 								<div className="hidden md:block -mr-2">
 									<div className="flex items-center">
 										<div className="flex flex-row items-center ml-3">
-											<UserSection/>
+											<UserSection />
 										</div>
 									</div>
 								</div>
@@ -105,7 +110,7 @@ export function HeaderNav({ isMainPage = false, hideUserSection = false }: { isM
 							<div className="-mr-2 flex md:hidden">
 								<div className="flex items-center">
 									<div className="flex flex-row items-center m-2">
-										<UserSection/>
+										<UserSection />
 									</div>
 								</div>
 							</div>
@@ -122,9 +127,13 @@ export function HeaderNav({ isMainPage = false, hideUserSection = false }: { isM
 								<></>
 							)} */}
 							<div>
-								<SimulateDialog
-									dialogTrigger={<Button variant="ghost">Simulate transaction</Button>}
-								/>
+								<Button
+									variant="ghost"
+									onClick={() => (window.location.href = `/simulate-transaction`)}
+								>
+									{' '}
+									Simulate transaction
+								</Button>
 							</div>
 							<div>
 								<a href="/settings">

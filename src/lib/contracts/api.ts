@@ -1,5 +1,5 @@
 import { fetchApi } from '@/lib/utils';
-import { GetContractResponse } from '.';
+import { ContractFunctions, GetContractResponse } from '.';
 
 export async function fetchContractDataByAddress({
 	contractAddress,
@@ -20,5 +20,18 @@ export async function fetchContractDataByAddress({
 		renameToCamelCase: true,
 		queryParams
 	});
+	return contractData;
+}
+
+export async function fetchContractFunctions({
+	contractAddress,
+	network
+}: {
+	contractAddress: string;
+	network: string;
+}) {
+	const contractData = await fetchApi<ContractFunctions>(
+		`/v1/contracts/${contractAddress}/entrypoints?chain_id=${network}`
+	);
 	return contractData;
 }

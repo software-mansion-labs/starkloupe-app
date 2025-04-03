@@ -14,7 +14,6 @@ import { formatTimestampToUTC, shortenHash } from '@/lib/utils';
 import { ChainId } from '@/lib/types';
 import { CallTraceRoot } from '@/components/call-trace';
 import { InfoBox, InfoBoxItem } from '../ui/info-box';
-import { SimulateDialog } from '../simulate-dialog';
 import { Button } from '../ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
 import { Error } from '../ui/error';
@@ -22,7 +21,6 @@ import { useSettings } from '@/lib/context/settings-context-provider';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import { useUserContext } from '@/lib/context/user-context-provider';
 import Link from 'next/link';
-import { log } from 'console';
 
 export function TransactionPage({
 	txHash,
@@ -82,6 +80,26 @@ export function TransactionPage({
 		}
 	}, [chainId, txHash, rpcUrl, trackingFlagLoaded, trackingActive]);
 
+	const handleReSimulateClick = () => {
+		if (transactionSimulation) {
+			const params = new URLSearchParams();
+			params.set('txHash', txHash);
+			params.set('senderAddress', transactionSimulation.senderAddress);
+
+			if (transactionSimulation.calldata && transactionSimulation.calldata.length > 0) {
+				params.set('calldata', transactionSimulation.calldata.join(','));
+			}
+
+			if (transactionSimulation.transactionVersion)
+				params.set('transactionVersion', transactionSimulation.transactionVersion.toString());
+			if (transactionSimulation.blockNumber)
+				params.set('blockNumber', transactionSimulation.blockNumber.toString());
+			if (chainId) params.set('chainId', chainId);
+			else if (rpcUrl) params.set('rpcUrl', rpcUrl);
+			window.location.href = `/simulate-transaction?${params.toString()}`;
+		}
+	};
+
 	return (
 		<>
 			<HeaderNav />
@@ -131,29 +149,13 @@ export function TransactionPage({
 
 						{transactionSimulation &&
 							(isLogged ? (
-								<SimulateDialog
-									title="Re-simulate transaction"
-									description="Edit the transaction details below and click “Run Simulation” to re-simulate."
-									dialogTrigger={
-										<Button
-											variant="outline"
-											disabled={
-												!transactionSimulation ||
-												transactionSimulation.transactionType === 'DECLARE'
-											}
-										>
-											<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
-										</Button>
-									}
-									simulationPayload={{
-										senderAddress: transactionSimulation.senderAddress,
-										calldata: transactionSimulation.calldata,
-										chainId: chainId,
-										transactionVersion: transactionSimulation.transactionVersion,
-										rpcUrl: rpcUrl,
-										blockNumber: transactionSimulation.blockNumber
-									}}
-								/>
+								<Button
+									onClick={handleReSimulateClick}
+									variant="outline"
+									disabled={transactionSimulation.transactionType !== 'INVOKE'}
+								>
+									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+								</Button>
 							) : (
 								<Link href="/login">
 									<Button variant="outline">
