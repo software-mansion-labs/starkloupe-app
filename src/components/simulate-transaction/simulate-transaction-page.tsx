@@ -415,7 +415,7 @@ export function SimulateTransactionPage({
 		_setContractCalls((prevCalls) => {
 			return prevCalls.map((call, idx) => {
 				if (idx === index) {
-					if (newFunctionName === simulationPayload?.calls[index].function_name) {
+					if (newFunctionName === simulationPayload?.calls[index]?.function_name) {
 						return {
 							...call,
 							address: call.address,
