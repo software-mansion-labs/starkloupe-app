@@ -1,6 +1,7 @@
 import { InternalFnCallIO } from '@/lib/simulation';
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { TriangleRightIcon, TriangleDownIcon } from '@radix-ui/react-icons';
+import { DebuggerContext } from '@/lib/context/debugger-context-provider';
 
 interface FilteredStepInfo {
 	function: string | undefined;
@@ -9,6 +10,118 @@ interface FilteredStepInfo {
 }
 
 const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
+	const { sourceCode, activeFile, currentStep, codeLocation } = useContext(DebuggerContext);
+	const [results, setResults] = useState(currentStep?.withLocation?.results);
+	const [args, setArgs] = useState(currentStep?.withLocation?.arguments);
+	const [expression, setExpression] = useState<string>('');
+	const [ioResultsText, setIoResultstext] = useState('');
+	const [ioArgsText, setIoArgsText] = useState('');
+	const ioToSkip = ['RangeCheck', 'GasBuiltin', 'System'];
+
+	useEffect(() => {
+		setResults(currentStep?.withLocation?.results);
+		setArgs(currentStep?.withLocation?.arguments);
+	}, [currentStep]);
+
+	useEffect(() => {
+		if (args) {
+			const filteredArgs = args.filter(
+				(arg) =>
+					arg.typeName &&
+					!ioToSkip.includes(arg.typeName) &&
+					!arg.typeName.includes('ContractState')
+			);
+
+			if (filteredArgs.length > 0) {
+				let newText = '';
+
+				filteredArgs.forEach((io, i) => {
+					if (io.value.length === 0) return;
+					if (i !== 0) newText += ', ';
+					newText += io.value.length === 1 ? io.value[0] : io.value.join(', ');
+				});
+
+				setIoArgsText(newText);
+			} else {
+				setIoArgsText('');
+			}
+		}
+	}, [args]);
+
+	useEffect(() => {
+		if (results) {
+			const filteredResults = results.filter(
+				(result) =>
+					result.typeName &&
+					!ioToSkip.includes(result.typeName) &&
+					!result.typeName.includes('ContractState')
+			);
+
+			if (filteredResults.length > 0) {
+				let newText = '';
+
+				filteredResults.forEach((io, i) => {
+					if (io.value.length === 0) return;
+					if (i !== 0) newText += ', ';
+
+					let value = io.value;
+					if (io.typeName?.includes('PanicResult')) value = value.slice(2);
+					newText += value.length === 1 ? value[0] : value.join(', ');
+				});
+
+				setIoResultstext(newText);
+			} else {
+				setIoResultstext('');
+			}
+		}
+	}, [results]);
+
+	function extractCodeFragment(
+		sourceCode: string,
+		start: { line: number; col: number },
+		end: { line: number; col: number }
+	): string {
+		const lines = sourceCode.split('\n');
+
+		const startLine = start.line;
+		const endLine = end.line;
+		if (startLine === endLine) {
+			return lines[startLine].substring(start.col, end.col);
+		}
+
+		let fragment = [];
+
+		fragment.push(lines[startLine].substring(start.col));
+
+		for (let i = startLine + 1; i < endLine; i++) {
+			fragment.push(lines[i]);
+		}
+
+		fragment.push(lines[endLine].substring(0, end.col));
+
+		return fragment.join('\n');
+	}
+
+	function truncateString(str: string, maxLength: number): string {
+		if (!str) return '';
+
+		const cleanedStr = str.replace(/\s+/g, ' ').trim();
+
+		if (cleanedStr.length <= maxLength) return cleanedStr;
+		return cleanedStr.substring(0, maxLength) + '...';
+	}
+
+	useEffect(() => {
+		if (activeFile && codeLocation?.start && codeLocation?.end) {
+			setExpression(
+				truncateString(
+					extractCodeFragment(sourceCode[activeFile], codeLocation.start, codeLocation.end),
+					50
+				)
+			);
+		}
+	}, [activeFile, codeLocation, sourceCode]);
+
 	const CollapsibleArray = ({
 		value,
 		name
@@ -243,12 +356,38 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 					<span className="font-semibold ">args: </span>
 				)}
 			</div>
-			<div>
+			<div className="mb-1">
 				{data.result.length > 0 ? (
 					<RenderArgs isResult args={data.result} />
 				) : (
 					<span className="font-semibold ">result: </span>
 				)}
+			</div>
+			<div>
+				<div className="mb-1">
+					<span className="font-semibold whitespace-nowrap">
+						Expression:{' '}
+						<span className="bg-yellow-300 bg-opacity-40 font-normal">{expression}</span>
+					</span>
+				</div>
+				<div className="mb-1">
+					<span className="font-semibold whitespace-nowrap">
+						Line:{' '}
+						<span className="font-normal">
+							{codeLocation?.start.line && codeLocation?.start.line + 1}
+						</span>
+					</span>
+				</div>
+				<div className="mb-1">
+					<span className="font-semibold whitespace-nowrap">
+						args: <span className="font-normal">{ioArgsText}</span>
+					</span>
+				</div>
+				<div className="mb-1">
+					<span className="font-semibold whitespace-nowrap">
+						results: <span className="font-normal">{ioResultsText}</span>
+					</span>
+				</div>
 			</div>
 		</div>
 	);
