@@ -73,8 +73,6 @@ export function CodeViewer({
 	const highlightCodeLocation = useCallback(
 		(
 			codeLocation: CodeLocation,
-			args: InternalFnCallIO[],
-			results: InternalFnCallIO[],
 			editor: Editor.IStandaloneCodeEditor,
 			_monaco: Monaco,
 			isSmoothScroll: boolean
@@ -105,47 +103,6 @@ export function CodeViewer({
 
 			editorDecorations?.clear();
 
-			const ioToSkip = ['RangeCheck', 'GasBuiltin', 'System'];
-
-			const filteredArgs = args.filter(
-				(arg) =>
-					arg.typeName &&
-					!ioToSkip.includes(arg.typeName) &&
-					!arg.typeName.includes('ContractState')
-			);
-			const filteredResults = results.filter(
-				(result) =>
-					result.typeName &&
-					!ioToSkip.includes(result.typeName) &&
-					!result.typeName.includes('ContractState')
-			);
-
-			const isDisplayIoValues = filteredArgs.length > 0 || filteredResults.length > 0;
-
-			let ioValuesText = '';
-
-			if (filteredArgs.length > 0) {
-				ioValuesText += 'arguments: ';
-				filteredArgs.forEach((io, i) => {
-					if (io.value.length === 0) return;
-					if (i !== 0) ioValuesText += ', ';
-					ioValuesText += io.value.length === 1 ? io.value[0] : io.value.join(', ');
-				});
-			}
-			if (filteredResults.length > 0) {
-				if (filteredArgs.length > 0) ioValuesText += ' | ';
-				ioValuesText += 'results: ';
-				filteredResults.forEach((io, i) => {
-					if (io.value.length === 0) return;
-					if (i !== 0) ioValuesText += ', ';
-					let value = io.value;
-					if (io.typeName?.includes('PanicResult')) value = value.slice(2);
-					ioValuesText += value.length === 1 ? value[0] : value.join(', ');
-				});
-			}
-
-			if (isDisplayIoValues) setIoValuesText(ioValuesText);
-
 			setTimeout(() => {
 				const decorations = [
 					{
@@ -155,19 +112,6 @@ export function CodeViewer({
 						}
 					}
 				];
-				if (isDisplayIoValues) {
-					decorations.push({
-						range: new _monaco.Range(
-							codeLocation.end.line + 1,
-							codeLocation.end.col + 1,
-							codeLocation.end.line + 1,
-							codeLocation.end.col + 2
-						),
-						options: {
-							inlineClassName: 'io-values'
-						}
-					});
-				}
 				const editorDecorations = editor.createDecorationsCollection(decorations);
 				setEditorDecorations(editorDecorations);
 			});
@@ -228,7 +172,7 @@ export function CodeViewer({
 			});
 
 			if (codeLocation) {
-				highlightCodeLocation(codeLocation, args ?? [], results ?? [], editor, monaco, false);
+				highlightCodeLocation(codeLocation, editor, monaco, false);
 			}
 		},
 		[codeLocation, hoverLine, toggleBreakpoint, highlightCodeLocation, args, results]
@@ -282,14 +226,7 @@ export function CodeViewer({
 	useEffect(() => {
 		if (editorRef.current && monaco) {
 			if (codeLocation) {
-				highlightCodeLocation(
-					codeLocation,
-					args ?? [],
-					results ?? [],
-					editorRef.current,
-					monaco,
-					content === prevCodeValue
-				);
+				highlightCodeLocation(codeLocation, editorRef.current, monaco, content === prevCodeValue);
 			} else {
 				editorRef.current.revealLineNearTop(0, 1);
 			}
@@ -332,28 +269,6 @@ export function CodeViewer({
 		}
 		return false;
 	};
-
-	function setIoValuesText(text: string) {
-		const styleTagId = 'io-values-content-style';
-		let styleTag = document.getElementById(styleTagId);
-
-		if (!styleTag) {
-			styleTag = document.createElement('style');
-			styleTag.id = styleTagId;
-			document.head.appendChild(styleTag);
-		}
-
-		styleTag.innerHTML = `
-			.io-values::after {
-				content: '${text}';
-				color: #ab008a;
-				font-weight: 300;
-				border-radius: 2px;
-				padding: 0 4px;
-				border: 1px dashed #ab008a;
-			}
-		`;
-	}
 
 	return (
 		<MonacoEditor

@@ -2,6 +2,7 @@ import { InternalFnCallIO } from '@/lib/simulation';
 import React, { useContext, useEffect, useState } from 'react';
 import { TriangleRightIcon, TriangleDownIcon } from '@radix-ui/react-icons';
 import { DebuggerContext } from '@/lib/context/debugger-context-provider';
+import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 
 interface FilteredStepInfo {
 	function: string | undefined;
@@ -11,70 +12,21 @@ interface FilteredStepInfo {
 
 const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 	const { sourceCode, activeFile, currentStep, codeLocation } = useContext(DebuggerContext);
-	const [results, setResults] = useState(currentStep?.withLocation?.results);
-	const [args, setArgs] = useState(currentStep?.withLocation?.arguments);
+	const { simulationResult } = useCallTrace();
+	const stepWithLocation = currentStep?.withLocation;
+	const functionCallDetails =
+		stepWithLocation && simulationResult.functionCallsMap[stepWithLocation.functionCallId];
+	const [results, setResults] = useState(functionCallDetails?.resultsDecoded);
+	console.log('functionCallDetails?.fnName', functionCallDetails?.fnName);
+	const [args, setArgs] = useState(functionCallDetails?.argumentsDecoded);
+	console.log('args', args);
+	console.log('results', results);
 	const [expression, setExpression] = useState<string>('');
-	const [ioResultsText, setIoResultstext] = useState('');
-	const [ioArgsText, setIoArgsText] = useState('');
-	const ioToSkip = ['RangeCheck', 'GasBuiltin', 'System'];
 
 	useEffect(() => {
 		setResults(currentStep?.withLocation?.results);
 		setArgs(currentStep?.withLocation?.arguments);
 	}, [currentStep]);
-
-	useEffect(() => {
-		if (args) {
-			const filteredArgs = args.filter(
-				(arg) =>
-					arg.typeName &&
-					!ioToSkip.includes(arg.typeName) &&
-					!arg.typeName.includes('ContractState')
-			);
-
-			if (filteredArgs.length > 0) {
-				let newText = '';
-
-				filteredArgs.forEach((io, i) => {
-					if (io.value.length === 0) return;
-					if (i !== 0) newText += ', ';
-					newText += io.value.length === 1 ? io.value[0] : io.value.join(', ');
-				});
-
-				setIoArgsText(newText);
-			} else {
-				setIoArgsText('');
-			}
-		}
-	}, [args]);
-
-	useEffect(() => {
-		if (results) {
-			const filteredResults = results.filter(
-				(result) =>
-					result.typeName &&
-					!ioToSkip.includes(result.typeName) &&
-					!result.typeName.includes('ContractState')
-			);
-
-			if (filteredResults.length > 0) {
-				let newText = '';
-
-				filteredResults.forEach((io, i) => {
-					if (io.value.length === 0) return;
-					if (i !== 0) newText += ', ';
-
-					let value = io.value;
-					if (io.typeName?.includes('PanicResult')) value = value.slice(2);
-					newText += value.length === 1 ? value[0] : value.join(', ');
-				});
-
-				setIoResultstext(newText);
-			} else {
-				setIoResultstext('');
-			}
-		}
-	}, [results]);
 
 	function extractCodeFragment(
 		sourceCode: string,
@@ -191,6 +143,9 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 				Array.isArray(value.value) &&
 				value.value.every((item) => typeof item === 'string' || typeof item === 'number')
 			) {
+				if (value.typeName?.includes('PanicResult') && Array.isArray(value.value)) {
+					value = { ...value, value: value.value.slice(2) };
+				}
 				return <CollapsibleArray value={value.value} name={value.typeName} />;
 			}
 
@@ -199,12 +154,21 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 				const arrayLength = Object.keys(value.value).length;
 				const uniqueId = `${path}_${value.typeName}`;
 
+				if (value.typeName?.includes('PanicResult') && Array.isArray(value.value)) {
+					value.value = value.value.slice(2);
+				}
 				return (
 					<div>
 						<div
 							className="flex items-center cursor-pointer hover:bg-slate-50 pr-1 rounded-sm transition-all delay-75 ease-out mb-1"
-							onClick={() => value.typeName && toggleExpand(uniqueId)}
+							onClick={() =>
+								typeof value === 'object' &&
+								'typeName' in value &&
+								value.typeName &&
+								toggleExpand(uniqueId)
+							}
 						>
+							{value.typeName}
 							{isExpanded.includes(uniqueId) ? (
 								<span className="-m-1">
 									<TriangleDownIcon className="h-4 w-4 mr-1" />
@@ -223,7 +187,6 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 								</span>
 							)}
 						</div>
-
 						{isExpanded.includes(uniqueId) && (
 							<div className="ml-2">
 								{isArray
@@ -288,6 +251,9 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 						)}
 					</div>
 				);
+			}
+			if (value.typeName?.includes('PanicResult') && Array.isArray(value.value)) {
+				value = { ...value, value: value.value.slice(2) };
 			}
 			return (
 				<span className={`${value.typeName === 'Panic' && '!text-red-600'} mb-1`}>
@@ -379,14 +345,18 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 					</span>
 				</div>
 				<div className="mb-1">
-					<span className="font-semibold whitespace-nowrap">
-						args: <span className="font-normal">{ioArgsText}</span>
-					</span>
+					{args && args.length > 0 ? (
+						<RenderArgs args={args} />
+					) : (
+						<span className="font-semibold ">args: </span>
+					)}
 				</div>
 				<div className="mb-1">
-					<span className="font-semibold whitespace-nowrap">
-						results: <span className="font-normal">{ioResultsText}</span>
-					</span>
+					{results && results.length > 0 ? (
+						<RenderArgs isResult args={results} />
+					) : (
+						<span className="font-semibold ">result: </span>
+					)}
 				</div>
 			</div>
 		</div>
