@@ -34,6 +34,8 @@ interface DebuggerContextProps {
 	isContractCallDebuggable: (contractCallId: number) => boolean;
 	fileBreakpoints: { [key: string]: { [key: string]: number[] } };
 	toggleBreakpoint: (lineNumber: number, activeFile: string, classHash: string) => void;
+	isExpressionHover: boolean;
+	setExpressionHover: (isHover: boolean) => void;
 }
 
 export const DebuggerContext = createContext<DebuggerContextProps>({
@@ -57,7 +59,9 @@ export const DebuggerContext = createContext<DebuggerContextProps>({
 	isFunctionCallDebuggable: () => false,
 	isContractCallDebuggable: () => false,
 	fileBreakpoints: {},
-	toggleBreakpoint: () => undefined
+	toggleBreakpoint: () => undefined,
+	isExpressionHover: false,
+	setExpressionHover: () => undefined
 });
 
 export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
@@ -162,6 +166,8 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 	const [sourceCode, setSourceCode] = useState<{ [key: string]: string }>(
 		initialDebuggerData?.classSourceCode || {} // Default to an empty object if classSourceCode is not available
 	);
+
+	const [isExpressionHover, setExpressionHover] = useState(false);
 
 	function setCurrentStepIndex(index: number) {
 		_setCurrentStepIndex(index);
@@ -323,7 +329,9 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 				setCurrentContractCall,
 				runToBreakpoint,
 				fileBreakpoints,
-				toggleBreakpoint
+				toggleBreakpoint,
+				isExpressionHover,
+				setExpressionHover
 			}}
 		>
 			{children}

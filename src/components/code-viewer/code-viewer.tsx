@@ -20,8 +20,14 @@ export function CodeViewer({
 	results?: InternalFnCallIO[];
 	codeLocation: CodeLocation | undefined;
 }) {
-	const { activeFile, contractCall, availableBreakpoints, fileBreakpoints, toggleBreakpoint } =
-		useContext(DebuggerContext);
+	const {
+		activeFile,
+		contractCall,
+		availableBreakpoints,
+		fileBreakpoints,
+		toggleBreakpoint,
+		isExpressionHover
+	} = useContext(DebuggerContext);
 
 	const classAvailableBreakpoints = contractCall
 		? availableBreakpoints[contractCall.classHash]
@@ -102,7 +108,6 @@ export function CodeViewer({
 			}
 
 			editorDecorations?.clear();
-
 			setTimeout(() => {
 				const decorations = [
 					{
@@ -233,7 +238,7 @@ export function CodeViewer({
 			setPrevCodeValue(content);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [codeLocation, args, results]);
+	}, [codeLocation, args, results, isExpressionHover]);
 
 	useEffect(() => {
 		const styleId = 'breakpoint-style';

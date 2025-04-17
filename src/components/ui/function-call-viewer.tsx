@@ -2,7 +2,6 @@ import { InternalFnCallIO } from '@/lib/simulation';
 import React, { useContext, useEffect, useState } from 'react';
 import { TriangleRightIcon, TriangleDownIcon } from '@radix-ui/react-icons';
 import { DebuggerContext } from '@/lib/context/debugger-context-provider';
-import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 
 interface FilteredStepInfo {
 	function: string | undefined;
@@ -11,21 +10,15 @@ interface FilteredStepInfo {
 }
 
 const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
-	const { sourceCode, activeFile, currentStep, codeLocation } = useContext(DebuggerContext);
-	const { simulationResult } = useCallTrace();
-	const stepWithLocation = currentStep?.withLocation;
-	const functionCallDetails =
-		stepWithLocation && simulationResult.functionCallsMap[stepWithLocation.functionCallId];
-	const [results, setResults] = useState(functionCallDetails?.resultsDecoded);
-	console.log('functionCallDetails?.fnName', functionCallDetails?.fnName);
-	const [args, setArgs] = useState(functionCallDetails?.argumentsDecoded);
-	console.log('args', args);
-	console.log('results', results);
+	const { sourceCode, activeFile, currentStep, codeLocation, setExpressionHover } =
+		useContext(DebuggerContext);
+	const [results, setResults] = useState(currentStep?.withLocation?.resultsDecoded);
+	const [args, setArgs] = useState(currentStep?.withLocation?.argumentsDecoded);
 	const [expression, setExpression] = useState<string>('');
 
 	useEffect(() => {
-		setResults(currentStep?.withLocation?.results);
-		setArgs(currentStep?.withLocation?.arguments);
+		setResults(currentStep?.withLocation?.resultsDecoded);
+		setArgs(currentStep?.withLocation?.argumentsDecoded);
 	}, [currentStep]);
 
 	function extractCodeFragment(
@@ -38,18 +31,18 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 		const startLine = start.line;
 		const endLine = end.line;
 		if (startLine === endLine) {
-			return lines[startLine].substring(start.col, end.col);
+			return lines[startLine]?.substring(start.col, end.col);
 		}
 
 		let fragment = [];
 
-		fragment.push(lines[startLine].substring(start.col));
+		fragment.push(lines[startLine]?.substring(start.col));
 
 		for (let i = startLine + 1; i < endLine; i++) {
 			fragment.push(lines[i]);
 		}
 
-		fragment.push(lines[endLine].substring(0, end.col));
+		fragment.push(lines[endLine]?.substring(0, end.col));
 
 		return fragment.join('\n');
 	}
@@ -67,7 +60,11 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 		if (activeFile && codeLocation?.start && codeLocation?.end) {
 			setExpression(
 				truncateString(
-					extractCodeFragment(sourceCode[activeFile], codeLocation.start, codeLocation.end),
+					extractCodeFragment(
+						sourceCode[codeLocation.filePath],
+						codeLocation.start,
+						codeLocation.end
+					),
 					50
 				)
 			);
@@ -143,9 +140,6 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 				Array.isArray(value.value) &&
 				value.value.every((item) => typeof item === 'string' || typeof item === 'number')
 			) {
-				if (value.typeName?.includes('PanicResult') && Array.isArray(value.value)) {
-					value = { ...value, value: value.value.slice(2) };
-				}
 				return <CollapsibleArray value={value.value} name={value.typeName} />;
 			}
 
@@ -153,22 +147,12 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 				const isArray = Array.isArray(value.value);
 				const arrayLength = Object.keys(value.value).length;
 				const uniqueId = `${path}_${value.typeName}`;
-
-				if (value.typeName?.includes('PanicResult') && Array.isArray(value.value)) {
-					value.value = value.value.slice(2);
-				}
 				return (
 					<div>
 						<div
 							className="flex items-center cursor-pointer hover:bg-slate-50 pr-1 rounded-sm transition-all delay-75 ease-out mb-1"
-							onClick={() =>
-								typeof value === 'object' &&
-								'typeName' in value &&
-								value.typeName &&
-								toggleExpand(uniqueId)
-							}
+							onClick={() => value.typeName && toggleExpand(uniqueId)}
 						>
-							{value.typeName}
 							{isExpanded.includes(uniqueId) ? (
 								<span className="-m-1">
 									<TriangleDownIcon className="h-4 w-4 mr-1" />
@@ -252,9 +236,6 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 					</div>
 				);
 			}
-			if (value.typeName?.includes('PanicResult') && Array.isArray(value.value)) {
-				value = { ...value, value: value.value.slice(2) };
-			}
 			return (
 				<span className={`${value.typeName === 'Panic' && '!text-red-600'} mb-1`}>
 					<span
@@ -291,7 +272,15 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 
 		return value !== null && value !== undefined ? value.toString() : '';
 	};
-	const RenderArgs = ({ args, isResult }: { args: InternalFnCallIO[]; isResult?: boolean }) => {
+	const RenderArgs = ({
+		args,
+		isResult,
+		isExpression
+	}: {
+		args: InternalFnCallIO[];
+		isResult?: boolean;
+		isExpression?: boolean;
+	}) => {
 		return (
 			<div>
 				<div className="flex items-center mb-1">
@@ -301,7 +290,9 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 					{args.map((arg, index) => (
 						<div key={index} className=" whitespace-nowrap mb-1">
 							<div>
-								<div className="ml-2 mb-1">{renderValue(arg)}</div>{' '}
+								<div className="ml-2 mb-1">
+									{isExpression ? renderValue(arg, 'expression') : renderValue(arg)}
+								</div>{' '}
 							</div>
 						</div>
 					))}
@@ -329,34 +320,35 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 					<span className="font-semibold ">result: </span>
 				)}
 			</div>
-			<div>
+			<div className="mt-4">
 				<div className="mb-1">
 					<span className="font-semibold whitespace-nowrap">
-						Expression:{' '}
-						<span className="bg-yellow-300 bg-opacity-40 font-normal">{expression}</span>
-					</span>
-				</div>
-				<div className="mb-1">
-					<span className="font-semibold whitespace-nowrap">
-						Line:{' '}
-						<span className="font-normal">
-							{codeLocation?.start.line && codeLocation?.start.line + 1}
+						expression:{' '}
+						<span
+							className="bg-yellow-300 bg-opacity-40 font-normal cursor-pointer hover:bg-yellow-500 hover:bg-opacity-40 trasition-all"
+							onMouseEnter={() => setExpressionHover(true)}
+							onMouseLeave={() => setExpressionHover(false)}
+						>
+							{expression}
 						</span>
 					</span>
 				</div>
 				<div className="mb-1">
-					{args && args.length > 0 ? (
-						<RenderArgs args={args} />
-					) : (
-						<span className="font-semibold ">args: </span>
-					)}
+					<span className="font-semibold whitespace-nowrap">
+						line:{' '}
+						<span className="font-normal">
+							{codeLocation?.start.line &&
+								(codeLocation?.start.line === codeLocation?.end.line
+									? `${codeLocation?.start.line + 1}`
+									: `${codeLocation?.start.line + 1}-${codeLocation?.end.line + 1}`)}
+						</span>
+					</span>
 				</div>
 				<div className="mb-1">
-					{results && results.length > 0 ? (
-						<RenderArgs isResult args={results} />
-					) : (
-						<span className="font-semibold ">result: </span>
-					)}
+					{args && args.length > 0 && <RenderArgs args={args} isExpression />}
+				</div>
+				<div className="mb-1">
+					{results && results.length > 0 && <RenderArgs isResult args={results} isExpression />}
 				</div>
 			</div>
 		</div>
