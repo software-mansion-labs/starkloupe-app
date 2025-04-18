@@ -66,6 +66,8 @@ export interface DebuggerExecutionTraceEntryWithLocation {
 	locationIndex: number;
 	results: InternalFnCallIO[];
 	arguments: InternalFnCallIO[];
+	argumentsDecoded: InternalFnCallIO[];
+	resultsDecoded: InternalFnCallIO[];
 	contractCallId: number;
 	fp: number;
 	functionCallId: number;

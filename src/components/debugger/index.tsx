@@ -28,7 +28,8 @@ export const Debugger = memo(function Debugger({}: {}) {
 		contractCall,
 		codeLocation,
 		sourceCode,
-		runToBreakpoint
+		runToBreakpoint,
+		isExpressionHover
 	} = useContext(DebuggerContext);
 
 	if (!currentStep) return <></>; // unreachable
@@ -57,7 +58,9 @@ export const Debugger = memo(function Debugger({}: {}) {
 						<CodeViewer
 							content={activeFile ? sourceCode[activeFile] : ''}
 							codeLocation={codeLocation}
-							highlightClass="bg-yellow-300 bg-opacity-40"
+							highlightClass={`${
+								isExpressionHover ? 'bg-yellow-500' : 'bg-yellow-300'
+							} bg-opacity-40 transition-all`}
 							args={codeLocation ? currentStep.withLocation.arguments : undefined}
 							results={codeLocation ? currentStep.withLocation.results : undefined}
 						/>

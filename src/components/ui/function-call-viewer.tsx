@@ -1,6 +1,7 @@
 import { InternalFnCallIO } from '@/lib/simulation';
-import React, { useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { TriangleRightIcon, TriangleDownIcon } from '@radix-ui/react-icons';
+import { DebuggerContext } from '@/lib/context/debugger-context-provider';
 
 interface FilteredStepInfo {
 	function: string | undefined;
@@ -9,6 +10,67 @@ interface FilteredStepInfo {
 }
 
 const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
+	const { sourceCode, activeFile, currentStep, codeLocation, setExpressionHover } =
+		useContext(DebuggerContext);
+	const [results, setResults] = useState(currentStep?.withLocation?.resultsDecoded);
+	const [args, setArgs] = useState(currentStep?.withLocation?.argumentsDecoded);
+	const [expression, setExpression] = useState<string>('');
+
+	useEffect(() => {
+		setResults(currentStep?.withLocation?.resultsDecoded);
+		setArgs(currentStep?.withLocation?.argumentsDecoded);
+	}, [currentStep]);
+
+	function extractCodeFragment(
+		sourceCode: string,
+		start: { line: number; col: number },
+		end: { line: number; col: number }
+	): string {
+		const lines = sourceCode.split('\n');
+
+		const startLine = start.line;
+		const endLine = end.line;
+		if (startLine === endLine) {
+			return lines[startLine]?.substring(start.col, end.col);
+		}
+
+		let fragment = [];
+
+		fragment.push(lines[startLine]?.substring(start.col));
+
+		for (let i = startLine + 1; i < endLine; i++) {
+			fragment.push(lines[i]);
+		}
+
+		fragment.push(lines[endLine]?.substring(0, end.col));
+
+		return fragment.join('\n');
+	}
+
+	function truncateString(str: string, maxLength: number): string {
+		if (!str) return '';
+
+		const cleanedStr = str.replace(/\s+/g, ' ').trim();
+
+		if (cleanedStr.length <= maxLength) return cleanedStr;
+		return cleanedStr.substring(0, maxLength) + '...';
+	}
+
+	useEffect(() => {
+		if (activeFile && codeLocation?.start && codeLocation?.end) {
+			setExpression(
+				truncateString(
+					extractCodeFragment(
+						sourceCode[codeLocation.filePath],
+						codeLocation.start,
+						codeLocation.end
+					),
+					50
+				)
+			);
+		}
+	}, [activeFile, codeLocation, sourceCode]);
+
 	const CollapsibleArray = ({
 		value,
 		name
@@ -85,7 +147,6 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 				const isArray = Array.isArray(value.value);
 				const arrayLength = Object.keys(value.value).length;
 				const uniqueId = `${path}_${value.typeName}`;
-
 				return (
 					<div>
 						<div
@@ -110,7 +171,6 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 								</span>
 							)}
 						</div>
-
 						{isExpanded.includes(uniqueId) && (
 							<div className="ml-2">
 								{isArray
@@ -212,7 +272,15 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 
 		return value !== null && value !== undefined ? value.toString() : '';
 	};
-	const RenderArgs = ({ args, isResult }: { args: InternalFnCallIO[]; isResult?: boolean }) => {
+	const RenderArgs = ({
+		args,
+		isResult,
+		isExpression
+	}: {
+		args: InternalFnCallIO[];
+		isResult?: boolean;
+		isExpression?: boolean;
+	}) => {
 		return (
 			<div>
 				<div className="flex items-center mb-1">
@@ -222,7 +290,9 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 					{args.map((arg, index) => (
 						<div key={index} className=" whitespace-nowrap mb-1">
 							<div>
-								<div className="ml-2 mb-1">{renderValue(arg)}</div>{' '}
+								<div className="ml-2 mb-1">
+									{isExpression ? renderValue(arg, 'expression') : renderValue(arg)}
+								</div>{' '}
 							</div>
 						</div>
 					))}
@@ -243,12 +313,43 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 					<span className="font-semibold ">args: </span>
 				)}
 			</div>
-			<div>
+			<div className="mb-1">
 				{data.result.length > 0 ? (
 					<RenderArgs isResult args={data.result} />
 				) : (
 					<span className="font-semibold ">result: </span>
 				)}
+			</div>
+			<div className="mt-4">
+				<div className="mb-1">
+					<span className="font-semibold whitespace-nowrap">
+						expression:{' '}
+						<span
+							className="bg-yellow-300 bg-opacity-40 font-normal cursor-pointer hover:bg-yellow-500 hover:bg-opacity-40 trasition-all"
+							onMouseEnter={() => setExpressionHover(true)}
+							onMouseLeave={() => setExpressionHover(false)}
+						>
+							{expression}
+						</span>
+					</span>
+				</div>
+				<div className="mb-1">
+					<span className="font-semibold whitespace-nowrap">
+						line:{' '}
+						<span className="font-normal">
+							{codeLocation?.start.line &&
+								(codeLocation?.start.line === codeLocation?.end.line
+									? `${codeLocation?.start.line + 1}`
+									: `${codeLocation?.start.line + 1}-${codeLocation?.end.line + 1}`)}
+						</span>
+					</span>
+				</div>
+				<div className="mb-1">
+					{args && args.length > 0 && <RenderArgs args={args} isExpression />}
+				</div>
+				<div className="mb-1">
+					{results && results.length > 0 && <RenderArgs isResult args={results} isExpression />}
+				</div>
 			</div>
 		</div>
 	);
