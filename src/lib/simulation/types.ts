@@ -199,6 +199,7 @@ export interface SimulationResult {
 	events: ContractCallEvent[];
 	executionResult: ExecutionResultSucceeded | ExecutionResultReverted;
 	simulationDebuggerData: SimulationDebuggerData;
+	storageChanges: { [key: string]: { [key: string]: string[] } }; // { contractCallId: { storageAddress: [before, after] } }
 }
 
 export interface TextPosition {

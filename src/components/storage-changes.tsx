@@ -1,0 +1,109 @@
+import { useCallTrace } from '@/lib/context/call-trace-context-provider';
+import { shortenHash } from '@/lib/utils';
+import React, { useMemo } from 'react';
+import CopyToClipboardElement from './ui/copy-to-clipboard';
+
+interface StorageChangesProps {
+	// Define your props here if needed
+}
+
+const StorageChanges: React.FC<StorageChangesProps> = (props) => {
+	const { simulationResult, contractCallsMap } = useCallTrace();
+
+	const storageChanges = useMemo(() => {
+		const combined: Record<
+			string,
+			{
+				contractName?: string;
+				storageChanges: Record<string, string[]>;
+			}
+		> = {};
+		for (const [contractCallId, storageChanges] of Object.entries(
+			simulationResult.storageChanges
+		)) {
+			const call = contractCallsMap[parseInt(contractCallId)];
+			const contractAddress = call.entryPoint.codeAddress;
+			if (!combined[contractAddress]) {
+				let contractName: string | undefined = undefined;
+				if (call.contractName) {
+					contractName = call.contractName;
+				} else if (call.erc20TokenName || call.erc20TokenSymbol) {
+					contractName = [call.erc20TokenName, `(${call.erc20TokenSymbol})`].join(' ');
+				} else if (call.entryPointInterfaceName) {
+					contractName = call.entryPointInterfaceName.split('::').pop();
+				}
+
+				// if (!contractName) {
+				// 	contractName = shortenHash(call.entryPoint.storageAddress, 13);
+				// }
+				combined[contractAddress] = {
+					contractName,
+					storageChanges: {}
+				};
+			}
+			Object.assign(combined[contractAddress].storageChanges, storageChanges);
+		}
+		return combined;
+	}, [contractCallsMap, simulationResult.storageChanges]);
+
+	return (
+		<div className="flex flex-col gap-4 p-4">
+			{Object.entries(storageChanges).map(([contractAddress, { contractName, storageChanges }]) => {
+				return (
+					<div key={contractAddress} className="flex flex-col border-b border-gray-200 pb-4 gap-1">
+						<div className="flex flex-row items-baseline gap-2">
+							{contractName ? (
+								<>
+									<a href={`/contracts/${contractAddress}`} className="font-bold text-lg underline">
+										{contractName}
+									</a>
+									<CopyToClipboardElement
+										className="font-mono text-gray-400"
+										toastDescription="The address has been copied."
+										value={contractAddress}
+									>
+										{shortenHash(contractAddress, 13)}
+									</CopyToClipboardElement>
+								</>
+							) : (
+								<>
+									<span className="font-bold text-lg">Contract address:</span>
+
+									<span className="font-mono">{shortenHash(contractAddress, 13)}</span>
+								</>
+							)}
+						</div>
+						<div className="flex flex-col gap-2">
+							{Object.entries(storageChanges).map(([storageAddress, [before, after]]) => (
+								<div key={storageAddress} className="flex flex-col gap-1">
+									<div className="flex flex-row items-center gap-2">
+										<span className="text-gray-400">Key:</span>
+										<CopyToClipboardElement
+											className="font-mono"
+											toastDescription="The key has been copied."
+											value={storageAddress}
+										>
+											{storageAddress}
+										</CopyToClipboardElement>
+									</div>
+									<div className="flex flex-col pl-4">
+										<div className="flex flex-row gap-2">
+											<span className="text-gray-400">Before:</span>
+											<span className="font-mono">{before}</span>
+										</div>
+										<div className="flex flex-row gap-2">
+											<span className="text-gray-400">After:</span>
+											<span className="font-mono">{after}</span>
+										</div>
+									</div>
+								</div>
+							))}
+						</div>
+					</div>
+				);
+			})}
+		</div>
+	);
+};
+
+export default StorageChanges;

@@ -21,7 +21,7 @@ interface StringBooleanDict {
 	[key: string]: boolean;
 }
 
-export type TabId = 'call-trace' | 'events-list' | 'debugger';
+export type TabId = 'call-trace' | 'events-list' | 'debugger' | 'storage-changes';
 
 interface CallTraceContextProps {
 	contractCallsMap: { [key: number]: ContractCall };

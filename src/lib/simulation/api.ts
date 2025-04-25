@@ -6,43 +6,43 @@ export async function simulateTransactionByData(
 	simulationPayload: SimulationPayloadWithCalldata,
 	skipTracking?: boolean
 ): Promise<TransactionSimulationResult> {
-	return await fetchApi<TransactionSimulationResult>(
-		`/v1/simulate-transaction`,
-		{
-			method: 'POST',
-			data: {
-				WithCalldata: {
-					sender_address: simulationPayload.senderAddress,
-					calldata: simulationPayload.calldata,
-					block_number: simulationPayload.blockNumber,
-					transaction_version: simulationPayload.transactionVersion,
-					nonce: simulationPayload.nonce,
-					rpc_url: simulationPayload.rpcUrl,
-					chain_id: simulationPayload.chainId
-				}
-			},
-			renameToCamelCase: true,
-			queryParams: skipTracking ? {skip_tracking: 'true'} : undefined
-		}
-	);
+	const a = await fetchApi<TransactionSimulationResult>(`/v1/simulate-transaction`, {
+		method: 'POST',
+		data: {
+			WithCalldata: {
+				sender_address: simulationPayload.senderAddress,
+				calldata: simulationPayload.calldata,
+				block_number: simulationPayload.blockNumber,
+				transaction_version: simulationPayload.transactionVersion,
+				nonce: simulationPayload.nonce,
+				rpc_url: simulationPayload.rpcUrl,
+				chain_id: simulationPayload.chainId
+			}
+		},
+		renameToCamelCase: true,
+		queryParams: skipTracking ? { skip_tracking: 'true' } : undefined
+	});
+	return a;
 }
 
 export async function simulateTransactionByHash({
 	chainId,
 	txHash,
-	skipTracking,
+	skipTracking
 }: {
 	chainId: ChainId;
 	txHash: string;
 	skipTracking?: boolean;
 }): Promise<TransactionSimulationResult> {
-	return await fetchApi<TransactionSimulationResult>(
+	const a = await fetchApi<TransactionSimulationResult>(
 		`/v1/${chainId}/simulate-transaction/${txHash}`,
 		{
 			renameToCamelCase: true,
-			queryParams: skipTracking ? {skip_tracking: 'true'} : undefined
+			queryParams: skipTracking ? { skip_tracking: 'true' } : undefined
 		}
 	);
+	console.log(a);
+	return a;
 }
 
 export async function simulateCustomNetworkTransactionByHash({
@@ -54,18 +54,15 @@ export async function simulateCustomNetworkTransactionByHash({
 	txHash: string;
 	skipTracking?: boolean;
 }): Promise<TransactionSimulationResult> {
-	return await fetchApi<TransactionSimulationResult>(
-		`/v1/simulate-transaction`,
-		{
-			method: 'POST',
-			renameToCamelCase: true,
-			data: {
-				WithTxHash: {
-					rpc_url: rpcUrl,
-					tx_hash: txHash
-				}
-			},
-			queryParams: skipTracking ? {skip_tracking: 'true'} : undefined
-		}
-	);
+	return await fetchApi<TransactionSimulationResult>(`/v1/simulate-transaction`, {
+		method: 'POST',
+		renameToCamelCase: true,
+		data: {
+			WithTxHash: {
+				rpc_url: rpcUrl,
+				tx_hash: txHash
+			}
+		},
+		queryParams: skipTracking ? { skip_tracking: 'true' } : undefined
+	});
 }

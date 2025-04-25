@@ -15,6 +15,7 @@ import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { CommonCallTrace } from './common-call-trace';
 import { useCallback } from 'react';
+import StorageChanges from '../storage-changes';
 
 export function CallTraceRoot({ simulationResult }: { simulationResult: SimulationResult }) {
 	return (
@@ -41,6 +42,7 @@ function CallTraceRootContent() {
 					<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
 					<TabsTrigger value="events-list">Events</TabsTrigger>
 					<TabsTrigger value="debugger">Debugger</TabsTrigger>
+					<TabsTrigger value="storage-changes">Storage</TabsTrigger>
 				</TabsList>
 				<TabsContent value="call-trace">
 					<div className="whitespace-nowrap rounded-xl border">
@@ -105,6 +107,13 @@ function CallTraceRootContent() {
 				<TabsContent value="debugger">
 					<Card className="text-xs h-[calc(100vh-407px)]">
 						<Debugger />
+					</Card>
+				</TabsContent>
+				<TabsContent value="storage-changes">
+					<Card>
+						<ScrollArea className="text-xs h-[calc(100vh-409px)]">
+							<StorageChanges />
+						</ScrollArea>
 					</Card>
 				</TabsContent>
 			</Tabs>
