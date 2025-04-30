@@ -11,10 +11,9 @@ export function DecodeDataTable({
 	type
 }: {
 	rawData?: string[];
-	decodeData: DataDecoded;
+	decodeData: DataDecoded | null | undefined;
 	type: DataType;
 }) {
-	const hasNameField = decodeData.some((item: DecodedItem) => item.name != null);
 	const [displayFormat, setDisplayFormat] = useState<'auto' | 'raw'>('auto');
 
 	const isObject = (value: any): boolean => {
@@ -94,11 +93,16 @@ export function DecodeDataTable({
 		}
 	};
 
+	// Skip rendering if there's no data at all
+	if ((!decodeData || decodeData.length === 0) && (!rawData || rawData.length === 0)) {
+		return null;
+	}
+
 	return (
 		<div className="my-4">
 			<div className="flex flex-raw items-center mb-1">
 				<div className="font-medium uppercase mr-2">{type}</div>
-				{type === DataType.CALLDATA && (
+				{type === DataType.CALLDATA && decodeData && (
 					<ToggleGroup
 						type="single"
 						size={'sm'}
@@ -118,7 +122,11 @@ export function DecodeDataTable({
 				)}
 			</div>
 			<Card>
-				{displayFormat === 'raw' && type === DataType.CALLDATA && rawData && rawData.length > 0 ? (
+				{/* Always show Raw data if decodeData is not available */}
+				{(displayFormat === 'raw' || !decodeData) &&
+				type === DataType.CALLDATA &&
+				rawData &&
+				rawData.length > 0 ? (
 					<ScrollArea>
 						<Table className="w-auto py-0.5 px-2 text-xs w-full">
 							<TableHeader>
@@ -151,21 +159,22 @@ export function DecodeDataTable({
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{decodeData.map((item: DecodedItem, index: number) => (
-									<TableRow key={index}>
-										{type === DataType.CALLDATA && (
+								{decodeData &&
+									decodeData.map((item: DecodedItem, index: number) => (
+										<TableRow key={index}>
+											{type === DataType.CALLDATA && (
+												<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
+													{item.name}
+												</TableCell>
+											)}
 											<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
-												{item.name}
+												{item.typeName}
 											</TableCell>
-										)}
-										<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
-											{item.typeName}
-										</TableCell>
-										<TableCell className="border-r border-neutral-200 last:border-r-0 w-full">
-											{renderValue(item.value)}
-										</TableCell>
-									</TableRow>
-								))}
+											<TableCell className="border-r border-neutral-200 last:border-r-0 w-full">
+												{renderValue(item.value)}
+											</TableCell>
+										</TableRow>
+									))}
 							</TableBody>
 						</Table>
 					</ScrollArea>
