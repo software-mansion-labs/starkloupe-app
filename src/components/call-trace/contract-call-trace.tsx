@@ -229,10 +229,6 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 		{
 			name: 'Entrypoint Selector',
 			value: call.entryPoint.entryPointSelector
-		},
-		{
-			name: 'Result',
-			value: JSON.stringify(call.result)
 		}
 	];
 
@@ -351,7 +347,7 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 				<div className="">
 					{!hasDebuggableInfo && noSourceCodeAlert}
 					<InfoBox details={details} />
-					{call.entryPoint.calldata && call.calldataDecoded && (
+					{call.entryPoint.calldata && (
 						<DecodeDataTable
 							rawData={call.entryPoint.calldata}
 							decodeData={call.calldataDecoded}

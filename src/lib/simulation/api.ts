@@ -41,7 +41,6 @@ export async function simulateTransactionByHash({
 			queryParams: skipTracking ? { skip_tracking: 'true' } : undefined
 		}
 	);
-	console.log(a);
 	return a;
 }
 
