@@ -43,7 +43,7 @@ export default function Page({
 					rpcUrl: rpcUrl || undefined
 				};
 
-				if (blockNumber) {
+				if (blockNumber && !isNaN(+blockNumber)) {
 					payload.blockNumber = parseInt(blockNumber);
 				}
 
