@@ -6,8 +6,9 @@ import { ClassDebuggerData } from '@/lib/simulation/types';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { useDebugger } from '@/lib/context/debugger-context-provider';
+import { FilesExplorer } from './file-explorer';
 
-export const DebuggerFilesExplorer = memo(function FilesExplorer({
+export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 	showTitle = true,
 	classesDebuggerData,
 	classSourceCode,
@@ -131,7 +132,7 @@ export const DebuggerFilesExplorer = memo(function FilesExplorer({
 												<Tooltip delayDuration={100}>
 													<TooltipTrigger>
 														<div
-															className={`py-1 px-4 transition-colors cursor-pointer whitespace-nowrap flex items-center gap-2  ${
+															className={`py-1 px-2 transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1  ${
 																contract?.classHash && openContracts[contract?.classHash]
 																	? 'bg-neutral-100'
 																	: 'hover:bg-neutral-50'
@@ -160,28 +161,19 @@ export const DebuggerFilesExplorer = memo(function FilesExplorer({
 													</TooltipContent>
 												</Tooltip>
 											</TooltipProvider>
-
-											{contract?.classHash &&
-												openContracts[contract?.classHash] &&
-												Object.keys(classesDebuggerData[contract?.classHash].sourceCode).map(
-													(file) => (
-														<div
-															key={file}
-															className={cn(
-																'py-1 pr-4 pl-8 transition-colors',
-																activeFile === file && contract.callId === contractCall?.callId
-																	? 'bg-neutral-100'
-																	: 'cursor-pointer hover:bg-neutral-50'
-															)}
-															onClick={() => {
-																setCurrentContractCall(contract);
-																handleFileClick(file);
-															}}
-														>
-															{file}
-														</div>
-													)
-												)}
+											{contract?.classHash && openContracts[contract?.classHash] && (
+												<FilesExplorer
+													showTitle={false}
+													activeFile={activeFile}
+													contract={contract}
+													contractCall={contractCall}
+													classSourceCode={classesDebuggerData[contract?.classHash].sourceCode}
+													handleFileClick={(filePath) => {
+														setCurrentContractCall(contract);
+														handleFileClick(filePath);
+													}}
+												/>
+											)}
 										</React.Fragment>
 									);
 								})
