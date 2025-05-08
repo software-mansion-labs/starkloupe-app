@@ -206,7 +206,7 @@ export const FilesExplorer = memo(function FilesExplorer({
 	}, []);
 
 	return (
-		<div className={cn('w-full flex flex-col', className)}>
+		<div className={cn('w-full h-full flex flex-col', className)}>
 			{showTitle && <div className="uppercase px-2 my-2 font-medium">Source files</div>}
 			<ScrollArea className="flex-1">
 				<div>
@@ -232,6 +232,7 @@ export const FilesExplorer = memo(function FilesExplorer({
 							))}
 				</div>
 				<ScrollBar orientation="horizontal" />
+				<ScrollBar orientation="vertical" />
 			</ScrollArea>
 		</div>
 	);

@@ -10,6 +10,8 @@ import { Error } from '../ui/error';
 import { fetchContractDataByAddress, GetContractResponse } from '@/lib/contracts';
 import { ClassSourceCode } from '@/components/class-source-code';
 import { useSettings } from '@/lib/context/settings-context-provider';
+import { shortenHash } from '@/lib/utils';
+import CopyToClipboardElement from '../ui/copy-to-clipboard';
 
 export function ContractPage({ contractAddress }: { contractAddress: string }) {
 	const { networks } = useSettings();
@@ -41,8 +43,22 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 			<main className="overflow-y-auto flex-grow flex-col flex justify-between">
 				<Container className="py-6">
 					<div className="flex flex-row items-baseline justify-between">
-						<h1 className="text-xl font-medium leading-6 mt-4 mb-2 mr-2">
-							Contract {contractAddress}
+						<h1 className="text-base font-medium leading-6 mt-4 mb-2 mr-2 flex flex-nowrap items-center">
+							Contract{' '}
+							<CopyToClipboardElement
+								value={contractAddress}
+								toastDescription="The address has been copied."
+								className="hidden lg:block"
+							>
+								{contractAddress}
+							</CopyToClipboardElement>
+							<CopyToClipboardElement
+								value={contractAddress}
+								toastDescription="The address has been copied."
+								className="lg:hidden"
+							>
+								{shortenHash(contractAddress)}
+							</CopyToClipboardElement>
 						</h1>
 					</div>
 					{contractData && <ContractDetails contractData={contractData} />}
