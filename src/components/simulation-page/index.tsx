@@ -62,7 +62,10 @@ export function SimulationPage({
 					txSimResult={transactionSimulation}
 					rpcUrl={simulationPayload?.rpcUrl}
 				/>
-				<CallTraceRoot simulationResult={transactionSimulation.simulationResult} />
+				<CallTraceRoot
+					simulationResult={transactionSimulation.simulationResult}
+					flamegraph={transactionSimulation.flamechart}
+				/>
 			</>
 		);
 	}

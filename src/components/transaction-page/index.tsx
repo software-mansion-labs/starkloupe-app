@@ -8,7 +8,8 @@ import { Loader } from '../ui/loader';
 import {
 	simulateCustomNetworkTransactionByHash,
 	simulateTransactionByHash,
-	TransactionSimulationResult
+	TransactionSimulationResult,
+	FlameNode
 } from '@/lib/simulation';
 import { formatTimestampToUTC, shortenHash } from '@/lib/utils';
 import { ChainId } from '@/lib/types';
@@ -168,7 +169,10 @@ export function TransactionPage({
 						<TransactionDetails txSimResult={transactionSimulation} rpcUrl={rpcUrl} />
 					)}
 					{transactionSimulation ? (
-						<CallTraceRoot simulationResult={transactionSimulation.simulationResult} />
+						<CallTraceRoot
+							simulationResult={transactionSimulation.simulationResult}
+							flamegraph={transactionSimulation.flamechart}
+						/>
 					) : error ? (
 						<Error message={error} />
 					) : (

@@ -1,4 +1,4 @@
-import { SimulationResult } from '@/lib/simulation';
+import { SimulationResult, FlameNode } from '@/lib/simulation';
 import {
 	CallTraceContextProvider,
 	TabId,
@@ -16,10 +16,17 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/
 import { CommonCallTrace } from './common-call-trace';
 import { useCallback } from 'react';
 import StorageChanges from '../storage-changes';
+import { GasProfiler } from '../gas-profiler';
 
-export function CallTraceRoot({ simulationResult }: { simulationResult: SimulationResult }) {
+export function CallTraceRoot({
+	simulationResult,
+	flamegraph
+}: {
+	simulationResult: SimulationResult;
+	flamegraph: FlameNode;
+}) {
 	return (
-		<CallTraceContextProvider simulationResult={simulationResult}>
+		<CallTraceContextProvider simulationResult={simulationResult} flamegraph={flamegraph}>
 			<DebuggerContextProvider>
 				<CallTraceRootContent />
 			</DebuggerContextProvider>
@@ -28,7 +35,8 @@ export function CallTraceRoot({ simulationResult }: { simulationResult: Simulati
 }
 
 function CallTraceRootContent() {
-	const { collapseAll, expandAll, activeTab, setActiveTab, simulationResult } = useCallTrace();
+	const { collapseAll, expandAll, activeTab, setActiveTab, simulationResult, flamegraph } =
+		useCallTrace();
 	const onValueChange = useCallback(
 		(value: string) => {
 			setActiveTab(value as TabId);
@@ -43,6 +51,7 @@ function CallTraceRootContent() {
 					<TabsTrigger value="events-list">Events</TabsTrigger>
 					<TabsTrigger value="debugger">Debugger</TabsTrigger>
 					<TabsTrigger value="storage-changes">Storage</TabsTrigger>
+					<TabsTrigger value="gas-profiler">Gas Profiler</TabsTrigger>
 				</TabsList>
 				<TabsContent value="call-trace">
 					<div className="whitespace-nowrap rounded-xl border">
@@ -113,6 +122,13 @@ function CallTraceRootContent() {
 					<Card>
 						<ScrollArea className="text-xs h-[calc(100vh-409px)]">
 							<StorageChanges />
+						</ScrollArea>
+					</Card>
+				</TabsContent>
+				<TabsContent value="gas-profiler">
+					<Card>
+						<ScrollArea className="text-xs h-[calc(100vh-409px)]">
+							<GasProfiler flamegraph={flamegraph} />
 						</ScrollArea>
 					</Card>
 				</TabsContent>

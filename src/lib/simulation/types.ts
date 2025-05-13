@@ -218,6 +218,11 @@ export interface InternalFnCallIO {
 	value: string[];
 	internalIODecoded: DataDecoded | null;
 }
+export type FlameNode = {
+	name: string;
+	value: number;
+	children?: FlameNode[];
+};
 
 export interface TransactionSimulationResult {
 	simulationResult: SimulationResult;
@@ -233,6 +238,7 @@ export interface TransactionSimulationResult {
 	totalTransactionsInBlock?: number;
 	l1TxHash?: string;
 	l2TxHash?: string;
+	flamechart?: FlameNode;
 }
 
 export interface SimulationPayloadWithCalldata {
