@@ -174,6 +174,13 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 						</>
 					)}
 				</div>
+				{call.sierraGas && call.sierraGas !== null && (
+					<div className="ml-auto ">
+						<span className="text-center rounded-sm border inline-block min-w-[5rem] px-1.5 py-0.5 bg-blue-100 border-blue-400 text-blue-900 ml-2">
+							{call.sierraGas}
+						</span>
+					</div>
+				)}
 			</TraceLine>
 			{expandedCalls[call.callId] && !previewMode && <ContractCallDetails call={call} />}{' '}
 			{collapsedCalls[call.callId] != true && (

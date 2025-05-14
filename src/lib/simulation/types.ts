@@ -133,6 +133,7 @@ export interface ContractCall {
 	isDeepestPanicResult: boolean;
 
 	resultTypes?: string[] | null;
+	sierraGas?: number | null;
 	argumentsNames?: string[] | null;
 	argumentsTypes?: string[] | null;
 	calldataDecoded?: DataDecoded | null;
