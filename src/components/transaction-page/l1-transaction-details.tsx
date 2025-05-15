@@ -59,13 +59,8 @@ export function L1TransactionDetails({
 	}
 
 	if (transactionData.blockNumber) {
-		const isSimulatedRevert =
-			transactionData.simulationResult &&
-			transactionData.simulationResult.executionResult.executionStatus === 'REVERTED' &&
-			transactionData.l1TxHash;
-
 		details.push({
-			name: isSimulatedRevert ? 'Simulated at block' : 'Block',
+			name: 'Block',
 			value: transactionData.blockNumber.toString(),
 			isCopyable: true
 		});
