@@ -225,8 +225,20 @@ export type FlameNode = {
 	children?: FlameNode[];
 };
 
-export interface TransactionSimulationResult {
+export interface L1TransactionData {
+	chainId?: string;
+	blockNumber?: number;
+	senderAddress: string;
+	receiverAddress?: string;
+	transactionType?: string;
+	status?: string;
+	messageHashes: string[];
+	l1TxHash?: string;
+}
+
+export interface L2TransactionData {
 	simulationResult: SimulationResult;
+	chainId?: string;
 	blockNumber: number;
 	blockTimestamp: number;
 	nonce: number;
@@ -234,12 +246,16 @@ export interface TransactionSimulationResult {
 	calldata: string[];
 	transactionVersion: number;
 	transactionType: string;
-	chainId?: string;
 	transactionIndexInBlock?: number;
 	totalTransactionsInBlock?: number;
 	l1TxHash?: string;
 	l2TxHash?: string;
 	flamechart?: FlameNode;
+}
+
+export interface TransactionSimulationResult {
+	l1TransactionData?: L1TransactionData;
+	l2TransactionData?: L2TransactionData;
 }
 
 export interface SimulationPayloadWithCalldata {
