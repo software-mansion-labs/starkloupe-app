@@ -7,7 +7,8 @@ import { useEffect, useState } from 'react';
 import {
 	simulateTransactionByData,
 	SimulationPayloadWithCalldata,
-	TransactionSimulationResult
+	TransactionSimulationResult,
+	L2TransactionData
 } from '@/lib/simulation';
 import { Button } from '../ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
