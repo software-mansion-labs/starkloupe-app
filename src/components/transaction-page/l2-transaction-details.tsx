@@ -23,12 +23,12 @@ export function TransactionDetails({
 	}
 
 	// 2. Execution Status
-	if (txSimResult.simulationResult.executionResult.executionStatus === 'SUCCEEDED') {
+	if (transactionData.simulationResult.executionResult.executionStatus === 'SUCCEEDED') {
 		details.push({
 			name: 'Execution status',
 			value: (
 				<span className="text-green-600">
-					{txSimResult.simulationResult.executionResult.executionStatus}
+					{transactionData.simulationResult.executionResult.executionStatus}
 				</span>
 			)
 		});
@@ -37,8 +37,8 @@ export function TransactionDetails({
 			name: 'Execution status',
 			value: (
 				<span className="text-red-600">
-					{txSimResult.simulationResult.executionResult.executionStatus}: &quot;
-					{txSimResult.simulationResult.executionResult.revertReason}&quot;
+					{transactionData.simulationResult.executionResult.executionStatus}: &quot;
+					{transactionData.simulationResult.executionResult.revertReason}&quot;
 				</span>
 			)
 		});
@@ -82,9 +82,9 @@ export function TransactionDetails({
 
 	// 5. Position in block
 	if (
-		txSimResult.transactionIndexInBlock !== undefined &&
-		txSimResult.transactionIndexInBlock !== null &&
-		txSimResult.totalTransactionsInBlock
+		transactionData.transactionIndexInBlock !== undefined &&
+		transactionData.transactionIndexInBlock !== null &&
+		transactionData.totalTransactionsInBlock
 	) {
 		const index = transactionData.transactionIndexInBlock + 1;
 		const suffix =
