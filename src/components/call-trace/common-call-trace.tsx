@@ -16,8 +16,8 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 	nestingLevel: number;
 	callType?: 'event' | 'function' | 'contract';
 }) {
-	const { eventCallsMap, functionCallsMap, contractCallsMap, errorMessage } = useCallTrace();
-
+	const { eventCallsMap, functionCallsMap, contractCallsMap, errorMessage, flamegraph } =
+		useCallTrace();
 	if (!callType) {
 		const functionCall = functionCallsMap[callId];
 		const contractCall = contractCallsMap[callId];
@@ -93,6 +93,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 		if (!contractCall.isHidden) {
 			return (
 				<ContractCallTrace
+					flamegraph={flamegraph}
 					previewMode={previewMode}
 					contractCallId={callId}
 					nestingLevel={nestingLevel}

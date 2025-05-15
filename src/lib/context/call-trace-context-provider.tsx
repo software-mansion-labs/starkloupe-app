@@ -36,7 +36,7 @@ interface CallTraceContextProps {
 	activeTab: TabId;
 	isExecutionFailed: boolean;
 	errorMessage: string | undefined;
-	flamegraph: FlameNode;
+	flamegraph: FlameNode | undefined;
 	traceLineElementRefs: MutableRefObject<{
 		[key: number]: RefObject<HTMLDivElement>;
 	}>;
@@ -71,7 +71,7 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 });
 
 export const CallTraceContextProvider: React.FC<
-	PropsWithChildren<{ simulationResult: SimulationResult; flamegraph: FlameNode }>
+	PropsWithChildren<{ simulationResult: SimulationResult; flamegraph: FlameNode | undefined }>
 > = ({ children, simulationResult, flamegraph }) => {
 	// This collapses calls starting with "core".
 	// If call has children: only parent is collapsed

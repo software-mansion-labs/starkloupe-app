@@ -1,6 +1,6 @@
 import React, { Fragment, memo, useCallback, useMemo } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
-import { CodeLocation, DataType, CallType, ContractCall } from '@/lib/simulation';
+import { CodeLocation, DataType, CallType, ContractCall, FlameNode } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { InfoBox } from '@/components/ui/info-box';
@@ -21,11 +21,13 @@ import { WALNUT_VERIFY_DOCS_URL } from '@/lib/config';
 export const ContractCallTrace = memo(function ContractCallTrace({
 	contractCallId,
 	nestingLevel,
-	previewMode
+	previewMode,
+	flamegraph
 }: {
 	contractCallId: number;
 	nestingLevel: number;
 	previewMode?: boolean;
+	flamegraph?: FlameNode | undefined;
 }) {
 	const {
 		expandedCalls,
@@ -174,7 +176,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 						</>
 					)}
 				</div>
-				{call.sierraGas && call.sierraGas !== null && (
+				{typeof call.sierraGas === 'number' && call.sierraGas > 0 && flamegraph && (
 					<div className="ml-auto ">
 						<span className="text-center rounded-sm border inline-block min-w-[5rem] px-1.5 py-0.5 bg-blue-100 border-blue-400 text-blue-900 ml-2">
 							{call.sierraGas}
