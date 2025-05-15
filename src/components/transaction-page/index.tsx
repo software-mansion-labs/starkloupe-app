@@ -100,7 +100,7 @@ export function TransactionPage({
 			params.set('txHash', txHash);
 			params.set('senderAddress', l2TransactionData.senderAddress);
 
-			if (l2TransactionData.calldata && transactionSimulation.calldata.length > 0) {
+			if (l2TransactionData.calldata && l2TransactionData.calldata.length > 0) {
 				params.set('calldata', l2TransactionData.calldata.join(','));
 			}
 
