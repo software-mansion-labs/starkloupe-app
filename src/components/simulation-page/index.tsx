@@ -7,11 +7,12 @@ import { useEffect, useState } from 'react';
 import {
 	simulateTransactionByData,
 	SimulationPayloadWithCalldata,
-	TransactionSimulationResult
+	TransactionSimulationResult,
+	L2TransactionData
 } from '@/lib/simulation';
 import { Button } from '../ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
-import { TransactionDetails } from '../transaction-page';
+import { TransactionDetails } from '../transaction-page/l2-transaction-details';
 import { CallTraceRoot } from '../call-trace';
 import { Loader } from '../ui/loader';
 import { Error } from '../ui/error';
@@ -23,6 +24,7 @@ export function SimulationPage({
 	simulationPayload?: SimulationPayloadWithCalldata;
 }) {
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
+	const [l2TransactionData, setL2TransactionData] = useState<L2TransactionData>();
 	const [error, setError] = useState<string | undefined>();
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const { trackingActive, trackingFlagLoaded } = useSettings();
@@ -33,9 +35,11 @@ export function SimulationPage({
 				try {
 					setIsLoading(true);
 					const skipTracking = !trackingActive;
-					setTransactionSimulation(
-						await simulateTransactionByData(simulationPayload, skipTracking)
-					);
+					const simulation = await simulateTransactionByData(simulationPayload, skipTracking);
+					setTransactionSimulation(simulation);
+					if (simulation.l2TransactionData) {
+						setL2TransactionData(simulation.l2TransactionData);
+					}
 				} catch (err: any) {
 					setError(err.toString());
 				} finally {
@@ -55,30 +59,30 @@ export function SimulationPage({
 		content = <Loader />;
 	} else if (error) {
 		content = <Error message={error} />;
-	} else if (transactionSimulation) {
+	} else if (l2TransactionData) {
 		content = (
 			<>
 				<TransactionDetails
-					txSimResult={transactionSimulation}
+					transactionData={l2TransactionData}
 					rpcUrl={simulationPayload?.rpcUrl}
 				/>
-				<CallTraceRoot simulationResult={transactionSimulation.simulationResult} />
+				<CallTraceRoot simulationResult={l2TransactionData.simulationResult} />
 			</>
 		);
 	}
 	const handleReSimulateClick = () => {
-		if (transactionSimulation) {
+		if (l2TransactionData) {
 			const params = new URLSearchParams();
-			params.set('senderAddress', transactionSimulation.senderAddress);
+			params.set('senderAddress', l2TransactionData.senderAddress);
 
-			if (transactionSimulation.calldata && transactionSimulation.calldata.length > 0) {
-				params.set('calldata', transactionSimulation.calldata.join(','));
+			if (l2TransactionData.calldata && l2TransactionData.calldata.length > 0) {
+				params.set('calldata', l2TransactionData.calldata.join(','));
 			}
 
-			if (transactionSimulation.transactionVersion)
-				params.set('transactionVersion', transactionSimulation.transactionVersion.toString());
-			if (transactionSimulation.blockNumber)
-				params.set('blockNumber', transactionSimulation.blockNumber.toString());
+			if (l2TransactionData.transactionVersion)
+				params.set('transactionVersion', l2TransactionData.transactionVersion.toString());
+			if (l2TransactionData.blockNumber)
+				params.set('blockNumber', l2TransactionData.blockNumber.toString());
 			if (simulationPayload?.chainId) params.set('chainId', simulationPayload?.chainId);
 			else if (simulationPayload?.rpcUrl) params.set('rpcUrl', simulationPayload?.rpcUrl);
 			window.location.href = `/simulate-transaction?${params.toString()}`;

@@ -219,8 +219,20 @@ export interface InternalFnCallIO {
 	internalIODecoded: DataDecoded | null;
 }
 
-export interface TransactionSimulationResult {
+export interface L1TransactionData {
+	chainId?: string;
+	blockNumber?: number;
+	senderAddress: string;
+	receiverAddress?: string;
+	transactionType?: string;
+	status?: string;
+	messageHashes: string[];
+	l1TxHash?: string;
+}
+
+export interface L2TransactionData {
 	simulationResult: SimulationResult;
+	chainId?: string;
 	blockNumber: number;
 	blockTimestamp: number;
 	nonce: number;
@@ -228,11 +240,15 @@ export interface TransactionSimulationResult {
 	calldata: string[];
 	transactionVersion: number;
 	transactionType: string;
-	chainId?: string;
 	transactionIndexInBlock?: number;
 	totalTransactionsInBlock?: number;
 	l1TxHash?: string;
 	l2TxHash?: string;
+}
+
+export interface TransactionSimulationResult {
+	l1TransactionData?: L1TransactionData;
+	l2TransactionData?: L2TransactionData;
 }
 
 export interface SimulationPayloadWithCalldata {

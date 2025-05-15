@@ -8,14 +8,18 @@ import { Loader } from '../ui/loader';
 import {
 	simulateCustomNetworkTransactionByHash,
 	simulateTransactionByHash,
-	TransactionSimulationResult
+	TransactionSimulationResult,
+	L1TransactionData,
+	L2TransactionData
 } from '@/lib/simulation';
-import { formatTimestampToUTC, shortenHash } from '@/lib/utils';
+import { shortenHash } from '@/lib/utils';
+import { TransactionDetails } from './l2-transaction-details';
+import { L1TransactionDetails } from './l1-transaction-details';
 import { ChainId } from '@/lib/types';
 import { CallTraceRoot } from '@/components/call-trace';
 import { InfoBox, InfoBoxItem } from '../ui/info-box';
 import { Button } from '../ui/button';
-import { PlayIcon } from '@heroicons/react/24/outline';
+import { PlayIcon, LinkIcon } from '@heroicons/react/24/outline';
 import { Error } from '../ui/error';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
@@ -32,6 +36,8 @@ export function TransactionPage({
 	rpcUrl?: string;
 }) {
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
+	const [l1TransactionData, setL1TransactionData] = useState<L1TransactionData>();
+	const [l2TransactionData, setL2TransactionData] = useState<L2TransactionData>();
 	const { isLogged } = useUserContext();
 	const [error, setError] = useState<string | undefined>();
 	const { trackingActive, trackingFlagLoaded } = useSettings();
@@ -47,13 +53,18 @@ export function TransactionPage({
 				if (chainId) {
 					const simulation = await simulateTransactionByHash({ chainId, txHash, skipTracking });
 					setTransactionSimulation(simulation);
-					if (simulation.l2TxHash) {
-						setL2TxHash(simulation.l2TxHash);
-						setL2TxHashShort(shortenHash(simulation.l2TxHash));
-					}
-					if (simulation.l1TxHash) {
-						setL1TxHash(simulation.l1TxHash);
-						setL1TxHashShort(shortenHash(simulation.l1TxHash));
+					if (simulation.l2TransactionData) {
+						setL2TransactionData(simulation.l2TransactionData);
+						if (simulation.l2TransactionData.l2TxHash) {
+							setL2TxHash(simulation.l2TransactionData.l2TxHash);
+							setL2TxHashShort(shortenHash(simulation.l2TransactionData.l2TxHash));
+						}
+						if (simulation.l2TransactionData.l1TxHash) {
+							setL1TxHash(simulation.l2TransactionData.l1TxHash);
+							setL1TxHashShort(shortenHash(simulation.l2TransactionData.l1TxHash));
+						}
+					} else if (simulation.l1TransactionData) {
+						setL1TransactionData(simulation.l1TransactionData);
 					}
 				} else if (rpcUrl) {
 					const simulation = await simulateCustomNetworkTransactionByHash({
@@ -62,13 +73,18 @@ export function TransactionPage({
 						skipTracking
 					});
 					setTransactionSimulation(simulation);
-					if (simulation.l2TxHash) {
-						setL2TxHash(simulation.l2TxHash);
-						setL2TxHashShort(shortenHash(simulation.l2TxHash));
-					}
-					if (simulation.l1TxHash) {
-						setL1TxHash(simulation.l1TxHash);
-						setL1TxHashShort(shortenHash(simulation.l1TxHash));
+					if (simulation.l2TransactionData) {
+						setL2TransactionData(simulation.l2TransactionData);
+						if (simulation.l2TransactionData.l2TxHash) {
+							setL2TxHash(simulation.l2TransactionData.l2TxHash);
+							setL2TxHashShort(shortenHash(simulation.l2TransactionData.l2TxHash));
+						}
+						if (simulation.l2TransactionData.l1TxHash) {
+							setL1TxHash(simulation.l2TransactionData.l1TxHash);
+							setL1TxHashShort(shortenHash(simulation.l2TransactionData.l1TxHash));
+						}
+					} else if (simulation.l1TransactionData) {
+						setL1TransactionData(simulation.l1TransactionData);
 					}
 				}
 			} catch (error: any) {
@@ -81,19 +97,19 @@ export function TransactionPage({
 	}, [chainId, txHash, rpcUrl, trackingFlagLoaded, trackingActive]);
 
 	const handleReSimulateClick = () => {
-		if (transactionSimulation) {
+		if (l2TransactionData) {
 			const params = new URLSearchParams();
 			params.set('txHash', txHash);
-			params.set('senderAddress', transactionSimulation.senderAddress);
+			params.set('senderAddress', l2TransactionData.senderAddress);
 
-			if (transactionSimulation.calldata && transactionSimulation.calldata.length > 0) {
-				params.set('calldata', transactionSimulation.calldata.join(','));
+			if (l2TransactionData.calldata && l2TransactionData.calldata.length > 0) {
+				params.set('calldata', l2TransactionData.calldata.join(','));
 			}
 
-			if (transactionSimulation.transactionVersion)
-				params.set('transactionVersion', transactionSimulation.transactionVersion.toString());
-			if (transactionSimulation.blockNumber)
-				params.set('blockNumber', transactionSimulation.blockNumber.toString());
+			if (l2TransactionData.transactionVersion)
+				params.set('transactionVersion', l2TransactionData.transactionVersion.toString());
+			if (l2TransactionData.blockNumber)
+				params.set('blockNumber', l2TransactionData.blockNumber.toString());
 			if (chainId) params.set('chainId', chainId);
 			else if (rpcUrl) params.set('rpcUrl', rpcUrl);
 			window.location.href = `/simulate-transaction?${params.toString()}`;
@@ -105,70 +121,162 @@ export function TransactionPage({
 			<HeaderNav />
 			<main className="overflow-y-auto flex-grow flex-col flex justify-between">
 				<Container className="py-6">
-					<div className="lg:flex flex-row items-baseline justify-between">
-						<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
-							{l2TxHash && (
-								<h1 className="text-base font-medium leading-6 flex flex-nowrap items-center">
-									Transaction{' '}
-									<CopyToClipboardElement
-										value={l2TxHash}
-										toastDescription="The address has been copied."
-										className="hidden lg:block"
+					{l2TransactionData ? (
+						<>
+							{/* === L2 Transaction === */}
+							<div className="lg:flex flex-row items-baseline justify-between">
+								<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
+									{l2TxHash && (
+										<h1 className="text-base font-medium leading-6 flex flex-nowrap items-center">
+											Transaction{' '}
+											<CopyToClipboardElement
+												value={l2TxHash}
+												toastDescription="The address has been copied."
+												className="hidden lg:block"
+											>
+												{l2TxHash}
+											</CopyToClipboardElement>
+											<CopyToClipboardElement
+												value={txHash}
+												toastDescription="The address has been copied."
+												className="lg:hidden"
+											>
+												{l2TxHashShort}
+											</CopyToClipboardElement>
+										</h1>
+									)}
+									{l1TxHash && (
+										<h2 className="text-base leading-6 flex flex-nowrap items-center">
+											Corresponding L1 Transaction{' '}
+											<CopyToClipboardElement
+												value={l1TxHash}
+												toastDescription="The address has been copied."
+												className="hidden lg:block"
+											>
+												{l1TxHash}
+											</CopyToClipboardElement>
+											<CopyToClipboardElement
+												value={txHash}
+												toastDescription="The address has been copied."
+												className="lg:hidden"
+											>
+												{l1TxHashShort}
+											</CopyToClipboardElement>
+										</h2>
+									)}
+								</div>
+								{isLogged ? (
+									<Button
+										onClick={handleReSimulateClick}
+										variant="outline"
+										disabled={l2TransactionData.transactionType !== 'INVOKE'}
 									>
-										{l2TxHash}
-									</CopyToClipboardElement>
-									<CopyToClipboardElement
-										value={txHash}
-										toastDescription="The address has been copied."
-										className="lg:hidden"
-									>
-										{l2TxHashShort}
-									</CopyToClipboardElement>
-								</h1>
-							)}
-							{l1TxHash && (
-								<h2 className="text-base leading-6 flex flex-nowrap items-center">
-									Corresponding L1 Transaction{' '}
-									<CopyToClipboardElement
-										value={l1TxHash}
-										toastDescription="The address has been copied."
-										className="hidden lg:block"
-									>
-										{l1TxHash}
-									</CopyToClipboardElement>
-									<CopyToClipboardElement
-										value={txHash}
-										toastDescription="The address has been copied."
-										className="lg:hidden"
-									>
-										{l1TxHashShort}
-									</CopyToClipboardElement>
-								</h2>
-							)}
-						</div>
-
-						{transactionSimulation &&
-							(isLogged ? (
-								<Button
-									onClick={handleReSimulateClick}
-									variant="outline"
-									disabled={transactionSimulation.transactionType !== 'INVOKE'}
-								>
-									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
-								</Button>
-							) : (
-								<Link href="/login">
-									<Button variant="outline">
-										<PlayIcon className="mr-2 h-4 w-4" /> Re-simulate transaction
+										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
 									</Button>
-								</Link>
-							))}
-					</div>
-					{transactionSimulation && (
-						<TransactionDetails txSimResult={transactionSimulation} rpcUrl={rpcUrl} />
-					)}
-					{transactionSimulation ? (
-						<CallTraceRoot simulationResult={transactionSimulation.simulationResult} />
+								) : (
+									<Link href="/login">
+										<Button variant="outline">
+											<PlayIcon className="mr-2 h-4 w-4" /> Re-simulate transaction
+										</Button>
+									</Link>
+								)}
+							</div>
+							<TransactionDetails transactionData={l2TransactionData} rpcUrl={rpcUrl} />
+							<CallTraceRoot simulationResult={l2TransactionData.simulationResult} />
+						</>
+					) : l1TransactionData ? (
+						<>
+							{/* === L1 Transaction Dat === */}
+							<div className="lg:flex flex-row items-baseline justify-between">
+								<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
+									{l1TransactionData.l1TxHash && (
+										<h1 className="text-base font-medium leading-6 flex flex-nowrap items-center">
+											L1 Transaction{' '}
+											<CopyToClipboardElement
+												value={l1TransactionData.l1TxHash}
+												toastDescription="The address has been copied."
+												className="hidden lg:block"
+											>
+												{l1TransactionData.l1TxHash}
+											</CopyToClipboardElement>
+											<CopyToClipboardElement
+												value={l1TransactionData.l1TxHash}
+												toastDescription="The address has been copied."
+												className="lg:hidden"
+											>
+												{shortenHash(l1TransactionData.l1TxHash)}
+											</CopyToClipboardElement>
+										</h1>
+									)}
+								</div>
+								{isLogged ? (
+									<Button onClick={handleReSimulateClick} variant="outline" disabled={true}>
+										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+									</Button>
+								) : (
+									<Link href="/login">
+										<Button variant="outline">
+											<PlayIcon className="mr-2 h-4 w-4" /> Re-simulate transaction
+										</Button>
+									</Link>
+								)}
+							</div>
+							<L1TransactionDetails transactionData={l1TransactionData} rpcUrl={rpcUrl} />
+							{l1TransactionData.messageHashes && l1TransactionData.messageHashes.length > 0 && (
+								<div className="mt-4">
+									<div className="rounded-xl border bg-white">
+										<div className="p-4">
+											<h3 className="text-sm mb-2">Cross-Chain Source: Transactions on Starknet</h3>
+											<p className="text-neutral-400 text-[0.7rem] mb-2">
+												{l1TransactionData.messageHashes.length > 1
+													? 'This L1 transaction was triggered by three messages sent from Starknet.'
+													: 'This L1 transaction was triggered by a message sent from Starknet.'}
+											</p>
+											<div className="flex flex-col gap-1 text-xs">
+												{l1TransactionData.messageHashes.map((hash, index) => {
+													const isSepolia = l1TransactionData.chainId
+														?.toLowerCase()
+														.includes('sepolia');
+													const voyagerUrl = isSepolia
+														? `https://sepolia.voyager.online/message/${hash}`
+														: `https://voyager.online/message/${hash}`;
+
+													return (
+														<div
+															key={index}
+															className="flex items-baseline gap-2 whitespace-nowrap"
+														>
+															{l1TransactionData.messageHashes.length > 1 && (
+																<span className="text-neutral-500">Message {index + 1}:</span>
+															)}
+															<div className="flex items-center gap-1">
+																<CopyToClipboardElement
+																	value={hash}
+																	toastDescription="Message hash copied"
+																	className="font-mono cursor-pointer hover:bg-black/10 rounded-sm px-1"
+																>
+																	<span className="hidden lg:inline">{hash}</span>
+																	<span className="lg:hidden">{shortenHash(hash)}</span>
+																</CopyToClipboardElement>
+																<a
+																	href={voyagerUrl}
+																	target="_blank"
+																	rel="noopener noreferrer"
+																	className="font-bold text-lg underline"
+																	title="View on Voyager"
+																>
+																	<LinkIcon className="h-4 w-4" />
+																</a>
+															</div>
+														</div>
+													);
+												})}
+											</div>
+										</div>
+									</div>
+								</div>
+							)}
+						</>
 					) : error ? (
 						<Error message={error} />
 					) : (
@@ -179,139 +287,5 @@ export function TransactionPage({
 				<Footer />
 			</main>
 		</>
-	);
-}
-
-export function TransactionDetails({
-	txSimResult,
-	rpcUrl
-}: {
-	txSimResult: TransactionSimulationResult;
-	rpcUrl?: string;
-}) {
-	const { getNetworkByRpcUrl } = useSettings();
-	let details: InfoBoxItem[] = [];
-
-	if (rpcUrl) {
-		const network = getNetworkByRpcUrl(rpcUrl);
-		if (network) {
-			details.push({
-				name: 'Custom Network',
-				value: network.networkName
-			});
-		}
-		details.push({
-			name: 'RPC URL',
-			value: rpcUrl
-		});
-	}
-
-	if (txSimResult.chainId) {
-		details.push({
-			name: 'Chain',
-			value: txSimResult.chainId
-		});
-	}
-
-	if (txSimResult.blockNumber) {
-		if (
-			txSimResult.l1TxHash &&
-			txSimResult.simulationResult.executionResult.executionStatus === 'REVERTED'
-		) {
-			details.push({
-				name: 'Simulated at block',
-				value: txSimResult.blockNumber.toString(),
-				isCopyable: true
-			});
-		} else {
-			details.push({
-				name: 'Block',
-				value: txSimResult.blockNumber.toString(),
-				isCopyable: true
-			});
-		}
-	}
-
-	if (
-		txSimResult.transactionIndexInBlock !== undefined &&
-		txSimResult.transactionIndexInBlock !== null &&
-		txSimResult.totalTransactionsInBlock
-	) {
-		const index = txSimResult.transactionIndexInBlock + 1;
-		let suffix = 'th';
-		if (index % 10 === 1 && index % 100 !== 11) {
-			suffix = 'st';
-		} else if (index % 10 === 2 && index % 100 !== 12) {
-			suffix = 'nd';
-		} else if (index % 10 === 3 && index % 100 !== 13) {
-			suffix = 'rd';
-		}
-
-		details.push({
-			name: 'Position in block',
-			value: `${index}${suffix} out of ${txSimResult.totalTransactionsInBlock}`
-		});
-	}
-
-	details = details.concat([
-		{
-			name: 'Timestamp',
-			value: formatTimestampToUTC(txSimResult.blockTimestamp)
-		},
-		{
-			name: 'Sender',
-			value: txSimResult.senderAddress,
-			isCopyable: true
-		}
-	]);
-
-	if (txSimResult.nonce) {
-		// Nonce only exists on real transactions, not simulations
-		details.push({
-			name: 'Nonce',
-			value: txSimResult.nonce.toString()
-		});
-	}
-
-	if (txSimResult.transactionVersion) {
-		details.push({
-			name: 'Transaction Version',
-			value: txSimResult.transactionVersion.toString()
-		});
-	}
-
-	if (txSimResult.simulationResult.executionResult.executionStatus === 'SUCCEEDED') {
-		details.unshift({
-			name: 'Execution status',
-			value: (
-				<span className="text-green-600">
-					{txSimResult.simulationResult.executionResult.executionStatus}
-				</span>
-			)
-		});
-	} else {
-		details.unshift({
-			name: 'Execution status',
-			value: (
-				<span className="text-red-600">
-					{txSimResult.simulationResult.executionResult.executionStatus}: &quot;
-					{txSimResult.simulationResult.executionResult.revertReason}&quot;
-				</span>
-			)
-		});
-	}
-
-	if (txSimResult.transactionType) {
-		details.unshift({
-			name: 'Transaction Type',
-			value: <span className="text-blue-600">{txSimResult.transactionType}</span>,
-			isCopyable: true
-		});
-	}
-
-	return (
-		<div className="mt-4">
-			<InfoBox details={details} />
-		</div>
 	);
 }
