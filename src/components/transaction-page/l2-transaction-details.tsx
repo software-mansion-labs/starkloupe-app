@@ -23,19 +23,27 @@ export function TransactionDetails({
 	}
 
 	// 2. Execution Status
-	if (transactionData.simulationResult) {
-		const { executionStatus, revertReason } = transactionData.simulationResult.executionResult;
+	if (txSimResult.simulationResult.executionResult.executionStatus === 'SUCCEEDED') {
 		details.push({
 			name: 'Execution status',
 			value: (
-				<span className={executionStatus === 'SUCCEEDED' ? 'text-green-600' : 'text-red-600'}>
-					{executionStatus === 'SUCCEEDED'
-						? executionStatus
-						: `${executionStatus}: "${revertReason}"`}
+				<span className="text-green-600">
+					{txSimResult.simulationResult.executionResult.executionStatus}
+				</span>
+			)
+		});
+	} else {
+		details.push({
+			name: 'Execution status',
+			value: (
+				<span className="text-red-600">
+					{txSimResult.simulationResult.executionResult.executionStatus}: &quot;
+					{txSimResult.simulationResult.executionResult.revertReason}&quot;
 				</span>
 			)
 		});
 	}
+
 	// 3. Network details
 	if (rpcUrl) {
 		const network = getNetworkByRpcUrl(rpcUrl);
@@ -73,7 +81,11 @@ export function TransactionDetails({
 	}
 
 	// 5. Position in block
-	if (transactionData.totalTransactionsInBlock) {
+	if (
+		txSimResult.transactionIndexInBlock !== undefined &&
+		txSimResult.transactionIndexInBlock !== null &&
+		txSimResult.totalTransactionsInBlock
+	) {
 		const index = transactionData.transactionIndexInBlock + 1;
 		const suffix =
 			index % 100 >= 11 && index % 100 <= 13
