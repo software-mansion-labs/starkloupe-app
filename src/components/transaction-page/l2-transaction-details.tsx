@@ -1,6 +1,7 @@
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { formatTimestampToUTC } from '@/lib/utils';
 import { InfoBox, InfoBoxItem } from '../ui/info-box';
+import { L2TransactionData } from '@/lib/simulation';
 
 export function TransactionDetails({
 	transactionData,

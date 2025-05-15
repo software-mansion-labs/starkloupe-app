@@ -1,5 +1,6 @@
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { InfoBox, InfoBoxItem } from '../ui/info-box';
+import { L1TransactionData } from '@/lib/simulation';
 
 export function L1TransactionDetails({
 	transactionData,
