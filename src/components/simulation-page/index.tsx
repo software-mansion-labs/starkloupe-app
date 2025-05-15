@@ -12,7 +12,7 @@ import {
 } from '@/lib/simulation';
 import { Button } from '../ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
-import { TransactionDetails } from '../transaction-page/l2-transaction-details.tsx';
+import { TransactionDetails } from '../transaction-page/l2-transaction-details';
 import { CallTraceRoot } from '../call-trace';
 import { Loader } from '../ui/loader';
 import { Error } from '../ui/error';

@@ -13,8 +13,8 @@ import {
 	L2TransactionData
 } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
-import { TransactionDetails } from './l2-transaction-details.tsx';
-import { L1TransactionDetails } from './l1-transaction-details.tsx';
+import { TransactionDetails } from './l2-transaction-details';
+import { L1TransactionDetails } from './l1-transaction-details';
 import { ChainId } from '@/lib/types';
 import { CallTraceRoot } from '@/components/call-trace';
 import { InfoBox, InfoBoxItem } from '../ui/info-box';
