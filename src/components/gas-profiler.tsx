@@ -14,7 +14,7 @@ const FlameGraph = dynamic(() => import('./flamegraph'), {
 	)
 });
 
-export function GasProfiler({ flamegraph }: { flamegraph: FlameNode | null }) {
+export function GasProfiler({ flamegraph }: { flamegraph: FlameNode | undefined }) {
 	const { chosenCallName } = useCallTrace();
 	const isEmpty = !flamegraph || !flamegraph.children || flamegraph.children.length === 0;
 	console.log('chosenCallName', chosenCallName);
