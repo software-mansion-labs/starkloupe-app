@@ -182,7 +182,10 @@ export function TransactionPage({
 								)}
 							</div>
 							<TransactionDetails transactionData={l2TransactionData} rpcUrl={rpcUrl} />
-							<CallTraceRoot simulationResult={l2TransactionData.simulationResult} />
+							<CallTraceRoot
+								simulationResult={l2TransactionData.simulationResult}
+								flamegraph={l2TransactionData.flamechart}
+							/>
 						</>
 					) : l1TransactionData ? (
 						<>

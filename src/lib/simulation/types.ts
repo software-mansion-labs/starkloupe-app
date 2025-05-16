@@ -48,6 +48,12 @@ export interface EntryPoint {
 	initialGas: number;
 }
 
+export type FlameNode = {
+	name: string;
+	value: number;
+	children: FlameNode[];
+};
+
 export interface DecodedItem {
 	typeName: string;
 	name: string | null;
@@ -133,6 +139,7 @@ export interface ContractCall {
 	isDeepestPanicResult: boolean;
 
 	resultTypes?: string[] | null;
+	sierraGas?: number | null;
 	argumentsNames?: string[] | null;
 	argumentsTypes?: string[] | null;
 	calldataDecoded?: DataDecoded | null;
@@ -244,6 +251,7 @@ export interface L2TransactionData {
 	totalTransactionsInBlock?: number;
 	l1TxHash?: string;
 	l2TxHash?: string;
+	flamechart?: FlameNode;
 }
 
 export interface TransactionSimulationResult {

@@ -66,7 +66,10 @@ export function SimulationPage({
 					transactionData={l2TransactionData}
 					rpcUrl={simulationPayload?.rpcUrl}
 				/>
-				<CallTraceRoot simulationResult={l2TransactionData.simulationResult} />
+				<CallTraceRoot
+					simulationResult={l2TransactionData.simulationResult}
+					flamegraph={l2TransactionData.flamechart}
+				/>
 			</>
 		);
 	}

@@ -1,4 +1,4 @@
-import { SimulationResult } from '@/lib/simulation';
+import { SimulationResult, FlameNode } from '@/lib/simulation';
 import {
 	CallTraceContextProvider,
 	TabId,
@@ -17,9 +17,15 @@ import { CommonCallTrace } from './common-call-trace';
 import { useCallback } from 'react';
 import StorageChanges from '../storage-changes';
 
-export function CallTraceRoot({ simulationResult }: { simulationResult: SimulationResult }) {
+export function CallTraceRoot({
+	simulationResult,
+	flamegraph
+}: {
+	simulationResult: SimulationResult;
+	flamegraph: FlameNode | undefined;
+}) {
 	return (
-		<CallTraceContextProvider simulationResult={simulationResult}>
+		<CallTraceContextProvider simulationResult={simulationResult} flamegraph={flamegraph}>
 			<DebuggerContextProvider>
 				<CallTraceRootContent />
 			</DebuggerContextProvider>
