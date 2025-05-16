@@ -75,7 +75,7 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 });
 
 export const CallTraceContextProvider: React.FC<
-	PropsWithChildren<{ simulationResult: SimulationResult; flamegraph: FlameNode | undefined }>
+	PropsWithChildren<{ simulationResult: SimulationResult; flamegraph: FlameNode | null }>
 > = ({ children, simulationResult, flamegraph }) => {
 	// This collapses calls starting with "core".
 	// If call has children: only parent is collapsed

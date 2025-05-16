@@ -220,6 +220,7 @@ export interface InternalFnCallIO {
 	internalIODecoded: DataDecoded | null;
 }
 export type FlameNode = {
+	callId: number;
 	name: string;
 	value: number;
 	children?: FlameNode[];
