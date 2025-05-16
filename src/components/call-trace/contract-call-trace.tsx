@@ -1,7 +1,7 @@
 import React, { Fragment, memo, useCallback, useMemo } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { CodeLocation, DataType, CallType, ContractCall, FlameNode } from '@/lib/simulation';
-import { shortenHash } from '@/lib/utils';
+import { getContractName, shortenHash } from '@/lib/utils';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { InfoBox } from '@/components/ui/info-box';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
@@ -27,7 +27,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 	contractCallId: number;
 	nestingLevel: number;
 	previewMode?: boolean;
-	flamegraph?: FlameNode | undefined;
+	flamegraph?: FlameNode | null;
 }) {
 	const {
 		expandedCalls,
@@ -37,14 +37,15 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 		setActiveTab,
 		contractCallsMap,
 		isExecutionFailed,
-		traceLineElementRefs
+		traceLineElementRefs,
+		setChosenCallName
 	} = useCallTrace();
 	const { debugContractCall, isContractCallDebuggable, currentStep } = useDebugger();
 
 	let call = contractCallsMap[contractCallId];
 	const firstChildCallId = call.childrenCallIds[0];
 	const firstChildCall = contractCallsMap[firstChildCallId];
-
+	const formatter = new Intl.NumberFormat(navigator.language);
 	let callType = call.entryPoint.callType;
 
 	const hasNestedElements =
@@ -178,8 +179,19 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 				</div>
 				{typeof call.sierraGas === 'number' && call.sierraGas > 0 && flamegraph && (
 					<div className="ml-auto ">
-						<span className="text-center rounded-sm border inline-block min-w-[5rem] px-1.5 py-0.5 bg-blue-100 border-blue-400 text-blue-900 ml-2">
-							{call.sierraGas}
+						<span
+							onClick={(e) => {
+								e.stopPropagation();
+								setChosenCallName(
+									`${getContractName({ contractCall: call })}.${
+										call?.entryPointName ?? shortenHash(call.entryPoint.entryPointSelector, 13)
+									}`
+								);
+								setActiveTab('gas-profiler');
+							}}
+							className="text-center rounded-sm border inline-block min-w-[5rem] px-1.5 py-0.5 bg-blue-100 border-blue-400 text-blue-900 ml-2"
+						>
+							{formatter.format(call.sierraGas)}
 						</span>
 					</div>
 				)}

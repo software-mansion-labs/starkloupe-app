@@ -35,24 +35,35 @@ export function CallTraceRoot({
 }
 
 function CallTraceRootContent() {
-	const { collapseAll, expandAll, activeTab, setActiveTab, simulationResult, flamegraph } =
-		useCallTrace();
+	const {
+		collapseAll,
+		expandAll,
+		activeTab,
+		setActiveTab,
+		simulationResult,
+		flamegraph,
+		setChosenCallName
+	} = useCallTrace();
 	const onValueChange = useCallback(
 		(value: string) => {
 			setActiveTab(value as TabId);
+			if (activeTab !== 'gas-profiler') {
+				setChosenCallName(null);
+			}
 		},
 		[setActiveTab]
 	);
 	return (
 		<div className="mt-12">
 			<Tabs value={activeTab} onValueChange={onValueChange}>
-				<TabsList>
+				<TabsList className="flex md:inline-flex !justify-start md:justify-center flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-rounded ">
 					<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
 					<TabsTrigger value="events-list">Events</TabsTrigger>
 					<TabsTrigger value="debugger">Debugger</TabsTrigger>
 					<TabsTrigger value="storage-changes">Storage</TabsTrigger>
 					<TabsTrigger value="gas-profiler">Gas Profiler</TabsTrigger>
 				</TabsList>
+
 				<TabsContent value="call-trace">
 					<div className="whitespace-nowrap rounded-xl border">
 						<TooltipProvider>

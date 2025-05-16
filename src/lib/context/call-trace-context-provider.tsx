@@ -22,7 +22,7 @@ interface StringBooleanDict {
 	[key: string]: boolean;
 }
 
-export type TabId = 'call-trace' | 'events-list' | 'debugger' | 'storage-changes';
+export type TabId = 'call-trace' | 'events-list' | 'debugger' | 'storage-changes' | 'gas-profiler';
 
 interface CallTraceContextProps {
 	contractCallsMap: { [key: number]: ContractCall };
@@ -36,7 +36,7 @@ interface CallTraceContextProps {
 	activeTab: TabId;
 	isExecutionFailed: boolean;
 	errorMessage: string | undefined;
-	flamegraph: FlameNode | undefined;
+	flamegraph: FlameNode | null;
 	traceLineElementRefs: MutableRefObject<{
 		[key: number]: RefObject<HTMLDivElement>;
 	}>;
@@ -46,6 +46,8 @@ interface CallTraceContextProps {
 	toggleCallExpand: (id: number) => void;
 	setActiveTab: (tab: TabId) => void;
 	scrollToTraceLineElement: (key: number) => void;
+	chosenCallName: string | null;
+	setChosenCallName: (callName: string | null) => void;
 }
 
 export const CallTraceContext = createContext<CallTraceContextProps>({
@@ -67,7 +69,9 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	collapseAll: () => undefined,
 	toggleCallExpand: () => undefined,
 	setActiveTab: () => undefined,
-	scrollToTraceLineElement: (key: number) => undefined
+	scrollToTraceLineElement: (key: number) => undefined,
+	chosenCallName: null,
+	setChosenCallName: () => undefined
 });
 
 export const CallTraceContextProvider: React.FC<
@@ -127,6 +131,7 @@ export const CallTraceContextProvider: React.FC<
 	const [activeTab, setActiveTab] = useState<TabId>('call-trace');
 	const isExecutionFailed = simulationResult.executionResult.executionStatus === 'REVERTED';
 	const traceLineElementRefs = useRef<{ [callId: number]: React.RefObject<HTMLDivElement> }>({});
+	const [chosenCallName, setChosenCallName] = useState<string | null>(null);
 	const errorMessage =
 		simulationResult.executionResult.executionStatus === 'REVERTED'
 			? simulationResult.executionResult.revertReason
@@ -194,7 +199,9 @@ export const CallTraceContextProvider: React.FC<
 				collapseAll,
 				expandAll,
 				setActiveTab,
-				scrollToTraceLineElement
+				scrollToTraceLineElement,
+				chosenCallName,
+				setChosenCallName
 			}}
 		>
 			{children}

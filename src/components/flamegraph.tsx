@@ -1,164 +1,228 @@
-import React, { useState, useRef, useEffect } from 'react';
-import FlameNode from '@lib/simulation';
+'use client';
 
-type FlameRect = {
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-	name: string;
+import React, { useRef, useEffect, useState, useMemo } from 'react';
+// @ts-ignore
+import * as d3 from 'd3';
+import { flamegraph } from 'd3-flame-graph';
+import 'd3-flame-graph/dist/d3-flamegraph.css';
+
+export interface FlameNode {
+	callId: number;
 	value: number;
+	name: string;
 	children?: FlameNode[];
-	node: FlameNode;
-};
+}
 
-const MIN_WIDTH = 1;
-
-const colors = [
-	'#e1bee7', // light lavender
-	'#ce93d8',
-	'#ba68c8',
-	'#ab47bc',
-	'#9c27b0',
-	'#8e24aa',
-	'#7b1fa2',
-	'#6a1b9a',
-	'#4a148c',
-	'#f48fb1' // pink accent
-];
-
-const computeFlameRects = (
-	node: FlameNode,
-	x: number,
-	y: number,
-	width: number,
-	height: number
-): FlameRect[] => {
-	const rects: FlameRect[] = [];
-	const children = node.children || [];
-	const total = children.reduce((acc, c) => acc + c.value, 0);
-	const safeTotal = total > 0 ? total : 1;
-
-	rects.push({
-		x,
-		y,
-		width,
-		height,
-		name: node.name,
-		value: node.value,
-		children: node.children,
-		node
-	});
-
-	if (children.length > 0) {
-		let currentX = x;
-		for (const child of children) {
-			let childWidth = (child.value / safeTotal) * width;
-			if (childWidth < MIN_WIDTH) childWidth = MIN_WIDTH;
-			rects.push(...computeFlameRects(child, currentX, y + height, childWidth, height));
-			currentX += childWidth;
-		}
-	}
-
-	return rects;
-};
-
-type FlameGraphProps = {
+interface FlameGraphProps {
 	data: FlameNode;
 	height?: number;
-};
+	width?: number;
+	minFrameSize?: number;
+	activeName?: string | null;
+}
 
-const FlameGraph: React.FC<FlameGraphProps> = ({ data, height = 24 }) => {
-	const [focusNode, setFocusNode] = useState<FlameNode | null>(null);
+const FlameGraph: React.FC<FlameGraphProps> = ({
+	data,
+	height = 540,
+	width,
+	minFrameSize = 1,
+	activeName
+}) => {
 	const containerRef = useRef<HTMLDivElement>(null);
-	const [width, setWidth] = useState<number>(0);
+	const chartRef = useRef<any>(null);
+	const tooltipRef = useRef<d3.Selection<any, any, any, any> | null>(null);
+	const [containerWidth, setContainerWidth] = useState(0);
+
+	const formatter = useMemo(() => new Intl.NumberFormat(navigator.language), []);
 
 	useEffect(() => {
-		const observer = new ResizeObserver((entries) => {
-			for (let entry of entries) {
-				if (entry.contentRect.width) {
-					setWidth(entry.contentRect.width);
-				}
-			}
+		if (!containerRef.current) return;
+		let id: number;
+		const obs = new ResizeObserver(([entry]) => {
+			clearTimeout(id);
+			id = window.setTimeout(() => setContainerWidth(entry.contentRect.width), 150);
 		});
-		if (containerRef.current) {
-			observer.observe(containerRef.current);
-		}
-		return () => observer.disconnect();
+		obs.observe(containerRef.current);
+		return () => {
+			obs.disconnect();
+			clearTimeout(id);
+		};
 	}, []);
 
-	const displayedNode = focusNode || data;
-	const rectHeight = height;
-	const rects = computeFlameRects(displayedNode, 0, 0, width, rectHeight);
-	const totalHeight = Math.max(...rects.map((r) => r.y)) + rectHeight;
+	useEffect(() => {
+		if (containerWidth === 0 || !containerRef.current) return;
+		const container = containerRef.current;
 
-	const handleClick = (node: FlameNode) => {
-		if (node.children && node.children.length > 0) {
-			setFocusNode(node);
+		d3.select(container).selectAll('*').remove();
+		d3.select(container).style('position', 'relative');
+
+		d3.select(container).append('style').text(`
+			.flame-graph-container .d3-flame-graph .frame rect,
+			.flame-graph-container .d3-flame-graph .frame rect:hover {
+				stroke: none !important;
+				stroke-width: 0 !important;
+				transition: fill-opacity 0.2s ease;
+			}
+			.flame-graph-container .d3-flame-graph .frame rect:hover {
+				fill-opacity: 0.7 !important;
+			}
+			.flame-graph-container .d3-flame-graph .frame .label text {
+				fill: white !important;
+				font-size: 12px !important;
+				font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+			}
+		
+			.flame-graph-container .d3-flame-graph .frame foreignObject > div {
+				display: flex !important;
+				align-items: center !important;
+				height: 100% !important;
+				padding: 12px 6px !important;
+				box-sizing: border-box !important;
+				font-size: 12px !important;
+				font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
+				color: white !important;
+			}
+		`);
+
+		const root = d3.hierarchy<FlameNode>(data);
+		const maxDepth = root.height;
+
+		const primary = d3.hsl('#032cfc');
+		const lightScale = d3
+			.scaleLinear<number>()
+			.domain([0, maxDepth])
+			.range([Math.min(primary.l + 0.3, 0.95), Math.max(primary.l - 0.3, 0.05)]);
+		const colorFn = (d: any) => {
+			const depth = d.depth ?? 0;
+			const baseL = lightScale(depth);
+			const p = d.parent;
+			if (p && p.children && p.children.length > 1) {
+				const siblings = p.children;
+				const idx = siblings.indexOf(d);
+				const shift = (idx / (siblings.length - 1) - 0.5) * 0.1;
+				const l = Math.max(0, Math.min(1, baseL + shift));
+				return d3.hsl(primary.h, primary.s, l).formatHex();
+			}
+
+			return d3.hsl(primary.h, primary.s, baseL).formatHex();
+		};
+		const tooltip = d3
+			.select(container)
+			.append('div')
+			.attr('class', 'flame-tooltip')
+			.style('position', 'absolute')
+			.style('pointer-events', 'none')
+			.style('background', 'rgba(0,0,0,0.75)')
+			.style('color', '#fff')
+			.style('padding', '4px 8px')
+			.style('border-radius', '4px')
+			.style('font-size', '12px')
+			.style('opacity', '0')
+			.style('transition', 'opacity 0.2s');
+		tooltipRef.current = tooltip;
+
+		const chart = flamegraph()
+			.width(width ?? containerWidth)
+			.height(height)
+			.cellHeight(24)
+			.minFrameSize(minFrameSize)
+			.transitionDuration(750)
+			.sort(true)
+			.inverted(true)
+			.tooltip(false)
+			// @ts-ignore
+			.getName((d: { data: FlameNode }) => `${d.data.name} — ${formatter.format(d.data.value)} Gas`)
+			.color(colorFn);
+		chartRef.current = chart;
+
+		d3.select(container).datum(data).call(chart);
+		d3.select(container).selectAll('title').remove();
+		d3.select(container)
+			.selectAll<SVGRectElement, any>('.frame rect')
+			.attr('data-name', (d: { data: FlameNode }) => d.data.name);
+
+		function bindTooltip() {
+			const cont = containerRef.current!;
+			d3.select(cont).selectAll('foreignObject, .label').style('pointer-events', 'none');
+			tooltip.style('opacity', '0');
+			d3.select(cont)
+				.selectAll<SVGRectElement, any>('.frame rect')
+				.on('mouseenter', (event: MouseEvent, d: { data: FlameNode }) => {
+					tooltip
+						.html(`<strong>${d.data.name}</strong><br/>Value: ${formatter.format(d.data.value)}`)
+						.style('left', `${event.offsetX + 10}px`)
+						.style('top', `${event.offsetY + 10}px`)
+						.style('opacity', '1');
+				})
+				.on('mousemove', (event: MouseEvent) => {
+					tooltip.style('left', `${event.offsetX + 10}px`).style('top', `${event.offsetY + 10}px`);
+				})
+				.on('mouseleave', () => {
+					tooltip.style('opacity', '0');
+				});
 		}
-	};
+		bindTooltip();
+		chart.onClick(() => setTimeout(bindTooltip, 200));
+	}, [containerWidth, data, height, width, minFrameSize, formatter]);
 
-	const handleReset = () => {
-		setFocusNode(null);
-	};
+	useEffect(() => {
+		if (!chartRef.current || containerWidth === 0) return;
+		const chart = chartRef.current;
+		const cont = containerRef.current!;
+		chart.width(width ?? containerWidth);
+		d3.select(cont).datum(data).call(chart);
 
-	const getColor = (depth: number) => {
-		const colors = ['#d4b5ff', '#c084fc', '#a855f7', '#9333ea', '#7e22ce', '#6b21a8'];
-		return colors[depth % colors.length];
-	};
+		d3.select(cont)
+			.selectAll<SVGRectElement, any>('.frame rect')
+			.attr('data-name', (d: { data: FlameNode }) => d.data.name);
 
-	const truncateText = (text: string, width: number): string => {
-		const charWidth = 7; // approx width of a character in px
-		const maxChars = Math.floor((width - 10) / charWidth); // padding
-		if (maxChars <= 3) return '';
-		if (text.length > maxChars) {
-			return text.slice(0, maxChars - 3) + '...';
-		}
-		return text;
-	};
+		const tooltip = tooltipRef.current!;
+		d3.select(cont).selectAll('foreignObject, .label').style('pointer-events', 'none');
+		d3.select(cont)
+			.selectAll<SVGRectElement, any>('.frame rect')
+			.on('mouseenter', (event: MouseEvent, d: { data: FlameNode }) => {
+				tooltip
+					.html(`<strong>${d.data.name}</strong><br/>Value: ${formatter.format(d.data.value)}`)
+					.style('left', `${event.offsetX + 10}px`)
+					.style('top', `${event.offsetY + 10}px`)
+					.style('opacity', '1');
+			})
+			.on('mousemove', (event: MouseEvent) => {
+				tooltip.style('left', `${event.offsetX + 10}px`).style('top', `${event.offsetY + 10}px`);
+			})
+			.on('mouseleave', () => {
+				tooltip.style('opacity', '0');
+			});
+	}, [data, containerWidth, width, formatter]);
 
-	const textFit = (text: string, width: number): boolean => {
-		const charWidth = 7; // average char width in px
-		return width > charWidth * 3; // only if it can show at least 3 chars
-	};
+	useEffect(() => {
+		if (!chartRef.current || !activeName || containerWidth === 0) return;
+		setTimeout(() => {
+			const cont = containerRef.current!;
+			const sel = cont.querySelector<SVGRectElement>(`.frame rect[data-name="${activeName}"]`);
+			if (sel) {
+				const node = d3.select(sel).datum();
+				chartRef.current.zoomTo(node);
+			}
+		}, 200);
+	}, [activeName, data, containerWidth]);
+
+	useEffect(
+		() => () => {
+			chartRef.current?.resetZoom();
+		},
+		[]
+	);
 
 	return (
-		<div ref={containerRef} style={{ width: '100%' }}>
-			{focusNode && (
-				<button onClick={handleReset} style={{ marginBottom: 10 }}>
-					Reset Zoom
-				</button>
-			)}
-			<svg width={width} height={totalHeight}>
-				{rects.map((rect, i) => {
-					const depth = rect.y / rectHeight;
-					return (
-						<g key={i} onClick={() => handleClick(rect.node)} cursor="pointer">
-							<rect
-								x={rect.x}
-								y={rect.y}
-								width={rect.width}
-								height={rect.height}
-								fill={getColor(depth)}
-								stroke="#fff"
-							/>
-							<title>{`${rect.name}: ${rect.value}`}</title>
-							{textFit(rect.name, rect.width) && (
-								<text
-									x={rect.x + 5}
-									y={rect.y + rect.height / 2 + 4}
-									fontSize="12"
-									fill="#000"
-									pointerEvents="none"
-								>
-									{truncateText(rect.name, rect.width)}
-								</text>
-							)}{' '}
-						</g>
-					);
-				})}
-			</svg>
+		<div className="w-full">
+			<div
+				ref={containerRef}
+				style={{ width: '100%', height: `${height}px` }}
+				className="flame-graph-container"
+			/>
 		</div>
 	);
 };
+
 export default FlameGraph;
