@@ -23,7 +23,7 @@ export function CallTraceRoot({
 	flamegraph
 }: {
 	simulationResult: SimulationResult;
-	flamegraph: FlameNode | undefined;
+	flamegraph: FlameNode | null;
 }) {
 	return (
 		<CallTraceContextProvider simulationResult={simulationResult} flamegraph={flamegraph}>
