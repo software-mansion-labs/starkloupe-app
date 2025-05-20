@@ -189,7 +189,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 								);
 								setActiveTab('gas-profiler');
 							}}
-							className="text-center rounded-sm border inline-block min-w-[5rem] px-1.5 py-0.5 bg-blue-100 border-blue-400 text-blue-900 ml-2"
+							className="text-center rounded-sm cursor-pointer transition-colors hover:bg-blue-200 border inline-block min-w-[5rem] px-1.5 py-0.5 bg-blue-100 border-blue-400 text-blue-900 ml-2"
 						>
 							{formatter.format(call.sierraGas)}
 						</span>

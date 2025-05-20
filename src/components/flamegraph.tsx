@@ -5,6 +5,7 @@ import React, { useRef, useEffect, useState, useMemo } from 'react';
 import * as d3 from 'd3';
 import { flamegraph } from 'd3-flame-graph';
 import 'd3-flame-graph/dist/d3-flamegraph.css';
+import { shortenHash } from '@/lib/utils';
 
 export interface FlameNode {
 	callId: number;
@@ -26,25 +27,36 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 	height,
 	width,
 	minFrameSize = 0,
-	activeName
+	activeName = null
 }) => {
 	const containerRef = useRef<HTMLDivElement>(null);
 	const chartRef = useRef<any>(null);
-	const tooltipRef = useRef<d3.Selection<any, any, any, any> | null>(null);
+	const tooltipRef = useRef<d3.Selection<any, unknown, HTMLElement, any> | null>(null);
 	const [containerWidth, setContainerWidth] = useState(0);
 	const formatter = useMemo(() => new Intl.NumberFormat(navigator.language), []);
 
+	const displayName = (rawName: string): string => {
+		const parts = rawName.split('.');
+		const prefix = parts[0];
+		if (/^0x[a-fA-F0-9]{40,}$/.test(prefix)) {
+			parts[0] = shortenHash(prefix);
+		}
+		return parts.join('.');
+	};
+
 	useEffect(() => {
 		if (!containerRef.current) return;
-		let id: number;
-		const obs = new ResizeObserver(([entry]) => {
-			clearTimeout(id);
-			id = window.setTimeout(() => setContainerWidth(entry.contentRect.width), 150);
+		let timeout: number;
+		const observer = new ResizeObserver((entries) => {
+			clearTimeout(timeout);
+			timeout = window.setTimeout(() => {
+				setContainerWidth(entries[0].contentRect.width);
+			}, 150);
 		});
-		obs.observe(containerRef.current!);
+		observer.observe(containerRef.current);
 		return () => {
-			obs.disconnect();
-			clearTimeout(id);
+			observer.disconnect();
+			clearTimeout(timeout);
 		};
 	}, []);
 
@@ -56,10 +68,9 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 		d3.select(container).style('position', 'relative');
 
 		d3.select(container).append('style').text(`
-      .flame-graph-container .d3-flame-graph .frame rect,
-      .flame-graph-container .d3-flame-graph .frame rect:hover {
-        stroke: none !important;
-        stroke-width: 0 !important;
+      .flame-graph-container .d3-flame-graph .frame rect {
+        stroke: white !important;
+        stroke-width: 1px !important;
         transition: fill-opacity 0.2s ease;
       }
       .flame-graph-container .d3-flame-graph .frame rect:hover {
@@ -79,12 +90,13 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
         font-size: 12px !important;
         font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace !important;
         color: white !important;
+        min-width: 30px !important;
       }
     `);
 
 		const root = d3.hierarchy<FlameNode>(data);
 		const maxDepth = root.height;
-		const primary = d3.hsl('#032cfc');
+		const primary = d3.hsl('#000273');
 		const lightScale = d3
 			.scaleLinear<number>()
 			.domain([0, maxDepth])
@@ -128,7 +140,10 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 			.inverted(true)
 			.tooltip(false)
 			// @ts-ignore
-			.getName((d: { data: FlameNode }) => `${d.data.name} — ${formatter.format(d.data.value)} Gas`)
+			.getName(
+				(d: { data: FlameNode }) =>
+					`${displayName(d.data.name)} — ${formatter.format(d.data.value)} Gas`
+			)
 			.color(colorFn);
 		chartRef.current = chart;
 
@@ -136,9 +151,9 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 		d3.select(container).selectAll('title').remove();
 		d3.select(container)
 			.selectAll<SVGRectElement, any>('.frame rect')
-			.attr('data-name', (d: { data: FlameNode }) => d.data.name);
+			.attr('data-name', (d: { data: FlameNode }) => displayName(d.data.name));
 
-		function bindTooltip() {
+		const bindTooltip = () => {
 			d3.select(container).selectAll('foreignObject, .label').style('pointer-events', 'none');
 			tooltip.style('opacity', '0');
 			const margin = 8;
@@ -146,15 +161,16 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 			d3.select(container)
 				.selectAll<SVGRectElement, any>('.frame rect')
 				.on('mouseenter', (event: MouseEvent, d: { data: FlameNode }) => {
-					tooltip
-						.html(`<strong>${d.data.name}</strong><br/>Value: ${formatter.format(d.data.value)}`)
-						.style('opacity', '0');
+					tooltip.html(
+						`<strong>${displayName(d.data.name)}</strong><br/>Value: ${formatter.format(
+							d.data.value
+						)}`
+					);
 					const tipEl = tooltip.node() as HTMLElement;
 					const tipW = tipEl.getBoundingClientRect().width;
 					const x = event.clientX + margin;
 					const y = event.clientY + margin;
 					const left = x + tipW + margin > window.innerWidth ? event.clientX - tipW - margin : x;
-
 					tooltip.style('left', `${left}px`).style('top', `${y}px`).style('opacity', '1');
 				})
 				.on('mousemove', (event: MouseEvent) => {
@@ -168,7 +184,7 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 				.on('mouseleave', () => {
 					tooltip.style('opacity', '0');
 				});
-		}
+		};
 
 		bindTooltip();
 		chart.onClick(() => setTimeout(bindTooltip, 200));
@@ -181,48 +197,41 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 	useEffect(() => {
 		if (!chartRef.current || containerWidth === 0) return;
 		const chart = chartRef.current;
-		const cont = containerRef.current!;
 		chart.width(width ?? containerWidth);
+		const cont = containerRef.current!;
 		d3.select(cont).datum(data).call(chart);
 		d3.select(cont)
 			.selectAll<SVGRectElement, any>('.frame rect')
-			.attr('data-name', (d: { data: FlameNode }) => d.data.name);
-
-		const bindTooltip = () => {
-			const tooltip = tooltipRef.current!;
-			d3.select(cont).selectAll('foreignObject, .label').style('pointer-events', 'none');
-			tooltip.style('opacity', '0');
-			const margin = 8;
-
-			d3.select(cont)
-				.selectAll<SVGRectElement, any>('.frame rect')
-				.on('mouseenter', (event: MouseEvent, d: { data: FlameNode }) => {
-					tooltip
-						.html(`<strong>${d.data.name}</strong><br/>Value: ${formatter.format(d.data.value)}`)
-						.style('opacity', '0');
-
-					const tipEl = tooltip.node() as HTMLElement;
-					const tipW = tipEl.getBoundingClientRect().width;
-					const x = event.clientX + margin;
-					const y = event.clientY + margin;
-					const left = x + tipW + margin > window.innerWidth ? event.clientX - tipW - margin : x;
-
-					tooltip.style('left', `${left}px`).style('top', `${y}px`).style('opacity', '1');
-				})
-				.on('mousemove', (event: MouseEvent) => {
-					const tipEl = tooltip.node() as HTMLElement;
-					const tipW = tipEl.getBoundingClientRect().width;
-					const x = event.clientX + margin;
-					const y = event.clientY + margin;
-					const left = x + tipW + margin > window.innerWidth ? event.clientX - tipW - margin : x;
-					tooltip.style('left', `${left}px`).style('top', `${y}px`);
-				})
-				.on('mouseleave', () => {
-					tooltip.style('opacity', '0');
-				});
-		};
-
-		bindTooltip();
+			.attr('data-name', (d: { data: FlameNode }) => displayName(d.data.name));
+		const tooltip = tooltipRef.current!;
+		const margin = 8;
+		d3.select(cont).selectAll('foreignObject, .label').style('pointer-events', 'none');
+		d3.select(cont)
+			.selectAll<SVGRectElement, any>('.frame rect')
+			.on('mouseenter', (event: MouseEvent, d: { data: FlameNode }) => {
+				tooltip.html(
+					`<strong>${displayName(d.data.name)}</strong><br/>Value: ${formatter.format(
+						d.data.value
+					)}`
+				);
+				const tipEl = tooltip.node() as HTMLElement;
+				const tipW = tipEl.getBoundingClientRect().width;
+				const x = event.clientX + margin;
+				const y = event.clientY + margin;
+				const left = x + tipW + margin > window.innerWidth ? event.clientX - tipW - margin : x;
+				tooltip.style('left', `${left}px`).style('top', `${y}px`).style('opacity', '1');
+			})
+			.on('mousemove', (event: MouseEvent) => {
+				const tipEl = tooltip.node() as HTMLElement;
+				const tipW = tipEl.getBoundingClientRect().width;
+				const x = event.clientX + margin;
+				const y = event.clientY + margin;
+				const left = x + tipW + margin > window.innerWidth ? event.clientX - tipW - margin : x;
+				tooltip.style('left', `${left}px`).style('top', `${y}px`);
+			})
+			.on('mouseleave', () => {
+				tooltip.style('opacity', '0');
+			});
 	}, [data, containerWidth, width, formatter]);
 
 	useEffect(() => {
@@ -237,22 +246,17 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 		}, 200);
 	}, [activeName, data, containerWidth]);
 
-	useEffect(
-		() => () => {
+	useEffect(() => {
+		return () => {
 			chartRef.current?.resetZoom();
-		},
-		[]
-	);
+		};
+	}, []);
 
 	return (
 		<div className="w-full">
 			<div
 				ref={containerRef}
-				style={{
-					width: '100%',
-					height: `${height}px`,
-					overflow: 'auto'
-				}}
+				style={{ width: '100%', height: `${height}px`, overflow: 'auto' }}
 				className="flame-graph-container"
 			/>
 		</div>
