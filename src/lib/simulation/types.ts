@@ -223,6 +223,7 @@ export type FlameNode = {
 	callId: number;
 	name: string;
 	value: number;
+	rawValue: number;
 	children?: FlameNode[];
 };
 

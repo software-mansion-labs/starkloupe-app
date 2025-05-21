@@ -10,6 +10,7 @@ import { shortenHash } from '@/lib/utils';
 export interface FlameNode {
 	callId: number;
 	value: number;
+	rawValue: number;
 	name: string;
 	children?: FlameNode[];
 }
@@ -142,7 +143,7 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 			// @ts-ignore
 			.getName(
 				(d: { data: FlameNode }) =>
-					`${displayName(d.data.name)} — ${formatter.format(d.data.value)} Gas`
+					`${displayName(d.data.name)} — ${formatter.format(d.data.rawValue)} Gas`
 			)
 			.color(colorFn);
 		chartRef.current = chart;
@@ -163,7 +164,7 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 				.on('mouseenter', (event: MouseEvent, d: { data: FlameNode }) => {
 					tooltip.html(
 						`<strong>${displayName(d.data.name)}</strong><br/>Value: ${formatter.format(
-							d.data.value
+							d.data.rawValue
 						)}`
 					);
 					const tipEl = tooltip.node() as HTMLElement;
@@ -211,7 +212,7 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 			.on('mouseenter', (event: MouseEvent, d: { data: FlameNode }) => {
 				tooltip.html(
 					`<strong>${displayName(d.data.name)}</strong><br/>Value: ${formatter.format(
-						d.data.value
+						d.data.rawValue
 					)}`
 				);
 				const tipEl = tooltip.node() as HTMLElement;
