@@ -1,7 +1,7 @@
 import { InternalFnCallIO } from '@/lib/simulation';
 import React, { useContext, useEffect, useState } from 'react';
 import { TriangleRightIcon, TriangleDownIcon } from '@radix-ui/react-icons';
-import { DebuggerContext } from '@/lib/context/debugger-context-provider';
+import { DebuggerContext, useDebugger } from '@/lib/context/debugger-context-provider';
 
 interface FilteredStepInfo {
 	function: string | undefined;
@@ -10,8 +10,7 @@ interface FilteredStepInfo {
 }
 
 const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
-	const { sourceCode, activeFile, currentStep, codeLocation, setExpressionHover } =
-		useContext(DebuggerContext);
+	const { sourceCode, activeFile, currentStep, codeLocation, setExpressionHover } = useDebugger();
 	const [results, setResults] = useState(currentStep?.withLocation?.resultsDecoded);
 	const [args, setArgs] = useState(currentStep?.withLocation?.argumentsDecoded);
 	const [expression, setExpression] = useState<string>('');

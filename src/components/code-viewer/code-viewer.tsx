@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { registerCairoLanguageSupport } from './cairo-lang-config';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { CodeLocation, InternalFnCallIO } from '@/lib/simulation';
-import { DebuggerContext } from '@/lib/context/debugger-context-provider';
+import { useDebugger } from '@/lib/context/debugger-context-provider';
 
 export function CodeViewer({
 	content,
@@ -27,7 +27,7 @@ export function CodeViewer({
 		fileBreakpoints,
 		toggleBreakpoint,
 		isExpressionHover
-	} = useContext(DebuggerContext);
+	} = useDebugger();
 
 	const classAvailableBreakpoints = contractCall
 		? availableBreakpoints[contractCall.classHash]

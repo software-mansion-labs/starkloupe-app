@@ -1,6 +1,6 @@
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { cn } from '@/lib/utils';
-import { DebuggerExecutionTraceEntry, InternalFnCallIO } from '@/lib/simulation';
+import { DebuggerExecutionTraceEntry, FunctionCall, InternalFnCallIO } from '@/lib/simulation';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import FunctionCallViewer from '../ui/function-call-viewer';
 import { useCallback, useEffect, useState } from 'react';

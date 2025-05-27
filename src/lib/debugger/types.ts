@@ -1,3 +1,5 @@
+import { ContractCall, FunctionCall } from '../simulation';
+
 export type CallResult =
 	| {
 			Success: {
@@ -107,63 +109,6 @@ export interface SimulationDebuggerData {
 	};
 	debuggerTrace: DebuggerExecutionTraceEntry[];
 }
-
-export interface ContractCall {
-	callId: number;
-	parentCallId: number;
-	childrenCallIds: number[];
-	functionCallId?: number | null;
-	eventCallIds: number[];
-
-	entryPoint: EntryPoint;
-	result: CallResult;
-
-	contractName?: string | null;
-	entryPointName?: string | null;
-	entryPointSelector?: string | null;
-	entryPointInterfaceName?: string | null;
-	isErc20Token: boolean;
-	erc20TokenName?: string | null;
-	erc20TokenSymbol?: string | null;
-	errorMessage?: string | null;
-	callDebuggerData?: CallDebuggerData | null;
-	classHash: string;
-	sierraVersion?: string | null;
-	cairoVersion?: string | null;
-	isDeepestPanicResult: boolean;
-
-	resultTypes?: string[] | null;
-	sierraGas?: number | null;
-	argumentsNames?: string[] | null;
-	argumentsTypes?: string[] | null;
-	calldataDecoded?: DataDecoded | null;
-	decodedResult?: DataDecoded | null;
-
-	nestingLevel: number;
-	codeLocation?: CodeLocation | null;
-	debuggerTraceStepIndex: number | null;
-
-	isHidden: boolean;
-}
-
-export interface FunctionCall {
-	resultsDecoded: InternalFnCallIO[];
-	argumentsDecoded: InternalFnCallIO[];
-	callId: number;
-	parentCallId: number;
-	childrenCallIds: number[];
-	eventCallIds: number[];
-	contractCallId: number;
-	fnName: string;
-	fp: number;
-	isDeepestPanicResult: boolean;
-	debuggerTraceStepIndex: number | null;
-	codeLocation?: CodeLocation | null;
-	arguments: InternalFnCallIO[];
-	results: InternalFnCallIO[];
-	isHidden: boolean;
-}
-
 export interface DebuggerInfo {
 	contractCallsMap: { [key: string]: ContractCall };
 	functionCallsMap: { [key: string]: FunctionCall };
@@ -188,16 +133,16 @@ export interface InternalFnCallIO {
 }
 
 export interface DebuggerPayload {
-	chainId?: string;
-	blockNumber?: number;
+	chainId?: string | null;
+	blockNumber?: number | null;
 	blockTimestamp: number;
 	nonce: number;
 	senderAddress: string;
 	calldata: string[];
 	transactionVersion: number;
 	transactionType: string;
-	transactionIndexInBlock?: number;
-	totalTransactionsInBlock?: number;
-	l1TxHash?: string;
-	l2TxHash?: string;
+	transactionIndexInBlock?: number | null;
+	totalTransactionsInBlock?: number | null;
+	l1TxHash?: string | null;
+	l2TxHash?: string | null;
 }

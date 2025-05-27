@@ -2,7 +2,7 @@ import { useContext, useEffect, useRef, useState } from 'react';
 import { ResizablePanelGroup, ResizableHandle, ResizablePanel } from '../ui/resizable-panel';
 import { StepDetails } from '../debugger/step-details';
 import CallTracePreview from './call-trace-preview';
-import { DebuggerContext } from '@/lib/context/debugger-context-provider';
+import { DebuggerContext, useDebugger } from '@/lib/context/debugger-context-provider';
 import { DebuggerFilesExplorer } from './debugger-file-explorer';
 
 interface PanelHandle {
@@ -26,7 +26,8 @@ export default function Sidebar({
 		classesDebuggerData,
 		currentStepIndex,
 		functionCallsMap
-	} = useContext(DebuggerContext);
+	} = useDebugger();
+
 	const inspectorFilePanelRef = useRef<PanelHandle>(null);
 	const inspectorCallTracePanelRef = useRef<PanelHandle>(null);
 	const inspectorStepDetailsPanelRef = useRef<PanelHandle>(null);

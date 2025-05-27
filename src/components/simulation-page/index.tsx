@@ -26,7 +26,7 @@ export function SimulationPage({
 }) {
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
 	const [l2TransactionData, setL2TransactionData] = useState<L2TransactionData>();
-	const [debuggerPayload, setDebuggerPayload] = useState<DebuggerPayload>();
+	const [debuggerPayload, setDebuggerPayload] = useState<DebuggerPayload | null>(null);
 	const [error, setError] = useState<string | undefined>();
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const { trackingActive, trackingFlagLoaded } = useSettings();
@@ -45,7 +45,7 @@ export function SimulationPage({
 
 						const debuggerPayload: DebuggerPayload = {
 							chainId: l2.chainId ?? null,
-							blockNumber: l2.blockNumber === 'Latest' ? null : l2.blockNumber,
+							blockNumber: l2.blockNumber.toString() === 'Latest' ? null : l2.blockNumber,
 							blockTimestamp: l2.blockTimestamp,
 							nonce: l2.nonce,
 							senderAddress: l2.senderAddress,

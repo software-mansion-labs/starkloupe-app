@@ -19,7 +19,6 @@ import { TransactionDetails } from './l2-transaction-details';
 import { L1TransactionDetails } from './l1-transaction-details';
 import { ChainId } from '@/lib/types';
 import { CallTraceRoot } from '@/components/call-trace';
-import { InfoBox, InfoBoxItem } from '../ui/info-box';
 import { Button } from '../ui/button';
 import { PlayIcon, LinkIcon } from '@heroicons/react/24/outline';
 import { Error } from '../ui/error';
@@ -40,7 +39,7 @@ export function TransactionPage({
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
 	const [l1TransactionData, setL1TransactionData] = useState<L1TransactionData>();
 	const [l2TransactionData, setL2TransactionData] = useState<L2TransactionData>();
-	const [debuggerPayload, setDebuggerPayload] = useState<DebuggerPayload>();
+	const [debuggerPayload, setDebuggerPayload] = useState<DebuggerPayload | null>(null);
 	const { isLogged } = useUserContext();
 	const [error, setError] = useState<string | undefined>();
 	const { trackingActive, trackingFlagLoaded } = useSettings();

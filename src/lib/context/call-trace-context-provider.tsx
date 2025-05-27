@@ -38,7 +38,7 @@ interface CallTraceContextProps {
 	isExecutionFailed: boolean;
 	errorMessage: string | undefined;
 	flamegraph: FlameNode | undefined;
-	debuggerPayload: DebuggerPayload | undefined;
+	debuggerPayload: DebuggerPayload | null;
 	traceLineElementRefs: MutableRefObject<{
 		[key: number]: RefObject<HTMLDivElement>;
 	}>;
@@ -81,7 +81,7 @@ export const CallTraceContextProvider: React.FC<
 	PropsWithChildren<{
 		simulationResult: SimulationResult;
 		flamegraph: FlameNode | undefined;
-		debuggerPayload: DebuggerPayload | undefined;
+		debuggerPayload: DebuggerPayload | null;
 	}>
 > = ({ children, simulationResult, flamegraph, debuggerPayload }) => {
 	// This collapses calls starting with "core".

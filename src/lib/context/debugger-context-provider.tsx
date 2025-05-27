@@ -203,11 +203,11 @@ export const DebuggerContextProvider = ({
 
 	function setCurrentStepIndex(index: number) {
 		_setCurrentStepIndex(index);
-		const newStep = simulationDebuggerData.debuggerTrace[index];
+		const newStep = simulationDebuggerData?.debuggerTrace[index];
 		_setCurrentStep(newStep);
 
 		const { contractCall, classSourceCode, activeFile, codeLocation, functionCallId } =
-			getDebuggerDataForStep(contractCallsMap, simulationDebuggerData, newStep);
+			getDebuggerDataForStep(contractCallsMap, simulationDebuggerData || null, newStep || null);
 
 		setContractCall(contractCall);
 		setSourceCode(classSourceCode);
@@ -368,16 +368,16 @@ function findInitialIndex(trace: DebuggerExecutionTraceEntry[]) {
 
 function getDebuggerDataForStep(
 	contractCallsMap: { [key: string]: ContractCall },
-	simulationDebuggerData: SimulationDebuggerData,
-	step: DebuggerExecutionTraceEntry
+	simulationDebuggerData: SimulationDebuggerData | null,
+	step: DebuggerExecutionTraceEntry | null
 ) {
-	const contractCallId = step.withLocation
+	const contractCallId = step?.withLocation
 		? step.withLocation.contractCallId
-		: step.withContractCall?.contractCallId;
-	const contractCall = contractCallsMap[contractCallId];
+		: step?.withContractCall?.contractCallId;
+	const contractCall = contractCallId ? contractCallsMap[contractCallId] : undefined;
 
 	const classDebuggerData = contractCall
-		? simulationDebuggerData.classesDebuggerData[contractCall.classHash]
+		? simulationDebuggerData?.classesDebuggerData[contractCall.classHash]
 		: undefined;
 	const classSourceCode = classDebuggerData?.sourceCode ?? {};
 
@@ -385,11 +385,13 @@ function getDebuggerDataForStep(
 	let codeLocation: CodeLocation | undefined;
 	let functionCallId: number | undefined;
 
-	if (step.withLocation) {
-		const classDebuggerData = simulationDebuggerData.classesDebuggerData[contractCall.classHash];
+	if (step?.withLocation) {
+		const classDebuggerData =
+			contractCall && simulationDebuggerData?.classesDebuggerData[contractCall.classHash];
 		const locations =
-			classDebuggerData.sierraStatementsToCairoInfo[step.withLocation.sierraIndex]?.cairoLocations;
-		codeLocation = locations?.[step.withLocation.locationIndex]!; // TODO
+			classDebuggerData?.sierraStatementsToCairoInfo[step?.withLocation.sierraIndex]
+				?.cairoLocations;
+		codeLocation = locations?.[step?.withLocation.locationIndex]!; // TODO
 		activeFile = codeLocation.filePath;
 		functionCallId = step.withLocation.functionCallId;
 	} else {
