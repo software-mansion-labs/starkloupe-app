@@ -16,6 +16,11 @@ import Sidebar from '../code-viewer/sidebar';
 import { WALNUT_VERIFY_DOCS_URL } from '@/lib/config';
 
 export function DebuggerView() {
+	const debuggerContext = useDebugger();
+	if (!debuggerContext) {
+		return null;
+	}
+
 	const {
 		currentStep,
 		activeFile,
@@ -30,7 +35,7 @@ export function DebuggerView() {
 		prevStep,
 		stepOver,
 		runToBreakpoint
-	} = useDebugger();
+	} = debuggerContext;
 
 	return (
 		<ResizablePanelGroup direction="horizontal" className="w-full flex flex-row">
