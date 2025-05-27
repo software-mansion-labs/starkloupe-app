@@ -1,5 +1,6 @@
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
-
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import dynamic from 'next/dynamic';
 import { FlameNode } from './flamegraph';
 
@@ -23,10 +24,13 @@ export function GasProfiler({ flamegraph }: { flamegraph: FlameNode | undefined 
 					<FlameGraph data={flamegraph} activeName={chosenCallName} />
 				</div>
 			) : (
-				<div className="text-sm font-mono flex items-center justify-center flex-col mt-4 h-full  !rounded-xl">
-					💡 Flamegraph is currently supported for Transactions Version 3 and Sierra version 1.7.0
-					or above. Reach out if you need support for lower versions.
-				</div>
+				<Alert className="m-4 w-fit">
+					<ExclamationTriangleIcon className="h-5 w-5" />
+					<AlertDescription>
+						Flamegraph is currently supported for Transactions Version 3 and Sierra version 1.7.0 or
+						above. Reach out if you need support for lower versions.
+					</AlertDescription>
+				</Alert>
 			)}
 		</div>
 	);

@@ -1,27 +1,34 @@
-import { PropsWithChildren, createContext, useContext, useMemo, useState } from 'react';
+import {
+	createContext,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+	useCallback,
+	PropsWithChildren
+} from 'react';
 import {
 	ClassDebuggerData,
 	CodeLocation,
 	ContractCall,
 	DebuggerExecutionTraceEntry,
+	FunctionCall,
 	SimulationDebuggerData
 } from '@/lib/simulation';
 import { CallTraceContext } from './call-trace-context-provider';
+import { debugTransactionByData, DebuggerPayload, DebuggerInfo } from '@/lib/debugger';
 
 interface DebuggerContextProps {
-	classesDebuggerData: {
-		[key: string]: ClassDebuggerData;
-	};
+	functionCallsMap: { [key: number]: FunctionCall };
+	classesDebuggerData: Record<string, ClassDebuggerData>;
 	currentStep?: DebuggerExecutionTraceEntry;
 	totalSteps: number;
 	currentStepIndex: number;
 	activeFile: string | undefined;
 	contractCall?: ContractCall;
 	codeLocation?: CodeLocation;
-	sourceCode: {
-		[key: string]: string;
-	};
-	availableBreakpoints: { [key: string]: { [key: string]: number[] } };
+	sourceCode: Record<string, string>;
+	availableBreakpoints: Record<string, Record<string, number[]>>;
 	debugFunctionCall: (functionCallId: number) => void;
 	debugContractCall: (contractCallId: number) => void;
 	nextStep: () => void;
@@ -32,43 +39,102 @@ interface DebuggerContextProps {
 	setCurrentContractCall: (contractCall: ContractCall) => void;
 	isFunctionCallDebuggable: (functionCallId: number) => boolean;
 	isContractCallDebuggable: (contractCallId: number) => boolean;
-	fileBreakpoints: { [key: string]: { [key: string]: number[] } };
+	fileBreakpoints: Record<string, Record<string, number[]>>;
 	toggleBreakpoint: (lineNumber: number, activeFile: string, classHash: string) => void;
 	isExpressionHover: boolean;
 	setExpressionHover: (isHover: boolean) => void;
+	loading: boolean;
+	error?: string | null;
+	hasDebuggableContract: boolean;
+	getStepForFunctionCall: (functionCallId: number) => DebuggerExecutionTraceEntry | undefined;
+	getStepForContractCall: (contractCallId: number) => DebuggerExecutionTraceEntry | undefined;
 }
 
-export const DebuggerContext = createContext<DebuggerContextProps>({
-	classesDebuggerData: {},
-	currentStep: undefined,
-	totalSteps: 0,
-	currentStepIndex: 0,
-	activeFile: undefined,
-	sourceCode: {},
-	contractCall: undefined,
-	codeLocation: undefined,
-	availableBreakpoints: {},
-	debugFunctionCall: () => undefined,
-	debugContractCall: () => undefined,
-	nextStep: () => undefined,
-	prevStep: () => undefined,
-	stepOver: () => undefined,
-	runToBreakpoint: () => undefined,
-	setActiveFile: () => undefined,
-	setCurrentContractCall: () => undefined,
-	isFunctionCallDebuggable: () => false,
-	isContractCallDebuggable: () => false,
-	fileBreakpoints: {},
-	toggleBreakpoint: () => undefined,
-	isExpressionHover: false,
-	setExpressionHover: () => undefined
-});
+export const DebuggerContext = createContext<DebuggerContextProps | undefined>(undefined);
 
-export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children }) => {
-	const { contractCallsMap, functionCallsMap, simulationResult, simulationDebuggerData } =
+export const useDebugger = () => {
+	const context = useContext(DebuggerContext);
+	if (!context) throw new Error('useDebugger must be used within DebuggerContextProvider');
+	return context;
+};
+
+export const DebuggerContextProvider = ({
+	children,
+	debuggerPayload
+}: PropsWithChildren<{ debuggerPayload: DebuggerPayload }>) => {
+	const [debuggerInfo, setDebuggerInfo] = useState<DebuggerInfo | null>(null);
+	const [loading, setLoading] = useState(false);
+	const [error, setError] = useState<string | null>(null);
+
+	const [currentStepIndex, _setCurrentStepIndex] = useState(0);
+	const [currentStep, _setCurrentStep] = useState<DebuggerExecutionTraceEntry | undefined>(
+		undefined
+	);
+	const [activeFile, setActiveFile] = useState<string>();
+	const [fileBreakpoints, setFileBreakpoints] = useState<Record<string, Record<string, number[]>>>(
+		{}
+	);
+	const [contractCall, setContractCall] = useState<ContractCall>();
+	const [codeLocation, setCodeLocation] = useState<CodeLocation>();
+	const [sourceCode, setSourceCode] = useState<Record<string, string>>({});
+	const [isExpressionHover, setExpressionHover] = useState(false);
+	const [hasDebuggableContract, setHasDebuggableContract] = useState(false);
+
+	const { contractCallsMap: callTraceContractCalls, functionCallsMap: callTraceFunctionCalls } =
 		useContext(CallTraceContext);
 
+	useEffect(() => {
+		const fetch = async () => {
+			setLoading(true);
+			try {
+				// Check if any contract call has debuggerDataAvailable true
+				const hasDebuggableContract_ = Object.values(callTraceContractCalls).some(
+					(call) => call.callDebuggerDataAvailable
+				);
+				setHasDebuggableContract(hasDebuggableContract_);
+				if (!hasDebuggableContract_) {
+					// No debuggable contracts, set empty state
+					setLoading(false);
+					return;
+				}
+				const result = await debugTransactionByData(debuggerPayload);
+				setDebuggerInfo(result);
+				if (result?.simulationDebuggerData?.debuggerTrace) {
+					const i = findInitialIndex(result.simulationDebuggerData.debuggerTrace);
+					_setCurrentStepIndex(i);
+					_setCurrentStep(result.simulationDebuggerData.debuggerTrace[i]);
+				}
+			} catch (err: any) {
+				setError(err.message || 'Unknown error');
+			} finally {
+				setLoading(false);
+			}
+		};
+		fetch();
+	}, [debuggerPayload]);
+
+	const simulationDebuggerData = debuggerInfo?.simulationDebuggerData;
+	const contractCallsMap = debuggerInfo?.contractCallsMap || {};
+	const functionCallsMap = debuggerInfo?.functionCallsMap || {};
+
+	useEffect(() => {
+		if (!simulationDebuggerData) return;
+		const step = simulationDebuggerData.debuggerTrace[currentStepIndex];
+		_setCurrentStep(step);
+
+		const { contractCall, classSourceCode, activeFile, codeLocation } = getDebuggerDataForStep(
+			contractCallsMap,
+			simulationDebuggerData,
+			step
+		);
+		setContractCall(contractCall);
+		setSourceCode(classSourceCode);
+		setActiveFile(activeFile);
+		setCodeLocation(codeLocation);
+	}, [currentStepIndex, simulationDebuggerData]);
+
 	const availableBreakpoints = useMemo(() => {
+		if (!simulationDebuggerData) return {};
 		const breakpoints: { [key: string]: { [key: string]: number[] } } = {};
 
 		for (const classHash in simulationDebuggerData.classesDebuggerData) {
@@ -98,28 +164,6 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 
 		return breakpoints;
 	}, [simulationDebuggerData]);
-
-	const [currentStepIndex, _setCurrentStepIndex] = useState(
-		simulationDebuggerData.debuggerTrace.length > 0
-			? findInitialIndex(simulationDebuggerData.debuggerTrace)
-			: 0
-	);
-	const [currentStep, _setCurrentStep] = useState(
-		simulationDebuggerData.debuggerTrace.length > 0
-			? simulationDebuggerData.debuggerTrace[currentStepIndex]
-			: undefined
-	);
-
-	const initialDebuggerData =
-		currentStep &&
-		getDebuggerDataForStep(contractCallsMap, simulationResult.simulationDebuggerData, currentStep);
-
-	const [activeFile, setActiveFile] = useState<string | undefined>(
-		initialDebuggerData && initialDebuggerData.activeFile
-	);
-	const [fileBreakpoints, setFileBreakpoints] = useState<{
-		[key: string]: { [key: string]: number[] };
-	}>({});
 
 	const toggleBreakpoint = (lineNumber: number, activeFile: string, classHash: string) => {
 		setFileBreakpoints((prev) => {
@@ -156,18 +200,6 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 			return newFileBreakpoints;
 		});
 	};
-	const [contractCall, setContractCall] = useState<ContractCall | undefined>(
-		initialDebuggerData && initialDebuggerData.contractCall
-	);
-
-	const [codeLocation, setCodeLocation] = useState<CodeLocation | undefined>(
-		initialDebuggerData && initialDebuggerData.codeLocation
-	);
-	const [sourceCode, setSourceCode] = useState<{ [key: string]: string }>(
-		initialDebuggerData?.classSourceCode || {} // Default to an empty object if classSourceCode is not available
-	);
-
-	const [isExpressionHover, setExpressionHover] = useState(false);
 
 	function setCurrentStepIndex(index: number) {
 		_setCurrentStepIndex(index);
@@ -175,7 +207,7 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 		_setCurrentStep(newStep);
 
 		const { contractCall, classSourceCode, activeFile, codeLocation, functionCallId } =
-			getDebuggerDataForStep(contractCallsMap, simulationResult.simulationDebuggerData, newStep);
+			getDebuggerDataForStep(contractCallsMap, simulationDebuggerData, newStep);
 
 		setContractCall(contractCall);
 		setSourceCode(classSourceCode);
@@ -183,73 +215,29 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 		setCodeLocation(codeLocation);
 	}
 
-	function setCurrentContractCall(currentContractCall: ContractCall) {
-		let newStep;
-		if (
-			currentContractCall &&
-			currentContractCall.debuggerTraceStepIndex !== null &&
-			currentContractCall.debuggerTraceStepIndex !== undefined
-		) {
-			newStep = simulationDebuggerData.debuggerTrace[currentContractCall.debuggerTraceStepIndex];
-			if (newStep) {
-				const { contractCall, classSourceCode, activeFile, codeLocation } = getDebuggerDataForStep(
-					contractCallsMap,
-					simulationResult.simulationDebuggerData,
-					newStep
-				);
-				setContractCall(contractCall);
-				setSourceCode(classSourceCode);
-				setActiveFile(activeFile);
-			}
+	const setCurrentContractCall = (call: ContractCall) => {
+		if (call.debuggerTraceStepIndex != null) {
+			setCurrentStepIndex(call.debuggerTraceStepIndex);
 		}
-	}
+	};
 
 	const debugFunctionCall = (functionCallId: number) => {
-		const functionCall = functionCallsMap[functionCallId];
-		if (functionCall && functionCall.debuggerTraceStepIndex) {
-			setCurrentStepIndex(functionCall.debuggerTraceStepIndex);
+		const fc = functionCallsMap[functionCallId];
+		if (fc?.debuggerTraceStepIndex != null) {
+			setCurrentStepIndex(fc.debuggerTraceStepIndex);
 		}
 	};
 
 	const debugContractCall = (contractCallId: number) => {
-		const contractCall = contractCallsMap[contractCallId];
-		if (
-			contractCall &&
-			contractCall.debuggerTraceStepIndex !== null &&
-			contractCall.debuggerTraceStepIndex !== undefined
-		) {
-			setCurrentStepIndex(contractCall.debuggerTraceStepIndex);
+		const cc = contractCallsMap[contractCallId];
+		console.log(cc);
+		if (cc?.debuggerTraceStepIndex != null) {
+			setCurrentStepIndex(cc.debuggerTraceStepIndex);
 		}
-	};
-
-	const runToBreakpoint = () => {
-		for (let i = currentStepIndex + 1; i < simulationDebuggerData.debuggerTrace.length; i++) {
-			if (simulationDebuggerData.debuggerTrace[i].withLocation) {
-				const step = simulationDebuggerData.debuggerTrace[i].withLocation!;
-				const contractCall = contractCallsMap[step.contractCallId];
-				const classHash = contractCall.classHash;
-				const classDebuggerData =
-					simulationResult.simulationDebuggerData.classesDebuggerData[classHash];
-				const info = classDebuggerData.sierraStatementsToCairoInfo[step.sierraIndex];
-				const location = info.cairoLocations[step.locationIndex];
-				const linesRange = Array.from(
-					{ length: location.end.line - location.start.line + 1 },
-					(_, k) => k + location.start.line
-				);
-				if (
-					fileBreakpoints[classHash] &&
-					fileBreakpoints[classHash][location.filePath] &&
-					fileBreakpoints[classHash][location.filePath].some((line) => linesRange.includes(line))
-				) {
-					setCurrentStepIndex(i);
-					return;
-				}
-			}
-		}
-		setCurrentStepIndex(simulationDebuggerData.debuggerTrace.length - 1);
 	};
 
 	const nextStep = () => {
+		if (!simulationDebuggerData) return;
 		if (currentStepIndex < simulationDebuggerData.debuggerTrace.length - 1) {
 			setCurrentStepIndex(currentStepIndex + 1);
 		}
@@ -261,8 +249,8 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 		}
 	};
 
-	// Step over to the next function call with the same or lower fp register value
 	const stepOver = () => {
+		if (!simulationDebuggerData) return;
 		if (currentStepIndex < simulationDebuggerData.debuggerTrace.length - 1) {
 			const currentStep = simulationDebuggerData.debuggerTrace[currentStepIndex];
 			let nextStepIndex = currentStepIndex + 1;
@@ -282,56 +270,89 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 		}
 	};
 
-	const isContractCallDebuggable = (contractCallId: number): boolean => {
-		const contractCall = contractCallsMap[contractCallId];
-		if (
-			contractCall &&
-			contractCall.debuggerTraceStepIndex !== null &&
-			contractCall.debuggerTraceStepIndex !== undefined
-		) {
-			return true;
+	const runToBreakpoint = () => {
+		if (!simulationDebuggerData) return;
+
+		for (let i = currentStepIndex + 1; i < simulationDebuggerData.debuggerTrace.length; i++) {
+			if (simulationDebuggerData.debuggerTrace[i].withLocation) {
+				const step = simulationDebuggerData.debuggerTrace[i].withLocation!;
+				const contractCall = contractCallsMap[step.contractCallId];
+				const classHash = contractCall.classHash;
+				const classDebuggerData = simulationDebuggerData.classesDebuggerData[classHash];
+				const info = classDebuggerData.sierraStatementsToCairoInfo[step.sierraIndex];
+				const location = info.cairoLocations[step.locationIndex];
+				const linesRange = Array.from(
+					{ length: location.end.line - location.start.line + 1 },
+					(_, k) => k + location.start.line
+				);
+				if (
+					fileBreakpoints[classHash] &&
+					fileBreakpoints[classHash][location.filePath] &&
+					fileBreakpoints[classHash][location.filePath].some((line) => linesRange.includes(line))
+				) {
+					setCurrentStepIndex(i);
+					return;
+				}
+			}
 		}
-		return false;
+		setCurrentStepIndex(simulationDebuggerData.debuggerTrace.length - 1);
 	};
 
-	const isFunctionCallDebuggable = (functionCallId: number): boolean => {
-		const functionCall = functionCallsMap[functionCallId];
-		if (
-			functionCall &&
-			functionCall.debuggerTraceStepIndex !== null &&
-			functionCall.debuggerTraceStepIndex !== undefined
-		) {
-			return true;
+	const isContractCallDebuggable = (id: number) =>
+		contractCallsMap[id]?.debuggerTraceStepIndex != null;
+
+	const isFunctionCallDebuggable = (id: number) =>
+		functionCallsMap[id]?.debuggerTraceStepIndex != null;
+
+	const getStepForFunctionCall = (functionCallId: number) => {
+		const fc = functionCallsMap[functionCallId];
+		if (fc?.debuggerTraceStepIndex != null) {
+			return simulationDebuggerData?.debuggerTrace[fc.debuggerTraceStepIndex];
 		}
-		return false;
+		return undefined;
+	};
+
+	const getStepForContractCall = (contractCallId: number) => {
+		const cc = contractCallsMap[contractCallId];
+		if (cc?.debuggerTraceStepIndex != null) {
+			setCurrentStepIndex(cc.debuggerTraceStepIndex);
+			return simulationDebuggerData?.debuggerTrace[cc.debuggerTraceStepIndex];
+		}
+		return undefined;
 	};
 
 	return (
 		<DebuggerContext.Provider
 			value={{
-				classesDebuggerData: simulationResult.simulationDebuggerData.classesDebuggerData,
+				functionCallsMap,
+				classesDebuggerData: simulationDebuggerData?.classesDebuggerData || {},
 				currentStep,
-				totalSteps: simulationDebuggerData.debuggerTrace.length,
+				totalSteps: simulationDebuggerData?.debuggerTrace.length || 0,
 				currentStepIndex,
+				activeFile,
+				contractCall,
+				codeLocation,
+				sourceCode,
+				availableBreakpoints,
 				debugFunctionCall,
 				debugContractCall,
 				nextStep,
 				prevStep,
 				stepOver,
+				runToBreakpoint,
 				setActiveFile,
-				availableBreakpoints,
-				activeFile,
-				contractCall,
-				codeLocation,
-				sourceCode,
+				setCurrentContractCall,
 				isContractCallDebuggable,
 				isFunctionCallDebuggable,
-				setCurrentContractCall,
-				runToBreakpoint,
 				fileBreakpoints,
 				toggleBreakpoint,
 				isExpressionHover,
-				setExpressionHover
+				setExpressionHover,
+				loading,
+				error,
+				getStepForFunctionCall,
+				getStepForContractCall,
+				hasDebuggableContract
 			}}
 		>
 			{children}
@@ -339,23 +360,10 @@ export const DebuggerContextProvider: React.FC<PropsWithChildren> = ({ children 
 	);
 };
 
-export const useDebugger = () => {
-	const context = useContext(DebuggerContext);
-	if (!context) {
-		throw new Error('useDebugger must be used within a DebuggerContextProvider');
-	}
-	return context;
-};
+// Helpers
 
-function findInitialIndex(executionTrace: DebuggerExecutionTraceEntry[]) {
-	for (let i = 0; i < executionTrace.length; i++) {
-		const step = executionTrace[i];
-		if (step.withLocation) {
-			return i;
-		}
-	}
-
-	return 0;
+function findInitialIndex(trace: DebuggerExecutionTraceEntry[]) {
+	return trace.findIndex((step) => step.withLocation) || 0;
 }
 
 function getDebuggerDataForStep(

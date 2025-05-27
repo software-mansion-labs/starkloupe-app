@@ -19,8 +19,14 @@ export default function Sidebar({
 }: {
 	handleFileClick: (filePath: string) => void;
 }) {
-	const { sourceCode, activeFile, currentStep, classesDebuggerData, currentStepIndex } =
-		useContext(DebuggerContext);
+	const {
+		sourceCode,
+		activeFile,
+		currentStep,
+		classesDebuggerData,
+		currentStepIndex,
+		functionCallsMap
+	} = useContext(DebuggerContext);
 	const inspectorFilePanelRef = useRef<PanelHandle>(null);
 	const inspectorCallTracePanelRef = useRef<PanelHandle>(null);
 	const inspectorStepDetailsPanelRef = useRef<PanelHandle>(null);
@@ -73,6 +79,7 @@ export default function Sidebar({
 				{currentStep && (
 					<StepDetails
 						step={currentStep}
+						functionCallsMap={functionCallsMap}
 						toggleExpand={() => toggleExpand(setStepDetailsExpanded)}
 					/>
 				)}

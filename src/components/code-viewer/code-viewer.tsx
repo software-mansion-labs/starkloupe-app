@@ -176,9 +176,9 @@ export function CodeViewer({
 				}
 			});
 
-			if (codeLocation) {
-				highlightCodeLocation(codeLocation, editor, monaco, false);
-			}
+			//			if (codeLocation) {
+			//				highlightCodeLocation(codeLocation, editor, monaco, false);
+			//			}
 		},
 		[codeLocation, hoverLine, toggleBreakpoint, highlightCodeLocation, args, results]
 	);
@@ -227,15 +227,17 @@ export function CodeViewer({
 	}, [classFileBreakpoints, hoverLine, updateBreakpointDecorations, activeFile]);
 
 	const [prevCodeValue, setPrevCodeValue] = useState<string | null>(null);
+	const [isInitialRender, setIsInitialRender] = useState(true);
 
 	useEffect(() => {
 		if (editorRef.current && monaco) {
-			if (codeLocation) {
+			if (codeLocation && !isInitialRender) {
 				highlightCodeLocation(codeLocation, editorRef.current, monaco, content === prevCodeValue);
 			} else {
 				editorRef.current.revealLineNearTop(0, 1);
 			}
 			setPrevCodeValue(content);
+			setIsInitialRender(false);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [codeLocation, args, results, isExpressionHover]);

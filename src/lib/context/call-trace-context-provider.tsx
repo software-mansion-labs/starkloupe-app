@@ -17,6 +17,7 @@ import {
 	SimulationResult,
 	FlameNode
 } from '@/lib/simulation';
+import { DebuggerPayload } from '@/lib/debugger';
 
 interface StringBooleanDict {
 	[key: string]: boolean;
@@ -37,6 +38,7 @@ interface CallTraceContextProps {
 	isExecutionFailed: boolean;
 	errorMessage: string | undefined;
 	flamegraph: FlameNode | undefined;
+	debuggerPayload: DebuggerPayload | undefined;
 	traceLineElementRefs: MutableRefObject<{
 		[key: number]: RefObject<HTMLDivElement>;
 	}>;
@@ -64,6 +66,7 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	traceLineElementRefs: { current: {} },
 	errorMessage: undefined,
 	flamegraph: {} as FlameNode,
+	debuggerPayload: {} as DebuggerPayload,
 	toggleCallCollapse: () => undefined,
 	expandAll: () => undefined,
 	collapseAll: () => undefined,
@@ -75,8 +78,12 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 });
 
 export const CallTraceContextProvider: React.FC<
-	PropsWithChildren<{ simulationResult: SimulationResult; flamegraph: FlameNode | undefined }>
-> = ({ children, simulationResult, flamegraph }) => {
+	PropsWithChildren<{
+		simulationResult: SimulationResult;
+		flamegraph: FlameNode | undefined;
+		debuggerPayload: DebuggerPayload | undefined;
+	}>
+> = ({ children, simulationResult, flamegraph, debuggerPayload }) => {
 	// This collapses calls starting with "core".
 	// If call has children: only parent is collapsed
 	const initiallyCollapsed: StringBooleanDict = useMemo(() => {
@@ -191,6 +198,7 @@ export const CallTraceContextProvider: React.FC<
 				simulationDebuggerData: simulationResult.simulationDebuggerData,
 				errorMessage,
 				flamegraph,
+				debuggerPayload,
 				activeTab,
 				isExecutionFailed,
 				traceLineElementRefs,

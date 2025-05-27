@@ -1,11 +1,11 @@
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useContext } from 'react';
 import { ContractCall, CodeLocation, InternalFnCallIO, FunctionCall } from '@/lib/simulation';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { ErrorTraceLine } from './error-trace-line';
 import { CodeViewer } from '../code-viewer/code-viewer';
-import { useDebugger } from '@/lib/context/debugger-context-provider';
+import { DebuggerContext } from '@/lib/context/debugger-context-provider';
 import { DebugButton } from './debug-btn';
 import { CommonCallTrace } from './common-call-trace';
 import { InfoBox } from '@/components/ui/info-box';
@@ -33,43 +33,32 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 		traceLineElementRefs,
 		errorMessage
 	} = useCallTrace();
-	const { debugFunctionCall, isFunctionCallDebuggable, isContractCallDebuggable, currentStep } =
-		useDebugger();
-
 	const functionCall = functionCallsMap[functionCallId];
 	const contractCall = contractCallsMap[functionCall.contractCallId];
-	const isDebuggable = useMemo(
-		() => isFunctionCallDebuggable(functionCallId),
-		[functionCallId, isFunctionCallDebuggable]
-	);
-	const isParentContractCallDebuggable = useMemo(
-		() => isContractCallDebuggable(functionCall.contractCallId),
-		[functionCall.contractCallId, isContractCallDebuggable]
-	);
+
+	const isDebuggable = functionCall.debuggerDataAvailable;
+	const isParentContractCallDebuggable = contractCall.callDebuggerDataAvailable;
 
 	const noCodeLocationAvaliable = isParentContractCallDebuggable && !isDebuggable;
 	if (!traceLineElementRefs.current[functionCallId]) {
 		traceLineElementRefs.current[functionCallId] = React.createRef<HTMLDivElement>();
 	}
 
+	//	const debuggerContext = useContext(DebuggerContext);
+	//	const currentStepForThisCall =
+	//		previewMode && isDebuggable && isParentContractCallDebuggable
+	//			? debuggerContext?.getStepForContractCall(functionCall.contractCallId)
+	//			: undefined;
+
 	return (
 		<React.Fragment key={functionCallId}>
 			<TraceLine
 				previewMod={previewMode}
-				className={`${
-					previewMode
-						? isDebuggable
-							? currentStep?.withLocation?.functionCallId === functionCallId ||
-							  currentStep?.withContractCall?.contractCallId
-								? 'bg-neutral-100'
-								: 'hover:!bg-neutral-50'
-							: 'hover:!bg-neutral-50'
-						: ''
-				}`}
+				className={`${previewMode ? 'hover:!bg-neutral-50' : ''}`}
 				isActive={!previewMode && expandedCalls[functionCallId]}
 				onClick={() => {
 					if (previewMode) {
-						debugFunctionCall(functionCallId);
+						//debugContractCall(functionCall.contractCallId);
 					} else {
 						toggleCallExpand(functionCallId);
 					}
@@ -82,7 +71,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 				{!previewMode && (
 					<DebugButton
 						onDebugClick={() => {
-							debugFunctionCall(functionCallId);
+							//debugContractCall(functionCall.contractCallId);
 							setActiveTab('debugger');
 						}}
 						isDebuggable={isDebuggable}
@@ -182,7 +171,6 @@ const FunctionCallDetails = memo(function FunctionCallDetails({
 	call: FunctionCall;
 	contractCall: ContractCall;
 }) {
-	const { simulationDebuggerData } = useCallTrace();
 	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [];
 	if (call.fnName) {
 		const splittedFnName = call.fnName.split('::');
@@ -212,29 +200,12 @@ const FunctionCallDetails = memo(function FunctionCallDetails({
 		});
 	}
 
-	let code: string | undefined = undefined;
-
-	const cairoLocation: CodeLocation | null = call.codeLocation ?? null;
-	if (cairoLocation) {
-		code =
-			simulationDebuggerData.classesDebuggerData[contractCall.classHash]?.sourceCode[
-				cairoLocation.filePath
-			];
-	}
-
 	return (
 		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4">
 			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
 				<div className="">
 					<InfoBox details={details} />
 				</div>
-				{code && cairoLocation && (
-					<Card className="mt-5">
-						<div className="h-80 ">
-							<CodeViewer content={code} codeLocation={cairoLocation} />
-						</div>
-					</Card>
-				)}
 			</div>
 		</div>
 	);

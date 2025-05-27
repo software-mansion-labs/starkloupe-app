@@ -141,7 +141,6 @@ export interface ContractCall {
 
 	nestingLevel: number;
 	codeLocation?: CodeLocation | null;
-	callDebuggerDataAvailable: boolean;
 	debuggerTraceStepIndex: number | null;
 
 	isHidden: boolean;
@@ -158,7 +157,6 @@ export interface FunctionCall {
 	fnName: string;
 	fp: number;
 	isDeepestPanicResult: boolean;
-	debuggerDataAvailable: boolean;
 	debuggerTraceStepIndex: number | null;
 	codeLocation?: CodeLocation | null;
 	arguments: InternalFnCallIO[];
@@ -166,43 +164,10 @@ export interface FunctionCall {
 	isHidden: boolean;
 }
 
-export interface EventCall {
-	callId: number;
-	contractCallId: number;
-	functionCallId: number;
-	name: string;
-	selector: string;
-	members: EventField[];
-	datas?: DataDecoded | null;
-	isHidden: boolean;
-}
-
-export interface ContractCallEvent {
-	contractCallId: number;
-	contractAddress: string;
-	contractName: string;
-	functionCallId: number;
-	name: string;
-	selector: string;
-	datas?: DataDecoded | null;
-}
-export interface EventField {
-	name: string;
-	type: string;
-}
-export interface Parameter {
-	name: string;
-	typeName: string;
-}
-
-export interface SimulationResult {
+export interface DebuggerInfo {
 	contractCallsMap: { [key: string]: ContractCall };
 	functionCallsMap: { [key: string]: FunctionCall };
-	eventCallsMap: { [key: string]: EventCall };
-	events: ContractCallEvent[];
-	executionResult: ExecutionResultSucceeded | ExecutionResultReverted;
 	simulationDebuggerData: SimulationDebuggerData;
-	storageChanges: { [key: string]: { [key: string]: string[] } }; // { contractCallId: { storageAddress: [before, after] } }
 }
 
 export interface TextPosition {
@@ -221,29 +186,10 @@ export interface InternalFnCallIO {
 	value: string[];
 	internalIODecoded: DataDecoded | null;
 }
-export type FlameNode = {
-	callId: number;
-	name: string;
-	value: number;
-	rawValue: number;
-	children?: FlameNode[];
-};
 
-export interface L1TransactionData {
+export interface DebuggerPayload {
 	chainId?: string;
 	blockNumber?: number;
-	senderAddress: string;
-	receiverAddress?: string;
-	transactionType?: string;
-	status?: string;
-	messageHashes: string[];
-	l1TxHash?: string;
-}
-
-export interface L2TransactionData {
-	simulationResult: SimulationResult;
-	chainId?: string;
-	blockNumber: number;
 	blockTimestamp: number;
 	nonce: number;
 	senderAddress: string;
@@ -254,21 +200,4 @@ export interface L2TransactionData {
 	totalTransactionsInBlock?: number;
 	l1TxHash?: string;
 	l2TxHash?: string;
-	flamechart?: FlameNode;
-}
-
-export interface TransactionSimulationResult {
-	l1TransactionData?: L1TransactionData;
-	l2TransactionData?: L2TransactionData;
-}
-
-export interface SimulationPayloadWithCalldata {
-	senderAddress: string;
-	calldata: string[];
-	blockNumber?: number;
-	transactionVersion: number;
-	nonce?: number;
-	// Either chainId or rpcUrl should be provided
-	chainId?: string;
-	rpcUrl?: string;
 }

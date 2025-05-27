@@ -1,4 +1,5 @@
 import { SimulationResult, FlameNode } from '@/lib/simulation';
+import { DebuggerPayload } from '@/lib/debugger';
 import {
 	CallTraceContextProvider,
 	TabId,
@@ -6,7 +7,6 @@ import {
 } from '@/lib/context/call-trace-context-provider';
 import { EventsList } from './event-entries';
 import { Debugger } from '@/components/debugger';
-import { DebuggerContextProvider } from '@/lib/context/debugger-context-provider';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -20,16 +20,20 @@ import { GasProfiler } from '../gas-profiler';
 
 export function CallTraceRoot({
 	simulationResult,
-	flamegraph
+	flamegraph,
+	debuggerPayload
 }: {
 	simulationResult: SimulationResult;
 	flamegraph: FlameNode | undefined;
+	debuggerPayload: DebuggerPayload | undefined;
 }) {
 	return (
-		<CallTraceContextProvider simulationResult={simulationResult} flamegraph={flamegraph}>
-			<DebuggerContextProvider>
-				<CallTraceRootContent />
-			</DebuggerContextProvider>
+		<CallTraceContextProvider
+			simulationResult={simulationResult}
+			flamegraph={flamegraph}
+			debuggerPayload={debuggerPayload}
+		>
+			<CallTraceRootContent />
 		</CallTraceContextProvider>
 	);
 }
@@ -42,7 +46,8 @@ function CallTraceRootContent() {
 		setActiveTab,
 		simulationResult,
 		flamegraph,
-		setChosenCallName
+		setChosenCallName,
+		debuggerPayload
 	} = useCallTrace();
 	const onValueChange = useCallback(
 		(value: string) => {
@@ -126,7 +131,7 @@ function CallTraceRootContent() {
 				</TabsContent>
 				<TabsContent value="debugger">
 					<Card className="text-xs h-[calc(100vh-407px)]">
-						<Debugger />
+						<Debugger debuggerPayload={debuggerPayload} />{' '}
 					</Card>
 				</TabsContent>
 				<TabsContent value="storage-changes">
