@@ -47,7 +47,6 @@ export interface EntryPoint {
 	callType: CallType;
 	initialGas: number;
 }
-
 export interface DecodedItem {
 	typeName: string;
 	name: string | null;

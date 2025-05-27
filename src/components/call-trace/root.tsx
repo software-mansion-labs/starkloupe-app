@@ -7,6 +7,7 @@ import {
 } from '@/lib/context/call-trace-context-provider';
 import { EventsList } from './event-entries';
 import { Debugger } from '@/components/debugger';
+import { DebuggerContextProvider } from '@/lib/context/debugger-context-provider';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -33,7 +34,12 @@ export function CallTraceRoot({
 			flamegraph={flamegraph}
 			debuggerPayload={debuggerPayload}
 		>
-			<CallTraceRootContent />
+			{debuggerPayload && (
+				<DebuggerContextProvider debuggerPayload={debuggerPayload}>
+					<CallTraceRootContent />
+				</DebuggerContextProvider>
+			)}
+			{!debuggerPayload && <CallTraceRootContent />}
 		</CallTraceContextProvider>
 	);
 }
@@ -131,7 +137,7 @@ function CallTraceRootContent() {
 				</TabsContent>
 				<TabsContent value="debugger">
 					<Card className="text-xs h-[calc(100vh-407px)]">
-						<Debugger debuggerPayload={debuggerPayload} />{' '}
+						<Debugger debuggerPayload={debuggerPayload} />
 					</Card>
 				</TabsContent>
 				<TabsContent value="storage-changes">

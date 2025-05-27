@@ -54,7 +54,7 @@ export const DebuggerContext = createContext<DebuggerContextProps | undefined>(u
 
 export const useDebugger = () => {
 	const context = useContext(DebuggerContext);
-	if (!context) throw new Error('useDebugger must be used within DebuggerContextProvider');
+	if (!context) return null;
 	return context;
 };
 
@@ -230,7 +230,6 @@ export const DebuggerContextProvider = ({
 
 	const debugContractCall = (contractCallId: number) => {
 		const cc = contractCallsMap[contractCallId];
-		console.log(cc);
 		if (cc?.debuggerTraceStepIndex != null) {
 			setCurrentStepIndex(cc.debuggerTraceStepIndex);
 		}
@@ -361,7 +360,6 @@ export const DebuggerContextProvider = ({
 };
 
 // Helpers
-
 function findInitialIndex(trace: DebuggerExecutionTraceEntry[]) {
 	return trace.findIndex((step) => step.withLocation) || 0;
 }

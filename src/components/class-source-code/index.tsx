@@ -16,7 +16,7 @@ export function ClassSourceCode({
 	return (
 		<div className="mt-12">
 			<h2 className="text-sm font-medium mb-2">{isContract ? 'Contract' : 'Class'} Source Code</h2>
-			{isClassVerified ? (
+			{isClassVerified && sourceCode ? (
 				<Card>
 					<SourceFiles sourceCode={sourceCode} />
 				</Card>

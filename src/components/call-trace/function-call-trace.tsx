@@ -4,8 +4,7 @@ import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { ErrorTraceLine } from './error-trace-line';
-import { CodeViewer } from '../code-viewer/code-viewer';
-import { DebuggerContext } from '@/lib/context/debugger-context-provider';
+import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { DebugButton } from './debug-btn';
 import { CommonCallTrace } from './common-call-trace';
 import { InfoBox } from '@/components/ui/info-box';
@@ -33,6 +32,8 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 		traceLineElementRefs,
 		errorMessage
 	} = useCallTrace();
+	const debuggerContext: ReturnType<typeof useDebugger> = useDebugger();
+
 	const functionCall = functionCallsMap[functionCallId];
 	const contractCall = contractCallsMap[functionCall.contractCallId];
 
@@ -44,21 +45,27 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 		traceLineElementRefs.current[functionCallId] = React.createRef<HTMLDivElement>();
 	}
 
-	//	const debuggerContext = useContext(DebuggerContext);
-	//	const currentStepForThisCall =
-	//		previewMode && isDebuggable && isParentContractCallDebuggable
-	//			? debuggerContext?.getStepForContractCall(functionCall.contractCallId)
-	//			: undefined;
+	if (!debuggerContext) return null;
+	const { debugContractCall, currentStep } = debuggerContext;
 
 	return (
 		<React.Fragment key={functionCallId}>
 			<TraceLine
 				previewMod={previewMode}
-				className={`${previewMode ? 'hover:!bg-neutral-50' : ''}`}
+				className={`${
+					previewMode
+						? isDebuggable
+							? currentStep?.withLocation?.functionCallId === functionCallId ||
+							  currentStep?.withContractCall?.contractCallId
+								? 'bg-neutral-100'
+								: 'hover:!bg-neutral-50'
+							: 'hover:!bg-neutral-50'
+						: ''
+				}`}
 				isActive={!previewMode && expandedCalls[functionCallId]}
 				onClick={() => {
 					if (previewMode) {
-						//debugContractCall(functionCall.contractCallId);
+						debugContractCall(functionCall.contractCallId);
 					} else {
 						toggleCallExpand(functionCallId);
 					}
@@ -71,7 +78,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 				{!previewMode && (
 					<DebugButton
 						onDebugClick={() => {
-							//debugContractCall(functionCall.contractCallId);
+							debugContractCall(functionCall.contractCallId);
 							setActiveTab('debugger');
 						}}
 						isDebuggable={isDebuggable}

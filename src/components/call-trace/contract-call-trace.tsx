@@ -6,17 +6,12 @@ import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { InfoBox } from '@/components/ui/info-box';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { DecodeDataTable } from '../decode-data-table';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import { CodeViewer } from '../code-viewer/code-viewer';
-import { DebuggerContext } from '@/lib/context/debugger-context-provider';
+import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { DebugButton } from '@/components/call-trace/debug-btn';
 import { ErrorTooltip } from '@/components/error-tooltip';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CommonCallTrace } from './common-call-trace';
-import { Card } from '../ui/card';
 import { ContractCallSignature } from '../ui/signature';
 import { ErrorTraceLine } from './error-trace-line';
-import { WALNUT_VERIFY_DOCS_URL } from '@/lib/config';
 
 export const ContractCallTrace = memo(function ContractCallTrace({
 	contractCallId,
@@ -40,6 +35,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 		traceLineElementRefs,
 		setChosenCallName
 	} = useCallTrace();
+	const debuggerContext: ReturnType<typeof useDebugger> = useDebugger();
 
 	let call = contractCallsMap[contractCallId];
 	const firstChildCallId = call.childrenCallIds[0];
@@ -49,6 +45,21 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 
 	const hasNestedElements =
 		call.childrenCallIds.length > 0 || call.functionCallId || call.isDeepestPanicResult;
+
+	const childrenCallIdsArray = useMemo(() => {
+		return call.childrenCallIds.map((childCallId) => (
+			<CommonCallTrace
+				previewMode={previewMode}
+				key={childCallId}
+				callId={childCallId}
+				nestingLevel={nestingLevel + 1}
+				callType="contract"
+			/>
+		));
+	}, [call.childrenCallIds, nestingLevel, previewMode]);
+
+	if (!debuggerContext) return null;
+	const { debugContractCall, currentStep } = debuggerContext;
 
 	// The error column doesn't render in case the whole tx is successful
 	// If the tx is reverted, the error column will render for all call lines
@@ -81,33 +92,23 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 		traceLineElementRefs.current[contractCallId] = React.createRef<HTMLDivElement>();
 	}
 
-	//	const debuggerContext = useContext(DebuggerContext);
-	//	const currentStepForThisCall =
-	//		previewMode && isDebuggable
-	//			? debuggerContext?.getStepForContractCall(contractCallId)
-	//			: undefined;
-
-	const childrenCallIdsArray = useMemo(() => {
-		return call.childrenCallIds.map((childCallId) => (
-			<CommonCallTrace
-				previewMode={previewMode}
-				key={childCallId}
-				callId={childCallId}
-				nestingLevel={nestingLevel + 1}
-				callType="contract"
-			/>
-		));
-	}, [call.childrenCallIds, nestingLevel, previewMode]);
-
 	return (
 		<Fragment key={call.callId}>
 			<TraceLine
 				previewMod={previewMode}
-				className={`${previewMode ? 'hover:!bg-neutral-50' : ''}`}
+				className={`${
+					previewMode
+						? isDebuggable
+							? currentStep?.withLocation?.contractCallId === call.callId
+								? 'bg-neutral-100'
+								: 'hover:!bg-neutral-50'
+							: 'hover:!bg-neutral-50'
+						: ''
+				}`}
 				isActive={!previewMode && expandedCalls[call.callId]}
 				onClick={() => {
 					if (previewMode) {
-						//debugContractCall(call.callId);
+						debugContractCall(call.callId);
 					} else {
 						toggleCallExpand(call.callId);
 					}
@@ -124,7 +125,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 				{!previewMode && (
 					<DebugButton
 						onDebugClick={() => {
-							//debugContractCall(call.callId);
+							debugContractCall(call.callId);
 							setActiveTab('debugger');
 						}}
 						isDebuggable={isDebuggable}
