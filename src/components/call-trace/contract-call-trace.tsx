@@ -222,7 +222,6 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 });
 
 const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: ContractCall }) {
-	const { simulationDebuggerData } = useCallTrace();
 	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [
 		{
 			name: 'Entry Point Type',
@@ -298,11 +297,6 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 			value: JSON.stringify(call.result)
 		});
 	}
-
-	const callDebuggerData = call.callDebuggerData;
-	const hasDebuggableInfo =
-		!!callDebuggerData && !!callDebuggerData.executionTrace && !!classDebuggerData;
-
 	let contractName: string | null = call.contractName ?? null;
 	let entryPointInterfaceName: string | null = call.entryPointInterfaceName ?? null;
 
@@ -319,29 +313,10 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 		[]
 	);
 
-	const noSourceCodeAlert = (
-		<Alert className="my-2 w-fit">
-			<ExclamationTriangleIcon className="h-5 w-5" />
-			<AlertTitle>No source code for this contract</AlertTitle>
-			<AlertDescription>
-				<a
-					href={WALNUT_VERIFY_DOCS_URL}
-					className="text-blue-500 cursor-pointer"
-					target="_blank"
-					rel="noreferrer"
-				>
-					Verify the contract source code
-				</a>{' '}
-				to get internal call traces and enable the step-by-step debugger.
-			</AlertDescription>
-		</Alert>
-	);
-
 	return (
 		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-2 px-4 ">
 			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
 				<div className="">
-					{!hasDebuggableInfo && noSourceCodeAlert}
 					<InfoBox details={details} />
 					{call.entryPoint.calldata && (
 						<DecodeDataTable
