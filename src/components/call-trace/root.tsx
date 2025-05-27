@@ -25,7 +25,7 @@ export function CallTraceRoot({
 }: {
 	simulationResult: SimulationResult;
 	flamegraph: FlameNode | undefined;
-	debuggerPayload: DebuggerPayload | undefined;
+	debuggerPayload: DebuggerPayload | null;
 }) {
 	return (
 		<CallTraceContextProvider
