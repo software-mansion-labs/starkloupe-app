@@ -10,6 +10,7 @@ import {
 	TransactionSimulationResult,
 	L2TransactionData
 } from '@/lib/simulation';
+import { DebuggerPayload } from '@/lib/debugger';
 import { Button } from '../ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
 import { TransactionDetails } from '../transaction-page/l2-transaction-details';
@@ -25,6 +26,7 @@ export function SimulationPage({
 }) {
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
 	const [l2TransactionData, setL2TransactionData] = useState<L2TransactionData>();
+	const [debuggerPayload, setDebuggerPayload] = useState<DebuggerPayload | null>(null);
 	const [error, setError] = useState<string | undefined>();
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const { trackingActive, trackingFlagLoaded } = useSettings();
@@ -39,6 +41,23 @@ export function SimulationPage({
 					setTransactionSimulation(simulation);
 					if (simulation.l2TransactionData) {
 						setL2TransactionData(simulation.l2TransactionData);
+						const l2 = simulation.l2TransactionData;
+
+						const debuggerPayload: DebuggerPayload = {
+							chainId: l2.chainId ?? null,
+							blockNumber: l2.blockNumber.toString() === 'Latest' ? null : l2.blockNumber,
+							blockTimestamp: l2.blockTimestamp,
+							nonce: l2.nonce,
+							senderAddress: l2.senderAddress,
+							calldata: l2.calldata,
+							transactionVersion: l2.transactionVersion,
+							transactionType: l2.transactionType,
+							transactionIndexInBlock: l2.transactionIndexInBlock ?? null,
+							totalTransactionsInBlock: l2.totalTransactionsInBlock ?? null,
+							l1TxHash: l2.l1TxHash ?? null,
+							l2TxHash: l2.l2TxHash ?? null
+						};
+						setDebuggerPayload(debuggerPayload);
 					}
 				} catch (err: any) {
 					setError(err.toString());
@@ -68,7 +87,8 @@ export function SimulationPage({
 				/>
 				<CallTraceRoot
 					simulationResult={l2TransactionData.simulationResult}
-					flamegraph={l2TransactionData.flamechart}
+					flamegraph={l2TransactionData?.flamechart}
+					debuggerPayload={debuggerPayload}
 				/>
 			</>
 		);

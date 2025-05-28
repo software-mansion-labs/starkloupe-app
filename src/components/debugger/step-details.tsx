@@ -1,6 +1,6 @@
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { cn } from '@/lib/utils';
-import { DebuggerExecutionTraceEntry, InternalFnCallIO } from '@/lib/simulation';
+import { DebuggerExecutionTraceEntry, FunctionCall, InternalFnCallIO } from '@/lib/simulation';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import FunctionCallViewer from '../ui/function-call-viewer';
 import { useCallback, useEffect, useState } from 'react';
@@ -8,12 +8,12 @@ import { ChevronDown, ChevronRight } from 'lucide-react';
 
 interface StepDetailsProps {
 	step: DebuggerExecutionTraceEntry;
+	functionCallsMap: { [key: number]: FunctionCall };
 	className?: string;
 	toggleExpand: () => void;
 }
 
-export function StepDetails({ step, className, toggleExpand }: StepDetailsProps) {
-	const { simulationResult } = useCallTrace();
+export function StepDetails({ step, functionCallsMap, className, toggleExpand }: StepDetailsProps) {
 	const [isCallTraceExpanded, setIsCallTraceExpanded] = useState(true);
 
 	const toggleCallTrace = useCallback(() => {
@@ -42,8 +42,9 @@ export function StepDetails({ step, className, toggleExpand }: StepDetailsProps)
 	let args: InternalFnCallIO[] = [];
 	let result: InternalFnCallIO[] = [];
 
-	const functionCallDetails =
-		stepWithLocation && simulationResult.functionCallsMap[stepWithLocation.functionCallId];
+	const functionCallDetails = stepWithLocation?.functionCallId
+		? functionCallsMap?.[stepWithLocation.functionCallId]
+		: undefined;
 	if (functionCallDetails) {
 		const fullFnName = functionCallDetails?.fnName;
 		functionName =

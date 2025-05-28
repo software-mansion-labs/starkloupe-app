@@ -1,8 +1,8 @@
-import { useContext, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ResizablePanelGroup, ResizableHandle, ResizablePanel } from '../ui/resizable-panel';
 import { StepDetails } from '../debugger/step-details';
 import CallTracePreview from './call-trace-preview';
-import { DebuggerContext } from '@/lib/context/debugger-context-provider';
+import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { DebuggerFilesExplorer } from './debugger-file-explorer';
 
 interface PanelHandle {
@@ -19,8 +19,7 @@ export default function Sidebar({
 }: {
 	handleFileClick: (filePath: string) => void;
 }) {
-	const { sourceCode, activeFile, currentStep, classesDebuggerData, currentStepIndex } =
-		useContext(DebuggerContext);
+	const debuggerContext = useDebugger();
 	const inspectorFilePanelRef = useRef<PanelHandle>(null);
 	const inspectorCallTracePanelRef = useRef<PanelHandle>(null);
 	const inspectorStepDetailsPanelRef = useRef<PanelHandle>(null);
@@ -29,6 +28,8 @@ export default function Sidebar({
 	const [isStepDetailsExpanded, setStepDetailsExpanded] = useState(true);
 
 	useEffect(() => {
+		if (!debuggerContext) return;
+
 		const expandedPanels = [isFilesExpanded, isCallTraceExpanded, isStepDetailsExpanded].filter(
 			Boolean
 		).length;
@@ -38,14 +39,12 @@ export default function Sidebar({
 			sizes = [
 				isStepDetailsExpanded ? 90 : 5,
 				isCallTraceExpanded ? 90 : 5,
-
 				isFilesExpanded ? 90 : 5
 			];
 		if (expandedPanels === 2)
 			sizes = [
 				isStepDetailsExpanded ? 47.5 : 5,
 				isCallTraceExpanded ? 47.5 : 5,
-
 				isFilesExpanded ? 47.5 : 5
 			];
 		if (expandedPanels === 3) sizes = [33, 33, 33];
@@ -54,7 +53,29 @@ export default function Sidebar({
 		inspectorStepDetailsPanelRef.current?.resize(sizes[0]);
 		inspectorCallTracePanelRef.current?.resize(sizes[1]);
 		inspectorFilePanelRef.current?.resize(sizes[2]);
-	}, [isFilesExpanded, isCallTraceExpanded, isStepDetailsExpanded]);
+	}, [isFilesExpanded, isCallTraceExpanded, isStepDetailsExpanded, debuggerContext]);
+
+	if (!debuggerContext) {
+		return null;
+	}
+
+	const {
+		currentStep,
+		activeFile,
+		setActiveFile,
+		codeLocation,
+		sourceCode,
+		contractCall,
+		isExpressionHover,
+		currentStepIndex,
+		totalSteps,
+		nextStep,
+		prevStep,
+		stepOver,
+		runToBreakpoint,
+		functionCallsMap,
+		classesDebuggerData
+	} = debuggerContext;
 
 	const toggleExpand = (setState: React.Dispatch<React.SetStateAction<boolean>>) => {
 		setState((prev: boolean) => !prev);
@@ -73,6 +94,7 @@ export default function Sidebar({
 				{currentStep && (
 					<StepDetails
 						step={currentStep}
+						functionCallsMap={functionCallsMap}
 						toggleExpand={() => toggleExpand(setStepDetailsExpanded)}
 					/>
 				)}

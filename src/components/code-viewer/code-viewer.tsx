@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 import { registerCairoLanguageSupport } from './cairo-lang-config';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { CodeLocation, InternalFnCallIO } from '@/lib/simulation';
-import { DebuggerContext } from '@/lib/context/debugger-context-provider';
+import { useDebugger } from '@/lib/context/debugger-context-provider';
 
 export function CodeViewer({
 	content,
@@ -20,14 +20,26 @@ export function CodeViewer({
 	results?: InternalFnCallIO[];
 	codeLocation: CodeLocation | undefined;
 }) {
+	const editorRef = useRef<Editor.IStandaloneCodeEditor>();
+	const [editorDecorations, setEditorDecorations] =
+		useState<Editor.IEditorDecorationsCollection | null>(null);
+	const breakpointDecorationsRef = useRef<string[]>([]);
+	const monaco = useMonaco();
+	const [hoverLine, setHoverLine] = useState<number | null>(null);
+	const [prevCodeValue, setPrevCodeValue] = useState<string | null>(null);
+	const activeFileRef = useRef<string | undefined>(undefined);
+	const classHashRef = useRef<string | undefined>(undefined);
+	const breakPointsLinesRef = useRef<number[] | undefined>(undefined);
+
+	const debuggerContext = useDebugger();
 	const {
 		activeFile,
 		contractCall,
-		availableBreakpoints,
-		fileBreakpoints,
+		availableBreakpoints = {},
+		fileBreakpoints = {},
 		toggleBreakpoint,
 		isExpressionHover
-	} = useContext(DebuggerContext);
+	} = debuggerContext ?? {};
 
 	const classAvailableBreakpoints = contractCall
 		? availableBreakpoints[contractCall.classHash]
@@ -37,15 +49,6 @@ export function CodeViewer({
 
 	if (!highlightClass) highlightClass = 'bg-neutral-300 bg-opacity-40';
 
-	const editorRef = useRef<Editor.IStandaloneCodeEditor>();
-	const [editorDecorations, setEditorDecorations] =
-		useState<Editor.IEditorDecorationsCollection | null>(null);
-	const breakpointDecorationsRef = useRef<string[]>([]);
-	const monaco = useMonaco();
-
-	const activeFileRef = useRef<string | undefined>(activeFile);
-	const classHashRef = useRef<string | undefined>(classHash);
-
 	useEffect(() => {
 		activeFileRef.current = activeFile;
 	}, [activeFile]);
@@ -54,13 +57,11 @@ export function CodeViewer({
 		classHashRef.current = classHash;
 	}, [classHash]);
 
-	const [hoverLine, setHoverLine] = useState<number | null>(null);
-
-	const breakPointsLinesRef = useRef<number[] | undefined>(
-		classAvailableBreakpoints && activeFile && classAvailableBreakpoints[activeFile]
-			? classAvailableBreakpoints[activeFile].map((bp) => bp + 1)
-			: undefined
-	);
+	useEffect(() => {
+		if (classAvailableBreakpoints && activeFile && classAvailableBreakpoints[activeFile]) {
+			breakPointsLinesRef.current = classAvailableBreakpoints[activeFile].map((bp) => bp + 1);
+		}
+	}, [activeFile, classAvailableBreakpoints]);
 
 	const getCurrentFileBreakpoints = useCallback((): number[] => {
 		if (!activeFileRef.current) return [];
@@ -69,12 +70,6 @@ export function CodeViewer({
 
 		return fileEntry ? fileEntry.map((bp) => bp + 1) : [];
 	}, [classFileBreakpoints]);
-
-	useEffect(() => {
-		if (classAvailableBreakpoints && activeFile && classAvailableBreakpoints[activeFile]) {
-			breakPointsLinesRef.current = classAvailableBreakpoints[activeFile].map((bp) => bp + 1);
-		}
-	}, [activeFile, classAvailableBreakpoints]);
 
 	const highlightCodeLocation = useCallback(
 		(
@@ -225,8 +220,6 @@ export function CodeViewer({
 	useEffect(() => {
 		updateBreakpointDecorations(hoverLine);
 	}, [classFileBreakpoints, hoverLine, updateBreakpointDecorations, activeFile]);
-
-	const [prevCodeValue, setPrevCodeValue] = useState<string | null>(null);
 
 	useEffect(() => {
 		if (editorRef.current && monaco) {

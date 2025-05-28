@@ -1,7 +1,7 @@
 import { InternalFnCallIO } from '@/lib/simulation';
 import React, { useContext, useEffect, useState } from 'react';
 import { TriangleRightIcon, TriangleDownIcon } from '@radix-ui/react-icons';
-import { DebuggerContext } from '@/lib/context/debugger-context-provider';
+import { DebuggerContext, useDebugger } from '@/lib/context/debugger-context-provider';
 
 interface FilteredStepInfo {
 	function: string | undefined;
@@ -10,16 +10,42 @@ interface FilteredStepInfo {
 }
 
 const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
-	const { sourceCode, activeFile, currentStep, codeLocation, setExpressionHover } =
-		useContext(DebuggerContext);
-	const [results, setResults] = useState(currentStep?.withLocation?.resultsDecoded);
-	const [args, setArgs] = useState(currentStep?.withLocation?.argumentsDecoded);
+	const debuggerContext = useDebugger();
+	const [results, setResults] = useState<InternalFnCallIO[] | undefined>(undefined);
+	const [args, setArgs] = useState<InternalFnCallIO[] | undefined>(undefined);
 	const [expression, setExpression] = useState<string>('');
+	const [isExpanded, setIsExpanded] = useState<string[]>([]);
 
 	useEffect(() => {
-		setResults(currentStep?.withLocation?.resultsDecoded);
-		setArgs(currentStep?.withLocation?.argumentsDecoded);
-	}, [currentStep]);
+		if (!debuggerContext) return;
+		setResults(debuggerContext.currentStep?.withLocation?.resultsDecoded);
+		setArgs(debuggerContext.currentStep?.withLocation?.argumentsDecoded);
+	}, [debuggerContext]);
+
+	useEffect(() => {
+		if (
+			!debuggerContext?.activeFile ||
+			!debuggerContext?.codeLocation?.start ||
+			!debuggerContext?.codeLocation?.end
+		)
+			return;
+		setExpression(
+			truncateString(
+				extractCodeFragment(
+					debuggerContext.sourceCode[debuggerContext.codeLocation.filePath],
+					debuggerContext.codeLocation.start,
+					debuggerContext.codeLocation.end
+				),
+				50
+			)
+		);
+	}, [debuggerContext]);
+
+	if (!debuggerContext) {
+		return null;
+	}
+
+	const { sourceCode, activeFile, currentStep, codeLocation, setExpressionHover } = debuggerContext;
 
 	function extractCodeFragment(
 		sourceCode: string,
@@ -55,21 +81,6 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 		if (cleanedStr.length <= maxLength) return cleanedStr;
 		return cleanedStr.substring(0, maxLength) + '...';
 	}
-
-	useEffect(() => {
-		if (activeFile && codeLocation?.start && codeLocation?.end) {
-			setExpression(
-				truncateString(
-					extractCodeFragment(
-						sourceCode[codeLocation.filePath],
-						codeLocation.start,
-						codeLocation.end
-					),
-					50
-				)
-			);
-		}
-	}, [activeFile, codeLocation, sourceCode]);
 
 	const CollapsibleArray = ({
 		value,
@@ -128,7 +139,6 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 			</div>
 		);
 	};
-	const [isExpanded, setIsExpanded] = useState<string[]>([]);
 	const toggleExpand = (typeName: string) => {
 		setIsExpanded((prev) =>
 			prev.includes(typeName) ? prev.filter((name) => name !== typeName) : [...prev, typeName]

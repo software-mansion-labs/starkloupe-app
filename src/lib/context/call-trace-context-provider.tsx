@@ -17,12 +17,13 @@ import {
 	SimulationResult,
 	FlameNode
 } from '@/lib/simulation';
+import { DebuggerPayload } from '@/lib/debugger';
 
 interface StringBooleanDict {
 	[key: string]: boolean;
 }
 
-export type TabId = 'call-trace' | 'events-list' | 'debugger' | 'storage-changes';
+export type TabId = 'call-trace' | 'events-list' | 'debugger' | 'storage-changes' | 'gas-profiler';
 
 interface CallTraceContextProps {
 	contractCallsMap: { [key: number]: ContractCall };
@@ -37,6 +38,7 @@ interface CallTraceContextProps {
 	isExecutionFailed: boolean;
 	errorMessage: string | undefined;
 	flamegraph: FlameNode | undefined;
+	debuggerPayload: DebuggerPayload | null;
 	traceLineElementRefs: MutableRefObject<{
 		[key: number]: RefObject<HTMLDivElement>;
 	}>;
@@ -46,6 +48,8 @@ interface CallTraceContextProps {
 	toggleCallExpand: (id: number) => void;
 	setActiveTab: (tab: TabId) => void;
 	scrollToTraceLineElement: (key: number) => void;
+	chosenCallName: string | null;
+	setChosenCallName: (callName: string | null) => void;
 }
 
 export const CallTraceContext = createContext<CallTraceContextProps>({
@@ -62,17 +66,24 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	flamegraph: {} as FlameNode,
 	traceLineElementRefs: { current: {} },
 	errorMessage: undefined,
+	debuggerPayload: {} as DebuggerPayload,
 	toggleCallCollapse: () => undefined,
 	expandAll: () => undefined,
 	collapseAll: () => undefined,
 	toggleCallExpand: () => undefined,
 	setActiveTab: () => undefined,
-	scrollToTraceLineElement: (key: number) => undefined
+	scrollToTraceLineElement: (key: number) => undefined,
+	chosenCallName: null,
+	setChosenCallName: () => undefined
 });
 
 export const CallTraceContextProvider: React.FC<
-	PropsWithChildren<{ simulationResult: SimulationResult; flamegraph: FlameNode | undefined }>
-> = ({ children, simulationResult, flamegraph }) => {
+	PropsWithChildren<{
+		simulationResult: SimulationResult;
+		flamegraph: FlameNode | undefined;
+		debuggerPayload: DebuggerPayload | null;
+	}>
+> = ({ children, simulationResult, flamegraph, debuggerPayload }) => {
 	// This collapses calls starting with "core".
 	// If call has children: only parent is collapsed
 	const initiallyCollapsed: StringBooleanDict = useMemo(() => {
@@ -127,6 +138,7 @@ export const CallTraceContextProvider: React.FC<
 	const [activeTab, setActiveTab] = useState<TabId>('call-trace');
 	const isExecutionFailed = simulationResult.executionResult.executionStatus === 'REVERTED';
 	const traceLineElementRefs = useRef<{ [callId: number]: React.RefObject<HTMLDivElement> }>({});
+	const [chosenCallName, setChosenCallName] = useState<string | null>(null);
 	const errorMessage =
 		simulationResult.executionResult.executionStatus === 'REVERTED'
 			? simulationResult.executionResult.revertReason
@@ -185,6 +197,8 @@ export const CallTraceContextProvider: React.FC<
 				expandedCalls,
 				simulationDebuggerData: simulationResult.simulationDebuggerData,
 				errorMessage,
+				flamegraph,
+				debuggerPayload,
 				activeTab,
 				isExecutionFailed,
 				traceLineElementRefs,
@@ -194,7 +208,8 @@ export const CallTraceContextProvider: React.FC<
 				expandAll,
 				setActiveTab,
 				scrollToTraceLineElement,
-				flamegraph
+				chosenCallName,
+				setChosenCallName
 			}}
 		>
 			{children}

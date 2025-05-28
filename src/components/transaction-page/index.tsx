@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, memo } from 'react';
 import { HeaderNav } from '../header';
 import { Container } from '../ui/container';
 import { Footer } from '../footer';
@@ -9,15 +9,16 @@ import {
 	simulateCustomNetworkTransactionByHash,
 	simulateTransactionByHash,
 	TransactionSimulationResult,
+	FlameNode,
 	L1TransactionData,
 	L2TransactionData
 } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
+import { DebuggerPayload } from '@/lib/debugger';
 import { TransactionDetails } from './l2-transaction-details';
 import { L1TransactionDetails } from './l1-transaction-details';
 import { ChainId } from '@/lib/types';
 import { CallTraceRoot } from '@/components/call-trace';
-import { InfoBox, InfoBoxItem } from '../ui/info-box';
 import { Button } from '../ui/button';
 import { PlayIcon, LinkIcon } from '@heroicons/react/24/outline';
 import { Error } from '../ui/error';
@@ -38,6 +39,7 @@ export function TransactionPage({
 	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
 	const [l1TransactionData, setL1TransactionData] = useState<L1TransactionData>();
 	const [l2TransactionData, setL2TransactionData] = useState<L2TransactionData>();
+	const [debuggerPayload, setDebuggerPayload] = useState<DebuggerPayload | null>(null);
 	const { isLogged } = useUserContext();
 	const [error, setError] = useState<string | undefined>();
 	const { trackingActive, trackingFlagLoaded } = useSettings();
@@ -55,6 +57,23 @@ export function TransactionPage({
 					setTransactionSimulation(simulation);
 					if (simulation.l2TransactionData) {
 						setL2TransactionData(simulation.l2TransactionData);
+						const l2 = simulation.l2TransactionData;
+
+						const debuggerPayload: DebuggerPayload = {
+							chainId: l2.chainId ?? null,
+							blockNumber: l2.blockNumber ?? null,
+							blockTimestamp: l2.blockTimestamp,
+							nonce: l2.nonce,
+							senderAddress: l2.senderAddress,
+							calldata: l2.calldata,
+							transactionVersion: l2.transactionVersion,
+							transactionType: l2.transactionType,
+							transactionIndexInBlock: l2.transactionIndexInBlock ?? null,
+							totalTransactionsInBlock: l2.totalTransactionsInBlock ?? null,
+							l1TxHash: l2.l1TxHash ?? null,
+							l2TxHash: l2.l2TxHash ?? null
+						};
+						setDebuggerPayload(debuggerPayload);
 						if (simulation.l2TransactionData.l2TxHash) {
 							setL2TxHash(simulation.l2TransactionData.l2TxHash);
 							setL2TxHashShort(shortenHash(simulation.l2TransactionData.l2TxHash));
@@ -185,6 +204,7 @@ export function TransactionPage({
 							<CallTraceRoot
 								simulationResult={l2TransactionData.simulationResult}
 								flamegraph={l2TransactionData.flamechart}
+								debuggerPayload={debuggerPayload}
 							/>
 						</>
 					) : l1TransactionData ? (

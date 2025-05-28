@@ -33,7 +33,9 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 }) {
 	const [isCallTraceExpanded, setIsCallTraceExpanded] = useState(false);
 	const { contractCallsMap } = useCallTrace();
-	const { contractCall, setCurrentContractCall } = useDebugger();
+	const debuggerContext = useDebugger();
+	const contractCall = debuggerContext?.contractCall;
+	const setCurrentContractCall = debuggerContext?.setCurrentContractCall ?? (() => {});
 	const contractHashFiles = Object.keys(classesDebuggerData);
 
 	const contracts = contractHashFiles.map((hash) =>
@@ -65,7 +67,7 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 		if (newContractName) {
 			openOneContract(newContractName);
 		}
-	}, [currentStepIndex]);
+	}, [currentStepIndex, classesDebuggerData, classSourceCode]);
 
 	const toggleContract = (contract: string) => {
 		setOpenContracts((prev) => ({

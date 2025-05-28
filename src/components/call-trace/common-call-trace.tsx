@@ -18,7 +18,6 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 }) {
 	const { eventCallsMap, functionCallsMap, contractCallsMap, errorMessage, flamegraph } =
 		useCallTrace();
-
 	if (!callType) {
 		const functionCall = functionCallsMap[callId];
 		const contractCall = contractCallsMap[callId];

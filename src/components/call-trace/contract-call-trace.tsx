@@ -1,22 +1,17 @@
-import React, { Fragment, memo, useCallback, useMemo } from 'react';
+import React, { Fragment, memo, useCallback, useMemo, useContext } from 'react';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { CodeLocation, DataType, CallType, ContractCall, FlameNode } from '@/lib/simulation';
-import { shortenHash } from '@/lib/utils';
+import { getContractName, shortenHash } from '@/lib/utils';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { InfoBox } from '@/components/ui/info-box';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { DecodeDataTable } from '../decode-data-table';
-import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
-import { CodeViewer } from '../code-viewer/code-viewer';
 import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { DebugButton } from '@/components/call-trace/debug-btn';
 import { ErrorTooltip } from '@/components/error-tooltip';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { CommonCallTrace } from './common-call-trace';
-import { Card } from '../ui/card';
 import { ContractCallSignature } from '../ui/signature';
 import { ErrorTraceLine } from './error-trace-line';
-import { WALNUT_VERIFY_DOCS_URL } from '@/lib/config';
 
 export const ContractCallTrace = memo(function ContractCallTrace({
 	contractCallId,
@@ -37,18 +32,34 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 		setActiveTab,
 		contractCallsMap,
 		isExecutionFailed,
-		traceLineElementRefs
+		traceLineElementRefs,
+		setChosenCallName
 	} = useCallTrace();
-	const { debugContractCall, isContractCallDebuggable, currentStep } = useDebugger();
+	const debuggerContext: ReturnType<typeof useDebugger> = useDebugger();
 
 	let call = contractCallsMap[contractCallId];
 	const firstChildCallId = call.childrenCallIds[0];
 	const firstChildCall = contractCallsMap[firstChildCallId];
-
+	const formatter = new Intl.NumberFormat(navigator.language);
 	let callType = call.entryPoint.callType;
 
 	const hasNestedElements =
 		call.childrenCallIds.length > 0 || call.functionCallId || call.isDeepestPanicResult;
+
+	const childrenCallIdsArray = useMemo(() => {
+		return call.childrenCallIds.map((childCallId) => (
+			<CommonCallTrace
+				previewMode={previewMode}
+				key={childCallId}
+				callId={childCallId}
+				nestingLevel={nestingLevel + 1}
+				callType="contract"
+			/>
+		));
+	}, [call.childrenCallIds, nestingLevel, previewMode]);
+
+	if (!debuggerContext) return null;
+	const { debugContractCall, currentStep } = debuggerContext;
 
 	// The error column doesn't render in case the whole tx is successful
 	// If the tx is reverted, the error column will render for all call lines
@@ -75,23 +86,11 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 		contractName = shortenHash(call.entryPoint.storageAddress, 13);
 	}
 
-	const isDebuggable = isContractCallDebuggable(call.callId);
+	const isDebuggable = call.callDebuggerDataAvailable;
 
 	if (!traceLineElementRefs.current[contractCallId]) {
 		traceLineElementRefs.current[contractCallId] = React.createRef<HTMLDivElement>();
 	}
-
-	const childrenCallIdsArray = useMemo(() => {
-		return call.childrenCallIds.map((childCallId) => (
-			<CommonCallTrace
-				previewMode={previewMode}
-				key={childCallId}
-				callId={childCallId}
-				nestingLevel={nestingLevel + 1}
-				callType="contract"
-			/>
-		));
-	}, [call.childrenCallIds, nestingLevel, previewMode]);
 
 	return (
 		<Fragment key={call.callId}>
@@ -178,8 +177,19 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 				</div>
 				{typeof call.sierraGas === 'number' && call.sierraGas > 0 && flamegraph && (
 					<div className="ml-auto ">
-						<span className="text-center rounded-sm border inline-block min-w-[5rem] px-1.5 py-0.5 bg-blue-100 border-blue-400 text-blue-900 ml-2">
-							{call.sierraGas}
+						<span
+							onClick={(e) => {
+								e.stopPropagation();
+								setChosenCallName(
+									`${getContractName({ contractCall: call })}.${
+										call?.entryPointName ?? shortenHash(call.entryPoint.entryPointSelector, 13)
+									}`
+								);
+								setActiveTab('gas-profiler');
+							}}
+							className="text-center rounded-sm cursor-pointer transition-colors hover:bg-blue-200 border inline-block min-w-[5rem] px-1.5 py-0.5 bg-blue-100 border-blue-400 text-blue-900 ml-2"
+						>
+							{formatter.format(call.sierraGas)}
 						</span>
 					</div>
 				)}
@@ -213,7 +223,6 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 });
 
 const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: ContractCall }) {
-	const { simulationDebuggerData } = useCallTrace();
 	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [
 		{
 			name: 'Entry Point Type',
@@ -289,19 +298,10 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 			value: JSON.stringify(call.result)
 		});
 	}
-
-	const callDebuggerData = call.callDebuggerData;
-	const classDebuggerData = simulationDebuggerData.classesDebuggerData[call.classHash];
-	const hasDebuggableInfo =
-		!!callDebuggerData && !!callDebuggerData.executionTrace && !!classDebuggerData;
-
-	let code: string | undefined = undefined;
-
 	let contractName: string | null = call.contractName ?? null;
 	let entryPointInterfaceName: string | null = call.entryPointInterfaceName ?? null;
 
 	const cairoLocation: CodeLocation | undefined = call.codeLocation ?? undefined;
-	const sourceCodeFiles: { [key: string]: string } | undefined = classDebuggerData?.sourceCode;
 
 	const findFilePath = useCallback(
 		(terms: string[], files: { [key: string]: string }): string | undefined => {
@@ -314,47 +314,10 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 		[]
 	);
 
-	if (sourceCodeFiles) {
-		if (cairoLocation) {
-			code = sourceCodeFiles[cairoLocation.filePath];
-		} else {
-			let filePath: string | undefined;
-			if (contractName) {
-				const name = contractName.toLowerCase();
-				filePath = Object.keys(sourceCodeFiles).find((path) =>
-					path.toLowerCase().includes(`${name}.cairo`)
-				);
-			} else if (entryPointInterfaceName) {
-				const terms = entryPointInterfaceName.split('::');
-				filePath = findFilePath(terms, sourceCodeFiles);
-			}
-			code = filePath ? sourceCodeFiles[filePath] : undefined;
-		}
-	}
-
-	const noSourceCodeAlert = (
-		<Alert className="my-2 w-fit">
-			<ExclamationTriangleIcon className="h-5 w-5" />
-			<AlertTitle>No source code for this contract</AlertTitle>
-			<AlertDescription>
-				<a
-					href={WALNUT_VERIFY_DOCS_URL}
-					className="text-blue-500 cursor-pointer"
-					target="_blank"
-					rel="noreferrer"
-				>
-					Verify the contract source code
-				</a>{' '}
-				to get internal call traces and enable the step-by-step debugger.
-			</AlertDescription>
-		</Alert>
-	);
-
 	return (
 		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-2 px-4 ">
 			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
 				<div className="">
-					{!hasDebuggableInfo && noSourceCodeAlert}
 					<InfoBox details={details} />
 					{call.entryPoint.calldata && (
 						<DecodeDataTable
@@ -367,14 +330,6 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 						<DecodeDataTable decodeData={call.decodedResult} type={DataType.OUTPUT} />
 					)}
 				</div>
-
-				{code && (
-					<Card className="">
-						<div className="h-80 ">
-							<CodeViewer content={code} codeLocation={cairoLocation} />
-						</div>
-					</Card>
-				)}
 			</div>
 		</div>
 	);

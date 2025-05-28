@@ -1,4 +1,5 @@
 import { SimulationResult, FlameNode } from '@/lib/simulation';
+import { DebuggerPayload } from '@/lib/debugger';
 import {
 	CallTraceContextProvider,
 	TabId,
@@ -16,40 +17,64 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/
 import { CommonCallTrace } from './common-call-trace';
 import { useCallback } from 'react';
 import StorageChanges from '../storage-changes';
+import { GasProfiler } from '../gas-profiler';
 
 export function CallTraceRoot({
 	simulationResult,
-	flamegraph
+	flamegraph,
+	debuggerPayload
 }: {
 	simulationResult: SimulationResult;
 	flamegraph: FlameNode | undefined;
+	debuggerPayload: DebuggerPayload | null;
 }) {
 	return (
-		<CallTraceContextProvider simulationResult={simulationResult} flamegraph={flamegraph}>
-			<DebuggerContextProvider>
-				<CallTraceRootContent />
-			</DebuggerContextProvider>
+		<CallTraceContextProvider
+			simulationResult={simulationResult}
+			flamegraph={flamegraph}
+			debuggerPayload={debuggerPayload}
+		>
+			{debuggerPayload && (
+				<DebuggerContextProvider debuggerPayload={debuggerPayload}>
+					<CallTraceRootContent />
+				</DebuggerContextProvider>
+			)}
+			{!debuggerPayload && <CallTraceRootContent />}
 		</CallTraceContextProvider>
 	);
 }
 
 function CallTraceRootContent() {
-	const { collapseAll, expandAll, activeTab, setActiveTab, simulationResult } = useCallTrace();
+	const {
+		collapseAll,
+		expandAll,
+		activeTab,
+		setActiveTab,
+		simulationResult,
+		flamegraph,
+		setChosenCallName,
+		debuggerPayload
+	} = useCallTrace();
 	const onValueChange = useCallback(
 		(value: string) => {
 			setActiveTab(value as TabId);
+			if (activeTab !== 'gas-profiler') {
+				setChosenCallName(null);
+			}
 		},
 		[setActiveTab]
 	);
 	return (
 		<div className="mt-12">
 			<Tabs value={activeTab} onValueChange={onValueChange}>
-				<TabsList>
+				<TabsList className="flex md:inline-flex !justify-start md:justify-center flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-rounded ">
 					<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
 					<TabsTrigger value="events-list">Events</TabsTrigger>
 					<TabsTrigger value="debugger">Debugger</TabsTrigger>
 					<TabsTrigger value="storage-changes">Storage</TabsTrigger>
+					<TabsTrigger value="gas-profiler">Gas Profiler</TabsTrigger>
 				</TabsList>
+
 				<TabsContent value="call-trace">
 					<div className="whitespace-nowrap rounded-xl border">
 						<TooltipProvider>
@@ -112,13 +137,20 @@ function CallTraceRootContent() {
 				</TabsContent>
 				<TabsContent value="debugger">
 					<Card className="text-xs h-[calc(100vh-407px)]">
-						<Debugger />
+						<Debugger debuggerPayload={debuggerPayload} />
 					</Card>
 				</TabsContent>
 				<TabsContent value="storage-changes">
 					<Card>
 						<ScrollArea className="text-xs h-[calc(100vh-409px)]">
 							<StorageChanges />
+						</ScrollArea>
+					</Card>
+				</TabsContent>
+				<TabsContent value="gas-profiler">
+					<Card>
+						<ScrollArea className="text-xs h-[calc(100vh-409px)]">
+							<GasProfiler flamegraph={flamegraph} />
 						</ScrollArea>
 					</Card>
 				</TabsContent>

@@ -47,13 +47,6 @@ export interface EntryPoint {
 	callType: CallType;
 	initialGas: number;
 }
-
-export type FlameNode = {
-	name: string;
-	value: number;
-	children: FlameNode[];
-};
-
 export interface DecodedItem {
 	typeName: string;
 	name: string | null;
@@ -147,6 +140,7 @@ export interface ContractCall {
 
 	nestingLevel: number;
 	codeLocation?: CodeLocation | null;
+	callDebuggerDataAvailable: boolean;
 	debuggerTraceStepIndex: number | null;
 
 	isHidden: boolean;
@@ -163,6 +157,7 @@ export interface FunctionCall {
 	fnName: string;
 	fp: number;
 	isDeepestPanicResult: boolean;
+	debuggerDataAvailable: boolean;
 	debuggerTraceStepIndex: number | null;
 	codeLocation?: CodeLocation | null;
 	arguments: InternalFnCallIO[];
@@ -225,6 +220,13 @@ export interface InternalFnCallIO {
 	value: string[];
 	internalIODecoded: DataDecoded | null;
 }
+export type FlameNode = {
+	callId: number;
+	name: string;
+	value: number;
+	rawValue: number;
+	children?: FlameNode[];
+};
 
 export interface L1TransactionData {
 	chainId?: string;
