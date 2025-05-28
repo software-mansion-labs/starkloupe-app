@@ -17,9 +17,13 @@ export const Debugger = memo(function Debugger({
 
 	if (!context) {
 		return (
-			<div className="flex items-center justify-center w-full h-full">
-				<Loader />
-			</div>
+			<Alert className="m-4 py-4 w-fit min-w-[2rem] flex items-center gap-4">
+				<span className="h-6 w-6 block rounded-full border-4 border-t-gray-800 animate-spin" />
+				<div className="flex flex-col">
+					<AlertTitle>Loading</AlertTitle>
+					<AlertDescription>Please wait, debugger is loading</AlertDescription>
+				</div>
+			</Alert>
 		);
 	}
 
@@ -27,10 +31,12 @@ export const Debugger = memo(function Debugger({
 
 	if (loading) {
 		return (
-			<Alert className="flex items-center justify-center w-full h-full">
-				<AlertDescription>
-					<Loader />
-				</AlertDescription>
+			<Alert className="m-4 py-4 w-fit min-w-[2rem] flex items-center gap-4">
+				<span className="h-6 w-6 block rounded-full border-4 border-t-gray-800 animate-spin" />
+				<div className="flex flex-col">
+					<AlertTitle>Loading</AlertTitle>
+					<AlertDescription>Please wait, debugger is loading</AlertDescription>
+				</div>
 			</Alert>
 		);
 	}

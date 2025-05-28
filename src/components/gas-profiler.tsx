@@ -7,10 +7,13 @@ import { FlameNode } from './flamegraph';
 const FlameGraph = dynamic(() => import('./flamegraph'), {
 	ssr: false,
 	loading: () => (
-		<div className={'flex items-center justify-center mt-4 gap-2 h-full'}>
-			<span className="h-6 w-6 block rounded-full border-4 border-t-gray-800 animate-spin"></span>
-			loading...
-		</div>
+		<Alert className="m-4 py-4 w-fit min-w-[2rem] flex items-center gap-4">
+			<span className="h-6 w-6 block rounded-full border-4 border-t-gray-800 animate-spin" />
+			<div className="flex flex-col">
+				<AlertTitle>Loading</AlertTitle>
+				<AlertDescription>Please wait, flamegraph is loading</AlertDescription>
+			</div>
+		</Alert>
 	)
 });
 
