@@ -4,13 +4,18 @@ import { Inter } from 'next/font/google';
 import { SettingsContextProvider } from '@/lib/context/settings-context-provider';
 import { Toaster } from '@/components/ui/toaster';
 import { UserContextProvider } from '@/lib/context/user-context-provider';
+import { generateMetadata } from '@/lib/utils/generate-metadata-service';
 
 const inter = Inter({ subsets: ['latin'] });
 
-export const metadata: Metadata = {
-	title: 'Walnut',
-	description: 'Transaction debugger for Starknet'
-};
+const title = 'Debugger for Starknet smart contract developers | Walnut';
+const description =
+	'Delve deeper into Cairo transaction execution with our state-of-the-art debugger. Swiftly identify bugs and pinpoint areas for enhancement.';
+export const metadata: Metadata = generateMetadata(
+	title,
+	description,
+	'https://www.walnut.network/debugger'
+);
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
