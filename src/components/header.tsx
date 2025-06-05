@@ -6,7 +6,7 @@ import { Disclosure } from '@headlessui/react';
 import { Search } from '@/components/ui/search';
 import { Button } from '@/components/ui/button';
 import { PlayIcon } from '@heroicons/react/24/outline';
-import logoWalnut from '@/assets/wlnt-logo-beta-bw.svg';
+import logoWalnut from '@/assets/walnut-logo-beta.svg';
 import { Container } from '@/components/ui/container';
 import { UserSection } from '@/components/auth/user-section';
 import { useUserContext } from '@/lib/context/user-context-provider';
@@ -44,7 +44,7 @@ export function HeaderNav({
 												src={logoWalnut}
 												alt="Walnut logo"
 												unoptimized
-												className="h-8 w-auto cursor-pointer"
+												className="h-10 w-auto cursor-pointer"
 											/>
 										</Link>
 									</div>
