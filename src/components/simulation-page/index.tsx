@@ -18,31 +18,38 @@ import { CallTraceRoot } from '../call-trace';
 import { Loader } from '../ui/loader';
 import { Error } from '../ui/error';
 import { useSettings } from '@/lib/context/settings-context-provider';
+import { useRouter } from 'next/navigation';
+import { getCacheWithTTL, safeStringify, setCacheWithTTL } from '@/lib/utils/cache-utils';
 
 export function SimulationPage({
 	simulationPayload
 }: {
 	simulationPayload?: SimulationPayloadWithCalldata;
 }) {
-	const [transactionSimulation, setTransactionSimulation] = useState<TransactionSimulationResult>();
 	const [l2TransactionData, setL2TransactionData] = useState<L2TransactionData>();
 	const [debuggerPayload, setDebuggerPayload] = useState<DebuggerPayload | null>(null);
 	const [error, setError] = useState<string | undefined>();
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const { trackingActive, trackingFlagLoaded } = useSettings();
+	const router = useRouter();
 
 	useEffect(() => {
 		const fetchData = async () => {
-			if (simulationPayload) {
-				try {
-					setIsLoading(true);
-					const skipTracking = !trackingActive;
-					const simulation = await simulateTransactionByData(simulationPayload, skipTracking);
-					setTransactionSimulation(simulation);
-					if (simulation.l2TransactionData) {
-						setL2TransactionData(simulation.l2TransactionData);
-						const l2 = simulation.l2TransactionData;
+			if (!simulationPayload) {
+				setError('Invalid simulation parameters');
+				return;
+			}
 
+			try {
+				setIsLoading(true);
+				const skipTracking = !trackingActive;
+
+				const cacheKey = `simulation:${safeStringify(simulationPayload)}`;
+				const cached = getCacheWithTTL<TransactionSimulationResult>(cacheKey);
+				if (cached) {
+					if (cached.l2TransactionData) {
+						setL2TransactionData(cached.l2TransactionData);
+						const l2 = cached.l2TransactionData;
 						const debuggerPayload: DebuggerPayload = {
 							chainId: l2.chainId ?? null,
 							blockNumber: l2.blockNumber.toString() === 'Latest' ? null : l2.blockNumber,
@@ -59,15 +66,39 @@ export function SimulationPage({
 						};
 						setDebuggerPayload(debuggerPayload);
 					}
-				} catch (err: any) {
-					setError(err.toString());
-				} finally {
 					setIsLoading(false);
+					return;
 				}
-			} else {
-				setError('Invalid simulation parameters');
+
+				const simulation = await simulateTransactionByData(simulationPayload, skipTracking);
+				setCacheWithTTL(cacheKey, simulation);
+
+				if (simulation.l2TransactionData) {
+					setL2TransactionData(simulation.l2TransactionData);
+					const l2 = simulation.l2TransactionData;
+					const debuggerPayload: DebuggerPayload = {
+						chainId: l2.chainId ?? null,
+						blockNumber: l2.blockNumber.toString() === 'Latest' ? null : l2.blockNumber,
+						blockTimestamp: l2.blockTimestamp,
+						nonce: l2.nonce,
+						senderAddress: l2.senderAddress,
+						calldata: l2.calldata,
+						transactionVersion: l2.transactionVersion,
+						transactionType: l2.transactionType,
+						transactionIndexInBlock: l2.transactionIndexInBlock ?? null,
+						totalTransactionsInBlock: l2.totalTransactionsInBlock ?? null,
+						l1TxHash: l2.l1TxHash ?? null,
+						l2TxHash: l2.l2TxHash ?? null
+					};
+					setDebuggerPayload(debuggerPayload);
+				}
+			} catch (err: any) {
+				setError(err.toString());
+			} finally {
+				setIsLoading(false);
 			}
 		};
+
 		if (trackingFlagLoaded) {
 			fetchData();
 		}
@@ -93,6 +124,7 @@ export function SimulationPage({
 			</>
 		);
 	}
+
 	const handleReSimulateClick = () => {
 		if (l2TransactionData) {
 			const params = new URLSearchParams();
@@ -106,11 +138,12 @@ export function SimulationPage({
 				params.set('transactionVersion', l2TransactionData.transactionVersion.toString());
 			if (l2TransactionData.blockNumber)
 				params.set('blockNumber', l2TransactionData.blockNumber.toString());
-			if (simulationPayload?.chainId) params.set('chainId', simulationPayload?.chainId);
-			else if (simulationPayload?.rpcUrl) params.set('rpcUrl', simulationPayload?.rpcUrl);
-			window.location.href = `/simulate-transaction?${params.toString()}`;
+			if (simulationPayload?.chainId) params.set('chainId', simulationPayload.chainId);
+			else if (simulationPayload?.rpcUrl) params.set('rpcUrl', simulationPayload.rpcUrl || '');
+			router.push(`/simulate-transaction?${params.toString()}`);
 		}
 	};
+
 	return (
 		<>
 			<HeaderNav />

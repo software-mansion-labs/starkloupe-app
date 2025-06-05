@@ -28,6 +28,7 @@ import {
 } from '@/components/ui/select';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { useRouter } from 'next/navigation';
 
 export function SimulateTransactionPage({
 	txHash,
@@ -46,6 +47,8 @@ export function SimulateTransactionPage({
 	const validateCalldata = useCallback((calldata: string[]) => {
 		return calldata.every((item) => validateHexFormat(item));
 	}, []);
+	const router = useRouter();
+
 	const [isLoading, setIsLoading] = useState(false);
 	const [isLoadingFunctions, setIsLoadingFunctions] = useState<{ [key: string]: boolean }>({});
 
@@ -448,12 +451,12 @@ export function SimulateTransactionPage({
 			<HeaderNav />
 			<main className="overflow-y-scroll h-[calc(100vh-650px)] xl:flex xl:justify-between flex-grow relative">
 				<div className="left-8 px-4 py-8 xl:block hidden">
-					<Button onClick={() => window.history.back()} variant="outline">
+					<Button onClick={() => router.back()} variant="outline">
 						<ArrowLeftIcon className="w-4 h-4 mr-2" /> Back
 					</Button>
 				</div>
 				<div className="xl:hidden block px-4 py-8">
-					<Button onClick={() => window.history.back()} variant="outline">
+					<Button onClick={() => router.back()} variant="outline">
 						<ArrowLeftIcon className="w-4 h-4 mr-2" /> Back
 					</Button>
 				</div>

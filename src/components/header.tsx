@@ -83,12 +83,11 @@ export function HeaderNav({
 								)}
 								<div className="hidden md:block">
 									{isLogged ? (
-										<Button
-											variant="outline"
-											onClick={() => (window.location.href = `/simulate-transaction`)}
-										>
-											<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
-										</Button>
+										<Link href={`/simulate-transaction`}>
+											<Button variant="outline">
+												<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
+											</Button>
+										</Link>
 									) : (
 										<Link href="/login">
 											<Button variant="outline">
@@ -127,13 +126,9 @@ export function HeaderNav({
 								<></>
 							)} */}
 							<div>
-								<Button
-									variant="ghost"
-									onClick={() => (window.location.href = `/simulate-transaction`)}
-								>
-									{' '}
-									Simulate transaction
-								</Button>
+								<Link href={`/simulate-transaction`}>
+									<Button variant="ghost"> Simulate transaction</Button>
+								</Link>
 							</div>
 							<div>
 								<a href="/settings">

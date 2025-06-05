@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, memo } from 'react';
+import { useEffect, useState } from 'react';
 import { HeaderNav } from '../header';
 import { Container } from '../ui/container';
 import { Footer } from '../footer';
@@ -9,7 +9,6 @@ import {
 	simulateCustomNetworkTransactionByHash,
 	simulateTransactionByHash,
 	TransactionSimulationResult,
-	FlameNode,
 	L1TransactionData,
 	L2TransactionData
 } from '@/lib/simulation';
@@ -26,6 +25,8 @@ import { useSettings } from '@/lib/context/settings-context-provider';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import { useUserContext } from '@/lib/context/user-context-provider';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { getCacheWithTTL, setCacheWithTTL } from '@/lib/utils/cache-utils';
 
 export function TransactionPage({
 	txHash,
@@ -47,17 +48,20 @@ export function TransactionPage({
 	const [l1TxHash, setL1TxHash] = useState<string | undefined>();
 	const [l1TxHashShort, setL1TxHashShort] = useState<string | undefined>();
 	const [l2TxHashShort, setL2TxHashShort] = useState<string>();
+	const router = useRouter();
 
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
 				const skipTracking = !trackingActive;
-				if (chainId) {
-					const simulation = await simulateTransactionByHash({ chainId, txHash, skipTracking });
-					setTransactionSimulation(simulation);
-					if (simulation.l2TransactionData) {
-						setL2TransactionData(simulation.l2TransactionData);
-						const l2 = simulation.l2TransactionData;
+				const cacheKey = `${chainId || rpcUrl}:${txHash}`;
+				const cached = getCacheWithTTL<TransactionSimulationResult>(cacheKey);
+
+				if (cached) {
+					setTransactionSimulation(cached);
+					if (cached.l2TransactionData) {
+						setL2TransactionData(cached.l2TransactionData);
+						const l2 = cached.l2TransactionData;
 
 						const debuggerPayload: DebuggerPayload = {
 							chainId: l2.chainId ?? null,
@@ -74,42 +78,72 @@ export function TransactionPage({
 							l2TxHash: l2.l2TxHash ?? null
 						};
 						setDebuggerPayload(debuggerPayload);
-						if (simulation.l2TransactionData.l2TxHash) {
-							setL2TxHash(simulation.l2TransactionData.l2TxHash);
-							setL2TxHashShort(shortenHash(simulation.l2TransactionData.l2TxHash));
+						if (l2.l2TxHash) {
+							setL2TxHash(l2.l2TxHash);
+							setL2TxHashShort(shortenHash(l2.l2TxHash));
 						}
-						if (simulation.l2TransactionData.l1TxHash) {
-							setL1TxHash(simulation.l2TransactionData.l1TxHash);
-							setL1TxHashShort(shortenHash(simulation.l2TransactionData.l1TxHash));
+						if (l2.l1TxHash) {
+							setL1TxHash(l2.l1TxHash);
+							setL1TxHashShort(shortenHash(l2.l1TxHash));
 						}
-					} else if (simulation.l1TransactionData) {
-						setL1TransactionData(simulation.l1TransactionData);
+					} else if (cached.l1TransactionData) {
+						setL1TransactionData(cached.l1TransactionData);
 					}
+					return;
+				}
+
+				let simulation: TransactionSimulationResult;
+
+				if (chainId) {
+					simulation = await simulateTransactionByHash({ chainId, txHash, skipTracking });
 				} else if (rpcUrl) {
-					const simulation = await simulateCustomNetworkTransactionByHash({
+					simulation = await simulateCustomNetworkTransactionByHash({
 						txHash,
 						rpcUrl,
 						skipTracking
 					});
-					setTransactionSimulation(simulation);
-					if (simulation.l2TransactionData) {
-						setL2TransactionData(simulation.l2TransactionData);
-						if (simulation.l2TransactionData.l2TxHash) {
-							setL2TxHash(simulation.l2TransactionData.l2TxHash);
-							setL2TxHashShort(shortenHash(simulation.l2TransactionData.l2TxHash));
-						}
-						if (simulation.l2TransactionData.l1TxHash) {
-							setL1TxHash(simulation.l2TransactionData.l1TxHash);
-							setL1TxHashShort(shortenHash(simulation.l2TransactionData.l1TxHash));
-						}
-					} else if (simulation.l1TransactionData) {
-						setL1TransactionData(simulation.l1TransactionData);
+				} else {
+					simulation = {};
+				}
+
+				setCacheWithTTL(cacheKey, simulation);
+				setTransactionSimulation(simulation);
+
+				if (simulation.l2TransactionData) {
+					setL2TransactionData(simulation.l2TransactionData);
+					const l2 = simulation.l2TransactionData;
+
+					const debuggerPayload: DebuggerPayload = {
+						chainId: l2.chainId ?? null,
+						blockNumber: l2.blockNumber ?? null,
+						blockTimestamp: l2.blockTimestamp,
+						nonce: l2.nonce,
+						senderAddress: l2.senderAddress,
+						calldata: l2.calldata,
+						transactionVersion: l2.transactionVersion,
+						transactionType: l2.transactionType,
+						transactionIndexInBlock: l2.transactionIndexInBlock ?? null,
+						totalTransactionsInBlock: l2.totalTransactionsInBlock ?? null,
+						l1TxHash: l2.l1TxHash ?? null,
+						l2TxHash: l2.l2TxHash ?? null
+					};
+					setDebuggerPayload(debuggerPayload);
+					if (l2.l2TxHash) {
+						setL2TxHash(l2.l2TxHash);
+						setL2TxHashShort(shortenHash(l2.l2TxHash));
 					}
+					if (l2.l1TxHash) {
+						setL1TxHash(l2.l1TxHash);
+						setL1TxHashShort(shortenHash(l2.l1TxHash));
+					}
+				} else if (simulation.l1TransactionData) {
+					setL1TransactionData(simulation.l1TransactionData);
 				}
 			} catch (error: any) {
 				setError(error.toString());
 			}
 		};
+
 		if (trackingFlagLoaded) {
 			fetchData();
 		}
@@ -131,7 +165,7 @@ export function TransactionPage({
 				params.set('blockNumber', l2TransactionData.blockNumber.toString());
 			if (chainId) params.set('chainId', chainId);
 			else if (rpcUrl) params.set('rpcUrl', rpcUrl);
-			window.location.href = `/simulate-transaction?${params.toString()}`;
+			router.push(`/simulate-transaction?${params.toString()}`);
 		}
 	};
 
@@ -233,7 +267,7 @@ export function TransactionPage({
 									)}
 								</div>
 								{isLogged ? (
-									<Button onClick={handleReSimulateClick} variant="outline" disabled={true}>
+									<Button onClick={handleReSimulateClick} variant="outline" disabled>
 										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
 									</Button>
 								) : (
@@ -306,7 +340,6 @@ export function TransactionPage({
 						<Loader />
 					)}
 				</Container>
-
 				<Footer />
 			</main>
 		</>

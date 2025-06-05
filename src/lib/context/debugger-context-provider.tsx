@@ -13,10 +13,12 @@ import {
 	ContractCall,
 	DebuggerExecutionTraceEntry,
 	FunctionCall,
-	SimulationDebuggerData
+	SimulationDebuggerData,
+	TransactionSimulationResult
 } from '@/lib/simulation';
 import { CallTraceContext } from './call-trace-context-provider';
 import { debugTransactionByData, DebuggerPayload, DebuggerInfo } from '@/lib/debugger';
+import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
 
 interface DebuggerContextProps {
 	functionCallsMap: { [key: number]: FunctionCall };
@@ -82,23 +84,130 @@ export const DebuggerContextProvider = ({
 
 	const { contractCallsMap: callTraceContractCalls, functionCallsMap: callTraceFunctionCalls } =
 		useContext(CallTraceContext);
+	const CACHE_TTL_MS = 15 * 60 * 1000;
+
+	function safeStringify(value: any): string {
+		return JSON.stringify(value, (_, v) => (typeof v === 'bigint' ? v.toString() + 'n' : v));
+	}
+
+	function safeParse<T = any>(value: string): T {
+		return JSON.parse(value, (_, v) => {
+			if (typeof v === 'string' && /^\d+n$/.test(v)) {
+				return BigInt(v.slice(0, -1));
+			}
+			return v;
+		});
+	}
+
+	function getDebuggerCacheKey(payload: DebuggerPayload) {
+		const raw = safeStringify(payload);
+		const hash = btoa(unescape(encodeURIComponent(raw))).slice(0, 100);
+		return `debugger:${hash}`;
+	}
+
+	function getCachedDebuggerInfo(key: string) {
+		const compressed = localStorage.getItem(key);
+		if (!compressed) return null;
+
+		try {
+			const json = decompressFromUTF16(compressed);
+			if (!json) throw new Error('decompression failed');
+
+			const record = safeParse<{ timestamp: number; data: any }>(json);
+			if (!record.timestamp || !record.data) return null;
+
+			if (Date.now() - record.timestamp > CACHE_TTL_MS) {
+				localStorage.removeItem(key);
+				return null;
+			}
+
+			return record.data;
+		} catch {
+			localStorage.removeItem(key);
+			return null;
+		}
+	}
+
+	function clearExpiredLocalStorage() {
+		const now = Date.now();
+
+		for (let i = localStorage.length - 1; i >= 0; i--) {
+			const key = localStorage.key(i);
+			if (!key) continue;
+
+			try {
+				const compressed = localStorage.getItem(key);
+				if (!compressed) continue;
+
+				const json = decompressFromUTF16(compressed);
+				if (!json) continue;
+
+				const parsed = safeParse<{ timestamp?: number }>(json);
+				if (parsed?.timestamp && now - parsed.timestamp > CACHE_TTL_MS) {
+					localStorage.removeItem(key);
+				}
+			} catch {
+				localStorage.removeItem(key);
+			}
+		}
+	}
+
+	function setCachedDebuggerInfo(key: string, data: any) {
+		const json = safeStringify({ timestamp: Date.now(), data });
+		const compressed = compressToUTF16(json);
+
+		try {
+			localStorage.setItem(key, compressed);
+		} catch (e) {
+			if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+				console.warn('localStorage full — clearing expired entries');
+				clearExpiredLocalStorage();
+				try {
+					localStorage.setItem(key, compressed);
+				} catch (e2) {
+					console.error('Failed to cache after cleanup:', e2);
+				}
+			} else {
+				console.error('localStorage write failed:', e);
+			}
+		}
+	}
 
 	useEffect(() => {
 		const fetch = async () => {
+			if (!debuggerPayload) return;
+
 			setLoading(true);
+
 			try {
-				// Check if any contract call has debuggerDataAvailable true
 				const hasDebuggableContract_ = Object.values(callTraceContractCalls).some(
 					(call) => call.callDebuggerDataAvailable
 				);
 				setHasDebuggableContract(hasDebuggableContract_);
+
 				if (!hasDebuggableContract_) {
-					// No debuggable contracts, set empty state
 					setLoading(false);
 					return;
 				}
+
+				const cacheKey = getDebuggerCacheKey(debuggerPayload);
+				const cached = getCachedDebuggerInfo(cacheKey);
+
+				if (cached) {
+					setDebuggerInfo(cached);
+					if (cached?.simulationDebuggerData?.debuggerTrace) {
+						const i = findInitialIndex(cached.simulationDebuggerData.debuggerTrace);
+						_setCurrentStepIndex(i);
+						_setCurrentStep(cached.simulationDebuggerData.debuggerTrace[i]);
+					}
+					setLoading(false);
+					return;
+				}
+
 				const result = await debugTransactionByData(debuggerPayload);
 				setDebuggerInfo(result);
+				setCachedDebuggerInfo(cacheKey, result);
+
 				if (result?.simulationDebuggerData?.debuggerTrace) {
 					const i = findInitialIndex(result.simulationDebuggerData.debuggerTrace);
 					_setCurrentStepIndex(i);
@@ -110,9 +219,9 @@ export const DebuggerContextProvider = ({
 				setLoading(false);
 			}
 		};
+
 		fetch();
 	}, [debuggerPayload]);
-
 	const simulationDebuggerData = debuggerInfo?.simulationDebuggerData;
 	const contractCallsMap = debuggerInfo?.contractCallsMap || {};
 	const functionCallsMap = debuggerInfo?.functionCallsMap || {};
