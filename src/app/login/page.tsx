@@ -85,7 +85,7 @@ export default function Page() {
 							src={logoWalnut}
 							alt="Walnut logo"
 							unoptimized
-							className="h-10 w-auto lg:hidden"
+							className="h-12 w-auto lg:hidden"
 						/>
 						<div className="flex flex-col space-y-2 text-center">
 							<h1 className="text-2xl font-semibold tracking-tight">Sign up to Walnut</h1>
