@@ -12,6 +12,7 @@ import { ErrorTooltip } from '@/components/error-tooltip';
 import { CommonCallTrace } from './common-call-trace';
 import { ContractCallSignature } from '../ui/signature';
 import { ErrorTraceLine } from './error-trace-line';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 
 export const ContractCallTrace = memo(function ContractCallTrace({
 	contractCallId,
@@ -175,7 +176,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 						</>
 					)}
 				</div>
-				{typeof call.sierraGas === 'number' && call.sierraGas > 0 && flamegraph && (
+				{typeof call.sierraGas === 'number' && call.sierraGas > 0 && flamegraph ? (
 					<div className="ml-auto ">
 						<span
 							onClick={(e) => {
@@ -191,6 +192,22 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 						>
 							{formatter.format(call.sierraGas)}
 						</span>
+					</div>
+				) : (
+					<div className="ml-auto ">
+						<TooltipProvider>
+							<Tooltip delayDuration={100}>
+								<TooltipTrigger>
+									<span className="text-center rounded-sm cursor-not-allowed transition-colors border inline-block min-w-[5rem] px-1.5 py-0.5 bg-blue-100 border-blue-400 text-blue-900 ml-2">
+										N/A
+									</span>
+								</TooltipTrigger>
+								<TooltipContent>
+									Gas information available for transactions version 3 and sierra version 1.7.0 or
+									above.
+								</TooltipContent>
+							</Tooltip>
+						</TooltipProvider>
 					</div>
 				)}
 			</TraceLine>

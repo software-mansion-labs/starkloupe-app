@@ -32,7 +32,7 @@ export function GasProfiler({ flamegraph }: { flamegraph: FlameNode | undefined 
 					<AlertTitle>Flamegraph is not supported</AlertTitle>
 					<AlertDescription>
 						Flamegraph is currently supported for Transactions Version 3 and Sierra version 1.7.0 or
-						above. Reach out if you need support for lower versions.
+						above.
 					</AlertDescription>
 				</Alert>
 			)}
