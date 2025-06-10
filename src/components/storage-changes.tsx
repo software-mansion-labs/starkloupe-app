@@ -2,6 +2,8 @@ import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { shortenHash } from '@/lib/utils';
 import React, { useMemo } from 'react';
 import CopyToClipboardElement from './ui/copy-to-clipboard';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 interface StorageChangesProps {
 	// Define your props here if needed
@@ -46,64 +48,82 @@ const StorageChanges: React.FC<StorageChangesProps> = (props) => {
 		return combined;
 	}, [contractCallsMap, simulationResult.storageChanges]);
 
-	return (
-		<div className="flex flex-col gap-4 p-4">
-			{Object.entries(storageChanges).map(([contractAddress, { contractName, storageChanges }]) => {
-				return (
-					<div key={contractAddress} className="flex flex-col border-b border-gray-200 pb-4 gap-1">
-						<div className="flex flex-row items-baseline gap-2">
-							{contractName ? (
-								<>
-									<a href={`/contracts/${contractAddress}`} className="font-bold text-lg underline">
-										{contractName}
-									</a>
-									<CopyToClipboardElement
-										className="font-mono text-gray-400"
-										toastDescription="The address has been copied."
-										value={contractAddress}
-									>
-										{shortenHash(contractAddress, 13)}
-									</CopyToClipboardElement>
-								</>
-							) : (
-								<>
-									<span className="font-bold text-lg">Contract address:</span>
+	if (Object.entries(storageChanges).length > 0) {
+		return (
+			<div className="flex flex-col gap-4 p-4">
+				{Object.entries(storageChanges).map(
+					([contractAddress, { contractName, storageChanges }]) => {
+						return (
+							<div
+								key={contractAddress}
+								className="flex flex-col border-b border-gray-200 pb-4 gap-1"
+							>
+								<div className="flex flex-row items-baseline gap-2">
+									{contractName ? (
+										<>
+											<a
+												href={`/contracts/${contractAddress}`}
+												className="font-bold text-lg underline"
+											>
+												{contractName}
+											</a>
+											<CopyToClipboardElement
+												className="font-mono text-gray-400"
+												toastDescription="The address has been copied."
+												value={contractAddress}
+											>
+												{shortenHash(contractAddress, 13)}
+											</CopyToClipboardElement>
+										</>
+									) : (
+										<>
+											<span className="font-bold text-lg">Contract address:</span>
 
-									<span className="font-mono">{shortenHash(contractAddress, 13)}</span>
-								</>
-							)}
-						</div>
-						<div className="flex flex-col gap-2">
-							{Object.entries(storageChanges).map(([storageAddress, [before, after]]) => (
-								<div key={storageAddress} className="flex flex-col gap-1">
-									<div className="flex flex-row items-center gap-2">
-										<span className="text-gray-400">Key:</span>
-										<CopyToClipboardElement
-											className="font-mono"
-											toastDescription="The key has been copied."
-											value={storageAddress}
-										>
-											{storageAddress}
-										</CopyToClipboardElement>
-									</div>
-									<div className="flex flex-col pl-4">
-										<div className="flex flex-row gap-2">
-											<span className="text-gray-400">Before:</span>
-											<span className="font-mono">{before}</span>
-										</div>
-										<div className="flex flex-row gap-2">
-											<span className="text-gray-400">After:</span>
-											<span className="font-mono">{after}</span>
-										</div>
-									</div>
+											<span className="font-mono">{shortenHash(contractAddress, 13)}</span>
+										</>
+									)}
 								</div>
-							))}
-						</div>
-					</div>
-				);
-			})}
-		</div>
-	);
+								<div className="flex flex-col gap-2">
+									{Object.entries(storageChanges).map(([storageAddress, [before, after]]) => (
+										<div key={storageAddress} className="flex flex-col gap-1">
+											<div className="flex flex-row items-center gap-2">
+												<span className="text-gray-400">Key:</span>
+												<CopyToClipboardElement
+													className="font-mono"
+													toastDescription="The key has been copied."
+													value={storageAddress}
+												>
+													{storageAddress}
+												</CopyToClipboardElement>
+											</div>
+											<div className="flex flex-col pl-4">
+												<div className="flex flex-row gap-2">
+													<span className="text-gray-400">Before:</span>
+													<span className="font-mono">{before}</span>
+												</div>
+												<div className="flex flex-row gap-2">
+													<span className="text-gray-400">After:</span>
+													<span className="font-mono">{after}</span>
+												</div>
+											</div>
+										</div>
+									))}
+								</div>
+							</div>
+						);
+					}
+				)}
+			</div>
+		);
+	} else {
+		return (
+			<Alert className="m-4 w-fit">
+				<ExclamationTriangleIcon className="h-5 w-5" />
+				<AlertTitle>No storage changes.</AlertTitle>
+				<AlertDescription>No contract storage changes in this transaction.</AlertDescription>
+			</Alert>
+		);
+	}
 };
 
 export default StorageChanges;
