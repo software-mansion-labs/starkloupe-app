@@ -15,7 +15,7 @@ import CalldataSearch from '../ui/calldata-search';
 import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { CommonCallTrace } from './common-call-trace';
-import { useCallback } from 'react';
+import { useCallback, useEffect } from 'react';
 import StorageChanges from '../storage-changes';
 import { GasProfiler } from '../gas-profiler';
 

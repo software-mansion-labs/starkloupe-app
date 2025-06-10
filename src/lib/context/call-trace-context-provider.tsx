@@ -89,10 +89,17 @@ export const CallTraceContextProvider: React.FC<
 	const initiallyCollapsed: StringBooleanDict = useMemo(() => {
 		try {
 			const collapsed: StringBooleanDict = {};
-			const processCalls = (calls: Array<any>, getName: (call: any) => string | undefined) => {
+			const processCalls = (
+				calls: Array<any>,
+				getName: (call: any) => string | undefined,
+				shouldFilterByCore: boolean
+			) => {
 				calls.forEach((call) => {
-					const startsWithCore = getName(call)?.startsWith('core') ?? false;
+					const startsWithCore = shouldFilterByCore
+						? getName(call)?.startsWith('core') ?? false
+						: false;
 					let hasDeepestPanicChild = false;
+
 					if (call.childrenCallIds) {
 						hasDeepestPanicChild = call.childrenCallIds.some((childId: number) => {
 							const childCall =
@@ -101,9 +108,11 @@ export const CallTraceContextProvider: React.FC<
 							return childCall?.isDeepestPanicResult === true;
 						});
 					}
+
 					const isPanicCall = call.isDeepestPanicResult === true;
 					let parentId = call.parentCallId;
 					let hasCollapsedAncestor = false;
+
 					while (parentId !== undefined && !isPanicCall && !hasDeepestPanicChild) {
 						if (collapsed[parentId]) {
 							hasCollapsedAncestor = true;
@@ -115,6 +124,7 @@ export const CallTraceContextProvider: React.FC<
 
 						parentId = parentCall?.parentCallId;
 					}
+
 					if (startsWithCore && !hasCollapsedAncestor && !isPanicCall && !hasDeepestPanicChild) {
 						collapsed[call.callId] = true;
 					}
@@ -122,9 +132,12 @@ export const CallTraceContextProvider: React.FC<
 			};
 			processCalls(
 				Object.values(simulationResult.contractCallsMap),
-				(call) => call.entryPointInterfaceName
+				(call) => call.entryPointInterfaceName,
+				false
 			);
-			processCalls(Object.values(simulationResult.functionCallsMap), (call) => call.fnName);
+
+			processCalls(Object.values(simulationResult.functionCallsMap), (call) => call.fnName, true);
+
 			return collapsed;
 		} catch (err) {
 			console.log('Collapsing calls error: ', err);
