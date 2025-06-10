@@ -118,7 +118,7 @@ function CallTraceRootContent() {
 						</TooltipProvider>
 
 						<ScrollArea className="h-[calc(100vh-450px)]">
-							<div className="text-xs px-0 py-2 overflow-y-auto">
+							<div className="text-xs px-0 py-2">
 								<CommonCallTrace callId={1} nestingLevel={0} callType="contract" />
 								<ScrollBar orientation="horizontal" />
 							</div>

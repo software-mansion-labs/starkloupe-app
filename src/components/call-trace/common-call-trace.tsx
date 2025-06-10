@@ -4,6 +4,8 @@ import { FunctionCallTrace } from './function-call-trace';
 import { EventCallTrace } from './event-call-trace';
 import { ErrorTraceLine } from './error-trace-line';
 import { memo, useMemo } from 'react';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import { getContractName, shortenHash } from '@/lib/utils';
 
 export const CommonCallTrace = memo(function CommonCallTrace({
 	previewMode,
@@ -16,13 +18,21 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 	nestingLevel: number;
 	callType?: 'event' | 'function' | 'contract';
 }) {
-	const { eventCallsMap, functionCallsMap, contractCallsMap, errorMessage, flamegraph } =
-		useCallTrace();
+	const {
+		eventCallsMap,
+		functionCallsMap,
+		contractCallsMap,
+		errorMessage,
+		flamegraph,
+		setChosenCallName,
+		setActiveTab
+	} = useCallTrace();
+
+	const formatter = new Intl.NumberFormat(navigator.language);
 	if (!callType) {
 		const functionCall = functionCallsMap[callId];
 		const contractCall = contractCallsMap[callId];
 		const eventCall = eventCallsMap[callId];
-
 		if (functionCall) callType = 'function';
 		else if (contractCall) callType = 'contract';
 		else if (eventCall) callType = 'event';
@@ -91,13 +101,61 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 	} else if (contractCallsMap && contractCallsMap[callId] && callType === 'contract') {
 		const contractCall = contractCallsMap[callId];
 		if (!contractCall.isHidden) {
+			let call = contractCallsMap[callId];
 			return (
-				<ContractCallTrace
-					flamegraph={flamegraph}
-					previewMode={previewMode}
-					contractCallId={callId}
-					nestingLevel={nestingLevel}
-				/>
+				<div className="relative flex w-full items-start">
+					<div className="w-full min-w-0">
+						<ContractCallTrace
+							flamegraph={flamegraph}
+							previewMode={previewMode}
+							contractCallId={callId}
+							nestingLevel={nestingLevel}
+						/>
+					</div>
+					{typeof call.sierraGas === 'number' &&
+					call.sierraGas > 0 &&
+					flamegraph &&
+					!previewMode ? (
+						<span
+							onClick={(e) => {
+								e.stopPropagation();
+								setChosenCallName(
+									`${getContractName({ contractCall: call })}.${
+										call?.entryPointName ?? shortenHash(call.entryPoint.entryPointSelector, 13)
+									}`
+								);
+								setActiveTab('gas-profiler');
+							}}
+							className="sticky right-4 mt-1 -ml-20
+									 min-w-[5rem] px-1.5 py-0.5 hover:bg-blue-200
+									 text-center rounded-sm cursor-pointer
+									 bg-blue-100 border border-blue-400 text-blue-900 z-10"
+						>
+							{formatter.format(call.sierraGas)}
+						</span>
+					) : (
+						!previewMode && (
+							<TooltipProvider>
+								<Tooltip delayDuration={100}>
+									<TooltipTrigger asChild>
+										<span
+											className="sticky right-4 mt-1 -ml-20 flex-shrink-0
+														 min-w-[5rem] px-1.5 py-0.5
+														 text-center rounded-sm cursor-not-allowed
+														 bg-blue-100 border border-blue-400 text-blue-900 z-10"
+										>
+											N/A
+										</span>
+									</TooltipTrigger>
+									<TooltipContent>
+										Gas information available for transactions version 3 and sierra version 1.7.0 or
+										above.
+									</TooltipContent>
+								</Tooltip>
+							</TooltipProvider>
+						)
+					)}
+				</div>
 			);
 		} else {
 			return contractCall.functionCallId ? (

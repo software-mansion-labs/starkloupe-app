@@ -176,40 +176,6 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 						</>
 					)}
 				</div>
-				{typeof call.sierraGas === 'number' && call.sierraGas > 0 && flamegraph ? (
-					<div className="ml-auto ">
-						<span
-							onClick={(e) => {
-								e.stopPropagation();
-								setChosenCallName(
-									`${getContractName({ contractCall: call })}.${
-										call?.entryPointName ?? shortenHash(call.entryPoint.entryPointSelector, 13)
-									}`
-								);
-								setActiveTab('gas-profiler');
-							}}
-							className="text-center rounded-sm cursor-pointer transition-colors hover:bg-blue-200 border inline-block min-w-[5rem] px-1.5 py-0.5 bg-blue-100 border-blue-400 text-blue-900 ml-2"
-						>
-							{formatter.format(call.sierraGas)}
-						</span>
-					</div>
-				) : (
-					<div className="ml-auto ">
-						<TooltipProvider>
-							<Tooltip delayDuration={100}>
-								<TooltipTrigger>
-									<span className="text-center rounded-sm cursor-not-allowed transition-colors border inline-block min-w-[5rem] px-1.5 py-0.5 bg-blue-100 border-blue-400 text-blue-900 ml-2">
-										N/A
-									</span>
-								</TooltipTrigger>
-								<TooltipContent>
-									Gas information available for transactions version 3 and sierra version 1.7.0 or
-									above.
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
-					</div>
-				)}
 			</TraceLine>
 			{expandedCalls[call.callId] && !previewMode && <ContractCallDetails call={call} />}{' '}
 			{collapsedCalls[call.callId] != true && (
