@@ -172,8 +172,8 @@ export function TransactionPage({
 	return (
 		<>
 			<HeaderNav />
-			<main className="overflow-y-auto flex-grow flex-col flex justify-between">
-				<Container className="py-6">
+			<main className="h-full flex flex-col overflow-hidden short:overflow-scroll">
+				<Container className="py-4 sm:py-6 lg:py-8 h-full flex flex-col short:min-h-[600px]">
 					{l2TransactionData ? (
 						<>
 							{/* === L2 Transaction === */}
@@ -340,8 +340,8 @@ export function TransactionPage({
 						<Loader />
 					)}
 				</Container>
-				<Footer />
 			</main>
+			<Footer />
 		</>
 	);
 }

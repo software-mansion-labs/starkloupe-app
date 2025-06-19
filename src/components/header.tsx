@@ -44,7 +44,7 @@ export function HeaderNav({
 												src={logoWalnut}
 												alt="Walnut logo"
 												unoptimized
-												className="h-12 w-auto cursor-pointer"
+												className="h-6 w-auto cursor-pointer"
 											/>
 										</Link>
 									</div>
@@ -98,7 +98,7 @@ export function HeaderNav({
 								</div>
 							</div>
 							{!hideUserSection && isAuthorizationRequiredFeatureActive() && (
-								<div className="hidden md:block -mr-2">
+								<div className="hidden md:block">
 									<div className="flex items-center">
 										<div className="flex flex-row items-center ml-3">
 											<UserSection />
@@ -106,9 +106,9 @@ export function HeaderNav({
 									</div>
 								</div>
 							)}
-							<div className="-mr-2 flex md:hidden">
+							<div className="flex md:hidden">
 								<div className="flex items-center">
-									<div className="flex flex-row items-center m-2">
+									<div className="flex flex-row items-center">
 										<UserSection />
 									</div>
 								</div>

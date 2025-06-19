@@ -65,30 +65,36 @@ function CallTraceRootContent() {
 		[setActiveTab]
 	);
 	return (
-		<div className="mt-12">
-			<Tabs value={activeTab} onValueChange={onValueChange}>
-				<TabsList className="flex md:inline-flex !justify-start md:justify-center flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-rounded ">
+		<div className="mt-12 h-full flex flex-col overflow-hidden">
+			<Tabs
+				value={activeTab}
+				onValueChange={onValueChange}
+				className="flex flex-col flex-1 overflow-hidden min-h-0"
+			>
+				<TabsList className="flex w-full md:w-fit md:inline-flex !justify-start md:justify-center flex-nowrap overflow-x-scroll scrollbar-thin scrollbar-thumb-rounded">
 					<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
 					<TabsTrigger value="events-list">Events</TabsTrigger>
 					<TabsTrigger value="debugger">Debugger</TabsTrigger>
 					<TabsTrigger value="storage-changes">Storage</TabsTrigger>
 					<TabsTrigger value="gas-profiler">Gas Profiler</TabsTrigger>
 				</TabsList>
-
-				<TabsContent value="call-trace">
-					<div className="whitespace-nowrap rounded-xl border">
+				<TabsContent
+					value="call-trace"
+					className={`h-full flex flex-col flex-1 overflow-hidden min-h-0 ${
+						activeTab !== 'call-trace' ? 'hidden' : ''
+					}`}
+				>
+					<div className="whitespace-nowrap rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 ">
 						<TooltipProvider>
-							<div className="border-b shadow-sm">
-								<div className="flex justify-between w-full items-center px-4 ">
+							<div className="border-b shadow-sm flex-none">
+								<div className="flex justify-between w-full items-center px-4">
 									<CalldataSearch />
-									<div className="pt-1">
+									<div className="pt-1 flex gap-1">
 										<Tooltip delayDuration={100}>
 											<TooltipTrigger>
 												<div
-													onClick={() => {
-														expandAll();
-													}}
-													className={`rounded-sm h-full p-1  hover:bg-neutral-100 cursor-pointer`}
+													onClick={() => expandAll()}
+													className="rounded-sm h-full p-1 hover:bg-neutral-100 cursor-pointer"
 												>
 													<PlusCircleIcon className="h-5 w-5" />
 												</div>
@@ -97,13 +103,12 @@ function CallTraceRootContent() {
 												<p>Expand all</p>
 											</TooltipContent>
 										</Tooltip>
+
 										<Tooltip delayDuration={100}>
 											<TooltipTrigger>
 												<div
-													onClick={() => {
-														collapseAll();
-													}}
-													className={`h-full p-1 rounded-sm select-none hover:bg-neutral-100 cursor-pointer`}
+													onClick={() => collapseAll()}
+													className="h-full p-1 rounded-sm select-none hover:bg-neutral-100 cursor-pointer"
 												>
 													<MinusCircleIcon className="h-5 w-5" />
 												</div>
@@ -117,7 +122,7 @@ function CallTraceRootContent() {
 							</div>
 						</TooltipProvider>
 
-						<ScrollArea className="h-[calc(100vh-450px)]">
+						<ScrollArea className="flex-1 overflow-auto">
 							<div className="text-xs px-0 py-2">
 								<CommonCallTrace callId={1} nestingLevel={0} callType="contract" />
 								<ScrollBar orientation="horizontal" />
@@ -125,34 +130,56 @@ function CallTraceRootContent() {
 						</ScrollArea>
 					</div>
 				</TabsContent>
-				<TabsContent value="events-list">
-					<Card>
-						<ScrollArea className="text-xs h-[calc(100vh-409px)]">
-							<div className="p-0 py-2 overflow-y-auto">
+				<TabsContent
+					value="events-list"
+					className={`h-full flex flex-col flex-1 overflow-hidden min-h-0 ${
+						activeTab !== 'events-list' ? 'hidden' : ''
+					}`}
+				>
+					<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs">
+						<ScrollArea className="flex-1 overflow-auto">
+							<div className="p-0 py-2">
 								<EventsList events={simulationResult.events} />
 							</div>
 							<ScrollBar orientation="horizontal" />
 						</ScrollArea>
-					</Card>
+					</div>
 				</TabsContent>
-				<TabsContent value="debugger">
-					<Card className="text-xs h-[calc(100vh-407px)]">
-						<Debugger debuggerPayload={debuggerPayload} />
-					</Card>
+				<TabsContent
+					value="debugger"
+					className={`h-full flex flex-col flex-1 overflow-hidden min-h-0 ${
+						activeTab !== 'debugger' ? 'hidden' : ''
+					}`}
+				>
+					<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs">
+						<ScrollArea className="flex-1 overflow-auto">
+							<Debugger debuggerPayload={debuggerPayload} />
+						</ScrollArea>
+					</div>
 				</TabsContent>
-				<TabsContent value="storage-changes">
-					<Card>
-						<ScrollArea className="text-xs h-[calc(100vh-409px)]">
+				<TabsContent
+					value="storage-changes"
+					className={`h-full flex flex-col flex-1 overflow-hidden min-h-0 ${
+						activeTab !== 'storage-changes' ? 'hidden' : ''
+					}`}
+				>
+					<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs">
+						<ScrollArea className="flex-1 overflow-auto">
 							<StorageChanges />
 						</ScrollArea>
-					</Card>
+					</div>
 				</TabsContent>
-				<TabsContent value="gas-profiler">
-					<Card>
-						<ScrollArea className="text-xs h-[calc(100vh-409px)]">
+				<TabsContent
+					value="gas-profiler"
+					className={`h-full flex flex-col flex-1 overflow-hidden min-h-0 ${
+						activeTab !== 'gas-profiler' ? 'hidden' : ''
+					}`}
+				>
+					<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs">
+						<ScrollArea className="flex-1 overflow-auto">
 							<GasProfiler flamegraph={flamegraph} />
 						</ScrollArea>
-					</Card>
+					</div>
 				</TabsContent>
 			</Tabs>
 		</div>

@@ -14,7 +14,7 @@ export default function Page() {
 		<div className="min-h-screen flex flex-col">
 			<HeaderNav isMainPage={true} />
 			<main className="overflow-hidden flex flex-col items-center justify-center gap-10 flex-auto relative">
-				<Image src={logoWalnut} alt="Walnut logo" unoptimized className="h-16 w-auto" />
+				<Image src={logoWalnut} alt="Walnut logo" unoptimized className="h-7 w-auto" />
 				<div className="w-[38rem] max-w-[92%] text-center">
 					<Search placeholder={`Search for transaction or contract`}></Search>
 					<Link

@@ -147,15 +147,20 @@ export function SimulationPage({
 	return (
 		<>
 			<HeaderNav />
-			<main className="overflow-y-auto flex-grow">
-				<Container className="py-6">
-					<div className="flex flex-row items-baseline justify-between">
-						<h1 className="text-xl font-medium leading-6 mt-4 mr-2">Transaction simulation</h1>
-						<Button variant="outline" disabled={isLoading} onClick={handleReSimulateClick}>
-							<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+			<main className="h-full flex flex-col overflow-hidden  short:overflow-scroll">
+				<Container className="py-4 sm:py-6 lg:py-8 h-full flex flex-col short:min-h-[600px]">
+					<div className="flex flex-col md:flex-row gap-2 mt-4 mb-2 mr-2 items-baseline justify-between flex-none">
+						<h1 className="text-xl font-medium leading-6 mb-2">Transaction simulation</h1>
+						<Button
+							variant="outline"
+							disabled={isLoading}
+							className="w-fit"
+							onClick={handleReSimulateClick}
+						>
+							<PlayIcon className="h-4 w-4" /> Re-simulate
 						</Button>
 					</div>
-					{content}
+					<div className="flex-1 flex flex-col overflow-hidden min-h-0 ">{content}</div>
 				</Container>
 			</main>
 			<Footer />

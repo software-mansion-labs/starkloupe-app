@@ -19,11 +19,11 @@ export const metadata: Metadata = generateMetadata(
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="en" className="h-full ">
-			<body className={`${inter.className} h-full`}>
+		<html lang="en" className="h-full">
+			<body className={`${inter.className} h-full md:overflow-hidden`}>
 				<UserContextProvider>
 					<SettingsContextProvider>
-						<div className="flex flex-col w-full min-h-screen">{children}</div>
+						<div className="flex flex-col h-full w-full max-h-screen">{children}</div>
 					</SettingsContextProvider>
 					<Toaster />
 				</UserContextProvider>
