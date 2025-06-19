@@ -136,6 +136,20 @@ export function TransactionDetails({
 			value: transactionData.transactionVersion.toString()
 		});
 	}
+
+	// 10. Fee
+	if (transactionData.actualFee) {
+		details.push({
+			name: 'Actual Fee',
+			value: transactionData.actualFee
+		});
+	} else if (transactionData.simulationResult.estimatedFee) {
+		details.push({
+			name: 'Estimated Fee',
+			value: transactionData.simulationResult.estimatedFee
+		});
+	}
+
 	return (
 		<div className="mt-4">
 			<InfoBox details={details} />

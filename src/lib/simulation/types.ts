@@ -202,6 +202,7 @@ export interface SimulationResult {
 	executionResult: ExecutionResultSucceeded | ExecutionResultReverted;
 	simulationDebuggerData: SimulationDebuggerData;
 	storageChanges: { [key: string]: { [key: string]: string[] } }; // { contractCallId: { storageAddress: [before, after] } }
+	estimatedFee?: string;
 }
 
 export interface TextPosition {
@@ -254,6 +255,7 @@ export interface L2TransactionData {
 	l1TxHash?: string;
 	l2TxHash?: string;
 	flamechart?: FlameNode;
+	actualFee?: string;
 }
 
 export interface TransactionSimulationResult {
