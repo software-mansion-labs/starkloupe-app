@@ -256,6 +256,11 @@ export interface L2TransactionData {
 	l2TxHash?: string;
 	flamechart?: FlameNode;
 	actualFee?: string;
+	executionResources?: {
+		l1Gas: number;
+		l1DataGas: number;
+		l2Gas: number;
+	};
 }
 
 export interface TransactionSimulationResult {
