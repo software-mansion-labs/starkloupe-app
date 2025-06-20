@@ -150,6 +150,31 @@ export function TransactionDetails({
 		});
 	}
 
+	// 11. Execution Resources
+	if (
+		transactionData.executionResources &&
+		!(
+			transactionData.executionResources.l1Gas === 0 &&
+			transactionData.executionResources.l1DataGas === 0 &&
+			transactionData.executionResources.l2Gas === 0
+		)
+	) {
+		const { l1Gas, l1DataGas, l2Gas } = transactionData.executionResources;
+		const formatter = new Intl.NumberFormat(navigator.language);
+		details.push({
+			name: 'L1 Gas',
+			value: formatter.format(l1Gas)
+		});
+		details.push({
+			name: 'L1 Data Gas',
+			value: formatter.format(l1DataGas)
+		});
+		details.push({
+			name: 'L2 Gas',
+			value: formatter.format(l2Gas)
+		});
+	}
+
 	return (
 		<div className="mt-4">
 			<InfoBox details={details} />
