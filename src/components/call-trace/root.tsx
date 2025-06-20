@@ -71,7 +71,7 @@ function CallTraceRootContent() {
 				onValueChange={onValueChange}
 				className="flex flex-col flex-1 overflow-hidden min-h-0"
 			>
-				<TabsList className="flex w-full md:w-fit md:inline-flex !justify-start md:justify-center flex-nowrap overflow-x-scroll scrollbar-thin scrollbar-thumb-rounded">
+				<TabsList className="flex md:inline-flex md:w-fit !justify-start md:justify-center flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-rounded">
 					<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
 					<TabsTrigger value="events-list">Events</TabsTrigger>
 					<TabsTrigger value="debugger">Debugger</TabsTrigger>

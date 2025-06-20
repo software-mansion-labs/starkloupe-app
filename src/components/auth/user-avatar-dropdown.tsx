@@ -24,7 +24,7 @@ const UserAvatarDropdown = ({ avatarSrc, userName }: { avatarSrc?: string; userN
 					</Avatar>
 				</DropdownMenuTrigger>
 
-				<DropdownMenuContent className=" w-fit mr-4 sm:mr-6 lg:mr-8">
+				<DropdownMenuContent className="w-fit mr-4 sm:mr-6 lg:mr-8">
 					<DropdownMenuItem
 						onClick={() => (window.location.href = `/simulate-transaction`)}
 						className="cursor-pointer"
