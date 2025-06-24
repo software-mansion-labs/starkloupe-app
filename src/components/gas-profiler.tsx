@@ -17,16 +17,25 @@ const FlameGraph = dynamic(() => import('./flamegraph'), {
 	)
 });
 
-export function GasProfiler({ flamegraph }: { flamegraph: FlameNode | undefined }) {
+export function GasProfiler({ l2Flamegraph, l1DataFlamegraph }: { l2Flamegraph: FlameNode | undefined, l1DataFlamegraph: FlameNode | undefined }) {
 	const { chosenCallName } = useCallTrace();
-	const isEmpty = !flamegraph || !flamegraph.children || flamegraph.children.length === 0;
+	const isFlamegraphEmpty = !l2Flamegraph || !l2Flamegraph.children || l2Flamegraph.children.length === 0;
+	const isL1DataFlamegraphEmpty = !l1DataFlamegraph || !l1DataFlamegraph.children || l1DataFlamegraph.children.length === 0;
+	const isBothEmpty = isFlamegraphEmpty && isL1DataFlamegraphEmpty;
+	
 	return (
-		<div className="flex flex-col gap-4 ">
-			{!isEmpty ? (
-				<div className="p-4">
-					<FlameGraph data={flamegraph} activeName={chosenCallName} />
+		<div className="flex flex-col">
+			{!isFlamegraphEmpty && (
+				<div className="pt-2 px-4 pb-0">
+					<FlameGraph data={l2Flamegraph} activeName={chosenCallName}/>
 				</div>
-			) : (
+			)}
+			{!isL1DataFlamegraphEmpty && (
+				<div className="pt-2 px-4 pb-0">
+					<FlameGraph data={l1DataFlamegraph} activeName={chosenCallName}/>
+				</div>
+			)}
+			{isBothEmpty && (
 				<Alert className="m-4 w-fit">
 					<ExclamationTriangleIcon className="h-5 w-5" />
 					<AlertTitle>Flamegraph is not supported</AlertTitle>

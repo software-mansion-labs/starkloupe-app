@@ -23,7 +23,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 		functionCallsMap,
 		contractCallsMap,
 		errorMessage,
-		flamegraph,
+		l2Flamegraph,
 		setChosenCallName,
 		setActiveTab
 	} = useCallTrace();
@@ -106,7 +106,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 				<div className="relative flex w-full items-start">
 					<div className="w-full min-w-0">
 						<ContractCallTrace
-							flamegraph={flamegraph}
+							l2Flamegraph={l2Flamegraph}
 							previewMode={previewMode}
 							contractCallId={callId}
 							nestingLevel={nestingLevel}
@@ -114,7 +114,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 					</div>
 					{typeof call.sierraGas === 'number' &&
 					call.sierraGas > 0 &&
-					flamegraph &&
+					l2Flamegraph &&
 					!previewMode ? (
 						<span
 							onClick={(e) => {

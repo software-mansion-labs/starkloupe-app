@@ -118,7 +118,8 @@ export function SimulationPage({
 				/>
 				<CallTraceRoot
 					simulationResult={l2TransactionData.simulationResult}
-					flamegraph={l2TransactionData?.flamechart}
+					l2Flamegraph={l2TransactionData?.l2Flamechart}
+					l1DataFlamegraph={l2TransactionData?.l1DataFlamechart}
 					debuggerPayload={debuggerPayload}
 				/>
 			</>

@@ -137,7 +137,7 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 			.cellHeight(24)
 			.minFrameSize(minFrameSize)
 			.transitionDuration(750)
-			.sort(true)
+			.sort((a, b) => b.value - a.value)
 			.inverted(true)
 			.tooltip(false)
 			// @ts-ignore

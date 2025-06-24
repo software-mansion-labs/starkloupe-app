@@ -21,17 +21,20 @@ import { GasProfiler } from '../gas-profiler';
 
 export function CallTraceRoot({
 	simulationResult,
-	flamegraph,
+	l2Flamegraph,
+	l1DataFlamegraph,
 	debuggerPayload
 }: {
 	simulationResult: SimulationResult;
-	flamegraph: FlameNode | undefined;
+	l2Flamegraph: FlameNode | undefined;
+	l1DataFlamegraph: FlameNode | undefined;
 	debuggerPayload: DebuggerPayload | null;
 }) {
 	return (
 		<CallTraceContextProvider
 			simulationResult={simulationResult}
-			flamegraph={flamegraph}
+			l2Flamegraph={l2Flamegraph}
+			l1DataFlamegraph={l1DataFlamegraph}
 			debuggerPayload={debuggerPayload}
 		>
 			{debuggerPayload && (
@@ -51,7 +54,8 @@ function CallTraceRootContent() {
 		activeTab,
 		setActiveTab,
 		simulationResult,
-		flamegraph,
+		l2Flamegraph,
+		l1DataFlamegraph,
 		setChosenCallName,
 		debuggerPayload
 	} = useCallTrace();
@@ -177,7 +181,7 @@ function CallTraceRootContent() {
 				>
 					<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs">
 						<ScrollArea className="flex-1 overflow-auto">
-							<GasProfiler flamegraph={flamegraph} />
+							<GasProfiler l2Flamegraph={l2Flamegraph} l1DataFlamegraph={l1DataFlamegraph} />
 						</ScrollArea>
 					</div>
 				</TabsContent>
