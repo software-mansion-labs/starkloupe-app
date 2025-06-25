@@ -112,7 +112,7 @@ export function TransactionPage({
 				if (simulation.l2TransactionData) {
 					setL2TransactionData(simulation.l2TransactionData);
 					const l2 = simulation.l2TransactionData;
-					
+
 					const debuggerPayload: DebuggerPayload = {
 						chainId: l2.chainId ?? null,
 						blockNumber: l2.blockNumber ?? null,
@@ -237,7 +237,7 @@ export function TransactionPage({
 							<TransactionDetails transactionData={l2TransactionData} rpcUrl={rpcUrl} />
 							<CallTraceRoot
 								simulationResult={l2TransactionData.simulationResult}
-								l2Flamegraph={l2TransactionData.l2Flamechart}
+								l2Flamegraph={l2TransactionData.flamechart}
 								l1DataFlamegraph={l2TransactionData.l1DataFlamechart}
 								debuggerPayload={debuggerPayload}
 							/>

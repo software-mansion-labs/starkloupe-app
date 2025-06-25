@@ -73,7 +73,7 @@ export function GasProfiler({
 					<AlertTitle>Flamegraph is not supported</AlertTitle>
 					<AlertDescription>
 						Flamegraph is currently supported for Transactions Version 3. L2 Flamegraph is supported
-						only Sierra version 1.7.0 and above. L1 Data Flamegraph is supported only for
+						only for Sierra version 1.7.0 and above. L1 Data Flamegraph is supported only for
 						transactions with version 3 and when data is provided as a blob. Please check your
 						transaction version and data format.
 					</AlertDescription>
