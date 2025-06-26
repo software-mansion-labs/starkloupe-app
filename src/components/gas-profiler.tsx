@@ -17,6 +17,36 @@ const FlameGraph = dynamic(() => import('./flamegraph'), {
 	)
 });
 
+const FLAMEGRAPH_ERRORS = {
+	L2_NOT_SUPPORTED: {
+		title: 'L2 Gas Profiling is not supported',
+		description:
+			'L2 Gas Profiling is available for the Transaction Version 3 and Sierra version 1.7.0 and above. Please upgrade your contract or transaction to a supported Sierra version to enable L2 Flamegraph visualization.'
+	},
+	L1_DATA_NOT_SUPPORTED: {
+		title: 'L1 Data Gas Profiling is not supported',
+		description:
+			'L1 Data Gas Profiling is available for Transactions Version 3. Please ensure your transaction meets these requirements to view the L1 Data Flamegraph visualization.'
+	},
+	BOTH_NOT_SUPPORTED: {
+		title: 'Flamegraph is not supported',
+		description:
+			'Flamegraph is currently supported for Transactions Version 3 and Sierra version 1.7.0 or above.'
+	}
+} as const;
+
+const ErrorAlert = ({
+	error
+}: {
+	error: (typeof FLAMEGRAPH_ERRORS)[keyof typeof FLAMEGRAPH_ERRORS];
+}) => (
+	<Alert className="m-4 w-fit">
+		<ExclamationTriangleIcon className="h-5 w-5" />
+		<AlertTitle>{error.title}</AlertTitle>
+		<AlertDescription>{error.description}</AlertDescription>
+	</Alert>
+);
+
 export function GasProfiler({
 	l2Flamegraph,
 	l1DataFlamegraph
@@ -39,15 +69,7 @@ export function GasProfiler({
 				</div>
 			)}
 			{isL2FlamegraphEmpty && !isL1DataFlamegraphEmpty && (
-				<Alert className="m-4 w-fit">
-					<ExclamationTriangleIcon className="h-5 w-5" />
-					<AlertTitle>L2 Gas Profiling is not supported</AlertTitle>
-					<AlertDescription>
-						L2 Gas Profiling is available for the Transaction Version 3 and Sierra version 1.7.0 and
-						above. Please upgrade your contract or transaction to a supported Sierra version to
-						enable L2 Flamegraph visualization.
-					</AlertDescription>
-				</Alert>
+				<ErrorAlert error={FLAMEGRAPH_ERRORS.L2_NOT_SUPPORTED} />
 			)}
 
 			{!isL1DataFlamegraphEmpty && (
@@ -56,29 +78,10 @@ export function GasProfiler({
 				</div>
 			)}
 			{isL1DataFlamegraphEmpty && !isL2FlamegraphEmpty && (
-				<Alert className="m-4 w-fit">
-					<ExclamationTriangleIcon className="h-5 w-5" />
-					<AlertTitle>L1 Data Gas Profiling is not supported</AlertTitle>
-					<AlertDescription>
-						L1 Data Gas Profiling is available for Transactions Version 3 and when data are provided
-						as a blob. Please ensure your transaction meets these requirements to view the L1
-						DataFlamegraph visualization.
-					</AlertDescription>
-				</Alert>
+				<ErrorAlert error={FLAMEGRAPH_ERRORS.L1_DATA_NOT_SUPPORTED} />
 			)}
 
-			{isBothEmpty && (
-				<Alert className="m-4 w-fit">
-					<ExclamationTriangleIcon className="h-5 w-5" />
-					<AlertTitle>Flamegraph is not supported</AlertTitle>
-					<AlertDescription>
-						Flamegraph is currently supported for Transactions Version 3. L2 Flamegraph is supported
-						only for Sierra version 1.7.0 and above. L1 Data Flamegraph is supported only for
-						transactions with version 3 and when data is provided as a blob. Please check your
-						transaction version and data format.
-					</AlertDescription>
-				</Alert>
-			)}
+			{isBothEmpty && <ErrorAlert error={FLAMEGRAPH_ERRORS.BOTH_NOT_SUPPORTED} />}
 		</div>
 	);
 }
