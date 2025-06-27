@@ -237,7 +237,8 @@ export function TransactionPage({
 							<TransactionDetails transactionData={l2TransactionData} rpcUrl={rpcUrl} />
 							<CallTraceRoot
 								simulationResult={l2TransactionData.simulationResult}
-								flamegraph={l2TransactionData.flamechart}
+								l2Flamegraph={l2TransactionData.flamechart}
+								l1DataFlamegraph={l2TransactionData.l1DataFlamechart}
 								debuggerPayload={debuggerPayload}
 							/>
 						</>

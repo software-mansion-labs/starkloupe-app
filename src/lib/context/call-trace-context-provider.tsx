@@ -37,7 +37,8 @@ interface CallTraceContextProps {
 	activeTab: TabId;
 	isExecutionFailed: boolean;
 	errorMessage: string | undefined;
-	flamegraph: FlameNode | undefined;
+	l2Flamegraph: FlameNode | undefined;
+	l1DataFlamegraph: FlameNode | undefined;
 	debuggerPayload: DebuggerPayload | null;
 	traceLineElementRefs: MutableRefObject<{
 		[key: number]: RefObject<HTMLDivElement>;
@@ -63,7 +64,8 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	simulationDebuggerData: { classesDebuggerData: {}, debuggerTrace: [] },
 	activeTab: 'call-trace',
 	isExecutionFailed: false,
-	flamegraph: {} as FlameNode,
+	l2Flamegraph: {} as FlameNode,
+	l1DataFlamegraph: {} as FlameNode,
 	traceLineElementRefs: { current: {} },
 	errorMessage: undefined,
 	debuggerPayload: {} as DebuggerPayload,
@@ -80,10 +82,11 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 export const CallTraceContextProvider: React.FC<
 	PropsWithChildren<{
 		simulationResult: SimulationResult;
-		flamegraph: FlameNode | undefined;
+		l2Flamegraph: FlameNode | undefined;
+		l1DataFlamegraph: FlameNode | undefined;
 		debuggerPayload: DebuggerPayload | null;
 	}>
-> = ({ children, simulationResult, flamegraph, debuggerPayload }) => {
+> = ({ children, simulationResult, l2Flamegraph, l1DataFlamegraph, debuggerPayload }) => {
 	// This collapses calls starting with "core".
 	// If call has children: only parent is collapsed
 	const initiallyCollapsed: StringBooleanDict = useMemo(() => {
@@ -210,7 +213,8 @@ export const CallTraceContextProvider: React.FC<
 				expandedCalls,
 				simulationDebuggerData: simulationResult.simulationDebuggerData,
 				errorMessage,
-				flamegraph,
+				l2Flamegraph,
+				l1DataFlamegraph,
 				debuggerPayload,
 				activeTab,
 				isExecutionFailed,

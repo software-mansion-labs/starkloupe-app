@@ -7,11 +7,19 @@ import { flamegraph } from 'd3-flame-graph';
 import 'd3-flame-graph/dist/d3-flamegraph.css';
 import { shortenHash } from '@/lib/utils';
 
+export type FlameChartNodeType =
+	| 'Root'
+	| 'Category'
+	| 'ContractAddress'
+	| 'StorageKey'
+	| 'ClassHash';
+
 export interface FlameNode {
 	callId: number;
 	value: number;
 	rawValue: number;
 	name: string;
+	nodeType?: FlameChartNodeType;
 	children?: FlameNode[];
 }
 
@@ -44,6 +52,20 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 		}
 		return parts.join('.');
 	};
+
+	function formatNodeType(type?: FlameChartNodeType): string | null {
+		if (!type) return null;
+		switch (type) {
+			case 'ContractAddress':
+				return 'Contract Address';
+			case 'StorageKey':
+				return 'Storage Key';
+			case 'ClassHash':
+				return 'Class Hash';
+			default:
+				return null;
+		}
+	}
 
 	useEffect(() => {
 		if (!containerRef.current) return;
@@ -137,7 +159,7 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 			.cellHeight(24)
 			.minFrameSize(minFrameSize)
 			.transitionDuration(750)
-			.sort(true)
+			.sort((a, b) => b.value - a.value)
 			.inverted(true)
 			.tooltip(false)
 			// @ts-ignore
@@ -162,10 +184,13 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 			d3.select(container)
 				.selectAll<SVGRectElement, any>('.frame rect')
 				.on('mouseenter', (event: MouseEvent, d: { data: FlameNode }) => {
+					const nodeTypeLabel = formatNodeType(d.data.nodeType);
 					tooltip.html(
-						`<strong>${displayName(d.data.name)}</strong><br/>Value: ${formatter.format(
-							d.data.rawValue
-						)}`
+						nodeTypeLabel
+							? `<strong>${nodeTypeLabel}: ${d.data.name}</strong><br/>Value: ${formatter.format(
+									d.data.rawValue
+							  )}`
+							: `<strong>${d.data.name}</strong><br/>Value: ${formatter.format(d.data.rawValue)}`
 					);
 					const tipEl = tooltip.node() as HTMLElement;
 					const tipW = tipEl.getBoundingClientRect().width;
@@ -210,10 +235,13 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 		d3.select(cont)
 			.selectAll<SVGRectElement, any>('.frame rect')
 			.on('mouseenter', (event: MouseEvent, d: { data: FlameNode }) => {
+				const nodeTypeLabel = formatNodeType(d.data.nodeType);
 				tooltip.html(
-					`<strong>${displayName(d.data.name)}</strong><br/>Value: ${formatter.format(
-						d.data.rawValue
-					)}`
+					nodeTypeLabel
+						? `<strong>${nodeTypeLabel}: ${d.data.name}</strong><br/>Value: ${formatter.format(
+								d.data.rawValue
+						  )}`
+						: `<strong>${d.data.name}</strong><br/>Value: ${formatter.format(d.data.rawValue)}`
 				);
 				const tipEl = tooltip.node() as HTMLElement;
 				const tipW = tipEl.getBoundingClientRect().width;
@@ -252,9 +280,8 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 			chartRef.current?.resetZoom();
 		};
 	}, []);
-
 	return (
-		<div className="w-full">
+		<div className={`w-full border-gray-200 rounded-xl p-2 bg-accent`}>
 			<div
 				ref={containerRef}
 				style={{ width: '100%', height: `${height}px`, overflow: 'auto' }}

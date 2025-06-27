@@ -255,6 +255,7 @@ export interface L2TransactionData {
 	l1TxHash?: string;
 	l2TxHash?: string;
 	flamechart?: FlameNode;
+	l1DataFlamechart?: FlameNode;
 	actualFee?: string;
 	executionResources?: {
 		l1Gas: number;

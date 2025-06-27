@@ -18,12 +18,12 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 	contractCallId,
 	nestingLevel,
 	previewMode,
-	flamegraph
+	l2Flamegraph
 }: {
 	contractCallId: number;
 	nestingLevel: number;
 	previewMode?: boolean;
-	flamegraph?: FlameNode | undefined;
+	l2Flamegraph?: FlameNode | undefined;
 }) {
 	const {
 		expandedCalls,
