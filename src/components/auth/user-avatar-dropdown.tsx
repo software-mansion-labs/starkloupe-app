@@ -25,13 +25,12 @@ const UserAvatarDropdown = ({ avatarSrc, userName }: { avatarSrc?: string; userN
 				</DropdownMenuTrigger>
 
 				<DropdownMenuContent className="w-fit mr-4 sm:mr-6 lg:mr-8">
-					<DropdownMenuItem
-						onClick={() => (window.location.href = `/simulate-transaction`)}
-						className="cursor-pointer"
-					>
-						<PlayIcon className="mr-2 h-4 w-4" />
-						<span>Simulate transaction</span>
-					</DropdownMenuItem>
+					<Link href={`/simulate-transaction`}>
+						<DropdownMenuItem className="cursor-pointer">
+							<PlayIcon className="mr-1 h-4 w-4" />
+							<span>Simulate transaction</span>
+						</DropdownMenuItem>
+					</Link>
 					<Link href="/settings">
 						<DropdownMenuItem className="cursor-pointer">
 							<Cog6ToothIcon className="mr-1 h-4 w-4" />
