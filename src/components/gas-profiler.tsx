@@ -7,7 +7,7 @@ import { FlameNode } from './flamegraph';
 const FlameGraph = dynamic(() => import('./flamegraph'), {
 	ssr: false,
 	loading: () => (
-		<Alert className="m-4 py-4 w-fit min-w-[2rem] flex items-center gap-4">
+		<Alert className="my-4 py-4 w-fit min-w-[2rem] flex items-center gap-4">
 			<span className="h-6 w-6 block rounded-full border-4 border-t-gray-800 animate-spin" />
 			<div className="flex flex-col">
 				<AlertTitle>Loading</AlertTitle>
@@ -64,8 +64,13 @@ export function GasProfiler({
 	return (
 		<div className="flex flex-col">
 			{!isL2FlamegraphEmpty && (
-				<div className="pt-2 px-4 pb-0">
-					<FlameGraph data={l2Flamegraph} activeName={chosenCallName} />
+				<div className="px-4">
+					<div className="gap-2 flex flex-col pt-2 pb-4  border-b">
+						<div className="font-medium text-sm">L2 Flamegraph</div>
+						<div className="">
+							<FlameGraph data={l2Flamegraph} activeName={chosenCallName} />
+						</div>
+					</div>
 				</div>
 			)}
 			{isL2FlamegraphEmpty && !isL1DataFlamegraphEmpty && (
@@ -73,8 +78,13 @@ export function GasProfiler({
 			)}
 
 			{!isL1DataFlamegraphEmpty && (
-				<div className="pt-2 px-4 pb-0">
-					<FlameGraph data={l1DataFlamegraph} activeName={chosenCallName} />
+				<div className="px-4">
+					<div className="gap-2 flex flex-col pt-2 pb-4 border-b">
+						<div className="font-medium text-sm">L1 Data Flamegraph</div>
+						<div className="">
+							<FlameGraph data={l1DataFlamegraph} activeName={chosenCallName} />
+						</div>
+					</div>
 				</div>
 			)}
 			{isL1DataFlamegraphEmpty && !isL2FlamegraphEmpty && (

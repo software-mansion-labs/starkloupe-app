@@ -280,9 +280,8 @@ const FlameGraph: React.FC<FlameGraphProps> = ({
 			chartRef.current?.resetZoom();
 		};
 	}, []);
-
 	return (
-		<div className="w-full">
+		<div className={`w-full border-gray-200 rounded-xl p-2 bg-accent`}>
 			<div
 				ref={containerRef}
 				style={{ width: '100%', height: `${height}px`, overflow: 'auto' }}
