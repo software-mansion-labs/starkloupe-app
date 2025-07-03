@@ -92,7 +92,7 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 							toggleExpand();
 						}
 					}}
-					className="w-full px-2 py-1 flex items-center justify-between h-[32px]  hover:bg-neutral-50"
+					className="w-full px-2 py-1 flex items-center justify-between h-[32px]  hover:bg-accent"
 				>
 					<span className="font-medium uppercase whitespace-nowrap">File explorer</span>
 					<ChevronRight className="w-4 h-4" />
@@ -111,7 +111,7 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 							toggleExpand();
 						}
 					}}
-					className="w-full px-2 py-1 flex items-center justify-between h-[32px] hover:bg-neutral-50"
+					className="w-full px-2 py-1 flex items-center justify-between h-[32px] hover:bg-accent"
 				>
 					<span className="font-medium uppercase whitespace-nowrap">File Explorer</span>
 					<ChevronDown className="w-4 h-4" />
@@ -134,11 +134,7 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 												<Tooltip delayDuration={100}>
 													<TooltipTrigger>
 														<div
-															className={`py-1 px-2 transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1  ${
-																contract?.classHash && openContracts[contract?.classHash]
-																	? 'bg-neutral-100'
-																	: 'hover:bg-neutral-50'
-															}`}
+															className={`py-1 px-2 transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1 hover:bg-accent `}
 															onClick={() =>
 																contract?.classHash && toggleContract(contract?.classHash)
 															}
@@ -158,7 +154,7 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 															</span>
 														</div>
 													</TooltipTrigger>
-													<TooltipContent>
+													<TooltipContent className="text-black dark:text-white border bg-background border-border">
 														<p>{contract?.entryPoint.storageAddress}</p>
 													</TooltipContent>
 												</Tooltip>

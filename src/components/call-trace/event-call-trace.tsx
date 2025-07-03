@@ -52,8 +52,8 @@ export const EventCallTrace = memo(function EventCallTrace({
 					<span className="text-pink-600">{eventCall.name}</span> (
 					{(eventCall.members ?? []).map((member, index) => (
 						<span key={index}>
-							<span className="text-green-600">{member.name}</span>:&nbsp;
-							<span className="text-orange-500">{member.type}</span>
+							<span className="text-green-600 dark:text-variable_green">{member.name}</span>:&nbsp;
+							<span className="text-orange-500 dark:text-light_orange">{member.type}</span>
 							{index < (eventCall.members?.length ?? 0) - 1 && <span>,&nbsp;</span>}
 						</span>
 					))}
@@ -119,7 +119,7 @@ const EventCallDetails = memo(function EventCallDetails({
 	}
 
 	return (
-		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4">
+		<div className="flex flex-col bg-sky-50 dark:bg-background border-y border-blue-400 py-1 px-4">
 			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
 				<div className="">
 					<InfoBox details={details} />

@@ -60,7 +60,7 @@ export const DebugButton = memo(function DebugButton({
 	return (
 		<div
 			onClick={handleDebugClick}
-			className="w-5 h-5 p-0.5 rounded-sm cursor-pointer hover:bg-neutral-200"
+			className="w-5 h-5 p-0.5 rounded-sm cursor-pointer hover:bg-accent_2"
 		>
 			{isDebuggable ? (
 				<BugAntIcon className={`${bugIconClassName} text-green-700`} />
@@ -73,7 +73,7 @@ export const DebugButton = memo(function DebugButton({
 								setPopoverOpen(true);
 							}}
 						>
-							<BugAntIcon className={`${bugIconClassName} text-gray-700`} />
+							<BugAntIcon className={`${bugIconClassName} text-gray-700 dark:text-gray-400`} />
 						</div>
 					</PopoverTrigger>
 					<PopoverContent className="text-sm text-muted-foreground">

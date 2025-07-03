@@ -54,10 +54,7 @@ const StorageChanges: React.FC<StorageChangesProps> = (props) => {
 				{Object.entries(storageChanges).map(
 					([contractAddress, { contractName, storageChanges }]) => {
 						return (
-							<div
-								key={contractAddress}
-								className="flex flex-col border-b border-gray-200 pb-4 gap-1"
-							>
+							<div key={contractAddress} className="flex flex-col border-b pb-4 gap-1">
 								<div className="flex flex-row items-baseline gap-2">
 									{contractName ? (
 										<>

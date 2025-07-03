@@ -128,8 +128,9 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 							}}
 							className="sticky right-4 mt-1 -ml-20
 									 min-w-[5rem] px-1.5 py-0.5 hover:bg-blue-200
+									 dark:hover:bg-blue-700
 									 text-center rounded-sm cursor-pointer
-									 bg-blue-100 border border-blue-400 text-blue-900 z-10"
+									 bg-blue-100 border border-blue-400 text-blue-900 dark:bg-[#004A7E] dark:text-white z-10"
 						>
 							{formatter.format(call.sierraGas)}
 						</span>
@@ -142,12 +143,12 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 											className="sticky right-4 mt-1 -ml-20 flex-shrink-0
 														 min-w-[5rem] px-1.5 py-0.5
 														 text-center rounded-sm cursor-not-allowed
-														 bg-blue-100 border border-blue-400 text-blue-900 z-10"
+														 bg-blue-100 border border-blue-400 text-blue-900 z-10 dark:bg-[#004A7E] dark:text-white"
 										>
 											N/A
 										</span>
 									</TooltipTrigger>
-									<TooltipContent>
+									<TooltipContent className="bg-background border-border text-black dark:text-white border">
 										Gas information available for transactions version 3 and sierra version 1.7.0 or
 										above.
 									</TooltipContent>

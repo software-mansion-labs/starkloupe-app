@@ -1,5 +1,5 @@
-import React, { memo, useMemo, useContext } from 'react';
-import { ContractCall, CodeLocation, InternalFnCallIO, FunctionCall } from '@/lib/simulation';
+import React, { memo, useMemo } from 'react';
+import { ContractCall, InternalFnCallIO, FunctionCall } from '@/lib/simulation';
 import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
@@ -9,7 +9,6 @@ import { DebugButton } from './debug-btn';
 import { CommonCallTrace } from './common-call-trace';
 import { InfoBox } from '@/components/ui/info-box';
 import { FnName } from '../ui/function-name';
-import { Card } from '../ui/card';
 
 export const FunctionCallTrace = memo(function FunctionCallTrace({
 	previewMode,
@@ -57,9 +56,9 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 						? isDebuggable
 							? currentStep?.withLocation?.functionCallId === functionCallId ||
 							  currentStep?.withContractCall?.contractCallId
-								? 'bg-neutral-100'
-								: 'hover:!bg-neutral-50'
-							: 'hover:!bg-neutral-50'
+								? 'bg-accent hover:bg-accent'
+								: 'hover:!bg-accent'
+							: ''
 						: ''
 				}`}
 				isActive={!previewMode && expandedCalls[functionCallId]}
@@ -93,7 +92,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 					<div
 						className={`w-5 h-5 p-1 mr-1  rounded-sm  ${
 							functionCall.childrenCallIds.length > 0 || functionCall.isDeepestPanicResult
-								? 'cursor-pointer hover:!bg-neutral-50'
+								? 'cursor-pointer hover:!bg-accent_2'
 								: ''
 						}`}
 						onClick={(event) => {
@@ -149,8 +148,8 @@ const CallIO = memo(function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 		return ios.map((io, i) =>
 			ioToSkip.includes(io.typeName ?? '') ? null : (
 				<React.Fragment key={i}>
-					<span className="text-orange-500">{io.typeName}</span>:&nbsp;
-					<span className="text-orange-700">
+					<span className="text-orange-500 dark:text-light_orange">{io.typeName}</span>:&nbsp;
+					<span className="text-orange-700 dark:text-regexp">
 						{io.value.length === 0
 							? 'None'
 							: io.value.length === 1
@@ -164,9 +163,9 @@ const CallIO = memo(function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 	}, [ios]);
 	return (
 		<>
-			<span className="text-yellow-900">{'('}</span>
+			<span className="text-yellow-900 dark:text-highlight_yellow">{'('}</span>
 			{iosList}
-			<span className="text-yellow-900">{')'}</span>
+			<span className="text-yellow-900 dark:text-highlight_yellow">{')'}</span>
 		</>
 	);
 });
@@ -208,7 +207,7 @@ const FunctionCallDetails = memo(function FunctionCallDetails({
 	}
 
 	return (
-		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-1 px-4">
+		<div className="flex flex-col bg-sky-50 dark:bg-background border-y border-blue-400 py-1 px-4">
 			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
 				<div className="">
 					<InfoBox details={details} />

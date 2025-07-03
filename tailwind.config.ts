@@ -42,6 +42,9 @@ module.exports = {
 					DEFAULT: 'hsl(var(--accent))',
 					foreground: 'hsl(var(--accent-foreground))'
 				},
+				accent_2: {
+					DEFAULT: 'hsl(var(--accent-2))'
+				},
 				popover: {
 					DEFAULT: 'hsl(var(--popover))',
 					foreground: 'hsl(var(--popover-foreground))'
@@ -49,7 +52,15 @@ module.exports = {
 				card: {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
-				}
+				},
+				variable: '#569cd6',
+				function: '#da70d6',
+				function_2: '#FF77A9',
+				light_orange: '#CE9178',
+				highlight_yellow: '#ffd700',
+				regexp: '#b5cea8',
+				variable_green: '#3dc9b0',
+				keys: '#7DABF8'
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

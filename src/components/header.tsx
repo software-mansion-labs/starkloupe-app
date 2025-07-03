@@ -5,13 +5,21 @@ import Link from 'next/link';
 import { Disclosure } from '@headlessui/react';
 import { Search } from '@/components/ui/search';
 import { Button } from '@/components/ui/button';
-import { PlayIcon } from '@heroicons/react/24/outline';
+import { PlayIcon, MoonIcon, SunIcon } from '@heroicons/react/24/outline';
 import logoWalnut from '@/assets/walnut-logo-beta.svg';
+import logoWalnutWhite from '@/assets/walnut-logo-beta-white.svg';
 import { Container } from '@/components/ui/container';
 import { UserSection } from '@/components/auth/user-section';
 import { useUserContext } from '@/lib/context/user-context-provider';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { isAuthorizationRequiredFeatureActive } from '@/app/api/feature-flag-service';
+import { useTheme } from 'next-themes';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from './ui/dropdown-menu';
 
 export function HeaderNav({
 	isMainPage = false,
@@ -22,11 +30,11 @@ export function HeaderNav({
 }) {
 	const { isLogged } = useUserContext();
 	const { trackingActive } = useSettings();
+	const { theme, setTheme, resolvedTheme } = useTheme();
+
+	const Icon = resolvedTheme === 'dark' ? MoonIcon : SunIcon;
 	return (
-		<Disclosure
-			as="nav"
-			className={`${!isMainPage && 'bg-neutral-50 border-b border-neutral-200'}`}
-		>
+		<Disclosure as="nav" className={`${!isMainPage && 'bg-background  border-b border-border'}`}>
 			{() => (
 				<>
 					{!trackingActive && (
@@ -44,7 +52,13 @@ export function HeaderNav({
 												src={logoWalnut}
 												alt="Walnut logo"
 												unoptimized
-												className="h-6 w-auto cursor-pointer"
+												className="h-6 w-auto cursor-pointer dark:hidden"
+											/>
+											<Image
+												src={logoWalnutWhite}
+												alt="Walnut logo"
+												unoptimized
+												className="h-6 w-auto cursor-pointer hidden dark:block"
 											/>
 										</Link>
 									</div>
@@ -113,6 +127,24 @@ export function HeaderNav({
 									</div>
 								</div>
 							</div>
+							<DropdownMenu>
+								<DropdownMenuTrigger asChild>
+									<button
+										className="
+											p-2 hover:bg-accent rounded-sm ml-3 hidden md:block
+											focus:outline-none focus:ring-0
+											focus-visible:outline-none focus-visible:ring-0
+										"
+									>
+										<Icon className="w-[1.2rem] h-[1.2rem]" />
+									</button>
+								</DropdownMenuTrigger>
+								<DropdownMenuContent>
+									<DropdownMenuItem onClick={() => setTheme('dark')}>Dark</DropdownMenuItem>
+									<DropdownMenuItem onClick={() => setTheme('light')}>Light</DropdownMenuItem>
+									<DropdownMenuItem onClick={() => setTheme('system')}>System</DropdownMenuItem>
+								</DropdownMenuContent>
+							</DropdownMenu>
 						</div>
 					</Container>
 

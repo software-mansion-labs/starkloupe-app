@@ -25,7 +25,7 @@ export const CallTracePreview = memo(function FilesExplorer({
 						toggleCallTrace();
 						toggleExpand();
 					}}
-					className="w-full px-2 py-1 flex items-center justify-between hover:bg-neutral-50  h-full "
+					className="w-full px-2 py-1 flex items-center justify-between hover:bg-accent  h-full "
 				>
 					<span className="font-medium uppercase whitespace-nowrap">Call Trace Preview</span>
 					<ChevronRight className="w-4 h-4" />
@@ -42,7 +42,7 @@ export const CallTracePreview = memo(function FilesExplorer({
 						toggleCallTrace();
 						toggleExpand();
 					}}
-					className="w-full px-2 py-1 flex items-center justify-between hover:bg-neutral-50  h-[32px]"
+					className="w-full px-2 py-1 flex items-center justify-between hover:bg-accent  h-[32px]"
 				>
 					<span className="font-medium uppercase whitespace-nowrap">Call trace preview</span>
 					<ChevronDown className="w-4 h-4" />

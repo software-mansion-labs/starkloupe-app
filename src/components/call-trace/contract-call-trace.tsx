@@ -101,9 +101,9 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 					previewMode
 						? isDebuggable
 							? currentStep?.withLocation?.contractCallId === call.callId
-								? 'bg-neutral-100'
-								: 'hover:!bg-neutral-50'
-							: 'hover:!bg-neutral-50'
+								? 'bg-accent hover:bg-accent'
+								: 'hover:!bg-accent'
+							: ''
 						: ''
 				}`}
 				isActive={!previewMode && expandedCalls[call.callId]}
@@ -139,7 +139,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 				>
 					<div
 						className={`w-5 h-5 p-1 mr-1  rounded-sm  ${
-							hasNestedElements ? 'cursor-pointer hover:!bg-neutral-50' : ''
+							hasNestedElements ? 'cursor-pointer hover:bg-accent_2' : ''
 						}`}
 						onClick={(event) => {
 							event.stopPropagation();
@@ -158,21 +158,29 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 					</div>
 
 					<ContractCallSignature contractCall={call} />
-					{!previewMode && <span className="text-yellow-900">{'('}</span>}
+					{!previewMode && (
+						<span className="text-yellow-900 dark:text-highlight_yellow">{'('}</span>
+					)}
 					{!previewMode && call.argumentsNames ? (
-						<span className="text-green-600">{call.argumentsNames.join(', ')}</span>
+						<span className="text-green-600 dark:text-variable_green">
+							{call.argumentsNames.join(', ')}
+						</span>
 					) : (
 						<></>
 					)}
-					{!previewMode && <span className="text-yellow-900">{')'}</span>}
+					{!previewMode && (
+						<span className="text-yellow-900 dark:text-highlight_yellow">{')'}</span>
+					)}
 					{!previewMode && call.result && call.resultTypes ? (
 						<>
-							<span className="text-yellow-900">&nbsp;{'->'}&nbsp;</span>
-							<span className="text-pink-500">{`(${call.resultTypes.join(', ')})`}</span>
+							<span className="text-yellow-900 dark:text-highlight_yellow">&nbsp;{'->'}&nbsp;</span>
+							<span className="text-pink-500 dark:text-function_2">{`(${call.resultTypes.join(
+								', '
+							)})`}</span>
 						</>
 					) : (
 						<>
-							<span className="text-yellow-900">{'->()'}</span>{' '}
+							<span className="text-yellow-900 dark:text-highlight_yellow">{'->()'}</span>{' '}
 						</>
 					)}
 				</div>
@@ -298,7 +306,7 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 	);
 
 	return (
-		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-2 px-4 ">
+		<div className="flex flex-col bg-sky-50 dark:bg-background border-y border-blue-400 py-2 px-4 ">
 			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
 				<div className="">
 					<InfoBox details={details} />

@@ -137,7 +137,7 @@ export function DecodeDataTable({
 							<TableBody>
 								{rawData.map((item: string, index: number) => (
 									<TableRow key={index}>
-										<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
+										<TableCell className="border-r last:border-r-0 whitespace-break-spaces">
 											{item}
 										</TableCell>
 									</TableRow>
@@ -163,14 +163,14 @@ export function DecodeDataTable({
 									decodeData.map((item: DecodedItem, index: number) => (
 										<TableRow key={index}>
 											{type === DataType.CALLDATA && (
-												<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
+												<TableCell className="border-r  last:border-r-0 whitespace-break-spaces">
 													{item.name}
 												</TableCell>
 											)}
-											<TableCell className="border-r border-neutral-200 last:border-r-0 whitespace-break-spaces">
+											<TableCell className="border-r last:border-r-0 whitespace-break-spaces">
 												{item.typeName}
 											</TableCell>
-											<TableCell className="border-r border-neutral-200 last:border-r-0 w-full">
+											<TableCell className="border-r last:border-r-0 w-full">
 												{renderValue(item.value)}
 											</TableCell>
 										</TableRow>

@@ -476,7 +476,7 @@ export function SimulateTransactionPage({
 										</CopyToClipboardElement>
 									)}
 								</h1>
-								<h3 className="text-gray-600">{description}</h3>
+								<h3 className="text-muted-foreground">{description}</h3>
 							</div>
 						</div>
 
@@ -537,7 +537,7 @@ export function SimulateTransactionPage({
 
 								{_contractCalls.map((call, index) => {
 									return (
-										<fieldset key={index} className="border border-gray-200 rounded-md p-4">
+										<fieldset key={index} className="border  rounded-md p-4">
 											<legend className="px-2 font-medium text-sm">Call #{index + 1}</legend>
 											<div className="grid gap-4">
 												<div className="grid grid-cols-4 items-center gap-x-4 gap-y-2">

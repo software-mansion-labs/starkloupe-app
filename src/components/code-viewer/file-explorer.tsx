@@ -103,8 +103,8 @@ const FileSystemItem = memo(function FileSystemItem({
 		<div>
 			<div
 				className={cn(
-					'flex items-center py-1 px-2 cursor-pointer hover:bg-neutral-50 select-none',
-					isActive && contract?.callId === contractCall?.callId && 'bg-neutral-100'
+					'flex items-center py-1 px-2 cursor-pointer hover:bg-accent select-none',
+					isActive && contract?.callId === contractCall?.callId && 'bg-accent_2'
 				)}
 				style={{
 					paddingLeft: contract?.callId

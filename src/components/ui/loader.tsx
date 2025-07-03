@@ -24,13 +24,13 @@ const Loader = forwardRef<
 	}, []);
 
 	return (
-		<div className="text-center my-16 text-gray-800">
+		<div className="text-center my-16">
 			{randomQuote && (
 				<h3 className="text-md font-medium max-w-sm mx-auto whitespace-pre-line">{quote}</h3>
 			)}
 
 			<div className={'flex items-center justify-center mt-4 gap-2'}>
-				<span className="h-6 w-6 block rounded-full border-4 border-t-gray-800 animate-spin"></span>
+				<span className="h-6 w-6 block rounded-full border-4 dark:border-t-accent_2 border-t-gray-800 animate-spin"></span>
 				{text ?? 'loading...'}
 			</div>
 		</div>

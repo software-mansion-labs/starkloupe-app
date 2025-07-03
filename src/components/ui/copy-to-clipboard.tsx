@@ -25,7 +25,7 @@ const CopyToClipboardElement = ({
 					});
 				}
 			}}
-			className={cn('hover:bg-neutral-100 cursor-pointer p-1 rounded-sm', className)}
+			className={cn('hover:bg-muted cursor-pointer p-1 rounded-sm', className)}
 		>
 			{children}
 		</span>

@@ -130,7 +130,7 @@ export function Search({
 							name="search"
 							onFocus={() => setOpen(true)}
 						/>
-						<div className="pointer-events-none border border-neutral-200 text-neutral-600 rounded-sm text-sm absolute right-0 inset-y-1.5 mr-1.5 p-1 hidden md:flex items-center">
+						<div className="pointer-events-none border border-border text-neutral-600 rounded-sm text-sm absolute right-0 inset-y-1.5 mr-1.5 p-1 hidden md:flex items-center">
 							{isMac ? '⌘K' : 'Ctrl+K'}
 						</div>
 					</TooltipTrigger>
@@ -190,9 +190,9 @@ export function Search({
 						searchValue.length > 3 && <CommandEmpty>Searching...</CommandEmpty>
 					)}
 					{(searchDataResponse || error) && (
-						<div className="bg-gray-50 border-t ">
+						<div className="border-t ">
 							<CommandItem
-								className="ml-1.5 hover:bg-gray-50"
+								className="hover:bg-accent !rounded-b-sm !rounded-t-none"
 								style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
 							>
 								<p className="text-muted-foreground">

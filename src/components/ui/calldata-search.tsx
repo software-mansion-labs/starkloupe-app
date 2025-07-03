@@ -119,7 +119,7 @@ const CalldataSearch = memo(function CalldataSearch() {
 
 				<CommandList className="pr-2">
 					{searchTerm && (
-						<CommandGroup className="absolute shadow-md bg-white border pr-2 flex flex-col md:block rounded-b-lg max-h-96 max-w-full w-full md:w-2/5 items-start overflow-auto z-20 ">
+						<CommandGroup className="absolute shadow-md bg-white dark:bg-background border pr-2 flex flex-col md:block rounded-b-lg max-h-96 max-w-full w-full md:w-2/5 items-start overflow-auto z-20 ">
 							{searchResults.length > 0 ? (
 								<div className="flex flex-col">
 									{' '}

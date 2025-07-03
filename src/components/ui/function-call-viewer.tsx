@@ -100,7 +100,7 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 		return (
 			<div className="font-mono">
 				<div
-					className="flex items-center cursor-pointer hover:bg-slate-50 pr-1 rounded-sm transition-all delay-75 ease-out mb-1 mr-2"
+					className="flex items-center cursor-pointer hover:bg-accent pr-1 rounded-sm transition-all delay-75 ease-out mb-1 mr-2"
 					onClick={() => toggleExpand(name + value.length.toString())}
 				>
 					{isExpanded.includes(name + value.length.toString()) ? (
@@ -108,7 +108,7 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 							<span className="-m-1">
 								<TriangleDownIcon className="h-4 w-4 mr-1" />
 							</span>
-							<span className="text-pink-900 font-semibold">{name}: </span>
+							<span className="text-pink-900 dark:text-keys font-semibold">{name}: </span>
 						</>
 					) : (
 						<>
@@ -116,7 +116,7 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 								<TriangleRightIcon className="h-4 w-4 mr-1" />
 							</span>
 							<span>
-								<span className="text-pink-900 font-semibold ">{name}:</span>
+								<span className="text-pink-900 dark:text-keys font-semibold ">{name}:</span>
 								<span className="italic">
 									({value.length}){' '}
 									{`[${value.length > 0 ? (value.length === 1 ? value.join(', ') : '...') : ''}]`}
@@ -130,7 +130,7 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 					<div className="ml-2 mb-1">
 						{value.map((item, index) => (
 							<div key={index} className="whitespace-pre">
-								<span className="text-pink-900 font-semibold">{index}: </span>
+								<span className="text-pink-900 dark:text-keys font-semibold">{index}: </span>
 								{`${item}`}
 							</div>
 						))}
@@ -160,7 +160,7 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 				return (
 					<div>
 						<div
-							className="flex items-center cursor-pointer hover:bg-slate-50 pr-1 rounded-sm transition-all delay-75 ease-out mb-1"
+							className="flex items-center cursor-pointer hover:bg-accent pr-1 rounded-sm transition-all delay-75 ease-out mb-1"
 							onClick={() => value.typeName && toggleExpand(uniqueId)}
 						>
 							{isExpanded.includes(uniqueId) ? (
@@ -172,7 +172,7 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 									<TriangleRightIcon className="h-4 w-4 mr-1" />
 								</span>
 							)}
-							<span className="text-pink-900 font-semibold">{value.typeName}: </span>
+							<span className="text-pink-900 dark:text-keys font-semibold">{value.typeName}: </span>
 							{!isExpanded.includes(uniqueId) && (
 								<span className="ml-1 italic">
 									{arrayLength === 1
@@ -190,18 +190,22 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 													{typeof val === 'object' && !('typeName' in val) ? (
 														<div className="flex-1">
 															<div
-																className="flex items-center cursor-pointer hover:bg-slate-50 pr-1 rounded-sm transition-all delay-75 ease-out"
+																className="flex items-center cursor-pointer hover:bg-accent pr-1 rounded-sm transition-all delay-75 ease-out"
 																onClick={() => toggleExpand(`${uniqueId}_array-item-${index}`)}
 															>
 																{isExpanded.includes(`${uniqueId}_array-item-${index}`) ? (
 																	<span className="flex items-center -ml-1">
 																		<TriangleDownIcon className="h-4 w-4 mr-1" />
-																		<span className="text-pink-900 font-semibold">{index}: </span>
+																		<span className="text-pink-900 dark:text-keys font-semibold">
+																			{index}:{' '}
+																		</span>
 																	</span>
 																) : (
 																	<span className="flex items-center -ml-1">
 																		<TriangleRightIcon className="h-4 w-4 mr-1" />
-																		<span className="text-pink-900 font-semibold">{index}: </span>
+																		<span className="text-pink-900 dark:text-keys font-semibold">
+																			{index}:{' '}
+																		</span>
 																		<span className="ml-1 italic">{'{...}'}</span>
 																	</span>
 																)}
@@ -221,7 +225,9 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 														</div>
 													) : (
 														<span>
-															<span className="text-pink-900 font-semibold">{index}: </span>
+															<span className="text-pink-900 dark:text-keys font-semibold">
+																{index}:{' '}
+															</span>
 															<span>
 																{renderValue(
 																	val as InternalFnCallIO | string | string[],
@@ -250,7 +256,7 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 				<span className={`${value.typeName === 'Panic' && '!text-red-600'} mb-1`}>
 					<span
 						className={`${
-							value.typeName === 'Panic' ? '!text-red-600' : 'text-pink-900'
+							value.typeName === 'Panic' ? '!text-red-600' : 'text-pink-900 dark:text-keys'
 						} font-semibold`}
 					>
 						{value.typeName}:{' '}
@@ -267,7 +273,7 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 					{isArray
 						? value.map((val, index) => (
 								<div key={index} className="ml-2 mb-1">
-									<span className="text-pink-900 font-semibold">{index}: </span>
+									<span className="text-pink-900 dark:text-keys font-semibold">{index}: </span>
 									{renderValue(val as InternalFnCallIO | string | string[], `${path}_${index}`)}
 								</div>
 						  ))
@@ -314,7 +320,7 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 	return (
 		<div className="font-mono px-2 my-2">
 			<div className="font-bold mb-1">
-				fn: <span className="text-pink-500">{data.function}</span>
+				fn: <span className="text-pink-500 dark:text-function_2">{data.function}</span>
 			</div>
 			<div className="mb-1">
 				{data.args.length > 0 ? (
@@ -335,7 +341,7 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 					<span className="font-semibold whitespace-nowrap">
 						expression:{' '}
 						<span
-							className="bg-yellow-300 bg-opacity-40 font-normal cursor-pointer hover:bg-yellow-500 hover:bg-opacity-40 trasition-all"
+							className="bg-yellow-300 bg-opacity-20 font-normal cursor-pointer hover:bg-yellow-500 hover:bg-opacity-40 trasition-all"
 							onMouseEnter={() => setExpressionHover(true)}
 							onMouseLeave={() => setExpressionHover(false)}
 						>

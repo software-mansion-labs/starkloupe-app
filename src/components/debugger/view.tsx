@@ -63,7 +63,7 @@ export function DebuggerView() {
 							codeLocation={codeLocation}
 							highlightClass={`${
 								isExpressionHover ? 'bg-yellow-500' : 'bg-yellow-300'
-							} bg-opacity-40 transition-all`}
+							} bg-opacity-20 dark:bg-opacity-10 transition-all`}
 							args={codeLocation ? currentStep.withLocation.arguments : undefined}
 							results={codeLocation ? currentStep.withLocation.results : undefined}
 						/>
@@ -80,7 +80,7 @@ export function DebuggerView() {
 									The source code for this contract is missing. To enable the step-by-step debugger,
 									verify the contract on Walnut by following{' '}
 									<Link
-										className="underline-offset-4 hover:underline text-pink-500"
+										className="underline-offset-4 hover:underline text-pink-500 dark:text-function_2"
 										href={WALNUT_VERIFY_DOCS_URL}
 									>
 										this guide
@@ -134,7 +134,7 @@ function Controls({
 	}, [previousStep, nextStep, stepOver]);
 
 	return (
-		<div className="flex flex-row border-b border-neutral-200 py-1 px-3 justify-between items-center">
+		<div className="flex flex-row border-b py-1 px-3 justify-between items-center">
 			<div>{contractCall && <ContractCallSignature contractCall={contractCall} />}</div>
 			<div className="flex flex-row gap-3 items-center">
 				<div>
@@ -149,7 +149,7 @@ function Controls({
 									className={`w-5 h-5 p-0.5 rounded-sm select-none ${
 										stepIndex <= 0
 											? 'cursor-not-allowed opacity-60'
-											: 'cursor-pointer hover:bg-neutral-100'
+											: 'cursor-pointer hover:bg-accent'
 									}`}
 								>
 									<div className="icon">
@@ -168,7 +168,9 @@ function Controls({
 									</div>
 								</div>
 							</TooltipTrigger>
-							<TooltipContent>Step back (b)</TooltipContent>
+							<TooltipContent className="bg-background border-border text-black dark:text-white border">
+								Step back (b)
+							</TooltipContent>
 						</Tooltip>
 						<Tooltip delayDuration={100}>
 							<TooltipTrigger>
@@ -177,7 +179,7 @@ function Controls({
 									className={`w-5 h-5 p-0.5 rounded-sm select-none ${
 										stepIndex >= totalSteps - 1
 											? 'cursor-not-allowed opacity-60'
-											: 'cursor-pointer hover:bg-neutral-100'
+											: 'cursor-pointer hover:bg-accent'
 									}`}
 								>
 									<div className="icon">
@@ -196,7 +198,9 @@ function Controls({
 									</div>
 								</div>
 							</TooltipTrigger>
-							<TooltipContent>Step (n)</TooltipContent>
+							<TooltipContent className="bg-background border-border text-black dark:text-white border">
+								Step (n)
+							</TooltipContent>
 						</Tooltip>
 						<Tooltip delayDuration={100}>
 							<TooltipTrigger>
@@ -206,7 +210,7 @@ function Controls({
 									className={`w-5 h-5 p-0.5 rounded-sm select-none ${
 										stepIndex >= totalSteps - 1
 											? 'cursor-not-allowed opacity-60'
-											: 'cursor-pointer hover:bg-neutral-100'
+											: 'cursor-pointer hover:bg-accent'
 									}`}
 								>
 									<div className="icon">
@@ -225,7 +229,9 @@ function Controls({
 									</div>
 								</div>
 							</TooltipTrigger>
-							<TooltipContent>Step over (o)</TooltipContent>
+							<TooltipContent className="bg-background border-border text-black dark:text-white border">
+								Step over (o)
+							</TooltipContent>
 						</Tooltip>
 						<Tooltip delayDuration={100}>
 							<TooltipTrigger>
@@ -235,7 +241,7 @@ function Controls({
 									className={`w-5 h-5 p-0.5 rounded-sm select-none ${
 										stepIndex >= totalSteps - 1
 											? 'cursor-not-allowed opacity-60'
-											: 'cursor-pointer hover:bg-neutral-100'
+											: 'cursor-pointer hover:bg-accent'
 									}`}
 								>
 									<div className="icon">
@@ -254,7 +260,9 @@ function Controls({
 									</div>
 								</div>
 							</TooltipTrigger>
-							<TooltipContent>Run</TooltipContent>
+							<TooltipContent className="bg-background border-border text-black dark:text-white border">
+								Run
+							</TooltipContent>
 						</Tooltip>
 					</div>
 				</TooltipProvider>

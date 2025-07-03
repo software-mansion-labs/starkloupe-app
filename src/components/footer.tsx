@@ -39,7 +39,7 @@ const navigation = [
 export function Footer() {
 	return (
 		<footer className="flex-none">
-			<Container className="py-1 bg-neutral-50 border-t border-neutral-200">
+			<Container className="py-1 border-t ">
 				<div className="flex flex-col md:flex-row md:justify-between md:items-center">
 					<div className="flex space-x-12 mb-4 md:mb-0 text-xs"></div>
 					<div className="flex justify-end space-x-4 items-center">

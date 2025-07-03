@@ -6,6 +6,7 @@ import { registerCairoLanguageSupport } from './cairo-lang-config';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';
 import { CodeLocation, InternalFnCallIO } from '@/lib/simulation';
 import { useDebugger } from '@/lib/context/debugger-context-provider';
+import { useTheme } from 'next-themes';
 
 export function CodeViewer({
 	content,
@@ -20,6 +21,8 @@ export function CodeViewer({
 	results?: InternalFnCallIO[];
 	codeLocation: CodeLocation | undefined;
 }) {
+	const { theme } = useTheme(); // 'light' | 'dark' | 'system'
+	const isDark = theme === 'dark';
 	const editorRef = useRef<Editor.IStandaloneCodeEditor>();
 	const [editorDecorations, setEditorDecorations] =
 		useState<Editor.IEditorDecorationsCollection | null>(null);
@@ -47,7 +50,7 @@ export function CodeViewer({
 	const classFileBreakpoints = contractCall ? fileBreakpoints[contractCall.classHash] : undefined;
 	const classHash = contractCall ? contractCall.classHash : undefined;
 
-	if (!highlightClass) highlightClass = 'bg-neutral-300 bg-opacity-40';
+	if (!highlightClass) highlightClass = 'bg-neutral-300 bg-opacity-40 dark:bg-opacity-20';
 
 	useEffect(() => {
 		activeFileRef.current = activeFile;
@@ -271,6 +274,7 @@ export function CodeViewer({
 	return (
 		<MonacoEditor
 			onMount={handleEditorDidMount}
+			theme={isDark ? 'vs-dark' : 'vs-light'}
 			options={{
 				minimap: { enabled: false },
 				wordBreak: 'keepAll',
@@ -282,7 +286,7 @@ export function CodeViewer({
 				lineDecorationsWidth: 15
 			}}
 			value={content}
-			language={'cairo'}
+			language="cairo"
 			className={cn(
 				'whitespace-pre-wrap overflow-x-scroll p-0 m-0 w-full h-full absolute top-0 left-0'
 			)}

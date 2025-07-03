@@ -18,7 +18,7 @@ export const Debugger = memo(function Debugger({
 	if (!context) {
 		return (
 			<Alert className="m-4 py-4 w-fit min-w-[2rem] flex items-center gap-4">
-				<span className="h-6 w-6 block rounded-full border-4 border-t-gray-800 animate-spin" />
+				<span className="h-6 w-6 block rounded-full border-4 dark:border-t-accent_2 border-t-gray-800 animate-spin" />
 				<div className="flex flex-col">
 					<AlertTitle>Loading</AlertTitle>
 					<AlertDescription>Please wait, debugger is loading</AlertDescription>
@@ -32,7 +32,7 @@ export const Debugger = memo(function Debugger({
 	if (loading) {
 		return (
 			<Alert className="m-4 py-4 w-fit min-w-[2rem] flex items-center gap-4">
-				<span className="h-6 w-6 block rounded-full border-4 border-t-gray-800 animate-spin" />
+				<span className="h-6 w-6 block rounded-full border-4 dark:border-t-accent_2 border-t-gray-800 animate-spin" />
 				<div className="flex flex-col">
 					<AlertTitle>Loading</AlertTitle>
 					<AlertDescription>Please wait, debugger is loading</AlertDescription>
@@ -55,7 +55,7 @@ export const Debugger = memo(function Debugger({
 						The source code for the contract is missing. To enable the step-by-step debugger, verify
 						the contract on Walnut by following{' '}
 						<Link
-							className="underline-offset-4 hover:underline text-pink-500"
+							className="underline-offset-4 hover:underline text-pink-500 dark:text-function_2"
 							href={WALNUT_VERIFY_DOCS_URL}
 						>
 							this guide

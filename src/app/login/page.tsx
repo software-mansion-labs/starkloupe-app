@@ -9,12 +9,21 @@ import { useUserContext } from '@/lib/context/user-context-provider';
 import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
+import { useTheme } from 'next-themes';
 
 export const runtime = 'edge';
 
 export default function Page() {
 	const { isLogged } = useUserContext();
 	const router = useRouter();
+	const { theme, setTheme } = useTheme();
+	const currentTheme = theme;
+	useEffect(() => {
+		setTheme('light');
+		return () => {
+			if (currentTheme) setTheme(currentTheme);
+		};
+	}, []);
 	useEffect(() => {
 		// if (isLogged) {
 		// 	router.push('/');
@@ -85,7 +94,13 @@ export default function Page() {
 							src={logoWalnut}
 							alt="Walnut logo"
 							unoptimized
-							className="h-12 w-auto lg:hidden"
+							className="h-12 w-auto lg:hidden dark:hidden"
+						/>
+						<Image
+							src={logoWalnutWhite}
+							alt="Walnut logo"
+							unoptimized
+							className="h-12 w-auto lg:hidden hidden dark:block"
 						/>
 						<div className="flex flex-col space-y-2 text-center">
 							<h1 className="text-2xl font-semibold tracking-tight">Sign up to Walnut</h1>

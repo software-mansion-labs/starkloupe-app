@@ -39,7 +39,7 @@ export function SourceFiles({ sourceCode }: { sourceCode: { [key: string]: strin
 					<ResizablePanel defaultSize={80} className="flex flex-col flex-grow">
 						{activeFile && (
 							<div className="flex flex-col w-full h-full">
-								<div className="flex gap-1 flex-row border-b border-neutral-200 py-1 px-3 items-center">
+								<div className="flex gap-1 flex-row border-b  py-1 px-3 items-center">
 									<File size={16} />
 									{activeFile}
 								</div>

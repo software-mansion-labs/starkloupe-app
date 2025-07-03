@@ -38,19 +38,21 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 						className="flex flex-row items-center trace-line_content"
 					>
 						{event.contractName && (
-							<span className="text-blue-600 whitespace-nowrap">{contractName}</span>
+							<span className="text-blue-600 dark:text-variable whitespace-nowrap">
+								{contractName}
+							</span>
 						)}
 						{'.'}
-						<span className="text-pink-500">{event.name}</span>
-						<span className="text-yellow-900">{'('}</span>
+						<span className="text-pink-500 dark:text-function_2">{event.name}</span>
+						<span className="text-yellow-900 dark:text-highlight_yellow">{'('}</span>
 						{(event.datas ?? []).map((param: DecodedItem, index: number) => (
 							<span key={index}>
-								<span className="text-green-600">{param.name}</span>:&nbsp;
-								<span className="text-orange-500">{param.typeName}</span>
+								<span className="text-green-600 dark:text-variable_green">{param.name}</span>:&nbsp;
+								<span className="text-orange-500 dark:text-light_orange">{param.typeName}</span>
 								{index < (event.datas?.length ?? 0) - 1 && <span>,&nbsp;</span>}
 							</span>
 						))}
-						<span className="text-yellow-900">{')'}</span>
+						<span className="text-yellow-900 dark:text-highlight_yellow">{')'}</span>
 					</div>
 				</TraceLine>
 				{expandedCalls[key] && <EventDetails call={event} />}
@@ -71,7 +73,7 @@ const EventDetails = memo(function EventCallDetails({ call }: { call: ContractCa
 	);
 
 	return (
-		<div className="flex flex-col bg-sky-50 border-y border-blue-400 py-2 px-4 ">
+		<div className="flex flex-col bg-sky-50 border-y dark:bg-background border-blue-400 py-2 px-4 ">
 			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
 				<div className=""></div>
 				<InfoBox details={details} />

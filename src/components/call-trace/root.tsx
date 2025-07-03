@@ -75,7 +75,7 @@ function CallTraceRootContent() {
 				onValueChange={onValueChange}
 				className="flex flex-col flex-1 overflow-hidden min-h-0"
 			>
-				<TabsList className="flex md:inline-flex md:w-fit !justify-start md:justify-center flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-rounded">
+				<TabsList className="flex md:inline-flex md:w-fit dark:bg-card !justify-start md:justify-center flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-rounded">
 					<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
 					<TabsTrigger value="events-list">Events</TabsTrigger>
 					<TabsTrigger value="debugger">Debugger</TabsTrigger>
@@ -88,7 +88,7 @@ function CallTraceRootContent() {
 						activeTab !== 'call-trace' ? 'hidden' : ''
 					}`}
 				>
-					<div className="whitespace-nowrap rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 ">
+					<div className="whitespace-nowrap rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 dark:bg-card">
 						<TooltipProvider>
 							<div className="border-b shadow-sm flex-none">
 								<div className="flex justify-between w-full items-center px-4">
@@ -98,12 +98,12 @@ function CallTraceRootContent() {
 											<TooltipTrigger>
 												<div
 													onClick={() => expandAll()}
-													className="rounded-sm h-full p-1 hover:bg-neutral-100 cursor-pointer"
+													className="rounded-sm h-full p-1 hover:bg-accent cursor-pointer"
 												>
 													<PlusCircleIcon className="h-5 w-5" />
 												</div>
 											</TooltipTrigger>
-											<TooltipContent>
+											<TooltipContent className="bg-background border-border text-black dark:text-white border">
 												<p>Expand all</p>
 											</TooltipContent>
 										</Tooltip>
@@ -112,12 +112,12 @@ function CallTraceRootContent() {
 											<TooltipTrigger>
 												<div
 													onClick={() => collapseAll()}
-													className="h-full p-1 rounded-sm select-none hover:bg-neutral-100 cursor-pointer"
+													className="h-full p-1 rounded-sm select-none hover:bg-accent cursor-pointer"
 												>
 													<MinusCircleIcon className="h-5 w-5" />
 												</div>
 											</TooltipTrigger>
-											<TooltipContent>
+											<TooltipContent className="bg-background border-border text-black dark:text-white border">
 												<p>Collapse all</p>
 											</TooltipContent>
 										</Tooltip>
@@ -140,7 +140,7 @@ function CallTraceRootContent() {
 						activeTab !== 'events-list' ? 'hidden' : ''
 					}`}
 				>
-					<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs">
+					<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs dark:bg-card">
 						<ScrollArea className="flex-1 overflow-auto">
 							<div className="p-0 py-2">
 								<EventsList events={simulationResult.events} />
@@ -155,7 +155,7 @@ function CallTraceRootContent() {
 						activeTab !== 'debugger' ? 'hidden' : ''
 					}`}
 				>
-					<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs">
+					<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs dark:bg-card">
 						<ScrollArea className="flex-1 overflow-auto">
 							<Debugger debuggerPayload={debuggerPayload} />
 						</ScrollArea>
@@ -167,7 +167,7 @@ function CallTraceRootContent() {
 						activeTab !== 'storage-changes' ? 'hidden' : ''
 					}`}
 				>
-					<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs">
+					<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs dark:bg-card">
 						<ScrollArea className="flex-1 overflow-auto">
 							<StorageChanges />
 						</ScrollArea>
@@ -180,7 +180,7 @@ function CallTraceRootContent() {
 					}`}
 				>
 					<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs">
-						<ScrollArea className="flex-1 overflow-auto">
+						<ScrollArea className="flex-1 overflow-auto dark:bg-card">
 							<GasProfiler l2Flamegraph={l2Flamegraph} l1DataFlamegraph={l1DataFlamegraph} />
 						</ScrollArea>
 					</div>

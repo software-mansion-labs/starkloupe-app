@@ -27,9 +27,7 @@ export function InfoBox({ details }: { details: InfoBoxItem[] }) {
 											: null
 									}
 									toastDescription={`${name} has been copied.`}
-									className={`rounded-sm font-mono px-1 ${
-										isCopyable ? 'cursor-pointer hover:bg-black/10' : ''
-									}`}
+									className={`rounded-sm font-mono px-1 ${isCopyable ? 'cursor-pointer0' : ''}`}
 								>
 									{value}
 								</CopyToClipboardElement>

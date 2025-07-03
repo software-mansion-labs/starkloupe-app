@@ -27,7 +27,7 @@ export function StepDetails({ step, functionCallsMap, className, toggleExpand }:
 						toggleCallTrace();
 						toggleExpand();
 					}}
-					className="w-full px-2 py-1 flex items-center justify-between hover:bg-neutral-50 h-full"
+					className="w-full px-2 py-1 flex items-center justify-between hover:bg-accent h-full"
 				>
 					<span className="font-medium uppercase whitespace-nowrap">Function Call Details</span>
 					<ChevronRight className="w-4 h-4" />
@@ -72,7 +72,7 @@ export function StepDetails({ step, functionCallsMap, className, toggleExpand }:
 					toggleCallTrace();
 					toggleExpand();
 				}}
-				className="w-full px-2 py-1 flex items-center justify-between hover:bg-neutral-50 h-[32px]"
+				className="w-full px-2 py-1 flex items-center justify-between hover:bg-accent h-[32px]"
 			>
 				<span className="font-medium uppercase whitespace-nowrap">Function Call Details</span>
 				<ChevronDown className="w-4 h-4" />
