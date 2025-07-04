@@ -46,7 +46,7 @@ export const EventCallTrace = memo(function EventCallTrace({
 
 				<div
 					style={{ marginLeft: nestingLevel * CALL_NESTING_SPACE_BUMP }}
-					className="flex flex-row items-center"
+					className="flex flex-row items-center trace-line_content"
 				>
 					<div className={`w-5 h-5 p-1 mr-1`}></div>
 					<span className="text-pink-600">{eventCall.name}</span> (
