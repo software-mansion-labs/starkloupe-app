@@ -1,15 +1,23 @@
-import { InternalFnCallIO } from '@/lib/simulation';
+import { DecodedItem, InternalFnCallIO } from '@/lib/simulation';
 import React, { useContext, useEffect, useState } from 'react';
 import { TriangleRightIcon, TriangleDownIcon } from '@radix-ui/react-icons';
 import { DebuggerContext, useDebugger } from '@/lib/context/debugger-context-provider';
+import CopyToClipboardElement from './copy-to-clipboard';
 
 interface FilteredStepInfo {
 	function: string | undefined;
-	args: InternalFnCallIO[];
-	result: InternalFnCallIO[];
+	args: InternalFnCallIO[] | string | string[] | DecodedItem[];
+	result?: InternalFnCallIO[];
+	typeName?: string;
 }
 
-const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
+const FunctionCallViewer = ({
+	data,
+	isContract = false
+}: {
+	data: FilteredStepInfo;
+	isContract?: boolean;
+}) => {
 	const debuggerContext = useDebugger();
 	const [results, setResults] = useState<InternalFnCallIO[] | undefined>(undefined);
 	const [args, setArgs] = useState<InternalFnCallIO[] | undefined>(undefined);
@@ -130,8 +138,10 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 					<div className="ml-2 mb-1">
 						{value.map((item, index) => (
 							<div key={index} className="whitespace-pre">
-								<span className="text-pink-900 dark:text-keys font-semibold">{index}: </span>
-								{`${item}`}
+								<CopyToClipboardElement value={item as string} toastDescription="Copied!">
+									<span className="text-pink-900 dark:text-keys font-semibold">{index}: </span>
+									{`${item}`}
+								</CopyToClipboardElement>
 							</div>
 						))}
 					</div>
@@ -144,13 +154,26 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 			prev.includes(typeName) ? prev.filter((name) => name !== typeName) : [...prev, typeName]
 		);
 	};
-	const renderValue = (value: InternalFnCallIO | string | string[], path: string = '') => {
-		if (value && typeof value === 'object' && 'typeName' in value && 'value' in value) {
+	const renderValue = (
+		value: InternalFnCallIO | string | string[] | DecodedItem,
+		path: string = ''
+	) => {
+		if (
+			value &&
+			typeof value === 'object' &&
+			(isContract ? 'typeName' in value : 'name' in value) &&
+			'value' in value
+		) {
 			if (
 				Array.isArray(value.value) &&
 				value.value.every((item) => typeof item === 'string' || typeof item === 'number')
 			) {
-				return <CollapsibleArray value={value.value} name={value.typeName} />;
+				return (
+					<CollapsibleArray
+						value={value.value as any}
+						name={isContract ? (value as DecodedItem).name : value.typeName}
+					/>
+				);
 			}
 
 			if (typeof value.value === 'object' && value.value !== null && value.typeName) {
@@ -172,12 +195,26 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 									<TriangleRightIcon className="h-4 w-4 mr-1" />
 								</span>
 							)}
-							<span className="text-pink-900 dark:text-keys font-semibold">{value.typeName}: </span>
+							<span className="text-pink-900 dark:text-keys font-semibold">
+								{isContract ? (value as DecodedItem).name : value.typeName}:{' '}
+							</span>
 							{!isExpanded.includes(uniqueId) && (
 								<span className="ml-1 italic">
-									{arrayLength === 1
-										? `${typeof value.value[0] === 'string' ? `"${value.value[0]}"` : '{...}'}`
-										: '{...}'}
+									{arrayLength === 1 ? (
+										typeof value.value[0] === 'string' ? (
+											<CopyToClipboardElement
+												value={value.value[0]}
+												toastDescription={`${value.value[0]} has been copied`}
+												aria-label="Copy"
+											>
+												{value.value[0]}
+											</CopyToClipboardElement>
+										) : (
+											'{...}'
+										)
+									) : (
+										'{...}'
+									)}
 								</span>
 							)}
 						</div>
@@ -230,7 +267,7 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 															</span>
 															<span>
 																{renderValue(
-																	val as InternalFnCallIO | string | string[],
+																	val as InternalFnCallIO | string | string[] | DecodedItem,
 																	`${uniqueId}_${index}`
 																)}
 															</span>
@@ -242,7 +279,7 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 									: Object.values(value.value).map((val, index) => (
 											<div key={index} className="mb-1">
 												{renderValue(
-													val as InternalFnCallIO | string | string[],
+													val as InternalFnCallIO | string | string[] | DecodedItem,
 													`${uniqueId}_${index}`
 												)}
 											</div>
@@ -254,14 +291,20 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 			}
 			return (
 				<span className={`${value.typeName === 'Panic' && '!text-red-600'} mb-1`}>
-					<span
-						className={`${
-							value.typeName === 'Panic' ? '!text-red-600' : 'text-pink-900 dark:text-keys'
-						} font-semibold`}
-					>
-						{value.typeName}:{' '}
-					</span>
-					{typeof value.value === 'boolean' ? (value.value ? 'true' : 'false') : value.value}
+					<CopyToClipboardElement value={value.value as string} toastDescription="Copied!">
+						<span
+							className={`${
+								value.typeName === 'Panic' ? '!text-red-600' : 'text-pink-900 dark:text-keys'
+							} font-semibold`}
+						>
+							{isContract ? (value as DecodedItem).name : value.typeName}:{' '}
+						</span>
+						{typeof value.value === 'boolean'
+							? value.value
+								? 'true'
+								: 'false'
+							: (value.value as string)}
+					</CopyToClipboardElement>
 				</span>
 			);
 		}
@@ -293,80 +336,137 @@ const FunctionCallViewer = ({ data }: { data: FilteredStepInfo }) => {
 		isResult,
 		isExpression
 	}: {
-		args: InternalFnCallIO[];
+		args: string | InternalFnCallIO[] | string[] | DecodedItem[];
 		isResult?: boolean;
 		isExpression?: boolean;
 	}) => {
 		return (
 			<div>
 				<div className="flex items-center mb-1">
-					<span className="font-semibold ">{isResult ? 'result: ' : 'args: '}</span>
+					<span className="font-semibold ">
+						{isResult ? 'result: ' : isContract ? 'value: ' : 'args: '}
+					</span>
 				</div>
 				<div>
-					{args.map((arg, index) => (
-						<div key={index} className=" whitespace-nowrap mb-1">
+					{Array.isArray(args) ? (
+						args.map((arg, index) => (
+							<div key={index} className=" whitespace-nowrap mb-1">
+								<div>
+									<div className="ml-2 mb-1">
+										{typeof (isExpression ? renderValue(arg, 'expression') : renderValue(arg)) ===
+										'string' ? (
+											<CopyToClipboardElement
+												value={
+													isExpression
+														? (renderValue(arg, 'expression') as string)
+														: (renderValue(arg) as string)
+												}
+												toastDescription="Copied!"
+											>
+												{isExpression ? renderValue(arg, 'expression') : renderValue(arg)}
+											</CopyToClipboardElement>
+										) : isExpression ? (
+											renderValue(arg, 'expression')
+										) : (
+											renderValue(arg)
+										)}
+									</div>{' '}
+								</div>
+							</div>
+						))
+					) : (
+						<div className=" whitespace-nowrap mb-1">
 							<div>
 								<div className="ml-2 mb-1">
-									{isExpression ? renderValue(arg, 'expression') : renderValue(arg)}
+									{typeof (isExpression ? renderValue(args, 'expression') : renderValue(args)) ===
+									'string' ? (
+										<CopyToClipboardElement
+											value={
+												isExpression
+													? (renderValue(args, 'expression') as string)
+													: (renderValue(args) as string)
+											}
+											toastDescription="Copied!"
+										>
+											{isExpression ? renderValue(args, 'expression') : renderValue(args)}
+										</CopyToClipboardElement>
+									) : isExpression ? (
+										renderValue(args, 'expression')
+									) : (
+										renderValue(args)
+									)}
 								</div>{' '}
 							</div>
 						</div>
-					))}
+					)}
 				</div>
 			</div>
 		);
 	};
+	console.log('data', data);
 
 	return (
 		<div className="font-mono px-2 my-2">
 			<div className="font-bold mb-1">
-				fn: <span className="text-pink-500 dark:text-function_2">{data.function}</span>
+				{isContract ? 'arg: ' : 'fn: '} <span className="text-function_pink">{data.function}</span>
 			</div>
+			{isContract && (
+				<div className="mb-1">
+					<span className="font-semibold ">
+						type: <span className="font-normal text-typeColor">[{data.typeName}]</span>
+					</span>
+				</div>
+			)}
 			<div className="mb-1">
 				{data.args.length > 0 ? (
 					<RenderArgs args={data.args} />
 				) : (
-					<span className="font-semibold ">args: </span>
+					<span className="font-semibold ">{isContract ? 'value: ' : 'args: '} </span>
 				)}
 			</div>
-			<div className="mb-1">
-				{data.result.length > 0 ? (
-					<RenderArgs isResult args={data.result} />
-				) : (
-					<span className="font-semibold ">result: </span>
-				)}
-			</div>
-			<div className="mt-4">
+
+			{!isContract && data.result && (
 				<div className="mb-1">
-					<span className="font-semibold whitespace-nowrap">
-						expression:{' '}
-						<span
-							className="bg-yellow-300 bg-opacity-20 font-normal cursor-pointer hover:bg-yellow-500 hover:bg-opacity-40 trasition-all"
-							onMouseEnter={() => setExpressionHover(true)}
-							onMouseLeave={() => setExpressionHover(false)}
-						>
-							{expression}
+					{data.result.length > 0 ? (
+						<RenderArgs isResult args={data.result} />
+					) : (
+						<span className="font-semibold ">result: </span>
+					)}
+				</div>
+			)}
+			{!isContract && (
+				<div className="mt-4">
+					<div className="mb-1">
+						<span className="font-semibold whitespace-nowrap">
+							expression:{' '}
+							<span
+								className="bg-yellow-300 bg-opacity-40 font-normal cursor-pointer hover:bg-yellow-500 hover:bg-opacity-40 trasition-all"
+								onMouseEnter={() => setExpressionHover(true)}
+								onMouseLeave={() => setExpressionHover(false)}
+							>
+								{expression}
+							</span>
 						</span>
-					</span>
-				</div>
-				<div className="mb-1">
-					<span className="font-semibold whitespace-nowrap">
-						line:{' '}
-						<span className="font-normal">
-							{codeLocation?.start.line &&
-								(codeLocation?.start.line === codeLocation?.end.line
-									? `${codeLocation?.start.line + 1}`
-									: `${codeLocation?.start.line + 1}-${codeLocation?.end.line + 1}`)}
+					</div>
+					<div className="mb-1">
+						<span className="font-semibold whitespace-nowrap">
+							line:{' '}
+							<span className="font-normal">
+								{codeLocation?.start.line &&
+									(codeLocation?.start.line === codeLocation?.end.line
+										? `${codeLocation?.start.line + 1}`
+										: `${codeLocation?.start.line + 1}-${codeLocation?.end.line + 1}`)}
+							</span>
 						</span>
-					</span>
+					</div>
+					<div className="mb-1">
+						{args && args.length > 0 && <RenderArgs args={args} isExpression />}
+					</div>
+					<div className="mb-1">
+						{results && results.length > 0 && <RenderArgs isResult args={results} isExpression />}
+					</div>
 				</div>
-				<div className="mb-1">
-					{args && args.length > 0 && <RenderArgs args={args} isExpression />}
-				</div>
-				<div className="mb-1">
-					{results && results.length > 0 && <RenderArgs isResult args={results} isExpression />}
-				</div>
-			</div>
+			)}
 		</div>
 	);
 };

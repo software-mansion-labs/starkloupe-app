@@ -59,7 +59,7 @@ export function SimulationsTable({ simulations }: { simulations: SimulationListI
 									simulation.status === 'success'
 										? 'text-lime-600'
 										: simulation.status === 'simulating'
-										? 'text-blue-600 dark:text-variable'
+										? 'text-variable'
 										: 'text-red-600'
 								}`}
 							>

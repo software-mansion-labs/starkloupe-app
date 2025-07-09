@@ -26,6 +26,7 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 		return (
 			<React.Fragment key={key}>
 				<TraceLine
+					className="py-0.5"
 					isActive={expandedCalls[key]}
 					onClick={() => {
 						toggleCallExpand(key);
@@ -38,21 +39,19 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 						className="flex flex-row items-center trace-line_content"
 					>
 						{event.contractName && (
-							<span className="text-blue-600 dark:text-variable whitespace-nowrap">
-								{contractName}
-							</span>
+							<span className="text-variable whitespace-nowrap">{contractName}</span>
 						)}
 						{'.'}
-						<span className="text-pink-500 dark:text-function_2">{event.name}</span>
-						<span className="text-yellow-900 dark:text-highlight_yellow">{'('}</span>
+						<span className="text-function_pink">{event.name}</span>
+						<span className="text-highlight_yellow">{'('}</span>
 						{(event.datas ?? []).map((param: DecodedItem, index: number) => (
 							<span key={index}>
-								<span className="text-green-600 dark:text-variable_green">{param.name}</span>:&nbsp;
-								<span className="text-orange-500 dark:text-light_orange">{param.typeName}</span>
+								<span className="text-classGreen">{param.name}</span>:&nbsp;
+								<span className="text-typeColor">{param.typeName}</span>
 								{index < (event.datas?.length ?? 0) - 1 && <span>,&nbsp;</span>}
 							</span>
 						))}
-						<span className="text-yellow-900 dark:text-highlight_yellow">{')'}</span>
+						<span className="text-highlight_yellow">{')'}</span>
 					</div>
 				</TraceLine>
 				{expandedCalls[key] && <EventDetails call={event} />}

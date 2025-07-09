@@ -32,6 +32,7 @@ export const EventCallTrace = memo(function EventCallTrace({
 	return (
 		<React.Fragment key={eventCallId}>
 			<TraceLine
+				className="py-0.5"
 				isActive={expandedCalls[eventCallId]}
 				onClick={() => toggleCallExpand(eventCallId)}
 				ref={traceLineElementRefs.current[eventCallId]}
@@ -52,8 +53,8 @@ export const EventCallTrace = memo(function EventCallTrace({
 					<span className="text-pink-600">{eventCall.name}</span> (
 					{(eventCall.members ?? []).map((member, index) => (
 						<span key={index}>
-							<span className="text-green-600 dark:text-variable_green">{member.name}</span>:&nbsp;
-							<span className="text-orange-500 dark:text-light_orange">{member.type}</span>
+							<span className="text-classGreen">{member.name}</span>:&nbsp;
+							<span className="text-typeColor">{member.type}</span>
 							{index < (eventCall.members?.length ?? 0) - 1 && <span>,&nbsp;</span>}
 						</span>
 					))}

@@ -55,7 +55,7 @@ export const Debugger = memo(function Debugger({
 						The source code for the contract is missing. To enable the step-by-step debugger, verify
 						the contract on Walnut by following{' '}
 						<Link
-							className="underline-offset-4 hover:underline text-pink-500 dark:text-function_2"
+							className="underline-offset-4 hover:underline text-function_pink"
 							href={WALNUT_VERIFY_DOCS_URL}
 						>
 							this guide

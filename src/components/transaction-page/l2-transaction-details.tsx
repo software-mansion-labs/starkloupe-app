@@ -17,9 +17,7 @@ export function TransactionDetails({
 	if (transactionData.transactionType) {
 		details.push({
 			name: 'Transaction Type',
-			value: (
-				<span className="text-blue-600 dark:text-variable">{transactionData.transactionType}</span>
-			),
+			value: <span className="text-variable">{transactionData.transactionType}</span>,
 			isCopyable: true
 		});
 	}
@@ -29,7 +27,7 @@ export function TransactionDetails({
 		details.push({
 			name: 'Execution status',
 			value: (
-				<span className="text-green-600 dark:text-variable_green">
+				<span className="text-classGreen ">
 					{transactionData.simulationResult.executionResult.executionStatus}
 				</span>
 			)

@@ -16,9 +16,7 @@ export function L1TransactionDetails({
 	if (transactionData.transactionType) {
 		details.push({
 			name: 'Transaction Type',
-			value: (
-				<span className="text-blue-600 dark:text-variable">{transactionData.transactionType}</span>
-			),
+			value: <span className="text-variable">{transactionData.transactionType}</span>,
 			isCopyable: true
 		});
 	}
@@ -29,11 +27,7 @@ export function L1TransactionDetails({
 			name: 'Execution status',
 			value: (
 				<span
-					className={
-						transactionData.status === 'SUCCEEDED'
-							? 'text-green-600 dark:text-variable_green'
-							: 'text-red-600'
-					}
+					className={transactionData.status === 'SUCCEEDED' ? 'text-classGreen ' : 'text-red-600'}
 				>
 					{transactionData.status}
 				</span>

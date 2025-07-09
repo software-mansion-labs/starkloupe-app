@@ -37,6 +37,14 @@
 
 		--radius: 0.5rem;
 		--select-placeholder-color: hsl(var(--muted-foreground));
+		--variable: #2563eb;
+		--class-green: #16a34a;
+		--function-pink: #ec4899;
+		--function-purple: #9333ea;
+		--text-highlight_yellow: #713f12;
+		--text-result: #c2410c;
+
+		--typeColor: #008080;
 	}
 
 	[data-placeholder] {
@@ -72,6 +80,15 @@
 		--border: 0 0% 14.9%;
 		--input: 0 0% 14.9%;
 		--ring: 0 0% 83.1%;
+		--class-green: #4ade80;
+
+		--variable: #569cd6;
+		--function-pink: #ff77a9;
+		--function-purple: #da70d6;
+		--text-highlight_yellow: #ffd700;
+		--text-result: #b5cea8;
+
+		--typeColor: #3dc9b0;
 	}
 }
 

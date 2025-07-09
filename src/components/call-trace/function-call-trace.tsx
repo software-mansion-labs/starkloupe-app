@@ -51,7 +51,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 		<React.Fragment key={functionCallId}>
 			<TraceLine
 				previewMod={previewMode}
-				className={`${
+				className={`py-0.5 ${
 					previewMode
 						? isDebuggable
 							? currentStep?.withLocation?.functionCallId === functionCallId ||
@@ -113,7 +113,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 					</div>
 					<FnName fnName={functionCall.fnName} />
 					{!previewMode && <CallIO ios={functionCall.arguments} />}
-					{!previewMode && <>&nbsp;{'->'}&nbsp;</>}
+					{!previewMode && <span className="text-variable">&nbsp;{'->'}&nbsp;</span>}
 					{!previewMode && <CallIO ios={functionCall.results} />}
 				</div>
 			</TraceLine>
@@ -148,8 +148,8 @@ const CallIO = memo(function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 		return ios.map((io, i) =>
 			ioToSkip.includes(io.typeName ?? '') ? null : (
 				<React.Fragment key={i}>
-					<span className="text-orange-500 dark:text-light_orange">{io.typeName}</span>:&nbsp;
-					<span className="text-orange-700 dark:text-regexp">
+					<span className="text-typeColor">{io.typeName}</span>:&nbsp;
+					<span className="text-result">
 						{io.value.length === 0
 							? 'None'
 							: io.value.length === 1
@@ -163,9 +163,9 @@ const CallIO = memo(function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
 	}, [ios]);
 	return (
 		<>
-			<span className="text-yellow-900 dark:text-highlight_yellow">{'('}</span>
+			<span className="text-highlight_yellow">{'('}</span>
 			{iosList}
-			<span className="text-yellow-900 dark:text-highlight_yellow">{')'}</span>
+			<span className="text-highlight_yellow">{')'}</span>
 		</>
 	);
 });

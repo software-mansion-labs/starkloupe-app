@@ -16,9 +16,7 @@ export function ContractCallSignature({
 	return (
 		<>
 			{displayContractName && (
-				<span
-					className={`${variant === 'search-result' ? '' : 'text-blue-600 dark:text-variable'}`}
-				>
+				<span className={`${variant === 'search-result' ? '' : 'text-classGreen'}`}>
 					{contractName}
 				</span>
 			)}
@@ -26,9 +24,7 @@ export function ContractCallSignature({
 				<>
 					{displayContractName && displayFunctionName && <> {'.'}</>}
 
-					<span
-						className={`${variant === 'search-result' ? '' : 'text-pink-500 dark:text-function_2'}`}
-					>
+					<span className={`${variant === 'search-result' ? '' : 'text-function_purple'}`}>
 						{contractCall?.entryPointName ??
 							shortenHash(contractCall.entryPoint.entryPointSelector, 13)}
 					</span>

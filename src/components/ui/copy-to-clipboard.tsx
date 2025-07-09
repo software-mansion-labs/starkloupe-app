@@ -17,7 +17,8 @@ const CopyToClipboardElement = ({
 }: CopyToClipboardProps) => {
 	return (
 		<span
-			onClick={() => {
+			onClick={(e) => {
+				e.stopPropagation();
 				if (value) {
 					copyToClipboard(value);
 					toast({
@@ -25,7 +26,7 @@ const CopyToClipboardElement = ({
 					});
 				}
 			}}
-			className={cn('hover:bg-muted cursor-pointer p-1 rounded-sm', className)}
+			className={cn('hover:bg-accent_2 cursor-pointer p-1 rounded-sm', className)}
 		>
 			{children}
 		</span>

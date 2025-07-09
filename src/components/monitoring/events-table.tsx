@@ -15,16 +15,14 @@ import React from 'react';
 export function EventsTable({
 	events,
 	onNext,
-	onPrevious,
+	onPrevious
 }: {
 	events: MonitoringEventType[];
 	onNext?: () => void;
 	onPrevious?: () => void;
 }) {
 	const openSimulationPage = (event: MonitoringEventType) => {
-		const uri = `/simulations?senderAddress=${
-			event.senderAddress
-		}&calldata=${encodeURIComponent(
+		const uri = `/simulations?senderAddress=${event.senderAddress}&calldata=${encodeURIComponent(
 			event.calldataHex.toString()
 		)}&chainId=SN_SEPOLIA&transactionVersion=3&blockNumber=${event.blockNumber}`;
 		window.open(uri, '_blank');
@@ -49,10 +47,7 @@ export function EventsTable({
 							const borderStyle =
 								(index === events.length - 1 ? 'border-b' : '') + ' border-t border-border';
 							return (
-								<TableRow
-									key={event.id}
-									className="hover:bg-muted cursor-pointer"
-								>
+								<TableRow key={event.id} className="hover:bg-muted cursor-pointer">
 									<TableCell className={borderStyle + ' border-r border-l'}>
 										{event.date.toLocaleString()}
 									</TableCell>
@@ -75,7 +70,12 @@ export function EventsTable({
 									{/*</TableCell>*/}
 									<TableCell className={borderStyle + ' border-r'}>{event.senderAddress}</TableCell>
 									<TableCell className={borderStyle + ' border-r text-left'}>
-										<Button className="text-sm px-3 py-1 h-auto" onClick={() => openSimulationPage(event)}>Simulate</Button>
+										<Button
+											className="text-sm px-3 py-1 h-auto"
+											onClick={() => openSimulationPage(event)}
+										>
+											Simulate
+										</Button>
 									</TableCell>
 								</TableRow>
 							);
