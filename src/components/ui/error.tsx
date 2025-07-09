@@ -39,19 +39,19 @@ export function Error({
 	return (
 		<div className="my-8">
 			{title !== false && (
-				<h3 className="text-md mb-4 font-medium text-gray-800 whitespace-pre-line">
+				<h3 className="text-md mb-4 font-medium whitespace-pre-line">
 					{title ?? 'Oops! Something went nuts. Try again.'}
 				</h3>
 			)}
 
 			<div className="rounded-md border">
-				<div className="flex items-center justify-between border-b p-2 pl-4 rounded-t-md text-neutral-800 bg-neutral-100">
+				<div className="flex items-center justify-between border-b p-2 pl-4 rounded-t-md bg-card">
 					<p className="text-sm">{errorTitle ?? 'Walnut server error'}</p>
 
 					<div className="flex items-center h-8">{copyButton}</div>
 				</div>
 
-				<ScrollArea className="h-fit bg-neutral-50 rounded-b-md">
+				<ScrollArea className="h-fit rounded-b-md">
 					<div className="flex w-full space-x-4 p-4">
 						<pre className="text-red-700 text-xs whitespace-pre-wrap">{message}</pre>
 					</div>
