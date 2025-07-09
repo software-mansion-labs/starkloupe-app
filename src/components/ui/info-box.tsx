@@ -1,6 +1,7 @@
 import { copyToClipboard } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import CopyToClipboardElement from './copy-to-clipboard';
+import AddressLink from '../address-link';
 
 export interface InfoBoxItem {
 	name: string;
@@ -27,9 +28,17 @@ export function InfoBox({ details }: { details: InfoBoxItem[] }) {
 											: null
 									}
 									toastDescription={`${name} has been copied.`}
-									className={`rounded-sm font-mono px-1 ${isCopyable ? 'cursor-pointer0' : ''}`}
+									className={`rounded-sm font-mono ${
+										typeof value === 'string' && value.startsWith('0x') ? 'py-1 px-0' : 'px-1'
+									} ${isCopyable ? 'cursor-pointer' : ''}`}
 								>
-									{value}
+									{typeof value === 'string' && value.startsWith('0x') ? (
+										<AddressLink address={value} addressClassName="">
+											{value}
+										</AddressLink>
+									) : (
+										value
+									)}
 								</CopyToClipboardElement>
 							</span>
 						)

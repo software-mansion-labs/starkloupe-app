@@ -12,6 +12,7 @@ import { ClassSourceCode } from '@/components/class-source-code';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { shortenHash } from '@/lib/utils';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
+import AddressLink from '../address-link';
 
 export function ContractPage({ contractAddress }: { contractAddress: string }) {
 	const { networks } = useSettings();
@@ -48,16 +49,16 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 							<CopyToClipboardElement
 								value={contractAddress}
 								toastDescription="The address has been copied."
-								className="hidden lg:block"
+								className="hidden lg:block p-0"
 							>
-								{contractAddress}
+								<AddressLink address={contractAddress}>{contractAddress}</AddressLink>
 							</CopyToClipboardElement>
 							<CopyToClipboardElement
 								value={contractAddress}
 								toastDescription="The address has been copied."
-								className="lg:hidden"
+								className="lg:hidden p-0"
 							>
-								{shortenHash(contractAddress)}
+								<AddressLink address={contractAddress}>{shortenHash(contractAddress)}</AddressLink>
 							</CopyToClipboardElement>
 						</h1>
 					</div>

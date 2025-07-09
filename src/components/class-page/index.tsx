@@ -12,6 +12,7 @@ import { fetchClassDataByHash, GetClassResponse } from '@/lib/classes';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { shortenHash } from '@/lib/utils';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
+import AddressLink from '../address-link';
 
 export function ClassPage({ classHash }: { classHash: string }) {
 	const { networks } = useSettings();
@@ -48,16 +49,16 @@ export function ClassPage({ classHash }: { classHash: string }) {
 							<CopyToClipboardElement
 								value={classHash}
 								toastDescription="The address has been copied."
-								className="hidden lg:block"
+								className="hidden lg:block p-0"
 							>
-								{classHash}
+								<AddressLink address={classHash}>{classHash}</AddressLink>
 							</CopyToClipboardElement>
 							<CopyToClipboardElement
 								value={classHash}
 								toastDescription="The address has been copied."
-								className="lg:hidden"
+								className="lg:hidden p-0"
 							>
-								{shortenHash(classHash)}
+								<AddressLink address={classHash}>{shortenHash(classHash)}</AddressLink>
 							</CopyToClipboardElement>
 						</h1>
 					</div>

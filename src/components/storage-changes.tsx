@@ -4,6 +4,7 @@ import React, { useMemo } from 'react';
 import CopyToClipboardElement from './ui/copy-to-clipboard';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import AddressLink from './address-link';
 
 interface StorageChangesProps {
 	// Define your props here if needed
@@ -62,21 +63,25 @@ const StorageChanges: React.FC<StorageChangesProps> = (props) => {
 												href={`/contracts/${contractAddress}`}
 												className="font-bold text-lg underline"
 											>
-												{contractName}
+												<AddressLink address={contractAddress}>{contractName}</AddressLink>
 											</a>
 											<CopyToClipboardElement
 												className="font-mono text-gray-400"
 												toastDescription="The address has been copied."
 												value={contractAddress}
 											>
-												{shortenHash(contractAddress, 13)}
+												<AddressLink address={contractAddress}>
+													{shortenHash(contractAddress, 13)}
+												</AddressLink>
 											</CopyToClipboardElement>
 										</>
 									) : (
 										<>
 											<span className="font-bold text-lg">Contract address:</span>
 
-											<span className="font-mono">{shortenHash(contractAddress, 13)}</span>
+											<AddressLink address={contractAddress} addressClassName="font-mono">
+												{shortenHash(contractAddress, 13)}
+											</AddressLink>
 										</>
 									)}
 								</div>
@@ -90,7 +95,9 @@ const StorageChanges: React.FC<StorageChangesProps> = (props) => {
 													toastDescription="The key has been copied."
 													value={storageAddress}
 												>
-													{storageAddress}
+													<AddressLink address={storageAddress} addressClassName="font-mono">
+														{storageAddress}
+													</AddressLink>
 												</CopyToClipboardElement>
 											</div>
 											<div className="flex flex-col pl-4">

@@ -27,6 +27,7 @@ import { useUserContext } from '@/lib/context/user-context-provider';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { getCacheWithTTL, setCacheWithTTL } from '@/lib/utils/cache-utils';
+import AddressLink from '../address-link';
 
 export function TransactionPage({
 	txHash,
@@ -185,16 +186,16 @@ export function TransactionPage({
 											<CopyToClipboardElement
 												value={l2TxHash}
 												toastDescription="The address has been copied."
-												className="hidden lg:block"
+												className="hidden lg:block p-0"
 											>
-												{l2TxHash}
+												<AddressLink address={l2TxHash}>{l2TxHash}</AddressLink>
 											</CopyToClipboardElement>
 											<CopyToClipboardElement
-												value={txHash}
+												value={l2TxHash}
 												toastDescription="The address has been copied."
-												className="lg:hidden"
+												className="lg:hidden p-0"
 											>
-												{l2TxHashShort}
+												<AddressLink address={l2TxHash}>{l2TxHashShort}</AddressLink>
 											</CopyToClipboardElement>
 										</h1>
 									)}
@@ -204,14 +205,14 @@ export function TransactionPage({
 											<CopyToClipboardElement
 												value={l1TxHash}
 												toastDescription="The address has been copied."
-												className="hidden lg:block"
+												className="hidden lg:block p-0"
 											>
 												{l1TxHash}
 											</CopyToClipboardElement>
 											<CopyToClipboardElement
-												value={txHash}
+												value={l1TxHash}
 												toastDescription="The address has been copied."
-												className="lg:hidden"
+												className="lg:hidden p-0"
 											>
 												{l1TxHashShort}
 											</CopyToClipboardElement>

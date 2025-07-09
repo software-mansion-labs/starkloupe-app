@@ -1,5 +1,6 @@
 import { ContractCall } from '@/lib/simulation';
 import { getContractName, shortenHash } from '@/lib/utils';
+import AddressLink from '../address-link';
 
 export function ContractCallSignature({
 	contractCall,
@@ -16,9 +17,12 @@ export function ContractCallSignature({
 	return (
 		<>
 			{displayContractName && (
-				<span className={`${variant === 'search-result' ? '' : 'text-classGreen'}`}>
+				<AddressLink
+					address={contractCall?.entryPoint.storageAddress}
+					addressClassName={`${variant === 'search-result' ? '' : 'text-classGreen'}`}
+				>
 					{contractName}
-				</span>
+				</AddressLink>
 			)}
 			{displayFunctionName && (
 				<>

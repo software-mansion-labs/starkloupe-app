@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster';
 import { UserContextProvider } from '@/lib/context/user-context-provider';
 import { generateMetadata } from '@/lib/utils/generate-metadata-service';
 import { ThemeProvider } from 'next-themes';
+import { AddressProvider } from '@/lib/context/address-context';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -25,7 +26,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 				<ThemeProvider attribute="class" defaultTheme="system" enableSystem={true}>
 					<UserContextProvider>
 						<SettingsContextProvider>
-							<div className="flex flex-col h-full w-full max-h-screen">{children}</div>
+							<AddressProvider>
+								<div className="flex flex-col h-full w-full max-h-screen">{children}</div>
+							</AddressProvider>
 						</SettingsContextProvider>
 						<Toaster />
 					</UserContextProvider>

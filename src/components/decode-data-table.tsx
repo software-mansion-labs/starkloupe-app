@@ -4,6 +4,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '.
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 import { Card } from './ui/card';
 import { ScrollArea } from './ui/scroll-area';
+import AddressLink from './address-link';
+import CopyToClipboardElement from './ui/copy-to-clipboard';
 
 export function DecodeDataTable({
 	rawData,
@@ -89,7 +91,19 @@ export function DecodeDataTable({
 			}
 		} else {
 			const formattedValue = formatValue(value);
-			return <span>{formattedValue}</span>;
+			return value.startsWith('0x') ? (
+				<CopyToClipboardElement
+					value={formattedValue}
+					className="py-1 px-0"
+					toastDescription="Value has been copied!"
+				>
+					<AddressLink address={formattedValue} addressClassName="cursor-pointer">
+						{formattedValue}
+					</AddressLink>
+				</CopyToClipboardElement>
+			) : (
+				<span>{formattedValue}</span>
+			);
 		}
 	};
 
@@ -138,7 +152,19 @@ export function DecodeDataTable({
 								{rawData.map((item: string, index: number) => (
 									<TableRow key={index}>
 										<TableCell className="border-r last:border-r-0 whitespace-break-spaces">
-											{item}
+											{item.startsWith('0x') ? (
+												<CopyToClipboardElement
+													value={item}
+													className="py-1 px-0"
+													toastDescription="Value has been copied!"
+												>
+													<AddressLink address={item} addressClassName="cursor-pointer">
+														{item}
+													</AddressLink>
+												</CopyToClipboardElement>
+											) : (
+												item
+											)}
 										</TableCell>
 									</TableRow>
 								))}

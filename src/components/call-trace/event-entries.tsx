@@ -5,6 +5,7 @@ import { shortenHash } from '@/lib/utils';
 import { InfoBox } from '@/components/ui/info-box';
 import { DataType, ContractCallEvent, DecodedItem } from '@/lib/simulation';
 import { DecodeDataTable } from '../decode-data-table';
+import AddressLink from '../address-link';
 
 export function EventsList({ events }: { events: ContractCallEvent[] }) {
 	const { toggleCallExpand, traceLineElementRefs, expandedCalls } = useCallTrace();
@@ -39,7 +40,12 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 						className="flex flex-row items-center trace-line_content"
 					>
 						{event.contractName && (
-							<span className="text-variable whitespace-nowrap">{contractName}</span>
+							<AddressLink
+								addressClassName="text-variable whitespace-nowrap"
+								address={event?.contractAddress}
+							>
+								{contractName}
+							</AddressLink>
 						)}
 						{'.'}
 						<span className="text-function_pink">{event.name}</span>
