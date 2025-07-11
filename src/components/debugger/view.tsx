@@ -14,6 +14,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/
 import Link from 'next/link';
 import Sidebar from '../code-viewer/sidebar';
 import { WALNUT_VERIFY_DOCS_URL } from '@/lib/config';
+import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 
 export function DebuggerView() {
 	const debuggerContext = useDebugger();
@@ -132,10 +133,13 @@ function Controls({
 			window.removeEventListener('keydown', handleKeyDown);
 		};
 	}, [previousStep, nextStep, stepOver]);
+	const { contractCallsMap } = useCallTrace();
+
+	let call = contractCall?.callId && contractCallsMap[contractCall?.callId];
 
 	return (
 		<div className="flex flex-row border-b py-1 px-3 justify-between items-center">
-			<div>{contractCall && <ContractCallSignature contractCall={contractCall} />}</div>
+			<div>{contractCall && <ContractCallSignature contractCall={call || contractCall} />}</div>
 			<div className="flex flex-row gap-3 items-center">
 				<div>
 					Step {stepIndex + 1}/{totalSteps}
