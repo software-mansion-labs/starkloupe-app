@@ -66,7 +66,7 @@ const StorageChanges: React.FC<StorageChangesProps> = (props) => {
 												<AddressLink address={contractAddress}>{contractName}</AddressLink>
 											</a>
 											<CopyToClipboardElement
-												className="font-mono text-gray-400"
+												className="font-mono text-gray-400 py-1 px-0"
 												toastDescription="The address has been copied."
 												value={contractAddress}
 											>
@@ -91,7 +91,7 @@ const StorageChanges: React.FC<StorageChangesProps> = (props) => {
 											<div className="flex flex-row items-center gap-2">
 												<span className="text-gray-400">Key:</span>
 												<CopyToClipboardElement
-													className="font-mono"
+													className="font-mono py-1 px-0"
 													toastDescription="The key has been copied."
 													value={storageAddress}
 												>
@@ -103,11 +103,27 @@ const StorageChanges: React.FC<StorageChangesProps> = (props) => {
 											<div className="flex flex-col pl-4">
 												<div className="flex flex-row gap-2">
 													<span className="text-gray-400">Before:</span>
-													<span className="font-mono">{before}</span>
+													<CopyToClipboardElement
+														className="font-mono py-1 px-0"
+														toastDescription="The key has been copied."
+														value={before}
+													>
+														<AddressLink address={before} addressClassName="font-mono">
+															{before}
+														</AddressLink>
+													</CopyToClipboardElement>
 												</div>
 												<div className="flex flex-row gap-2">
 													<span className="text-gray-400">After:</span>
-													<span className="font-mono">{after}</span>
+													<CopyToClipboardElement
+														className="font-mono py-1 px-0"
+														toastDescription="The key has been copied."
+														value={after}
+													>
+														<AddressLink address={after} addressClassName="font-mono">
+															{after}
+														</AddressLink>
+													</CopyToClipboardElement>
 												</div>
 											</div>
 										</div>

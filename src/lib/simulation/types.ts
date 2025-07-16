@@ -147,8 +147,8 @@ export interface ContractCall {
 }
 
 export interface FunctionCall {
-	resultsDecoded: InternalFnCallIO[];
-	argumentsDecoded: InternalFnCallIO[];
+	resultsDecoded: DecodedItem[];
+	argumentsDecoded: DecodedItem[];
 	callId: number;
 	parentCallId: number;
 	childrenCallIds: number[];

@@ -11,22 +11,22 @@ export function FnName({
 			<>
 				{splittedFnName.length >= 2 ? (
 					<>
-						<span className={`${variant === 'trace-line' && 'text-function_purple'}`}>
+						<span className={`${variant === 'trace-line' && 'text-highlight_yellow'}`}>
 							{splittedFnName[splittedFnName.length - 2]}
 						</span>
 						::
-						<span className={`${variant === 'trace-line' && 'text-function_pink'}`}>
+						<span className={`${variant === 'trace-line' && 'text-function_purple'}`}>
 							{splittedFnName[splittedFnName.length - 1]}
 						</span>
 					</>
 				) : (
-					<span className={`${variant === 'trace-line' && 'text-function_pink'}`}>{fnName}</span>
+					<span className={`${variant === 'trace-line' && 'text-function_purple'}`}>{fnName}</span>
 				)}
 			</>
 		);
 	} else {
 		return (
-			<span className={`${variant === 'search-result' ? 'text-gray-500' : 'text-function_pink'}`}>
+			<span className={`${variant === 'search-result' ? 'text-gray-500' : 'text-function_purple'}`}>
 				Unknown function
 			</span>
 		);

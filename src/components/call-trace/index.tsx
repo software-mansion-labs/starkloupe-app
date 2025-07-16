@@ -18,7 +18,7 @@ export const TraceLine = React.forwardRef<
 		<div
 			ref={ref}
 			className={clsx(
-				`${previewMod ? '' : ''} px-4 flex flex-row items-center font-mono border-y-2 ${
+				`${previewMod ? '' : ''} pl-4 pr-28 flex flex-row items-center font-mono border-y-2 ${
 					isActive ? 'border-border trace-line--selected' : 'border-transparent'
 				} ${isUnclickable ? '' : 'hover:bg-accent cursor-pointer'}`,
 				className

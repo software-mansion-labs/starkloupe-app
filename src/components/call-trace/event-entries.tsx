@@ -41,18 +41,18 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 					>
 						{event.contractName && (
 							<AddressLink
-								addressClassName="text-variable whitespace-nowrap"
+								addressClassName="text-classGreen whitespace-nowrap"
 								address={event?.contractAddress}
 							>
 								{contractName}
 							</AddressLink>
 						)}
 						{'.'}
-						<span className="text-function_pink">{event.name}</span>
+						<span className="text-function_purple">{event.name}</span>
 						<span className="text-highlight_yellow">{'('}</span>
 						{(event.datas ?? []).map((param: DecodedItem, index: number) => (
 							<span key={index}>
-								<span className="text-classGreen">{param.name}</span>:&nbsp;
+								<span className="">{param.name}</span>:&nbsp;
 								<span className="text-typeColor">{param.typeName}</span>
 								{index < (event.datas?.length ?? 0) - 1 && <span>,&nbsp;</span>}
 							</span>

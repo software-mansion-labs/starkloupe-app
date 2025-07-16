@@ -3,10 +3,11 @@ import React, { useContext, useEffect, useState } from 'react';
 import { TriangleRightIcon, TriangleDownIcon } from '@radix-ui/react-icons';
 import { DebuggerContext, useDebugger } from '@/lib/context/debugger-context-provider';
 import CopyToClipboardElement from './copy-to-clipboard';
+import AddressLink from '../address-link';
 
 interface FilteredStepInfo {
-	function: string | undefined;
-	args: InternalFnCallIO[] | string | string[] | DecodedItem[];
+	function?: string | undefined;
+	args: InternalFnCallIO[] | string | string[] | DecodedItem[] | boolean;
 	result?: InternalFnCallIO[];
 	typeName?: string;
 }
@@ -99,7 +100,9 @@ const FunctionCallViewer = ({
 	}) => {
 		const isSimpleArray =
 			Array.isArray(value) &&
-			value.every((item) => typeof item === 'string' || typeof item === 'number');
+			value.every(
+				(item) => typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean'
+			);
 
 		if (!isSimpleArray) {
 			return null;
@@ -138,9 +141,22 @@ const FunctionCallViewer = ({
 					<div className="ml-2 mb-1">
 						{value.map((item, index) => (
 							<div key={index} className="whitespace-pre">
-								<CopyToClipboardElement value={item as string} toastDescription="Copied!">
-									<span className="text-pink-900 dark:text-keys font-semibold">{index}: </span>
-									{`${item}`}
+								<span className="text-pink-900 dark:text-keys font-semibold">{index}: </span>
+
+								<CopyToClipboardElement
+									value={item as string}
+									className={`${
+										typeof item === 'string' && (item as string).startsWith('0x')
+											? 'py-1 px-0'
+											: 'px-1'
+									}`}
+									toastDescription="Copied!"
+								>
+									{(item as string).startsWith('0x') ? (
+										<AddressLink address={item as string}>{`${item}`}</AddressLink>
+									) : (
+										(item as string)
+									)}
 								</CopyToClipboardElement>
 							</div>
 						))}
@@ -155,18 +171,21 @@ const FunctionCallViewer = ({
 		);
 	};
 	const renderValue = (
-		value: InternalFnCallIO | string | string[] | DecodedItem,
+		value: InternalFnCallIO | string | string[] | DecodedItem | boolean,
 		path: string = ''
 	) => {
 		if (
-			value &&
+			value !== undefined &&
 			typeof value === 'object' &&
 			(isContract ? 'typeName' in value : 'name' in value) &&
 			'value' in value
 		) {
 			if (
 				Array.isArray(value.value) &&
-				value.value.every((item) => typeof item === 'string' || typeof item === 'number')
+				value.value.every(
+					(item) =>
+						typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean'
+				)
 			) {
 				return (
 					<CollapsibleArray
@@ -206,8 +225,18 @@ const FunctionCallViewer = ({
 												value={value.value[0]}
 												toastDescription={`${value.value[0]} has been copied`}
 												aria-label="Copy"
+												className={`${
+													typeof value.value[0] === 'string' &&
+													(value.value[0] as string).startsWith('0x')
+														? 'py-1 px-0'
+														: 'px-1'
+												}`}
 											>
-												{value.value[0]}
+												{(value.value[0] as string).startsWith('0x') ? (
+													<AddressLink address={value.value[0]}>{value.value[0]}</AddressLink>
+												) : (
+													value.value[0]
+												)}
 											</CopyToClipboardElement>
 										) : (
 											'{...}'
@@ -291,19 +320,36 @@ const FunctionCallViewer = ({
 			}
 			return (
 				<span className={`${value.typeName === 'Panic' && '!text-red-600'} mb-1`}>
-					<CopyToClipboardElement value={value.value as string} toastDescription="Copied!">
-						<span
-							className={`${
-								value.typeName === 'Panic' ? '!text-red-600' : 'text-pink-900 dark:text-keys'
-							} font-semibold`}
-						>
-							{isContract ? (value as DecodedItem).name : value.typeName}:{' '}
-						</span>
-						{typeof value.value === 'boolean'
-							? value.value
-								? 'true'
-								: 'false'
-							: (value.value as string)}
+					<span
+						className={`${
+							value.typeName === 'Panic' ? '!text-red-600' : 'text-pink-900 dark:text-keys'
+						} font-semibold`}
+					>
+						{isContract ? (value as DecodedItem).name : value.typeName}:{' '}
+					</span>
+
+					<CopyToClipboardElement
+						value={value.value as string}
+						toastDescription="Copied!"
+						className={`${
+							typeof value.value !== 'boolean' &&
+							typeof value.value === 'string' &&
+							(value.value as string).startsWith('0x')
+								? 'py-1 px-0'
+								: 'px-1'
+						}`}
+					>
+						{typeof value.value === 'boolean' ? (
+							value.value ? (
+								'true'
+							) : (
+								'false'
+							)
+						) : (value.value as string).startsWith('0x') ? (
+							<AddressLink address={value.value as string}>{value.value as string}</AddressLink>
+						) : (
+							(value.value as string)
+						)}
 					</CopyToClipboardElement>
 				</span>
 			);
@@ -329,14 +375,30 @@ const FunctionCallViewer = ({
 			);
 		}
 
-		return value !== null && value !== undefined ? value.toString() : '';
+		return value !== null && value !== undefined ? (
+			<CopyToClipboardElement
+				value={value as string}
+				toastDescription="Copied!"
+				className={`${
+					typeof value === 'string' && (value as string).startsWith('0x') ? 'py-1 px-0' : 'px-1'
+				}`}
+			>
+				{typeof value === 'string' && (value as string).startsWith('0x') ? (
+					<AddressLink address={value.toString()}>{value.toString()}</AddressLink>
+				) : (
+					value.toString()
+				)}
+			</CopyToClipboardElement>
+		) : (
+			<></>
+		);
 	};
 	const RenderArgs = ({
 		args,
 		isResult,
 		isExpression
 	}: {
-		args: string | InternalFnCallIO[] | string[] | DecodedItem[];
+		args: string | InternalFnCallIO[] | string[] | DecodedItem[] | boolean;
 		isResult?: boolean;
 		isExpression?: boolean;
 	}) => {
@@ -344,7 +406,7 @@ const FunctionCallViewer = ({
 			<div>
 				<div className="flex items-center mb-1">
 					<span className="font-semibold ">
-						{isResult ? 'result: ' : isContract ? 'value: ' : 'args: '}
+						{isResult ? 'result: ' : isContract || data.typeName ? 'value: ' : 'args: '}
 					</span>
 				</div>
 				<div>
@@ -354,22 +416,13 @@ const FunctionCallViewer = ({
 								<div>
 									<div className="ml-2 mb-1">
 										{typeof (isExpression ? renderValue(arg, 'expression') : renderValue(arg)) ===
-										'string' ? (
-											<CopyToClipboardElement
-												value={
-													isExpression
-														? (renderValue(arg, 'expression') as string)
-														: (renderValue(arg) as string)
-												}
-												toastDescription="Copied!"
-											>
-												{isExpression ? renderValue(arg, 'expression') : renderValue(arg)}
-											</CopyToClipboardElement>
-										) : isExpression ? (
-											renderValue(arg, 'expression')
-										) : (
-											renderValue(arg)
-										)}
+										'string'
+											? isExpression
+												? renderValue(arg, 'expression')
+												: renderValue(arg)
+											: isExpression
+											? renderValue(arg, 'expression')
+											: renderValue(arg)}
 									</div>{' '}
 								</div>
 							</div>
@@ -379,22 +432,13 @@ const FunctionCallViewer = ({
 							<div>
 								<div className="ml-2 mb-1">
 									{typeof (isExpression ? renderValue(args, 'expression') : renderValue(args)) ===
-									'string' ? (
-										<CopyToClipboardElement
-											value={
-												isExpression
-													? (renderValue(args, 'expression') as string)
-													: (renderValue(args) as string)
-											}
-											toastDescription="Copied!"
-										>
-											{isExpression ? renderValue(args, 'expression') : renderValue(args)}
-										</CopyToClipboardElement>
-									) : isExpression ? (
-										renderValue(args, 'expression')
-									) : (
-										renderValue(args)
-									)}
+									'string'
+										? isExpression
+											? renderValue(args, 'expression')
+											: renderValue(args)
+										: isExpression
+										? renderValue(args, 'expression')
+										: renderValue(args)}
 								</div>{' '}
 							</div>
 						</div>
@@ -403,14 +447,16 @@ const FunctionCallViewer = ({
 			</div>
 		);
 	};
-	console.log('data', data);
 
 	return (
 		<div className="font-mono px-2 my-2">
-			<div className="font-bold mb-1">
-				{isContract ? 'arg: ' : 'fn: '} <span className="text-function_pink">{data.function}</span>
-			</div>
-			{isContract && (
+			{data.function && (
+				<div className="font-bold mb-1">
+					{isContract ? 'arg: ' : 'fn: '}{' '}
+					<span className="text-function_pink">{data.function}</span>
+				</div>
+			)}
+			{data.typeName && (
 				<div className="mb-1">
 					<span className="font-semibold ">
 						type: <span className="font-normal text-typeColor">[{data.typeName}]</span>
@@ -418,7 +464,7 @@ const FunctionCallViewer = ({
 				</div>
 			)}
 			<div className="mb-1">
-				{data.args.length > 0 ? (
+				{typeof data.args === 'boolean' || data.args.length > 0 ? (
 					<RenderArgs args={data.args} />
 				) : (
 					<span className="font-semibold ">{isContract ? 'value: ' : 'args: '} </span>
@@ -434,7 +480,7 @@ const FunctionCallViewer = ({
 					)}
 				</div>
 			)}
-			{!isContract && (
+			{!data.typeName && (
 				<div className="mt-4">
 					<div className="mb-1">
 						<span className="font-semibold whitespace-nowrap">

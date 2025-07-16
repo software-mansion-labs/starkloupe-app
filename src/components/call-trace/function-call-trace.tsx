@@ -9,6 +9,19 @@ import { DebugButton } from './debug-btn';
 import { CommonCallTrace } from './common-call-trace';
 import { InfoBox } from '@/components/ui/info-box';
 import { FnName } from '../ui/function-name';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu';
+import CopyToClipboardElement from '../ui/copy-to-clipboard';
+import { Copy } from 'lucide-react';
+import { ScrollArea, ScrollBar } from '../ui/scroll-area';
+import FunctionCallViewer from '../ui/function-call-viewer';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import AddressLink from '../address-link';
+
+interface DataItem {
+	name: string | null;
+	typeName: string;
+	value: any;
+}
 
 export const FunctionCallTrace = memo(function FunctionCallTrace({
 	previewMode,
@@ -46,7 +59,6 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 
 	if (!debuggerContext) return null;
 	const { debugContractCall, currentStep } = debuggerContext;
-
 	return (
 		<React.Fragment key={functionCallId}>
 			<TraceLine
@@ -112,9 +124,9 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 						)}
 					</div>
 					<FnName fnName={functionCall.fnName} />
-					{!previewMode && <CallIO ios={functionCall.arguments} />}
+					{!previewMode && <CallIO ios={functionCall.argumentsDecoded} />}
 					{!previewMode && <span className="text-variable">&nbsp;{'->'}&nbsp;</span>}
-					{!previewMode && <CallIO ios={functionCall.results} />}
+					{!previewMode && <CallIO ios={functionCall.resultsDecoded} />}
 				</div>
 			</TraceLine>
 			{expandedCalls[functionCallId] && !previewMode && (
@@ -143,24 +155,173 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 	);
 });
 const ioToSkip = ['RangeCheck', 'GasBuiltin'];
-const CallIO = memo(function CallIO({ ios }: { ios: InternalFnCallIO[] }) {
+
+const CallIO = memo(function CallIO({ ios }: { ios: DataItem[] }) {
+	const truncateValue = (value: string): { text: string; isTruncated: boolean } => {
+		if (value.length <= 13) {
+			return { text: value, isTruncated: false };
+		}
+		return {
+			text: `${value.substring(0, 6)}...${value.substring(value.length - 6)}`,
+			isTruncated: true
+		};
+	};
+
+	const renderValue = (value: any): { text: string; isTruncated: boolean } => {
+		if (Array.isArray(value)) {
+			if (value.length === 0) {
+				return { text: 'None', isTruncated: false };
+			}
+			const rendered = value.map((item) => extractPureValue(item));
+			const fullValue = `[${rendered.join(', ')}]`;
+			return truncateValue(fullValue);
+		}
+
+		const pureValue = extractPureValue(value);
+		return truncateValue(pureValue);
+	};
+
+	const extractPureValue = (item: any): string => {
+		if (typeof item === 'string' || typeof item === 'number') {
+			return item.toString();
+		}
+
+		if (item === null || item === undefined) {
+			return 'null';
+		}
+		if (typeof item === 'object') {
+			if ('value' in item && item.value !== undefined) {
+				return extractPureValue(item.value);
+			}
+
+			const keys = Object.keys(item);
+			if (keys.every((key) => /^\d+$/.test(key))) {
+				const parts = keys
+					.sort((a, b) => parseInt(a) - parseInt(b))
+					.map((key) => extractPureValue(item[key]));
+				return `[${parts.join(', ')}]`;
+			}
+
+			const firstKey = Object.keys(item)[0];
+			if (firstKey && item[firstKey] && typeof item[firstKey] === 'object') {
+				if (!/^\d+$/.test(firstKey)) {
+					return extractPureValue(item[firstKey]);
+				}
+			}
+			return JSON.stringify(item);
+		}
+
+		return item.toString();
+	};
+
 	const iosList = useMemo(() => {
-		return ios.map((io, i) =>
-			ioToSkip.includes(io.typeName ?? '') ? null : (
+		if (!ios || !Array.isArray(ios)) {
+			return null;
+		}
+
+		return ios.map((io, i) => {
+			const valueInfo = renderValue(io.value);
+			return (
 				<React.Fragment key={i}>
-					<span className="text-typeColor">{io.typeName}</span>:&nbsp;
-					<span className="text-result">
-						{io.value.length === 0
-							? 'None'
-							: io.value.length === 1
-							? io.value[0]
-							: `[${io.value.join(', ')}]`}
-					</span>
+					<span className="text-typeColor">{io.typeName}</span>&nbsp;=&nbsp;
+					<DropdownMenu>
+						<TooltipProvider delayDuration={100}>
+							<Tooltip>
+								<TooltipTrigger asChild>
+									<DropdownMenuTrigger asChild>
+										<span
+											className={`py-1 hover:bg-accent_2 h-full ${
+												valueInfo.isTruncated
+													? 'text-variable border-variable border-b '
+													: 'text-result border-result'
+											}  transition-colors duration-200 focus:outline-none rounded-sm`}
+										>
+											{valueInfo.isTruncated ? (
+												valueInfo.text.startsWith('0x') ? (
+													<AddressLink address={io.value} addressClassName="!text-variable">
+														{valueInfo.text}
+													</AddressLink>
+												) : (
+													valueInfo.text
+												)
+											) : (
+												<CopyToClipboardElement
+													value={valueInfo.text}
+													toastDescription={'Value has been copied'}
+												>
+													{valueInfo.text}
+												</CopyToClipboardElement>
+											)}
+										</span>
+									</DropdownMenuTrigger>
+								</TooltipTrigger>
+								{valueInfo.isTruncated && (
+									<TooltipContent className="bg-background border-border text-black dark:text-white border">
+										Click to show full value
+									</TooltipContent>
+								)}
+							</Tooltip>
+						</TooltipProvider>
+						{valueInfo.isTruncated && (
+							<DropdownMenuContent
+								className="bg-card shadow-xl border rounded-lg text-xs max-w-[90vw] w-fit min-w-[16rem] p-0"
+								onClick={(e) => {
+									e.stopPropagation();
+								}}
+								onMouseDown={(e) => {
+									e.stopPropagation();
+								}}
+								onWheel={(e) => {
+									e.stopPropagation();
+								}}
+								onScroll={(e) => {
+									e.stopPropagation();
+								}}
+							>
+								<div className="relative">
+									<CopyToClipboardElement
+										value={JSON.stringify(io)}
+										toastDescription={`Value has been copied`}
+										className="absolute top-2 right-3 z-10 bg-accent p-1.5 rounded transition-colors duration-200 focus:outline-none focus:ring-2"
+										aria-label="Copy"
+									>
+										<Copy size={14} />
+									</CopyToClipboardElement>
+
+									<ScrollArea
+										className="w-full h-40 px-3 overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-accent [&::-webkit-scrollbar-thumb]:rounded-full"
+										onScroll={(e) => e.stopPropagation()}
+									>
+										<div className="pt-2">
+											{io.value !== undefined && (
+												<FunctionCallViewer
+													data={{
+														function: io.name ? io.name : undefined,
+														//@ts-ignore
+														args:
+															typeof io.value === 'object' && !Array.isArray(io.value)
+																? [io.value]
+																: io.value,
+														typeName: io.typeName
+													}}
+												/>
+											)}
+										</div>
+										<ScrollBar
+											orientation="horizontal"
+											className="sticky bottom-0 left-0 right-0 h-2"
+										/>
+									</ScrollArea>
+								</div>
+							</DropdownMenuContent>
+						)}
+					</DropdownMenu>
 					{i < ios.length - 1 ? <>,&nbsp;</> : ''}
 				</React.Fragment>
-			)
-		);
+			);
+		});
 	}, [ios]);
+
 	return (
 		<>
 			<span className="text-highlight_yellow">{'('}</span>

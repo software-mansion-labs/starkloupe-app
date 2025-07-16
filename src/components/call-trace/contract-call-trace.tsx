@@ -18,6 +18,7 @@ import FunctionCallViewer from '../ui/function-call-viewer';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu';
+import AddressLink from '../address-link';
 
 export const ContractCallTrace = memo(function ContractCallTrace({
 	contractCallId,
@@ -99,16 +100,6 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 	}
 
 	function ArgsWithTooltips() {
-		const [openIndex, setOpenIndex] = useState<number | null>(null);
-
-		const handleCopy = async (text: string) => {
-			try {
-				await navigator.clipboard.writeText(text);
-			} catch {
-				console.error('Error copy');
-			}
-		};
-
 		return (
 			<>
 				{call?.argumentsNames?.map((name, i) => {
@@ -167,69 +158,96 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 													<span
 														className={`py-1 hover:bg-accent_2 h-full ${
 															str.length > 13
-																? 'text-variable border-variable'
-																: 'text-result border-result'
-														}  border-b  transition-colors duration-200 focus:outline-none rounded-sm`}
+																? '!text-variable border-variable border-b'
+																: 'text-result'
+														}   transition-colors duration-200 focus:outline-none rounded-sm`}
 														onClick={(e) => {
 															e.stopPropagation();
 														}}
 													>
-														{`${preview}`}
+														{str.length > 13 ? (
+															call.calldataDecoded &&
+															call.calldataDecoded[i] &&
+															call.calldataDecoded[i].value.toString().startsWith('0x') ? (
+																<AddressLink
+																	addressClassName="!text-variable"
+																	address={call.calldataDecoded[i].value.toString()}
+																>
+																	{preview}
+																</AddressLink>
+															) : (
+																preview
+															)
+														) : (
+															<CopyToClipboardElement
+																value={preview as string}
+																toastDescription={`Value has been copied`}
+																aria-label="Copy"
+															>
+																{preview}
+															</CopyToClipboardElement>
+														)}
 													</span>
 												</DropdownMenuTrigger>
 											</TooltipTrigger>
-											<TooltipContent className="bg-background border-border text-black dark:text-white border">
-												Click to show full value
-											</TooltipContent>
+											{str.length > 13 && (
+												<TooltipContent className="bg-background border-border text-black dark:text-white border">
+													Click to show full value
+												</TooltipContent>
+											)}
 										</Tooltip>
 									</TooltipProvider>
-									<DropdownMenuContent
-										className="bg-card shadow-xl border rounded-lg text-xs max-w-[90vw] w-fit min-w-[16rem] p-0"
-										onClick={(e) => {
-											e.stopPropagation();
-										}}
-										onMouseDown={(e) => {
-											e.stopPropagation();
-										}}
-										onWheel={(e) => {
-											e.stopPropagation();
-										}}
-										onScroll={(e) => {
-											e.stopPropagation();
-										}}
-									>
-										<div className="relative">
-											<CopyToClipboardElement
-												value={JSON.stringify(fullObj, null, 2)}
-												toastDescription={`${name} has been copied`}
-												className="absolute top-2 right-3 z-10 bg-accent p-1.5 rounded transition-colors duration-200 focus:outline-none focus:ring-2"
-												aria-label="Copy"
-											>
-												<Copy size={14} />
-											</CopyToClipboardElement>
+									{str.length > 13 && (
+										<DropdownMenuContent
+											className="bg-card shadow-xl border rounded-lg text-xs max-w-[90vw] w-fit min-w-[16rem] p-0"
+											onClick={(e) => {
+												e.stopPropagation();
+											}}
+											onMouseDown={(e) => {
+												e.stopPropagation();
+											}}
+											onWheel={(e) => {
+												e.stopPropagation();
+											}}
+											onScroll={(e) => {
+												e.stopPropagation();
+											}}
+										>
+											<div className="relative">
+												<CopyToClipboardElement
+													value={JSON.stringify(fullObj, null, 2)}
+													toastDescription={`${name} has been copied`}
+													className="absolute top-2 right-3 z-10 bg-accent p-1.5 rounded transition-colors duration-200 focus:outline-none focus:ring-2"
+													aria-label="Copy"
+												>
+													<Copy size={14} />
+												</CopyToClipboardElement>
 
-											<ScrollArea
-												className="w-full max-h-72 p-3 pr-12 overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-accent [&::-webkit-scrollbar-thumb]:rounded-full"
-												onScroll={(e) => e.stopPropagation()}
-											>
-												{call.calldataDecoded?.[i].value && (
-													<FunctionCallViewer
-														data={{
-															function: name,
-															//@ts-ignore
-															args:
-																typeof call.calldataDecoded[i].value === 'object' &&
-																!Array.isArray(call.calldataDecoded[i].value)
-																	? [call.calldataDecoded[i].value]
-																	: call.calldataDecoded[i].value,
-															typeName: type
-														}}
-														isContract
-													/>
-												)}
-											</ScrollArea>
-										</div>
-									</DropdownMenuContent>
+												<ScrollArea
+													className="w-full h-40 px-3 pr-12 overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-accent [&::-webkit-scrollbar-thumb]:rounded-full"
+													onScroll={(e) => e.stopPropagation()}
+												>
+													<div className="pt-2">
+														{call.calldataDecoded?.[i].value !== undefined && (
+															<FunctionCallViewer
+																data={{
+																	function: name,
+																	//@ts-ignore
+																	args:
+																		typeof call.calldataDecoded[i].value === 'object' &&
+																		!Array.isArray(call.calldataDecoded[i].value)
+																			? [call.calldataDecoded[i].value]
+																			: call.calldataDecoded[i].value,
+																	typeName: type
+																}}
+																isContract
+															/>
+														)}
+													</div>
+												</ScrollArea>
+											</div>
+										</DropdownMenuContent>
+									)}
 								</DropdownMenu>
 
 								<span>
@@ -242,6 +260,139 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 			</>
 		);
 	}
+
+	function ResultsWithTooltips() {
+		const fullObj = call.result ?? {};
+		return (
+			<>
+				{!previewMode &&
+					call.result &&
+					call.resultTypes &&
+					call.resultTypes.map((resultType, i) => (
+						<span key={i}>
+							<span>{resultType}</span>
+							{call.decodedResult && (
+								<DropdownMenu>
+									<TooltipProvider delayDuration={100}>
+										<Tooltip>
+											<span className="text-foreground"> = </span>
+											<TooltipTrigger>
+												<DropdownMenuTrigger asChild>
+													<span
+														className={`hover:bg-accent_2 h-full ${
+															JSON.stringify(call.decodedResult[i].value).replace(/^"|"$/g, '')
+																.length > 13
+																? 'text-variable border-variable border-b'
+																: 'text-result'
+														}   py-1  transition-colors duration-200 focus:outline-none rounded-sm`}
+													>
+														{JSON.stringify(call.decodedResult[i].value).replace(/^"|"$/g, '')
+															.length > 13 ? (
+															JSON.stringify(call.decodedResult[i].value)
+																.replace(/^"|"$/g, '')
+																.startsWith('0x') ? (
+																<AddressLink
+																	addressClassName="!text-variable"
+																	address={JSON.stringify(call.decodedResult[i].value).replace(
+																		/^"|"$/g,
+																		''
+																	)}
+																>
+																	{truncateString(
+																		JSON.stringify(call.decodedResult[i].value).replace(
+																			/^"|"$/g,
+																			''
+																		)
+																	)}
+																</AddressLink>
+															) : (
+																truncateString(
+																	JSON.stringify(call.decodedResult[i].value).replace(/^"|"$/g, '')
+																)
+															)
+														) : (
+															<CopyToClipboardElement
+																value={JSON.stringify(call.decodedResult[i].value).replace(
+																	/^"|"$/g,
+																	''
+																)}
+																toastDescription={'Value copied'}
+															>
+																{truncateString(
+																	JSON.stringify(call.decodedResult[i].value).replace(/^"|"$/g, '')
+																)}
+															</CopyToClipboardElement>
+														)}
+													</span>
+												</DropdownMenuTrigger>
+											</TooltipTrigger>
+											{JSON.stringify(call.decodedResult[i].value).replace(/^"|"$/g, '').length >
+												13 && (
+												<TooltipContent className="bg-background border-border text-black dark:text-white border">
+													Click to show full value
+												</TooltipContent>
+											)}
+										</Tooltip>
+									</TooltipProvider>
+									{JSON.stringify(call.decodedResult[i].value).replace(/^"|"$/g, '').length >
+										13 && (
+										<DropdownMenuContent
+											className="bg-card shadow-xl border rounded-lg text-xs max-w-[90vw] w-fit min-w-[16rem] p-0"
+											onClick={(e) => {
+												e.stopPropagation();
+											}}
+											onMouseDown={(e) => {
+												e.stopPropagation();
+											}}
+											onWheel={(e) => {
+												e.stopPropagation();
+											}}
+											onScroll={(e) => {
+												e.stopPropagation();
+											}}
+										>
+											<div className="relative">
+												<CopyToClipboardElement
+													value={JSON.stringify(fullObj, null, 2)}
+													toastDescription={`${name} has been copied`}
+													className="absolute top-2 right-3 z-10 bg-accent p-1.5 rounded transition-colors duration-200 focus:outline-none focus:ring-2"
+													aria-label="Copy"
+												>
+													<Copy size={14} />
+												</CopyToClipboardElement>
+
+												<ScrollArea
+													className="w-full h-40 px-3 pr-12 overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-accent [&::-webkit-scrollbar-thumb]:rounded-full"
+													onScroll={(e) => e.stopPropagation()}
+												>
+													<div className="pt-2">
+														{call.decodedResult[i].value !== undefined && (
+															<FunctionCallViewer
+																data={{
+																	//@ts-ignore
+																	args:
+																		typeof call.decodedResult[i].value === 'object' &&
+																		!Array.isArray(call.decodedResult[i].value)
+																			? [call.decodedResult[i].value]
+																			: call.decodedResult[i].value,
+																	typeName: resultType
+																}}
+																isContract
+															/>
+														)}
+													</div>
+												</ScrollArea>
+											</div>
+										</DropdownMenuContent>
+									)}
+								</DropdownMenu>
+							)}
+						</span>
+					))}
+			</>
+		);
+	}
+
 	const truncateString = (str: string, maxLength = 13) => {
 		return str.length > maxLength ? `${str.slice(0, 6)}...${str.slice(-6)}` : str;
 	};
@@ -318,43 +469,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 							<span className="text-variable">&nbsp;{'->'}&nbsp;</span>
 							<span className="text-highlight_yellow">{`(`}</span>
 							<span className="text-typeColor">
-								{call.resultTypes.map((resultType, i) => (
-									<span key={i}>
-										<span>{resultType}</span>
-										{call.decodedResult && (
-											<TooltipProvider delayDuration={100}>
-												<Tooltip>
-													<span className="text-foreground"> = </span>
-													<TooltipTrigger>
-														<CopyToClipboardElement
-															value={JSON.stringify(call.decodedResult[i].value).replace(
-																/^"|"$/g,
-																''
-															)}
-															toastDescription={'Value copied'}
-														>
-															<span
-																className={`${
-																	JSON.stringify(call.decodedResult[i].value).replace(/^"|"$/g, '')
-																		.length > 13
-																		? 'text-variable'
-																		: 'text-result'
-																}   py-1`}
-															>
-																{truncateString(
-																	JSON.stringify(call.decodedResult[i].value).replace(/^"|"$/g, '')
-																)}
-															</span>
-														</CopyToClipboardElement>
-													</TooltipTrigger>
-													<TooltipContent className="bg-background border-border text-black dark:text-white border">
-														{JSON.stringify(call.decodedResult[i].value).replace(/^"|"$/g, '')}
-													</TooltipContent>
-												</Tooltip>
-											</TooltipProvider>
-										)}
-									</span>
-								))}
+								<ResultsWithTooltips />
 							</span>
 							<span className="text-highlight_yellow">{`)`}</span>
 						</>
