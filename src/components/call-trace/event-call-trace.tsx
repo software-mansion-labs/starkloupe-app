@@ -125,7 +125,7 @@ const EventCallDetails = memo(function EventCallDetails({
 				<div className="">
 					<InfoBox details={details} />
 				</div>
-				{call.datas && <DecodeDataTable decodeData={call.datas} type={DataType.DATAS} />}
+				{call.datas && <DecodeDataTable decodeData={call.datas} type={DataType.DATA} />}
 			</div>
 		</div>
 	);
