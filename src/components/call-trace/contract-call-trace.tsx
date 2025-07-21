@@ -107,7 +107,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 					const decoded = call.calldataDecoded?.[i]?.value;
 					const fullObj = call.calldataDecoded?.[i].value ?? {};
 
-					const str = JSON.stringify(decoded).replace(/"/g, '');
+					const str = JSON.stringify(decoded ?? '').replace(/"/g, '');
 					const preview =
 						call.calldataDecoded &&
 						(typeof call.calldataDecoded?.[i].value === 'string' ||
@@ -149,107 +149,110 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 							<span className="relative inline-block">
 								<span>{name}: </span>
 								<span className="text-typeColor">[{type}]</span>
-								<span> = </span>
-								<DropdownMenu>
-									<TooltipProvider delayDuration={100}>
-										<Tooltip>
-											<TooltipTrigger asChild key={i + name}>
-												<DropdownMenuTrigger asChild>
-													<span
-														className={`py-1 hover:bg-accent_2 h-full ${
-															str.length > 13
-																? '!text-variable border-variable border-b'
-																: 'text-result'
-														}   transition-colors duration-200 focus:outline-none rounded-sm`}
-														onClick={(e) => {
-															e.stopPropagation();
-														}}
-													>
-														{str.length > 13 ? (
-															call.calldataDecoded &&
-															call.calldataDecoded[i] &&
-															call.calldataDecoded[i].value.toString().startsWith('0x') ? (
-																<AddressLink
-																	addressClassName="!text-variable"
-																	address={call.calldataDecoded[i].value.toString()}
-																>
-																	{preview}
-																</AddressLink>
-															) : (
-																preview
-															)
-														) : (
-															<CopyToClipboardElement
-																value={preview as string}
-																toastDescription={`Value has been copied`}
-																aria-label="Copy"
-															>
-																{preview}
-															</CopyToClipboardElement>
-														)}
-													</span>
-												</DropdownMenuTrigger>
-											</TooltipTrigger>
-											{str.length > 13 && (
-												<TooltipContent className="bg-background border-border text-black dark:text-white border">
-													Click to show full value
-												</TooltipContent>
-											)}
-										</Tooltip>
-									</TooltipProvider>
-									{str.length > 13 && (
-										<DropdownMenuContent
-											className="bg-card shadow-xl border rounded-lg text-xs max-w-[90vw] w-fit min-w-[16rem] p-0"
-											onClick={(e) => {
-												e.stopPropagation();
-											}}
-											onMouseDown={(e) => {
-												e.stopPropagation();
-											}}
-											onWheel={(e) => {
-												e.stopPropagation();
-											}}
-											onScroll={(e) => {
-												e.stopPropagation();
-											}}
-										>
-											<div className="relative">
-												<CopyToClipboardElement
-													value={JSON.stringify(fullObj, null, 2)}
-													toastDescription={`${name} has been copied`}
-													className="absolute top-2 right-3 z-10 bg-accent p-1.5 rounded transition-colors duration-200 focus:outline-none focus:ring-2"
-													aria-label="Copy"
-												>
-													<Copy size={14} />
-												</CopyToClipboardElement>
-
-												<ScrollArea
-													className="w-full h-40 px-3 pr-12 overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-accent [&::-webkit-scrollbar-thumb]:rounded-full"
-													onScroll={(e) => e.stopPropagation()}
-												>
-													<div className="pt-2">
-														{call.calldataDecoded?.[i].value !== undefined && (
-															<FunctionCallViewer
-																data={{
-																	function: name,
-																	//@ts-ignore
-																	args:
-																		typeof call.calldataDecoded[i].value === 'object' &&
-																		!Array.isArray(call.calldataDecoded[i].value)
-																			? [call.calldataDecoded[i].value]
-																			: call.calldataDecoded[i].value,
-																	typeName: type
+								{decoded !== undefined && decoded !== null && (
+									<>
+										<span> = </span>
+										<DropdownMenu>
+											<TooltipProvider delayDuration={100}>
+												<Tooltip>
+													<TooltipTrigger asChild key={i + name}>
+														<DropdownMenuTrigger asChild>
+															<span
+																className={`py-1 hover:bg-accent_2 h-full ${
+																	str.length > 13
+																		? '!text-variable border-variable border-b'
+																		: 'text-result'
+																}   transition-colors duration-200 focus:outline-none rounded-sm`}
+																onClick={(e) => {
+																	e.stopPropagation();
 																}}
-																isContract
-															/>
-														)}
-													</div>
-												</ScrollArea>
-											</div>
-										</DropdownMenuContent>
-									)}
-								</DropdownMenu>
+															>
+																{str.length > 13 ? (
+																	call.calldataDecoded &&
+																	call.calldataDecoded[i] &&
+																	call.calldataDecoded[i].value.toString().startsWith('0x') ? (
+																		<AddressLink
+																			addressClassName="!text-variable"
+																			address={call.calldataDecoded[i].value.toString()}
+																		>
+																			{preview}
+																		</AddressLink>
+																	) : (
+																		preview
+																	)
+																) : (
+																	<CopyToClipboardElement
+																		value={preview as string}
+																		toastDescription={`Value has been copied`}
+																		aria-label="Copy"
+																	>
+																		{preview}
+																	</CopyToClipboardElement>
+																)}
+															</span>
+														</DropdownMenuTrigger>
+													</TooltipTrigger>
+													{str.length > 13 && (
+														<TooltipContent className="bg-background border-border text-black dark:text-white border">
+															Click to show full value
+														</TooltipContent>
+													)}
+												</Tooltip>
+											</TooltipProvider>
+											{str.length > 13 && (
+												<DropdownMenuContent
+													className="bg-card shadow-xl border rounded-lg text-xs max-w-[90vw] w-fit min-w-[16rem] p-0"
+													onClick={(e) => {
+														e.stopPropagation();
+													}}
+													onMouseDown={(e) => {
+														e.stopPropagation();
+													}}
+													onWheel={(e) => {
+														e.stopPropagation();
+													}}
+													onScroll={(e) => {
+														e.stopPropagation();
+													}}
+												>
+													<div className="relative">
+														<CopyToClipboardElement
+															value={JSON.stringify(fullObj, null, 2)}
+															toastDescription={`${name} has been copied`}
+															className="absolute top-2 right-3 z-10 bg-accent p-1.5 rounded transition-colors duration-200 focus:outline-none focus:ring-2"
+															aria-label="Copy"
+														>
+															<Copy size={14} />
+														</CopyToClipboardElement>
 
+														<ScrollArea
+															className="w-full h-40 px-3 pr-12 overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-accent [&::-webkit-scrollbar-thumb]:rounded-full"
+															onScroll={(e) => e.stopPropagation()}
+														>
+															<div className="pt-2">
+																{call.calldataDecoded?.[i].value !== undefined && (
+																	<FunctionCallViewer
+																		data={{
+																			function: name,
+																			//@ts-ignore
+																			args:
+																				typeof call.calldataDecoded[i].value === 'object' &&
+																				!Array.isArray(call.calldataDecoded[i].value)
+																					? [call.calldataDecoded[i].value]
+																					: call.calldataDecoded[i].value,
+																			typeName: type
+																		}}
+																		isContract
+																	/>
+																)}
+															</div>
+														</ScrollArea>
+													</div>
+												</DropdownMenuContent>
+											)}
+										</DropdownMenu>
+									</>
+								)}
 								<span>
 									{call.argumentsNames && i < call.argumentsNames.length - 1 && ',\u00A0'}
 								</span>
