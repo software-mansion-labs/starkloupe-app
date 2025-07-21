@@ -81,7 +81,7 @@ export function DebuggerView() {
 									The source code for this contract is missing. To enable the step-by-step debugger,
 									verify the contract on Walnut by following{' '}
 									<Link
-										className="underline-offset-4 hover:underline text-function_pink"
+										className="underline-offset-4 hover:underline text-blue-500"
 										href={WALNUT_VERIFY_DOCS_URL}
 									>
 										this guide
