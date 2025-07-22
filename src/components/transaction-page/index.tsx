@@ -283,10 +283,10 @@ export function TransactionPage({
 							<L1TransactionDetails transactionData={l1TransactionData} rpcUrl={rpcUrl} />
 							{l1TransactionData.messageHashes && l1TransactionData.messageHashes.length > 0 && (
 								<div className="mt-4">
-									<div className="rounded-xl border bg-white">
+									<div className="rounded-xl border bg-card">
 										<div className="p-4">
 											<h3 className="text-sm mb-2">Cross-Chain Source: Transactions on Starknet</h3>
-											<p className="text-neutral-400 text-[0.7rem] mb-2">
+											<p className="text-muted-foreground text-[0.7rem] mb-2">
 												{l1TransactionData.messageHashes.length > 1
 													? 'This L1 transaction was triggered by three messages sent from Starknet.'
 													: 'This L1 transaction was triggered by a message sent from Starknet.'}
@@ -306,22 +306,24 @@ export function TransactionPage({
 															className="flex items-baseline gap-2 whitespace-nowrap"
 														>
 															{l1TransactionData.messageHashes.length > 1 && (
-																<span className="text-neutral-500">Message {index + 1}:</span>
+																<span className="text-muted-foreground">Message {index + 1}:</span>
 															)}
 															<div className="flex items-center gap-1">
 																<CopyToClipboardElement
 																	value={hash}
 																	toastDescription="Message hash copied"
-																	className="font-mono cursor-pointer hover:bg-black/10 rounded-sm px-1"
+																	className="font-mono cursor-pointer rounded-sm py-1 px-0"
 																>
-																	<span className="hidden lg:inline">{hash}</span>
-																	<span className="lg:hidden">{shortenHash(hash)}</span>
+																	<AddressLink address={hash}>
+																		<span className="hidden lg:inline">{hash}</span>
+																		<span className="lg:hidden">{shortenHash(hash)}</span>
+																	</AddressLink>
 																</CopyToClipboardElement>
 																<a
 																	href={voyagerUrl}
 																	target="_blank"
 																	rel="noopener noreferrer"
-																	className="font-bold text-lg underline"
+																	className="font-bold text-lg underline "
 																	title="View on Voyager"
 																>
 																	<LinkIcon className="h-4 w-4" />

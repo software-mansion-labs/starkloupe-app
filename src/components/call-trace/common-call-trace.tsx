@@ -126,7 +126,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 								);
 								setActiveTab('gas-profiler');
 							}}
-							className="sticky right-4 mt-1 -ml-20
+							className="sticky right-4 mt-[0.2rem] -ml-20
 									 min-w-[5rem] px-1.5 py-0.5 hover:bg-blue-200
 									 dark:hover:bg-blue-700
 									 text-center rounded-sm cursor-pointer
@@ -140,7 +140,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 								<Tooltip delayDuration={100}>
 									<TooltipTrigger asChild>
 										<span
-											className="sticky right-4 mt-1 -ml-20 flex-shrink-0
+											className="sticky right-4 mt-[0.2rem] -ml-20 flex-shrink-0
 														 min-w-[5rem] px-1.5 py-0.5
 														 text-center rounded-sm cursor-not-allowed
 														 bg-blue-100 border border-blue-400 text-blue-900 z-10 dark:bg-[#004A7E] dark:text-white"
