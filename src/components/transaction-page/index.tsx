@@ -288,7 +288,7 @@ export function TransactionPage({
 											<h3 className="text-sm mb-2">Cross-Chain Source: Transactions on Starknet</h3>
 											<p className="text-muted-foreground text-[0.7rem] mb-2">
 												{l1TransactionData.messageHashes.length > 1
-													? 'This L1 transaction was triggered by three messages sent from Starknet.'
+													? `This L1 transaction was triggered by ${l1TransactionData.messageHashes.length} messages sent from Starknet.`
 													: 'This L1 transaction was triggered by a message sent from Starknet.'}
 											</p>
 											<div className="flex flex-col gap-1 text-xs">
