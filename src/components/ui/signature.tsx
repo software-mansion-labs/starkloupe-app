@@ -19,20 +19,17 @@ export function ContractCallSignature({
 			{displayContractName && (
 				<AddressLink
 					address={contractCall?.entryPoint.storageAddress}
-					addressClassName={`${variant === 'search-result' ? '' : 'text-classGreen'}`}
+					addressClassName={`${variant === 'search-result' ? '' : 'text-classGreen'} px-0.5`}
 				>
 					{contractName}
 				</AddressLink>
 			)}
+			{displayContractName && displayFunctionName && '.'}
 			{displayFunctionName && (
-				<>
-					{displayContractName && displayFunctionName && <> {'.'}</>}
-
-					<span className={`${variant === 'search-result' ? '' : 'text-function_purple'}`}>
-						{contractCall?.entryPointName ??
-							shortenHash(contractCall.entryPoint.entryPointSelector, 13)}
-					</span>
-				</>
+				<span className={`${variant === 'search-result' ? '' : 'text-function_purple'}`}>
+					{contractCall?.entryPointName ??
+						shortenHash(contractCall.entryPoint.entryPointSelector, 13)}
+				</span>
 			)}
 		</>
 	);

@@ -50,7 +50,7 @@ export function TransactionPage({
 	const [l1TxHashShort, setL1TxHashShort] = useState<string | undefined>();
 	const [l2TxHashShort, setL2TxHashShort] = useState<string>();
 	const router = useRouter();
-
+	const [showIO, setShowIO] = useState(false);
 	useEffect(() => {
 		const fetchData = async () => {
 			try {

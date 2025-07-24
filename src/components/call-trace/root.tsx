@@ -9,15 +9,15 @@ import { EventsList } from './event-entries';
 import { Debugger } from '@/components/debugger';
 import { DebuggerContextProvider } from '@/lib/context/debugger-context-provider';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import CalldataSearch from '../ui/calldata-search';
 import { PlusCircleIcon, MinusCircleIcon } from '@heroicons/react/24/outline';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { CommonCallTrace } from './common-call-trace';
-import { useCallback, useEffect } from 'react';
+import { useCallback } from 'react';
 import StorageChanges from '../storage-changes';
 import { GasProfiler } from '../gas-profiler';
+import { MultiCallIO } from '../multi-call-io';
 
 export function CallTraceRoot({
 	simulationResult,
@@ -77,6 +77,7 @@ function CallTraceRootContent() {
 			>
 				<TabsList className="flex md:inline-flex md:w-fit dark:bg-card !justify-start md:justify-center flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-rounded">
 					<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
+					<TabsTrigger value="input-output">Input/Output</TabsTrigger>
 					<TabsTrigger value="events-list">Events</TabsTrigger>
 					<TabsTrigger value="debugger">Debugger</TabsTrigger>
 					<TabsTrigger value="storage-changes">Storage</TabsTrigger>
@@ -170,6 +171,19 @@ function CallTraceRootContent() {
 					<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs dark:bg-card">
 						<ScrollArea className="flex-1 overflow-auto">
 							<StorageChanges />
+						</ScrollArea>
+					</div>
+				</TabsContent>
+				<TabsContent
+					value="input-output"
+					className={`h-full flex flex-col flex-1 overflow-hidden min-h-0 ${
+						activeTab !== 'input-output' ? 'hidden' : ''
+					}`}
+				>
+					<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs dark:bg-card">
+						<ScrollArea className="flex-1 overflow-auto">
+							<MultiCallIO />
+							<ScrollBar orientation="horizontal" />
 						</ScrollArea>
 					</div>
 				</TabsContent>

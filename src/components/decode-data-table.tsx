@@ -3,7 +3,7 @@ import { DecodedItem, DataDecoded, DataType } from '@/lib/simulation';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { ToggleGroup, ToggleGroupItem } from './ui/toggle-group';
 import { Card } from './ui/card';
-import { ScrollArea } from './ui/scroll-area';
+import { ScrollArea, ScrollBar } from './ui/scroll-area';
 import AddressLink from './address-link';
 import CopyToClipboardElement from './ui/copy-to-clipboard';
 
@@ -107,21 +107,16 @@ export function DecodeDataTable({
 		}
 	};
 
-	// Skip rendering if there's no data at all
-	if ((!decodeData || decodeData.length === 0) && (!rawData || rawData.length === 0)) {
-		return null;
-	}
-
 	return (
 		<div className="my-4">
 			<div className="flex flex-raw items-center mb-1">
 				<div className="font-medium uppercase mr-2">{type}</div>
-				{type === DataType.CALLDATA && decodeData && (
+				{(type === DataType.CALLDATA || type === DataType.OUTPUT) && (
 					<ToggleGroup
 						type="single"
 						size={'sm'}
 						variant="outline"
-						className="mb-1"
+						className={`mb-1 ${type === DataType.OUTPUT && 'invisible'}`}
 						defaultValue="auto"
 						aria-label="Native or Raw Toggle"
 						onValueChange={(value) => setDisplayFormat(value as 'auto' | 'raw')}
@@ -136,12 +131,27 @@ export function DecodeDataTable({
 				)}
 			</div>
 			<Card>
-				{/* Always show Raw data if decodeData is not available */}
-				{(displayFormat === 'raw' || !decodeData) &&
-				type === DataType.CALLDATA &&
-				rawData &&
-				rawData.length > 0 ? (
-					<ScrollArea>
+				{(!rawData || rawData.length === 0) && (!decodeData || decodeData.length === 0) ? (
+					<ScrollArea className="overflow-auto">
+						<Table className="w-auto py-0.5 px-2 text-xs w-full">
+							<TableBody>
+								<TableRow>
+									<TableCell
+										colSpan={type === DataType.CALLDATA ? 3 : 2}
+										className="text-center py-4 whitespace-nowrap"
+									>
+										No data
+									</TableCell>
+								</TableRow>
+							</TableBody>
+						</Table>
+						<ScrollBar orientation="horizontal" />
+					</ScrollArea>
+				) : (displayFormat === 'raw' || !decodeData) &&
+				  type === DataType.CALLDATA &&
+				  rawData &&
+				  rawData.length > 0 ? (
+					<ScrollArea className="overflow-auto">
 						<Table className="w-auto py-0.5 px-2 text-xs w-full">
 							<TableHeader>
 								<TableRow>
@@ -170,10 +180,10 @@ export function DecodeDataTable({
 								))}
 							</TableBody>
 						</Table>
+						<ScrollBar orientation="horizontal" />
 					</ScrollArea>
 				) : (
-					<ScrollArea>
-						{' '}
+					<ScrollArea className="overflow-auto">
 						<Table className="w-auto py-0.5 px-2 text-xs">
 							<TableHeader>
 								<TableRow>
@@ -189,7 +199,7 @@ export function DecodeDataTable({
 									decodeData.map((item: DecodedItem, index: number) => (
 										<TableRow key={index}>
 											{type === DataType.CALLDATA && (
-												<TableCell className="border-r  last:border-r-0 whitespace-break-spaces">
+												<TableCell className="border-r last:border-r-0 whitespace-break-spaces">
 													{item.name}
 												</TableCell>
 											)}
@@ -203,6 +213,7 @@ export function DecodeDataTable({
 									))}
 							</TableBody>
 						</Table>
+						<ScrollBar orientation="horizontal" />
 					</ScrollArea>
 				)}
 			</Card>
