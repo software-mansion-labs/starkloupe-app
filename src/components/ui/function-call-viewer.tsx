@@ -89,8 +89,14 @@ const FunctionCallViewer = ({
 		if (Array.isArray(obj)) {
 			return obj.map((item: any) => formatObject(item));
 		}
-		if (typeof obj === 'object' && obj !== null && 'name' in obj && 'value' in obj) {
-			return { [obj.name || obj.typeName]: formatObject(obj.value) };
+		if (
+			typeof obj === 'object' &&
+			obj !== null &&
+			('name' in obj || 'typeName' in obj) &&
+			'value' in obj
+		) {
+			const key = obj.name || obj.typeName;
+			return { [key]: formatObject(obj.value) };
 		}
 		if (typeof obj === 'object' && obj !== null) {
 			const keys = Object.keys(obj);
