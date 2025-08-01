@@ -4,6 +4,7 @@ import React, {
 	RefObject,
 	createContext,
 	useContext,
+	useEffect,
 	useMemo,
 	useRef,
 	useState
@@ -178,6 +179,17 @@ export const CallTraceContextProvider: React.FC<
 			return { ...prevState, [id]: !!!prevState[id] };
 		});
 	};
+
+	useEffect(() => {
+		if (
+			simulationResult.contractCallsMap[2].entryPointName === '__validate__' &&
+			debuggerPayload?.transactionType === 'INVOKE'
+		) {
+			setCollapsedCalls((prevState) => {
+				return { ...prevState, [simulationResult.contractCallsMap[2].callId]: true };
+			});
+		}
+	}, [simulationResult.contractCallsMap]);
 
 	const expandAll = () => {
 		setCollapsedCalls({});
