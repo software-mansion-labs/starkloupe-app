@@ -181,7 +181,10 @@ export const CallTraceContextProvider: React.FC<
 	};
 
 	useEffect(() => {
-		if (simulationResult.contractCallsMap[2].entryPointName === '__validate__') {
+		if (
+			simulationResult.contractCallsMap[2].entryPointName === '__validate__' &&
+			debuggerPayload?.transactionType === 'INVOKE'
+		) {
 			setCollapsedCalls((prevState) => {
 				return { ...prevState, [simulationResult.contractCallsMap[2].callId]: true };
 			});
