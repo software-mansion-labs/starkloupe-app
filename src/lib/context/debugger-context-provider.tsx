@@ -105,7 +105,50 @@ export const DebuggerContextProvider = ({
 		return `debugger:${hash}`;
 	}
 
+	function cleanupDebuggerSection(maxItems: number) {
+		const now = Date.now();
+		const prefix = 'debugger:';
+
+		const keys: string[] = [];
+		for (let i = 0; i < localStorage.length; i++) {
+			const k = localStorage.key(i);
+			if (k && k.startsWith(prefix)) keys.push(k);
+		}
+
+		if (keys.length <= maxItems) return;
+
+		const items: { key: string; timestamp: number }[] = [];
+		for (const key of keys) {
+			const compressed = localStorage.getItem(key);
+			if (!compressed) {
+				localStorage.removeItem(key);
+				continue;
+			}
+			try {
+				const json = decompressFromUTF16(compressed);
+				if (!json) throw new Error();
+				const rec = safeParse<{ timestamp: number }>(json);
+				if (!rec.timestamp || now - rec.timestamp > CACHE_TTL_MS) {
+					localStorage.removeItem(key);
+				} else {
+					items.push({ key, timestamp: rec.timestamp });
+				}
+			} catch {
+				localStorage.removeItem(key);
+			}
+		}
+
+		if (items.length <= maxItems) return;
+
+		items
+			.sort((a, b) => b.timestamp - a.timestamp)
+			.slice(maxItems)
+			.forEach((item) => localStorage.removeItem(item.key));
+	}
+
 	function getCachedDebuggerInfo(key: string) {
+		cleanupDebuggerSection(2);
+
 		const compressed = localStorage.getItem(key);
 		if (!compressed) return null;
 
@@ -153,7 +196,10 @@ export const DebuggerContextProvider = ({
 	}
 
 	function setCachedDebuggerInfo(key: string, data: any) {
-		const json = safeStringify({ timestamp: Date.now(), data });
+		cleanupDebuggerSection(1);
+
+		const record = { timestamp: Date.now(), data };
+		const json = safeStringify(record);
 		const compressed = compressToUTF16(json);
 
 		try {
