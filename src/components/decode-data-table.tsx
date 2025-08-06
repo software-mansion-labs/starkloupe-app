@@ -49,6 +49,22 @@ export function DecodeDataTable({
 				</div>
 			);
 		} else if (typeof value === 'object' && value !== null) {
+			const keys = Object.keys(value);
+
+			// Check if this is an enum variant (has a single key that represents the variant name)
+			if (keys.length === 1 && typeof value[keys[0]] === 'object' && value[keys[0]] !== null) {
+				const variantName = keys[0];
+				const variantData = value[keys[0]];
+
+				// For enum variants, directly render the value without name/typeName
+				return (
+					<div className="pl-4">
+						<div className="font-semibold mb-1">{variantName}</div>
+						<div className="pl-4">{renderValue(variantData.value)}</div>
+					</div>
+				);
+			}
+
 			// Handle object values
 			if (isObject(value)) {
 				return (

@@ -50,7 +50,7 @@ export interface EntryPoint {
 export interface DecodedItem {
 	typeName: string;
 	name: string | null;
-	value: string | DecodedItem[] | string[];
+	value: string | DecodedItem[] | string[] | { [key: string]: DecodedItem };
 }
 
 export type DataDecoded = DecodedItem[];
