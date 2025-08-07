@@ -54,7 +54,7 @@ export default function Page() {
 							<blockquote className="text-lg/7 text-white">
 								<p>
 									We’re building Walnut to help smart contract developers create better and more
-									resilient Starknet applications. If you need assistance,{' '}
+									resilient onchain applications. If you need assistance,{' '}
 									<a href="https://t.me/walnuthq" className="underline">
 										reach out anytime
 									</a>
