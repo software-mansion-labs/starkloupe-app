@@ -12,7 +12,14 @@ interface StorageChangesProps {
 }
 
 const StorageChanges: React.FC<StorageChangesProps> = (props) => {
-	const { simulationResult, contractCallsMap } = useCallTrace();
+	const {
+		simulationResult,
+		contractCallsMap,
+		customSettings,
+		updateContractName,
+		updateContractColor,
+		updateContractSettings
+	} = useCallTrace();
 	const [expandedCalls, setExpandedCalls] = useState<Record<number, boolean>>({});
 	const storageChanges = useMemo(() => {
 		const combined: Record<
@@ -76,8 +83,12 @@ const StorageChanges: React.FC<StorageChangesProps> = (props) => {
 											<>
 												<a href={`/contracts/${contractAddress}`} className=" font-mono">
 													<AddressLink
+														customSettings={customSettings}
+														updateContractName={updateContractName}
+														updateContractColor={updateContractColor}
+														updateContractSettings={updateContractSettings}
 														address={contractAddress}
-														addressClassName="!text-classGreen px-0.5 p-1"
+														addressClassName=" px-0.5 p-1"
 													>
 														{contractName}
 													</AddressLink>

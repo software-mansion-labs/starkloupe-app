@@ -18,7 +18,13 @@ interface CallData {
 export function MultiCallIO() {
 	const [expandedCalls, setExpandedCalls] = useState<Record<number, boolean>>({});
 
-	const { contractCallsMap } = useCallTrace();
+	const {
+		contractCallsMap,
+		customSettings,
+		updateContractName,
+		updateContractColor,
+		updateContractSettings
+	} = useCallTrace();
 
 	const expandedCount = Object.values(expandedCalls).filter(Boolean).length;
 
@@ -44,7 +50,14 @@ export function MultiCallIO() {
 					rawInput: childCall.entryPoint.calldata,
 					input: childCall.calldataDecoded,
 					output: childCall.decodedResult,
-					label: <ContractCallSignature contractCall={childCall} />,
+					label: (
+						<ContractCallSignature
+							updateContractName={updateContractName}
+							updateContractColor={updateContractColor}
+							customSettings={customSettings}
+							contractCall={childCall}
+						/>
+					),
 					callId: childCall.callId
 				});
 			}

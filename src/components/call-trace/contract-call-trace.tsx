@@ -41,7 +41,10 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 		contractCallsMap,
 		isExecutionFailed,
 		traceLineElementRefs,
-		setChosenCallName
+		setChosenCallName,
+		updateContractName,
+		updateContractColor,
+		customSettings
 	} = useCallTrace();
 	const debuggerContext: ReturnType<typeof useDebugger> = useDebugger();
 
@@ -219,7 +222,12 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 						)}
 					</div>
 
-					<ContractCallSignature contractCall={call} />
+					<ContractCallSignature
+						contractCall={call}
+						updateContractName={updateContractName}
+						updateContractColor={updateContractColor}
+						customSettings={customSettings}
+					/>
 					{!previewMode && <span className="text-highlight_yellow">{'('}</span>}
 					{!previewMode && call.argumentsNames ? <ArgsWithTooltips /> : <></>}
 					{!previewMode && <span className="text-highlight_yellow">{')'}</span>}

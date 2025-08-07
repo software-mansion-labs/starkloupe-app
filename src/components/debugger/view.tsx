@@ -114,6 +114,8 @@ function Controls({
 	contractCall?: ContractCall;
 	runToBreakpoint: () => void;
 }) {
+	const { customSettings, updateContractName, updateContractColor, updateContractSettings } =
+		useCallTrace();
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
 			if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
@@ -139,7 +141,16 @@ function Controls({
 
 	return (
 		<div className="flex flex-row border-b py-1 px-3 justify-between items-center">
-			<div>{contractCall && <ContractCallSignature contractCall={call || contractCall} />}</div>
+			<div>
+				{contractCall && (
+					<ContractCallSignature
+						customSettings={customSettings}
+						updateContractName={updateContractName}
+						updateContractColor={updateContractColor}
+						contractCall={call || contractCall}
+					/>
+				)}
+			</div>
 			<div className="flex flex-row gap-3 items-center">
 				<div>
 					Step {stepIndex + 1}/{totalSteps}

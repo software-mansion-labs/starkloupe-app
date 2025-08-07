@@ -19,6 +19,7 @@ import {
 	FlameNode
 } from '@/lib/simulation';
 import { DebuggerPayload } from '@/lib/debugger';
+import { loadCustomSettingsFromStorage, saveCustomSettingsToStorage } from '../utils/cache-utils';
 
 interface StringBooleanDict {
 	[key: string]: boolean;
@@ -58,6 +59,13 @@ interface CallTraceContextProps {
 	scrollToTraceLineElement: (key: number) => void;
 	chosenCallName: string | null;
 	setChosenCallName: (callName: string | null) => void;
+	customSettings: { [key: string]: { name: string | null; color: string | null } };
+	updateContractColor: (contractAddress: string, color: string) => void;
+	updateContractName: (contractAddress: string, newContractCallName: string) => void;
+	updateContractSettings: (
+		contractAddress: string,
+		settings: { name?: string | null; color?: string | null }
+	) => void;
 }
 
 export const CallTraceContext = createContext<CallTraceContextProps>({
@@ -83,7 +91,14 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	setActiveTab: () => undefined,
 	scrollToTraceLineElement: (key: number) => undefined,
 	chosenCallName: null,
-	setChosenCallName: () => undefined
+	setChosenCallName: () => undefined,
+	customSettings: {},
+	updateContractColor: (contractAddress: string, color: string) => undefined,
+	updateContractName: (contractAddress: string, newContractCallName: string) => undefined,
+	updateContractSettings: (
+		contractAddress: string,
+		settings: { name?: string | null; color?: string | null }
+	) => undefined
 });
 
 export const CallTraceContextProvider: React.FC<
@@ -155,6 +170,11 @@ export const CallTraceContextProvider: React.FC<
 		}
 	}, [simulationResult]);
 
+	const [customSettings, setCustomSettings] = useState<{
+		[key: string]: { name: string | null; color: string | null };
+	}>(() => {
+		return loadCustomSettingsFromStorage();
+	});
 	const [collapsedCalls, setCollapsedCalls] = useState<StringBooleanDict>(() => initiallyCollapsed);
 	const [expandedCalls, setExpandedCalls] = useState<StringBooleanDict>({});
 	const [showEvents, setShowEvents] = useState<boolean>(true);
@@ -174,6 +194,62 @@ export const CallTraceContextProvider: React.FC<
 		}
 	};
 
+	const updateContractColor = (contractAddress: string, color: string) => {
+		setCustomSettings((prevSettings) => {
+			const newSettings = {
+				...prevSettings,
+				[contractAddress]: {
+					...prevSettings[contractAddress],
+					color: color
+				}
+			};
+
+			saveCustomSettingsToStorage(newSettings);
+
+			return newSettings;
+		});
+	};
+
+	const updateContractName = (contractAddress: string, newContractCallName: string) => {
+		setCustomSettings((prevSettings) => {
+			const newSettings = {
+				...prevSettings,
+				[contractAddress]: {
+					...prevSettings[contractAddress],
+					name: newContractCallName
+				}
+			};
+
+			saveCustomSettingsToStorage(newSettings);
+
+			return newSettings;
+		});
+	};
+
+	const updateContractSettings = (
+		contractAddress: string,
+		settings: { name?: string | null; color?: string | null }
+	) => {
+		setCustomSettings((prevSettings) => {
+			const newSettings = {
+				...prevSettings,
+				[contractAddress]: {
+					name:
+						settings.name !== undefined
+							? settings.name
+							: prevSettings[contractAddress]?.name || null,
+					color:
+						settings.color !== undefined
+							? settings.color
+							: prevSettings[contractAddress]?.color || null
+				}
+			};
+
+			saveCustomSettingsToStorage(newSettings);
+
+			return newSettings;
+		});
+	};
 	const toggleCallCollapse = (id: number) => {
 		setCollapsedCalls((prevState) => {
 			return { ...prevState, [id]: !!!prevState[id] };
@@ -244,7 +320,11 @@ export const CallTraceContextProvider: React.FC<
 				setActiveTab,
 				scrollToTraceLineElement,
 				chosenCallName,
-				setChosenCallName
+				setChosenCallName,
+				customSettings,
+				updateContractColor,
+				updateContractName,
+				updateContractSettings
 			}}
 		>
 			{children}

@@ -8,7 +8,15 @@ import { DecodeDataTable } from '../decode-data-table';
 import AddressLink from '../address-link';
 
 export function EventsList({ events }: { events: ContractCallEvent[] }) {
-	const { toggleCallExpand, traceLineElementRefs, expandedCalls } = useCallTrace();
+	const {
+		toggleCallExpand,
+		traceLineElementRefs,
+		expandedCalls,
+		customSettings,
+		updateContractName,
+		updateContractColor,
+		updateContractSettings
+	} = useCallTrace();
 
 	if (events.length === 0) {
 		return <div className="px-4 py-2 text-sm">No events emitted during this transaction.</div>;
@@ -43,6 +51,10 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 							<AddressLink
 								addressClassName="text-classGreen whitespace-nowrap"
 								address={event?.contractAddress}
+								customSettings={customSettings}
+								updateContractName={updateContractName}
+								updateContractColor={updateContractColor}
+								updateContractSettings={updateContractSettings}
 							>
 								{contractName}
 							</AddressLink>
