@@ -116,7 +116,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 								<ValueWithTooltip
 									value={decoded}
 									fullObject={decoded}
-									typeName={call.argumentsTypes?.[i]}
+									typeName={decoded.typeName}
 									functionName={name}
 									isContract
 								/>
@@ -143,7 +143,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 									<ValueWithTooltip
 										value={val}
 										fullObject={call.result}
-										typeName={resultType}
+										typeName={val.typeName}
 										isContract
 									/>
 								</>
