@@ -52,7 +52,7 @@ export function SourceFiles({
 			) : (
 				<Alert className="mx-4 w-fit">
 					<ExclamationTriangleIcon className="h-5 w-5" />
-					<AlertTitle>No source code for this contract</AlertTitle>
+					<AlertTitle>No source code for this contract.</AlertTitle>
 					<AlertDescription>
 						<p>
 							<span>Follow </span>

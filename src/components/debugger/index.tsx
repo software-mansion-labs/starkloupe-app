@@ -49,7 +49,7 @@ export const Debugger = memo(function Debugger({
 		return (
 			<Alert className="m-4 w-fit">
 				<ExclamationTriangleIcon className="h-5 w-5" />
-				<AlertTitle>No Source Code Available</AlertTitle>
+				<AlertTitle>No Source Code Available.</AlertTitle>
 				<AlertDescription>
 					<p>
 						The source code for the contract is missing. To enable the step-by-step debugger, verify

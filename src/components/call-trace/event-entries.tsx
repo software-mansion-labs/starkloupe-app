@@ -6,6 +6,8 @@ import { InfoBox } from '@/components/ui/info-box';
 import { DataType, ContractCallEvent, DecodedItem } from '@/lib/simulation';
 import { DecodeDataTable } from '../decode-data-table';
 import AddressLink from '../address-link';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 export function EventsList({ events }: { events: ContractCallEvent[] }) {
 	const {
@@ -19,7 +21,13 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 	} = useCallTrace();
 
 	if (events.length === 0) {
-		return <div className="px-4 py-2 text-sm">No events emitted during this transaction.</div>;
+		return (
+			<Alert className="mx-4 mt-2 w-fit">
+				<ExclamationTriangleIcon className="h-5 w-5" />
+				<AlertTitle>No events.</AlertTitle>
+				<AlertDescription>No events emitted during this transaction.</AlertDescription>
+			</Alert>
+		);
 	}
 
 	return events.map((event, index) => {

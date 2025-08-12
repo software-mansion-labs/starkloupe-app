@@ -71,7 +71,7 @@ export function DebuggerView() {
 					) : (
 						<Alert className="m-4 w-fit">
 							<ExclamationTriangleIcon className="h-5 w-5" />
-							<AlertTitle>No Source Code Available</AlertTitle>
+							<AlertTitle>No Source Code Available.</AlertTitle>
 							<AlertDescription>
 								<p className="mt-2 mb-1">
 									Contract Address:{' '}

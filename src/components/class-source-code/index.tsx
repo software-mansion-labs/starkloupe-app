@@ -23,7 +23,7 @@ export function ClassSourceCode({
 			) : (
 				<Alert className="w-fit">
 					<ExclamationTriangleIcon className="h-5 w-5" />
-					<AlertTitle>No source code for this {isContract ? 'contract' : 'class'}</AlertTitle>
+					<AlertTitle>No source code for this {isContract ? 'contract' : 'class'}.</AlertTitle>
 					<AlertDescription>
 						<p>
 							<span>Follow </span>
