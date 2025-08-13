@@ -6,6 +6,8 @@ import { Card } from './ui/card';
 import { ScrollArea, ScrollBar } from './ui/scroll-area';
 import AddressLink from './address-link';
 import CopyToClipboardElement from './ui/copy-to-clipboard';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
+import { Button } from './ui/button';
 import { useSettings } from '@/lib/context/settings-context-provider';
 
 export function DecodeDataTable({
@@ -17,7 +19,8 @@ export function DecodeDataTable({
 	decodeData: DataDecoded | null | undefined;
 	type: DataType;
 }) {
-	const [displayFormat, setDisplayFormat] = useState<'auto' | 'raw'>('auto');
+	const [displayFormat, setDisplayFormat] = useState<'auto' | 'raw'>(decodeData ? 'auto' : 'raw');
+
 	const { customSettings } = useSettings();
 	const isObject = (value: any): boolean => {
 		return (
@@ -114,6 +117,18 @@ export function DecodeDataTable({
 		}
 	};
 
+	const [isRawDataExpanded, setIsRawDataExpanded] = useState(false);
+
+	const toggleRawData = () => {
+		setIsRawDataExpanded(!isRawDataExpanded);
+	};
+
+	const getCollapsedRawData = (data: string[]) => {
+		const allData = data.join(', ');
+		if (allData.length <= 8) return allData;
+		return `[${allData.slice(0, 4)}...${allData.slice(-4)}]`;
+	};
+
 	return (
 		<div className="my-4">
 			<div className="flex flex-raw items-center mb-1">
@@ -122,15 +137,19 @@ export function DecodeDataTable({
 					<ToggleGroup
 						type="single"
 						size={'sm'}
+						value={displayFormat}
 						variant="outline"
 						className={`mb-1 ${type === DataType.OUTPUT && 'invisible'}`}
 						defaultValue="auto"
 						aria-label="Native or Raw Toggle"
 						onValueChange={(value) => setDisplayFormat(value as 'auto' | 'raw')}
 					>
-						<ToggleGroupItem value="auto" aria-label="Auto">
-							Auto
-						</ToggleGroupItem>
+						{decodeData && (
+							<ToggleGroupItem value="auto" aria-label="Auto">
+								Auto
+							</ToggleGroupItem>
+						)}
+
 						<ToggleGroupItem value="raw" aria-label="Raw">
 							Raw
 						</ToggleGroupItem>
@@ -162,33 +181,55 @@ export function DecodeDataTable({
 						<Table className="w-auto py-0.5 px-2 text-xs w-full">
 							<TableHeader>
 								<TableRow>
-									<TableHead className="whitespace-break-spaces">Value</TableHead>
+									<TableHead className="whitespace-break-spaces flex justify-between items-center">
+										Value
+										{!decodeData && (
+											<Button variant={'ghost'} onClick={toggleRawData} className="text-xs">
+												{isRawDataExpanded ? 'Collapse data' : 'Expand data'}
+											</Button>
+										)}
+									</TableHead>
 								</TableRow>
 							</TableHeader>
 							<TableBody>
-								{rawData.map((item: string, index: number) => (
-									<TableRow key={index} className="">
-										<TableCell className="border-r last:border-r-0 whitespace-break-spaces">
-											{item.startsWith('0x') ? (
-												<CopyToClipboardElement
-													value={item}
-													className="py-1 px-0 "
-													toastDescription="Value has been copied!"
-												>
-													<AddressLink
-														address={item}
-														customSettings={customSettings}
-														addressClassName="cursor-pointer"
-													>
-														{item}
-													</AddressLink>
-												</CopyToClipboardElement>
-											) : (
-												item
-											)}
+								{!decodeData && !isRawDataExpanded ? (
+									<TableRow className="cursor-pointer hover:bg-accent">
+										<TableCell className="border-r last:border-r-0">
+											<TooltipProvider>
+												<Tooltip delayDuration={100}>
+													<TooltipTrigger asChild>
+														<div onClick={toggleRawData} className="w-full">
+															{getCollapsedRawData(rawData)}
+														</div>
+													</TooltipTrigger>
+													<TooltipContent className="bg-background border-border text-black dark:text-white border">
+														Click to expand full data
+													</TooltipContent>
+												</Tooltip>
+											</TooltipProvider>
 										</TableCell>
 									</TableRow>
-								))}
+								) : (
+									rawData.map((item: string, index: number) => (
+										<TableRow key={index}>
+											<TableCell className="border-r last:border-r-0 whitespace-break-spaces">
+												{item.startsWith('0x') ? (
+													<CopyToClipboardElement
+														value={item}
+														className="py-1 px-0"
+														toastDescription="Value has been copied!"
+													>
+														<AddressLink address={item} addressClassName="cursor-pointer">
+															{item}
+														</AddressLink>
+													</CopyToClipboardElement>
+												) : (
+													item
+												)}
+											</TableCell>
+										</TableRow>
+									))
+								)}
 							</TableBody>
 						</Table>
 						<ScrollBar orientation="horizontal" />

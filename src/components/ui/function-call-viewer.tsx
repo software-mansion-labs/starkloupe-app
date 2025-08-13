@@ -161,7 +161,7 @@ const FunctionCallViewer = ({
 			return (
 				<div className={`font-mono ${isRoot ? '' : 'ml-2'}`}>
 					<div
-						className="flex items-center cursor-pointer select-none hover:bg-accent pr-1 rounded-sm transition-all delay-75 ease-out mb-1.5 mr-2"
+						className="flex items-center cursor-pointer w-fit select-none hover:bg-accent pr-1 rounded-sm transition-all delay-75 ease-out mb-1.5 mr-2"
 						onClick={() => toggleExpand(key)}
 					>
 						<span className="-m-1">
@@ -293,7 +293,7 @@ const FunctionCallViewer = ({
 					)}
 				</div>
 			)}
-			{!data.typeName && (
+			{!tooltipValue && (
 				<div className="mt-4">
 					<div className="mb-1.5">
 						<span className="font-semibold whitespace-nowrap">

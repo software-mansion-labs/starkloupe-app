@@ -68,15 +68,16 @@ const ValueWithTooltip: React.FC<ValueWithTooltipProps> = memo(function VWT({
 	isContract
 }) {
 	const { text, isTruncated } = useMemo(() => {
-		const pure = extractPureValue(value.value);
+		const valueToExtract = value?.value !== undefined ? value.value : value;
+		const pure = extractPureValue(valueToExtract);
 		return truncateString(pure);
 	}, [value]);
 
 	const rawText = useMemo(() => {
-		const s = JSON.stringify(value).replace(/^"|"$/g, '');
+		const valueToStringify = value?.value !== undefined ? value : { value };
+		const s = JSON.stringify(valueToStringify).replace(/^"|"$/g, '');
 		return s;
 	}, [value]);
-
 	const renderInner = () => {
 		if (isTruncated) {
 			return rawText.startsWith('0x') ? (
@@ -141,7 +142,7 @@ const ValueWithTooltip: React.FC<ValueWithTooltipProps> = memo(function VWT({
 								<FunctionCallViewer
 									data={{
 										function: functionName,
-										args: value.value,
+										args: value?.value !== undefined ? value.value : value,
 										typeName
 									}}
 									tooltipValue

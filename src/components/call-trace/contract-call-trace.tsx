@@ -96,39 +96,53 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 	}
 
 	function ArgsWithTooltips() {
-		return (
-			<>
-				{call.argumentsNames?.map((name, i) => {
-					const decoded = call.calldataDecoded?.[i];
-					if (decoded == null) return <React.Fragment key={i}>{name},&nbsp;</React.Fragment>;
+		if (call.calldataDecoded) {
+			return (
+				<>
+					{call.calldataDecoded?.map((decoded, i) => {
+						const name = call.argumentsNames ? call.argumentsNames[i] : '';
+						if (decoded == null) return <React.Fragment key={i}>{name},&nbsp;</React.Fragment>;
 
-					return (
-						<React.Fragment key={i}>
-							<span className="relative inline-block">
-								<span>{name}: </span>
-								<span className="text-typeColor">{call.argumentsTypes?.[i] ?? 'unknown'}</span>
-								<span> = </span>
-								<ValueWithTooltip
-									value={decoded}
-									fullObject={decoded}
-									typeName={decoded.typeName}
-									functionName={name}
-									isContract
-								/>
-								{i < (call.argumentsNames?.length ?? 0) - 1 && ',\u00A0'}
-							</span>
-						</React.Fragment>
-					);
-				})}
-			</>
-		);
+						return (
+							<React.Fragment key={i}>
+								<span className="relative inline-block">
+									<span>{name}: </span>
+									<span className="text-typeColor">{call.argumentsTypes?.[i] ?? 'unknown'}</span>
+									<span> = </span>
+									<ValueWithTooltip
+										value={decoded}
+										fullObject={decoded}
+										typeName={decoded.typeName}
+										functionName={name}
+										isContract
+									/>
+									{i < (call.argumentsNames?.length ?? 0) - 1 && ',\u00A0'}
+								</span>
+							</React.Fragment>
+						);
+					})}
+				</>
+			);
+		} else if (call.entryPoint.calldata) {
+			return (
+				<>
+					<span className="relative inline-block">
+						<ValueWithTooltip
+							value={call.entryPoint.calldata}
+							fullObject={call.entryPoint.calldata}
+							isContract
+						/>
+					</span>
+				</>
+			);
+		}
 	}
 
 	function ResultsWithTooltips() {
 		return (
 			<>
-				{call.resultTypes?.map((resultType, i) => {
-					const val = call.decodedResult?.[i];
+				{call.decodedResult?.map((val, i) => {
+					const resultType = call.resultTypes?.[i];
 					return (
 						<span key={i}>
 							<span>{resultType}</span>
@@ -221,9 +235,13 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 						customSettings={customSettings}
 					/>
 					{!previewMode && <span className="text-highlight_yellow">{'('}</span>}
-					{!previewMode && call.argumentsNames ? <ArgsWithTooltips /> : <></>}
+					{!previewMode && (call.calldataDecoded || call.entryPoint.calldata) ? (
+						<ArgsWithTooltips />
+					) : (
+						<></>
+					)}
 					{!previewMode && <span className="text-highlight_yellow">{')'}</span>}
-					{!previewMode && call.result && call.resultTypes ? (
+					{!previewMode && call.decodedResult && call.resultTypes ? (
 						<>
 							<span className="text-variable">&nbsp;{'->'}&nbsp;</span>
 							<span className="text-highlight_yellow">{`(`}</span>
