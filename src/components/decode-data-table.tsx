@@ -6,6 +6,7 @@ import { Card } from './ui/card';
 import { ScrollArea, ScrollBar } from './ui/scroll-area';
 import AddressLink from './address-link';
 import CopyToClipboardElement from './ui/copy-to-clipboard';
+import { useSettings } from '@/lib/context/settings-context-provider';
 
 export function DecodeDataTable({
 	rawData,
@@ -17,7 +18,7 @@ export function DecodeDataTable({
 	type: DataType;
 }) {
 	const [displayFormat, setDisplayFormat] = useState<'auto' | 'raw'>('auto');
-
+	const { customSettings } = useSettings();
 	const isObject = (value: any): boolean => {
 		return (
 			typeof value === 'object' &&
@@ -43,7 +44,9 @@ export function DecodeDataTable({
 				<div className="pl-4">
 					[
 					{value.map((item, index) => (
-						<div key={index}>{renderValue(item)}</div>
+						<div key={index} className="my-1.5 ml-2">
+							{renderValue(item)}
+						</div>
 					))}
 					]
 				</div>
@@ -97,7 +100,11 @@ export function DecodeDataTable({
 					className="py-1 px-0"
 					toastDescription="Value has been copied!"
 				>
-					<AddressLink address={formattedValue} addressClassName="cursor-pointer">
+					<AddressLink
+						address={formattedValue}
+						customSettings={customSettings}
+						addressClassName="cursor-pointer"
+					>
 						{formattedValue}
 					</AddressLink>
 				</CopyToClipboardElement>
@@ -160,15 +167,19 @@ export function DecodeDataTable({
 							</TableHeader>
 							<TableBody>
 								{rawData.map((item: string, index: number) => (
-									<TableRow key={index}>
+									<TableRow key={index} className="">
 										<TableCell className="border-r last:border-r-0 whitespace-break-spaces">
 											{item.startsWith('0x') ? (
 												<CopyToClipboardElement
 													value={item}
-													className="py-1 px-0"
+													className="py-1 px-0 "
 													toastDescription="Value has been copied!"
 												>
-													<AddressLink address={item} addressClassName="cursor-pointer">
+													<AddressLink
+														address={item}
+														customSettings={customSettings}
+														addressClassName="cursor-pointer"
+													>
 														{item}
 													</AddressLink>
 												</CopyToClipboardElement>

@@ -6,6 +6,7 @@ import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { ContractCallSignature } from './ui/signature';
 import { ContractCall, DataType, DecodedItem } from '@/lib/simulation';
 import { DecodeDataTable } from './decode-data-table';
+import { useSettings } from '@/lib/context/settings-context-provider';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
@@ -20,13 +21,10 @@ interface CallData {
 export function MultiCallIO() {
 	const [expandedCalls, setExpandedCalls] = useState<Record<number, boolean>>({});
 
-	const {
-		contractCallsMap,
-		customSettings,
-		updateContractName,
-		updateContractColor,
-		updateContractSettings
-	} = useCallTrace();
+	const { contractCallsMap } = useCallTrace();
+
+	const { customSettings, updateContractName, updateContractColor, updateContractSettings } =
+		useSettings();
 
 	function fillCallsFromContractMap(contractCallsMap: { [key: number]: ContractCall }): CallData[] {
 		const calls: CallData[] = [];

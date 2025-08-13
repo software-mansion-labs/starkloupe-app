@@ -9,6 +9,7 @@ import {
 	getNetworksApi
 } from '@/app/api/monitoring-api-service';
 import { isTrackingActive } from '@/app/api/tracking-service';
+import { loadCustomSettingsFromStorage, saveCustomSettingsToStorage } from '../utils/cache-utils';
 
 export interface Network {
 	rpcUrl: string;
@@ -30,6 +31,13 @@ type SettingsContextType = {
 	trackingActive: boolean;
 	// informs if tracking flag was correctly set
 	trackingFlagLoaded: boolean;
+	customSettings: { [key: string]: { name: string | null; color: string | null } };
+	updateContractColor: (contractAddress: string, color: string) => void;
+	updateContractName: (contractAddress: string, newContractCallName: string) => void;
+	updateContractSettings: (
+		contractAddress: string,
+		settings: { name?: string | null; color?: string | null }
+	) => void;
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -39,6 +47,72 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 	const { isLogged, organizationId } = useUserContext();
 	const [trackingActive, setTrackingActive] = useState<boolean>(true);
 	const [trackingFlagLoaded, setTrackingFlagLoaded] = useState<boolean>(false);
+
+	const [customSettings, setCustomSettings] = useState<{
+		[key: string]: { name: string | null; color: string | null };
+	}>({});
+
+	useEffect(() => {
+		const savedSettings = loadCustomSettingsFromStorage();
+		setCustomSettings(savedSettings);
+	}, []);
+
+	const updateContractColor = (contractAddress: string, color: string) => {
+		setCustomSettings((prevSettings) => {
+			const newSettings = {
+				...prevSettings,
+				[contractAddress]: {
+					...prevSettings[contractAddress],
+					color: color
+				}
+			};
+
+			saveCustomSettingsToStorage(newSettings);
+
+			return newSettings;
+		});
+	};
+
+	const updateContractName = (contractAddress: string, newContractCallName: string) => {
+		setCustomSettings((prevSettings) => {
+			const newSettings = {
+				...prevSettings,
+				[contractAddress]: {
+					...prevSettings[contractAddress],
+					name: newContractCallName
+				}
+			};
+
+			saveCustomSettingsToStorage(newSettings);
+
+			return newSettings;
+		});
+	};
+
+	const updateContractSettings = (
+		contractAddress: string,
+		settings: { name?: string | null; color?: string | null }
+	) => {
+		setCustomSettings((prevSettings) => {
+			const newSettings = {
+				...prevSettings,
+				[contractAddress]: {
+					name:
+						settings.name !== undefined
+							? settings.name
+							: prevSettings[contractAddress]?.name || null,
+					color:
+						settings.color !== undefined
+							? settings.color
+							: prevSettings[contractAddress]?.color || null
+				}
+			};
+
+			saveCustomSettingsToStorage(newSettings);
+
+			return newSettings;
+		});
+	};
 
 	useEffect(() => {
 		setTrackingActive(isTrackingActive());
@@ -112,7 +186,11 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 				removeNetwork,
 				getNetworkByRpcUrl,
 				trackingActive,
-				trackingFlagLoaded
+				trackingFlagLoaded,
+				customSettings,
+				updateContractColor,
+				updateContractName,
+				updateContractSettings
 			}}
 		>
 			{children}

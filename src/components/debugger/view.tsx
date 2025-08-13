@@ -15,6 +15,7 @@ import Link from 'next/link';
 import Sidebar from '../code-viewer/sidebar';
 import { WALNUT_VERIFY_DOCS_URL } from '@/lib/config';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
+import { useSettings } from '@/lib/context/settings-context-provider';
 
 export function DebuggerView() {
 	const debuggerContext = useDebugger();
@@ -115,7 +116,7 @@ function Controls({
 	runToBreakpoint: () => void;
 }) {
 	const { customSettings, updateContractName, updateContractColor, updateContractSettings } =
-		useCallTrace();
+		useSettings();
 	useEffect(() => {
 		const handleKeyDown = (event: KeyboardEvent) => {
 			if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {

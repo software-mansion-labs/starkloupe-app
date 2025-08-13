@@ -8,6 +8,7 @@ import {
 	DropdownMenuContent
 } from '@/components/ui/dropdown-menu';
 import { Button } from './ui/button';
+import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 
 const CONTRACT_COLORS = [
 	'#ef4444', // red-500
@@ -121,9 +122,14 @@ const AddressLink = ({
 		return `${address.slice(0, 6)}...${address.slice(-4)}`;
 	};
 
-	if (customSettings) {
+	if (customSettings && (updateContractName || updateContractColor || updateContractSettings)) {
 		return (
-			<DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+			<DropdownMenu
+				open={dropdownOpen}
+				onOpenChange={
+					(updateContractName || updateContractColor || updateContractSettings) && setDropdownOpen
+				}
+			>
 				<DropdownMenuTrigger asChild onClick={(e) => e.stopPropagation()}>
 					<span
 						className={`text-primary dark:hover:brightness-150 hover:brightness-125 cursor-pointer`}
@@ -143,7 +149,9 @@ const AddressLink = ({
 									: {}
 							}
 						>
-							{currentName || children}
+							{(updateContractName || updateContractColor || updateContractSettings) && currentName
+								? currentName
+								: children}
 							<span
 								className={`pointer-events-none absolute inset-0 rounded border border-dashed border-yellow-900 bg-yellow-900 dark:border-highlight_yellow dark:bg-opacity-5 bg-opacity-5 transition-opacity ${
 									state.hoveredAddress === address ? 'opacity-100' : 'opacity-0'
@@ -249,7 +257,9 @@ const AddressLink = ({
 						: {}
 				}
 			>
-				{children}
+				{(updateContractName || updateContractColor || updateContractSettings) && currentName
+					? currentName
+					: children}
 				<span
 					className={`pointer-events-none absolute inset-0 rounded border border-dashed border-yellow-900 bg-yellow-900 dark:border-highlight_yellow dark:bg-opacity-5 bg-opacity-5 transition-opacity ${
 						state.hoveredAddress === address ? 'opacity-100' : 'opacity-0'

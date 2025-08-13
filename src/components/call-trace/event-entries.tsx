@@ -6,19 +6,15 @@ import { InfoBox } from '@/components/ui/info-box';
 import { DataType, ContractCallEvent, DecodedItem } from '@/lib/simulation';
 import { DecodeDataTable } from '../decode-data-table';
 import AddressLink from '../address-link';
+import { useSettings } from '@/lib/context/settings-context-provider';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 
 export function EventsList({ events }: { events: ContractCallEvent[] }) {
-	const {
-		toggleCallExpand,
-		traceLineElementRefs,
-		expandedCalls,
-		customSettings,
-		updateContractName,
-		updateContractColor,
-		updateContractSettings
-	} = useCallTrace();
+	const { toggleCallExpand, traceLineElementRefs, expandedCalls } = useCallTrace();
+
+	const { customSettings, updateContractName, updateContractColor, updateContractSettings } =
+		useSettings();
 
 	if (events.length === 0) {
 		return (

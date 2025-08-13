@@ -4,6 +4,7 @@ import { useDebugger } from '@/lib/context/debugger-context-provider';
 import CopyToClipboardElement from './copy-to-clipboard';
 import AddressLink from '../address-link';
 import { DecodedItem, InternalFnCallIO, TextPosition } from '@/lib/simulation';
+import { useSettings } from '@/lib/context/settings-context-provider';
 
 interface FilteredStepInfo {
 	function?: string | undefined;
@@ -26,6 +27,7 @@ const FunctionCallViewer = ({
 	const [results, setResults] = useState<InternalFnCallIO[] | undefined>(undefined);
 	const [args, setArgs] = useState<InternalFnCallIO[] | undefined>(undefined);
 	const debuggerContext = useDebugger();
+	const { customSettings } = useSettings();
 
 	useEffect(() => {
 		if (!debuggerContext) return;
@@ -229,7 +231,7 @@ const FunctionCallViewer = ({
 					className={`${isAddress ? 'py-1 px-0' : 'px-1'}`}
 				>
 					{isAddress ? (
-						<AddressLink address={item}>
+						<AddressLink address={item} customSettings={customSettings}>
 							<span className="whitespace-nowrap">{item}</span>
 						</AddressLink>
 					) : (

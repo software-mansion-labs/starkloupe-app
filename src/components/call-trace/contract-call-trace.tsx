@@ -12,14 +12,8 @@ import { ErrorTooltip } from '@/components/error-tooltip';
 import { CommonCallTrace } from './common-call-trace';
 import { ContractCallSignature } from '../ui/signature';
 import { ErrorTraceLine } from './error-trace-line';
-import { Copy } from 'lucide-react';
-import { ScrollArea, ScrollBar } from '../ui/scroll-area';
-import FunctionCallViewer from '../ui/function-call-viewer';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import CopyToClipboardElement from '../ui/copy-to-clipboard';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import AddressLink from '../address-link';
 import ValueWithTooltip from '../ui/value-with-tooltip';
+import { useSettings } from '@/lib/context/settings-context-provider';
 
 export const ContractCallTrace = memo(function ContractCallTrace({
 	contractCallId,
@@ -40,12 +34,10 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 		setActiveTab,
 		contractCallsMap,
 		isExecutionFailed,
-		traceLineElementRefs,
-		setChosenCallName,
-		updateContractName,
-		updateContractColor,
-		customSettings
+		traceLineElementRefs
 	} = useCallTrace();
+	const { customSettings, updateContractName, updateContractColor, updateContractSettings } =
+		useSettings();
 	const debuggerContext: ReturnType<typeof useDebugger> = useDebugger();
 
 	let call = contractCallsMap[contractCallId];

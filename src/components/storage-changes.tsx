@@ -6,20 +6,16 @@ import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import AddressLink from './address-link';
 import { ChevronDown, ChevronUp } from 'lucide-react';
+import { useSettings } from '@/lib/context/settings-context-provider';
 
 interface StorageChangesProps {
 	// Define your props here if needed
 }
 
 const StorageChanges: React.FC<StorageChangesProps> = (props) => {
-	const {
-		simulationResult,
-		contractCallsMap,
-		customSettings,
-		updateContractName,
-		updateContractColor,
-		updateContractSettings
-	} = useCallTrace();
+	const { simulationResult, contractCallsMap } = useCallTrace();
+	const { customSettings, updateContractName, updateContractColor, updateContractSettings } =
+		useSettings();
 	const [expandedCalls, setExpandedCalls] = useState<Record<number, boolean>>({});
 	const storageChanges = useMemo(() => {
 		const combined: Record<

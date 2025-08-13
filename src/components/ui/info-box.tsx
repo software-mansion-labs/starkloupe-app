@@ -2,6 +2,7 @@ import { copyToClipboard } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import CopyToClipboardElement from './copy-to-clipboard';
 import AddressLink from '../address-link';
+import { useSettings } from '@/lib/context/settings-context-provider';
 
 export interface InfoBoxItem {
 	name: string;
@@ -11,6 +12,7 @@ export interface InfoBoxItem {
 }
 
 export function InfoBox({ details }: { details: InfoBoxItem[] }) {
+	const { customSettings } = useSettings();
 	return (
 		<Card>
 			<CardContent className="p-2 text-xs flex gap-x-3 flex-wrap leading-loose overflow-x-auto">
@@ -33,7 +35,11 @@ export function InfoBox({ details }: { details: InfoBoxItem[] }) {
 									} ${isCopyable ? 'cursor-pointer' : ''}`}
 								>
 									{typeof value === 'string' && value.startsWith('0x') ? (
-										<AddressLink address={value} addressClassName="">
+										<AddressLink
+											address={value}
+											addressClassName=""
+											customSettings={customSettings}
+										>
 											{value}
 										</AddressLink>
 									) : (
