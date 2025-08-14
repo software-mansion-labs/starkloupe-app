@@ -73,6 +73,24 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 		functionCallsMap
 	]);
 
+	// Check if call can be collapsed/expanded (for functionality)
+	const canBeCollapsed = useMemo(() => {
+		return call.childrenCallIds.length > 0 || call.functionCallId || call.isDeepestPanicResult;
+	}, [call.childrenCallIds, call.functionCallId, call.isDeepestPanicResult]);
+
+	// Check if we should show the icon (visible children OR special cases like __validate__)
+	const shouldShowIcon = useMemo(() => {
+		// Show icon if there are visible children
+		if (hasVisibleNestedElements) return true;
+
+		// Show icon for special cases that should always be collapsible (like __validate__)
+		// even if all children are hidden
+		const isSpecialCase =
+			call.entryPointName === '__validate__' || call.entryPointName === '__execute__';
+
+		return isSpecialCase && canBeCollapsed;
+	}, [hasVisibleNestedElements, call.entryPointName, canBeCollapsed]);
+
 	const childrenCallIdsArray = useMemo(() => {
 		return call.childrenCallIds.map((childCallId) => (
 			<CommonCallTrace
@@ -234,14 +252,14 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 				>
 					<div
 						className={`w-5 h-5 p-1 mr-1  rounded-sm  ${
-							hasVisibleNestedElements ? 'cursor-pointer hover:bg-accent_2' : ''
+							shouldShowIcon ? 'cursor-pointer hover:bg-accent_2' : ''
 						}`}
 						onClick={(event) => {
 							event.stopPropagation();
-							hasVisibleNestedElements && toggleCallCollapse(call.callId);
+							shouldShowIcon && toggleCallCollapse(call.callId);
 						}}
 					>
-						{hasVisibleNestedElements ? (
+						{shouldShowIcon ? (
 							collapsedCalls[call.callId] == true ? (
 								<ChevronRightIcon />
 							) : (

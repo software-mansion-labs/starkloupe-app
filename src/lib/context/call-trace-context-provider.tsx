@@ -94,66 +94,8 @@ export const CallTraceContextProvider: React.FC<
 		debuggerPayload: DebuggerPayload | null;
 	}>
 > = ({ children, simulationResult, l2Flamegraph, l1DataFlamegraph, debuggerPayload }) => {
-	// This collapses calls starting with "core".
-	// If call has children: only parent is collapsed
-	const initiallyCollapsed: StringBooleanDict = useMemo(() => {
-		try {
-			const collapsed: StringBooleanDict = {};
-			const processCalls = (
-				calls: Array<any>,
-				getName: (call: any) => string | undefined,
-				shouldFilterByCore: boolean
-			) => {
-				calls.forEach((call) => {
-					const startsWithCore = shouldFilterByCore
-						? getName(call)?.startsWith('core') ?? false
-						: false;
-					let hasDeepestPanicChild = false;
-
-					if (call.childrenCallIds) {
-						hasDeepestPanicChild = call.childrenCallIds.some((childId: number) => {
-							const childCall =
-								simulationResult.contractCallsMap[childId] ||
-								simulationResult.functionCallsMap[childId];
-							return childCall?.isDeepestPanicResult === true;
-						});
-					}
-
-					const isPanicCall = call.isDeepestPanicResult === true;
-					let parentId = call.parentCallId;
-					let hasCollapsedAncestor = false;
-
-					while (parentId !== undefined && !isPanicCall && !hasDeepestPanicChild) {
-						if (collapsed[parentId]) {
-							hasCollapsedAncestor = true;
-							break;
-						}
-						const parentCall =
-							simulationResult.contractCallsMap[parentId] ||
-							simulationResult.functionCallsMap[parentId];
-
-						parentId = parentCall?.parentCallId;
-					}
-
-					if (startsWithCore && !hasCollapsedAncestor && !isPanicCall && !hasDeepestPanicChild) {
-						collapsed[call.callId] = true;
-					}
-				});
-			};
-			processCalls(
-				Object.values(simulationResult.contractCallsMap),
-				(call) => call.entryPointInterfaceName,
-				false
-			);
-
-			processCalls(Object.values(simulationResult.functionCallsMap), (call) => call.fnName, true);
-
-			return collapsed;
-		} catch (err) {
-			console.log('Collapsing calls error: ', err);
-			return {};
-		}
-	}, [simulationResult]);
+	// Initialize with empty collapsed state since core:: calls are now hidden and don't need collapsing
+	const initiallyCollapsed: StringBooleanDict = {};
 
 	const [collapsedCalls, setCollapsedCalls] = useState<StringBooleanDict>(() => initiallyCollapsed);
 	const [expandedCalls, setExpandedCalls] = useState<StringBooleanDict>({});

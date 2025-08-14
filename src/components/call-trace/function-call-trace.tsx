@@ -66,6 +66,16 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 		return hasVisibleFunctionChildren || functionCall.isDeepestPanicResult;
 	}, [functionCall.childrenCallIds, functionCall.isDeepestPanicResult, functionCallsMap]);
 
+	// Check if function call can be collapsed/expanded (for functionality)
+	const canBeCollapsed = useMemo(() => {
+		return functionCall.childrenCallIds.length > 0 || functionCall.isDeepestPanicResult;
+	}, [functionCall.childrenCallIds, functionCall.isDeepestPanicResult]);
+
+	// Check if we should show the icon (only when there are visible children)
+	const shouldShowIcon = useMemo(() => {
+		return hasVisibleNestedElements;
+	}, [hasVisibleNestedElements]);
+
 	if (!traceLineElementRefs.current[functionCallId]) {
 		traceLineElementRefs.current[functionCallId] = React.createRef<HTMLDivElement>();
 	}
@@ -116,14 +126,14 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 				>
 					<div
 						className={`w-5 h-5 p-1 mr-1  rounded-sm  ${
-							hasVisibleNestedElements ? 'cursor-pointer hover:!bg-accent_2' : ''
+							shouldShowIcon ? 'cursor-pointer hover:!bg-accent_2' : ''
 						}`}
 						onClick={(event) => {
 							event.stopPropagation();
-							hasVisibleNestedElements && toggleCallCollapse(functionCallId);
+							shouldShowIcon && toggleCallCollapse(functionCallId);
 						}}
 					>
-						{hasVisibleNestedElements ? (
+						{shouldShowIcon ? (
 							collapsedCalls[functionCallId] === true ? (
 								<ChevronRightIcon />
 							) : (
