@@ -54,6 +54,18 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 	const isParentContractCallDebuggable = contractCall.callDebuggerDataAvailable;
 
 	const noCodeLocationAvaliable = isParentContractCallDebuggable && !isDebuggable;
+
+	// Check if there are actually visible nested elements (not hidden)
+	const hasVisibleNestedElements = useMemo(() => {
+		// Check function call children
+		const hasVisibleFunctionChildren = functionCall.childrenCallIds.some((childId) => {
+			const childCall = functionCallsMap[childId];
+			return childCall && !childCall.isHidden;
+		});
+
+		return hasVisibleFunctionChildren || functionCall.isDeepestPanicResult;
+	}, [functionCall.childrenCallIds, functionCall.isDeepestPanicResult, functionCallsMap]);
+
 	if (!traceLineElementRefs.current[functionCallId]) {
 		traceLineElementRefs.current[functionCallId] = React.createRef<HTMLDivElement>();
 	}
@@ -104,17 +116,14 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 				>
 					<div
 						className={`w-5 h-5 p-1 mr-1  rounded-sm  ${
-							functionCall.childrenCallIds.length > 0 || functionCall.isDeepestPanicResult
-								? 'cursor-pointer hover:!bg-accent_2'
-								: ''
+							hasVisibleNestedElements ? 'cursor-pointer hover:!bg-accent_2' : ''
 						}`}
 						onClick={(event) => {
 							event.stopPropagation();
-							(functionCall.childrenCallIds.length > 0 || functionCall.isDeepestPanicResult) &&
-								toggleCallCollapse(functionCallId);
+							hasVisibleNestedElements && toggleCallCollapse(functionCallId);
 						}}
 					>
-						{functionCall.childrenCallIds.length > 0 || functionCall.isDeepestPanicResult ? (
+						{hasVisibleNestedElements ? (
 							collapsedCalls[functionCallId] === true ? (
 								<ChevronRightIcon />
 							) : (
