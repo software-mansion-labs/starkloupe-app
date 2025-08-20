@@ -311,15 +311,15 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 							callType="function"
 						/>
 					) : (
+						<>{childrenCallIdsArray}</>
+					)}
+					{call.isDeepestPanicResult && call.errorMessage && !previewMode && (
 						<>
-							{childrenCallIdsArray}
-							{call.isDeepestPanicResult && call.errorMessage && !previewMode && (
-								<ErrorTraceLine
-									executionFailed
-									errorMessage={call.errorMessage}
-									nestingLevel={nestingLevel + 1}
-								/>
-							)}
+							<ErrorTraceLine
+								executionFailed
+								errorMessage={call.errorMessage}
+								nestingLevel={nestingLevel + 1}
+							/>
 						</>
 					)}
 				</>
