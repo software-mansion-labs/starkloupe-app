@@ -202,6 +202,22 @@ export const DebuggerContextProvider = ({
 		const json = safeStringify(record);
 		const compressed = compressToUTF16(json);
 
+		// Check size limit before attempting to cache
+		// Using 100KB as strict limit for localStorage cache
+		const MAX_CACHE_SIZE_BYTES = 100 * 1024; // 100KB
+		const sizeInBytes = new Blob([compressed]).size;
+
+		if (sizeInBytes > MAX_CACHE_SIZE_BYTES) {
+			const sizeKB = sizeInBytes / 1024;
+			const limitKB = MAX_CACHE_SIZE_BYTES / 1024;
+			console.warn(
+				`Debugger response too large to cache (${sizeKB.toFixed(
+					1
+				)}KB > ${limitKB}KB). Skipping cache.`
+			);
+			return;
+		}
+
 		try {
 			localStorage.setItem(key, compressed);
 		} catch (e) {
@@ -240,6 +256,7 @@ export const DebuggerContextProvider = ({
 				const cached = getCachedDebuggerInfo(cacheKey);
 
 				if (cached) {
+					console.log('🐛 DebuggerContextProvider: Using cached debugger data');
 					setDebuggerInfo(cached);
 					if (cached?.simulationDebuggerData?.debuggerTrace) {
 						const i = findInitialIndex(cached.simulationDebuggerData.debuggerTrace);
