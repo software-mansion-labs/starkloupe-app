@@ -184,7 +184,40 @@ export function setCacheWithTTL(key: string, value: any) {
 		timestamp: Date.now(),
 		data: value
 	};
-	localStorage.setItem(key, safeStringify(record));
+	const serialized = safeStringify(record);
+
+	// Check size limit before attempting to cache
+	// Using 100KB as strict limit for localStorage cache
+	const MAX_CACHE_SIZE_BYTES = 100 * 1024; // 100KB
+	const sizeInBytes = new Blob([serialized]).size;
+
+	if (sizeInBytes > MAX_CACHE_SIZE_BYTES) {
+		const sizeKB = sizeInBytes / 1024;
+		const limitKB = MAX_CACHE_SIZE_BYTES / 1024;
+		console.warn(
+			`Response too large to cache (${sizeKB.toFixed(
+				1
+			)}KB > ${limitKB}KB) for key: ${key}. Skipping cache.`
+		);
+		return;
+	}
+
+	try {
+		localStorage.setItem(key, serialized);
+	} catch (e) {
+		if (e instanceof DOMException && e.name === 'QuotaExceededError') {
+			console.warn('localStorage quota exceeded for key:', key);
+			// Try to clear expired items and retry
+			cleanupCategory(null, 1);
+			try {
+				localStorage.setItem(key, serialized);
+			} catch (e2) {
+				console.error('Failed to cache after cleanup:', e2);
+			}
+		} else {
+			console.error('localStorage write failed:', e);
+		}
+	}
 }
 
 export function getCacheWithTTL<T = any>(key: string): T | null {
