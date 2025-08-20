@@ -58,6 +58,7 @@ interface CallTraceContextProps {
 	scrollToTraceLineElement: (key: number) => void;
 	chosenCallName: string | null;
 	setChosenCallName: (callName: string | null) => void;
+	contractCallWithError: ContractCall | undefined;
 }
 
 export const CallTraceContext = createContext<CallTraceContextProps>({
@@ -71,6 +72,7 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	simulationDebuggerData: { classesDebuggerData: {}, debuggerTrace: [] },
 	activeTab: 'call-trace',
 	isExecutionFailed: false,
+	contractCallWithError: undefined,
 	l2Flamegraph: {} as FlameNode,
 	l1DataFlamegraph: {} as FlameNode,
 	traceLineElementRefs: { current: {} },
@@ -104,6 +106,9 @@ export const CallTraceContextProvider: React.FC<
 	const isExecutionFailed = simulationResult.executionResult.executionStatus === 'REVERTED';
 	const traceLineElementRefs = useRef<{ [callId: number]: React.RefObject<HTMLDivElement> }>({});
 	const [chosenCallName, setChosenCallName] = useState<string | null>(null);
+	const [contractCallWithError, setContractCallWithError] = useState<ContractCall | undefined>(
+		undefined
+	);
 	const errorMessage =
 		simulationResult.executionResult.executionStatus === 'REVERTED'
 			? simulationResult.executionResult.revertReason
@@ -130,6 +135,13 @@ export const CallTraceContextProvider: React.FC<
 			setCollapsedCalls((prevState) => {
 				return { ...prevState, [simulationResult.contractCallsMap[2].callId]: true };
 			});
+		}
+
+		if (isExecutionFailed && errorMessage) {
+			const errorCall = Object.values(simulationResult.contractCallsMap).find(
+				(item) => item.errorMessage === errorMessage
+			);
+			setContractCallWithError(errorCall);
 		}
 	}, [simulationResult.contractCallsMap]);
 
@@ -186,7 +198,8 @@ export const CallTraceContextProvider: React.FC<
 				setActiveTab,
 				scrollToTraceLineElement,
 				chosenCallName,
-				setChosenCallName
+				setChosenCallName,
+				contractCallWithError
 			}}
 		>
 			{children}
