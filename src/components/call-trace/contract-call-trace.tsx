@@ -283,20 +283,21 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 						<></>
 					)}
 					{!previewMode && <span className="text-highlight_yellow">{')'}</span>}
-					{!previewMode && call.decodedResult && call.resultTypes ? (
-						<>
-							<span className="text-variable">&nbsp;{'->'}&nbsp;</span>
-							<span className="text-highlight_yellow">{`(`}</span>
-							<span className="text-typeColor">
-								<ResultsWithTooltips />
-							</span>
-							<span className="text-highlight_yellow">{`)`}</span>
-						</>
-					) : (
-						<>
-							<span className="text-highlight_yellow">{'->()'}</span>{' '}
-						</>
-					)}
+					{!previewMode &&
+						(call.decodedResult && call.resultTypes ? (
+							<>
+								<span className="text-variable">&nbsp;{'->'}&nbsp;</span>
+								<span className="text-highlight_yellow">{`(`}</span>
+								<span className="text-typeColor">
+									<ResultsWithTooltips />
+								</span>
+								<span className="text-highlight_yellow">{`)`}</span>
+							</>
+						) : (
+							<>
+								<span className="text-highlight_yellow">{'->()'}</span>{' '}
+							</>
+						))}
 				</div>
 			</TraceLine>
 			{expandedCalls[call.callId] && !previewMode && <ContractCallDetails call={call} />}{' '}
