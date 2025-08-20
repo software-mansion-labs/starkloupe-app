@@ -51,6 +51,19 @@ export function TransactionPage({
 	const [l2TxHashShort, setL2TxHashShort] = useState<string>();
 	const router = useRouter();
 	const [showIO, setShowIO] = useState(false);
+	function normalizeTxHash(hash: string) {
+		if (typeof hash !== 'string') return hash as unknown as string;
+		const trimmed = hash.trim();
+		const has0x = /^0x/i.test(trimmed);
+		const body = has0x ? trimmed.slice(2) : trimmed;
+
+		const stripped = body.replace(/^0+/, '');
+		const safeBody = stripped.length ? stripped : '0';
+
+		return (has0x ? '0x' : '') + safeBody;
+	}
+
+	const normalizedTxHash = normalizeTxHash(txHash);
 	useEffect(() => {
 		const fetchData = async () => {
 			try {
@@ -341,7 +354,35 @@ export function TransactionPage({
 					) : error ? (
 						<Error message={error} />
 					) : (
-						<Loader />
+						<>
+							<div className="lg:flex flex-row items-baseline justify-between">
+								<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
+									<h1 className="text-base font-medium leading-6 flex flex-nowrap items-center">
+										Transaction{' '}
+										<CopyToClipboardElement
+											value={normalizedTxHash}
+											toastDescription="The address has been copied."
+											className="hidden lg:block p-0"
+										>
+											<AddressLink address={normalizedTxHash}>{normalizedTxHash}</AddressLink>
+										</CopyToClipboardElement>
+										<CopyToClipboardElement
+											value={normalizedTxHash}
+											toastDescription="The address has been copied."
+											className="lg:hidden p-0"
+										>
+											<AddressLink address={normalizedTxHash}>
+												{shortenHash(normalizedTxHash)}
+											</AddressLink>
+										</CopyToClipboardElement>
+									</h1>
+								</div>
+								<Button variant="outline" disabled>
+									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+								</Button>
+							</div>
+							<Loader />
+						</>
 					)}
 				</Container>
 			</main>
