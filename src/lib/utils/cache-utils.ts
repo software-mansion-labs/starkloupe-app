@@ -14,6 +14,10 @@ export const compressData = (data: any): string => {
 	}
 };
 
+const resetStorage = (key: string) => {
+	localStorage.removeItem(key);
+};
+
 export const decompressData = (compressedData: string): any => {
 	try {
 		if (!compressedData) return {};
@@ -55,10 +59,17 @@ export const loadCustomSettingsFromStorage = (): {
 	try {
 		const compressedData = localStorage.getItem(CUSTOM_SETTINGS_KEY);
 		if (compressedData) {
-			return decompressData(compressedData);
+			const settings = decompressData(compressedData);
+			if (Object.keys(settings).length === 0) {
+				resetStorage(CUSTOM_SETTINGS_KEY);
+				return {};
+			}
+
+			return settings;
 		}
 	} catch (error) {
-		console.error('Error:', error);
+		console.error('Error loading custom settings:', error);
+		resetStorage(CUSTOM_SETTINGS_KEY);
 	}
 	return {};
 };
@@ -67,12 +78,23 @@ export const saveCustomSettingsToStorage = (settings: {
 	[key: string]: { name: string | null; color: string | null };
 }) => {
 	try {
+		if (Object.keys(settings).length === 0) {
+			resetStorage(CUSTOM_SETTINGS_KEY);
+			return;
+		}
+
 		const dataSize = getCustomSettingsSize(settings);
 
 		if (dataSize > MAX_STORAGE_SIZE) {
 			console.warn('Custom settings data too large, cleaning up...');
 
 			const cleanedSettings = cleanupCustomSettings(settings);
+
+			if (Object.keys(cleanedSettings).length === 0) {
+				resetStorage(CUSTOM_SETTINGS_KEY);
+				return;
+			}
+
 			const cleanedSize = getCustomSettingsSize(cleanedSettings);
 
 			if (cleanedSize > MAX_STORAGE_SIZE) {
@@ -80,6 +102,11 @@ export const saveCustomSettingsToStorage = (settings: {
 				const keepCount = Math.min(50, Math.floor(entries.length * 0.5));
 				const finalEntries = entries.slice(-keepCount);
 				const finalSettings = Object.fromEntries(finalEntries);
+
+				if (Object.keys(finalSettings).length === 0) {
+					resetStorage(CUSTOM_SETTINGS_KEY);
+					return;
+				}
 
 				console.warn(`Critical cleanup: kept only ${keepCount} entries`);
 				localStorage.setItem(CUSTOM_SETTINGS_KEY, compressData(finalSettings));
@@ -96,12 +123,17 @@ export const saveCustomSettingsToStorage = (settings: {
 			const entries = Object.entries(settings);
 			const emergencySettings = Object.fromEntries(entries.slice(-20));
 
+			if (Object.keys(emergencySettings).length === 0) {
+				resetStorage(CUSTOM_SETTINGS_KEY);
+				return;
+			}
+
 			try {
 				localStorage.setItem(CUSTOM_SETTINGS_KEY, compressData(emergencySettings));
 				console.warn('Emergency cleanup completed, kept 20 entries');
 			} catch (finalError) {
 				console.error('Failed to save after emergency cleanup:', finalError);
-				localStorage.removeItem(CUSTOM_SETTINGS_KEY);
+				resetStorage(CUSTOM_SETTINGS_KEY);
 			}
 		} else {
 			console.error('Error saving custom settings:', error);
@@ -155,25 +187,25 @@ function cleanupCategory(keyPrefix: string | null, maxItems: number) {
 	for (const k of keys) {
 		const raw = localStorage.getItem(k);
 		if (!raw) {
-			localStorage.removeItem(k);
+			resetStorage(k);
 			continue;
 		}
 		try {
 			const rec = safeParse<{ timestamp: number }>(raw);
 			if (!rec.timestamp || now - rec.timestamp > CACHE_TTL_MS) {
-				localStorage.removeItem(k);
+				resetStorage(k);
 			} else {
 				items.push({ key: k, timestamp: rec.timestamp });
 			}
 		} catch {
-			localStorage.removeItem(k);
+			resetStorage(k);
 		}
 	}
 	if (items.length > maxItems) {
 		items
 			.sort((a, b) => b.timestamp - a.timestamp)
 			.slice(maxItems)
-			.forEach((item) => localStorage.removeItem(item.key));
+			.forEach((item) => resetStorage(item.key));
 	}
 }
 
@@ -230,16 +262,16 @@ export function getCacheWithTTL<T = any>(key: string): T | null {
 	try {
 		record = safeParse(raw);
 	} catch {
-		localStorage.removeItem(key);
+		resetStorage(key);
 		return null;
 	}
 
 	if (!record.timestamp || !record.data) {
-		localStorage.removeItem(key);
+		resetStorage(key);
 		return null;
 	}
 	if (Date.now() - record.timestamp > CACHE_TTL_MS) {
-		localStorage.removeItem(key);
+		resetStorage(key);
 		return null;
 	}
 

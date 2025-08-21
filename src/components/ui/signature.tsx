@@ -9,7 +9,8 @@ export function ContractCallSignature({
 	variant = 'trace-line',
 	updateContractName,
 	updateContractColor,
-	customSettings
+	customSettings,
+	updateContractSettings
 }: {
 	contractCall: ContractCall;
 	displayContractName?: boolean;
@@ -18,6 +19,10 @@ export function ContractCallSignature({
 	updateContractName?: (contractAddress: string, newContractCallName: string) => void;
 	updateContractColor?: (contractAddress: string, color: string) => void;
 	customSettings?: { [key: string]: { name: string | null; color: string | null } };
+	updateContractSettings?: (
+		contractAddress: string,
+		settings: { name?: string | null; color?: string | null } | null
+	) => void;
 }) {
 	const contractName = getContractName({ contractCall });
 	const contractAddress = contractCall?.entryPoint.storageAddress;
@@ -30,6 +35,7 @@ export function ContractCallSignature({
 					customSettings={customSettings}
 					updateContractColor={updateContractColor}
 					updateContractName={updateContractName}
+					updateContractSettings={updateContractSettings}
 					addressClassName={`${
 						variant === 'search-result' ? '' : 'text-classGreen'
 					} px-0.5 hover:underline cursor-pointer`}

@@ -36,7 +36,7 @@ type SettingsContextType = {
 	updateContractName: (contractAddress: string, newContractCallName: string) => void;
 	updateContractSettings: (
 		contractAddress: string,
-		settings: { name?: string | null; color?: string | null }
+		settings: { name?: string | null; color?: string | null } | null
 	) => void;
 };
 
@@ -91,9 +91,15 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 
 	const updateContractSettings = (
 		contractAddress: string,
-		settings: { name?: string | null; color?: string | null }
+		settings: { name?: string | null; color?: string | null } | null
 	) => {
 		setCustomSettings((prevSettings) => {
+			if (settings === null) {
+				const { [contractAddress]: removed, ...newSettings } = prevSettings;
+				saveCustomSettingsToStorage(newSettings);
+				return newSettings;
+			}
+
 			const newSettings = {
 				...prevSettings,
 				[contractAddress]: {

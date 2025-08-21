@@ -29,7 +29,7 @@ interface AddressLinkProps {
 	updateContractColor?: (contractAddress: string, color: string) => void;
 	updateContractSettings?: (
 		contractAddress: string,
-		settings: { name?: string | null; color?: string | null }
+		settings: { name?: string | null; color?: string | null } | null
 	) => void;
 }
 
@@ -83,7 +83,16 @@ const AddressLink = ({
 
 		setDropdownOpen(false);
 	};
+	const handleClear = (event: React.MouseEvent) => {
+		event.preventDefault();
+		event.stopPropagation();
 
+		if (updateContractSettings) {
+			updateContractSettings(address, null);
+		}
+
+		setDropdownOpen(false);
+	};
 	const handleCopyAddress = async (event: React.MouseEvent) => {
 		event.preventDefault();
 		event.stopPropagation();
@@ -230,7 +239,13 @@ const AddressLink = ({
 						</div>
 					</div>
 
-					<div className="flex justify-end">
+					<div className="flex justify-end gap-2">
+						{currentSettings && (
+							<Button variant="destructive" onClick={handleClear} className="w-full">
+								Clear
+							</Button>
+						)}
+
 						<Button variant="outline" onClick={handleSave} className="w-full">
 							Save
 						</Button>

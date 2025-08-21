@@ -274,6 +274,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 						contractCall={call}
 						updateContractName={updateContractName}
 						updateContractColor={updateContractColor}
+						updateContractSettings={updateContractSettings}
 						customSettings={customSettings}
 					/>
 					{!previewMode && <span className="text-highlight_yellow">{'('}</span>}

@@ -147,6 +147,7 @@ function Controls({
 					<ContractCallSignature
 						customSettings={customSettings}
 						updateContractName={updateContractName}
+						updateContractSettings={updateContractSettings}
 						updateContractColor={updateContractColor}
 						contractCall={call || contractCall}
 					/>
