@@ -163,6 +163,7 @@ export interface FunctionCall {
 	arguments: InternalFnCallIO[];
 	results: InternalFnCallIO[];
 	isHidden: boolean;
+	errorMessage?: string | null;
 }
 
 export interface EventCall {

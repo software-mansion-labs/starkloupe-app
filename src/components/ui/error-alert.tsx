@@ -1,11 +1,12 @@
-import { ContractCall } from '@/lib/simulation';
+import { ContractCall, FunctionCall } from '@/lib/simulation';
 import { Alert, AlertDescription, AlertTitle } from './alert';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { ContractCallSignature } from './signature';
 import { useSettings } from '@/lib/context/settings-context-provider';
+import { FnName } from './function-name';
 
-const ErrorAlert = ({ contractCallError }: { contractCallError: ContractCall | undefined }) => {
-	const errorDescription = contractCallError?.errorMessage;
+const ErrorAlert = ({ callError }: { callError: ContractCall | FunctionCall | undefined }) => {
+	const errorDescription = callError?.errorMessage;
 	const { customSettings, updateContractColor, updateContractName } = useSettings();
 	return (
 		<Alert variant="compact" className="w-fit my-2 border-red-600 dark:text-white">
@@ -13,13 +14,15 @@ const ErrorAlert = ({ contractCallError }: { contractCallError: ContractCall | u
 			<AlertTitle className="!font-light">Error message: </AlertTitle>
 			<AlertDescription>
 				<span className="text-red-600">{errorDescription}</span> in{' '}
-				{contractCallError && (
+				{callError && 'classHash' in callError ? (
 					<ContractCallSignature
-						contractCall={contractCallError}
+						contractCall={callError}
 						customSettings={customSettings}
 						updateContractColor={updateContractColor}
 						updateContractName={updateContractName}
 					/>
+				) : (
+					callError?.fnName && <FnName fnName={callError?.fnName} />
 				)}
 			</AlertDescription>
 		</Alert>
