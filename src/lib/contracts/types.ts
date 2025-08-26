@@ -30,7 +30,7 @@ interface FunctionData {
 
 type Selector = string;
 
-type EntryPointItem = [Selector, FunctionData];
+export type EntryPointItem = [Selector, FunctionData];
 
 export interface ContractFunctions {
 	entry_point_datas: EntryPointItem[];

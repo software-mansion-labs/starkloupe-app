@@ -7,16 +7,23 @@ import { Footer } from '../footer';
 import { Loader } from '../ui/loader';
 import { InfoBoxItem, InfoBox } from '../ui/info-box';
 import { Error } from '../ui/error';
-import { fetchContractDataByAddress, GetContractResponse } from '@/lib/contracts';
+import {
+	ContractFunctions,
+	fetchContractDataByAddress,
+	fetchContractFunctions,
+	GetContractResponse
+} from '@/lib/contracts';
 import { ClassSourceCode } from '@/components/class-source-code';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { shortenHash } from '@/lib/utils';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import AddressLink from '../address-link';
+import { ContractRoot } from '../contract/root';
 
 export function ContractPage({ contractAddress }: { contractAddress: string }) {
 	const { networks } = useSettings();
 	const [contractData, setContractData] = useState<GetContractResponse>();
+	const [entryPoints, setEntrypoints] = useState<ContractFunctions>();
 	const [error, setError] = useState<string | undefined>();
 
 	useEffect(() => {
@@ -38,12 +45,47 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 		fetchData();
 	}, [contractAddress, networks]);
 
+	useEffect(() => {
+		if (!contractData) return;
+		const fetchEntrypoints = async () => {
+			try {
+				setEntrypoints(
+					await fetchContractFunctions({
+						contractAddress,
+						network: contractData.deployedSources[0].chainId || ''
+					})
+				);
+			} catch (error: any) {
+				setError(error.toString());
+			}
+		};
+
+		fetchEntrypoints();
+	}, [contractData]);
+
+	let content = null;
+	if (error) {
+		content = <Error message={error} />;
+	} else if (contractData) {
+		content = (
+			<>
+				<ContractRoot
+					isClassVerified={contractData.verified}
+					sourceCode={contractData.sourceCode ?? {}}
+					isContract={true}
+					entryPoints={entryPoints}
+				/>
+			</>
+		);
+	} else {
+		content = <Loader randomQuote={false} />;
+	}
 	return (
 		<>
 			<HeaderNav />
-			<main className="overflow-y-auto flex-grow flex-col flex justify-between">
-				<Container className="py-6">
-					<div className="flex flex-row items-baseline justify-between">
+			<main className="h-full flex flex-col overflow-hidden  short:overflow-scroll">
+				<Container className="py-4 sm:py-6 lg:py-8 h-full flex flex-col short:min-h-[600px]">
+					<div className="flex flex-col md:flex-row gap-2 mt-4 mb-2 items-baseline justify-between flex-none">
 						<h1 className="text-base font-medium leading-6 mt-4 mb-2 mr-2 flex flex-nowrap items-center">
 							Contract{' '}
 							<CopyToClipboardElement
@@ -63,7 +105,8 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 						</h1>
 					</div>
 					{contractData && <ContractDetails contractData={contractData} />}
-					{contractData ? (
+					<div className="flex-1 flex flex-col overflow-hidden min-h-0 ">{content}</div>
+					{/* {contractData ? (
 						<ClassSourceCode
 							isClassVerified={contractData.verified}
 							sourceCode={contractData.sourceCode ?? {}}
@@ -73,10 +116,10 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 						<Error message={error} />
 					) : (
 						<Loader randomQuote={false} />
-					)}
+					)} */}
 				</Container>
-				<Footer />
 			</main>
+			<Footer />
 		</>
 	);
 }

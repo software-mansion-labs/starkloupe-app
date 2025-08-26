@@ -14,14 +14,11 @@ export function ClassSourceCode({
 	isContract: boolean;
 }) {
 	return (
-		<div className="mt-12">
-			<h2 className="text-sm font-medium mb-2">{isContract ? 'Contract' : 'Class'} Source Code</h2>
+		<div className="h-full">
 			{isClassVerified && sourceCode ? (
-				<Card>
-					<SourceFiles sourceCode={sourceCode} />
-				</Card>
+				<SourceFiles sourceCode={sourceCode} />
 			) : (
-				<Alert className="w-fit">
+				<Alert className="m-4 py-4 w-fit min-w-[2rem]  gap-4">
 					<ExclamationTriangleIcon className="h-5 w-5" />
 					<AlertTitle>No source code for this {isContract ? 'contract' : 'class'}.</AlertTitle>
 					<AlertDescription>

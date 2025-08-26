@@ -20,40 +20,33 @@ export function SourceFiles({ sourceCode }: { sourceCode: { [key: string]: strin
 		setActiveFile(file);
 	};
 
-	return (
-		<div className="flex text-xs">
-			{sourceCode ? (
-				<ResizablePanelGroup
-					direction="horizontal"
-					className="w-full flex min-h-[500px] max-h-[500px] flex-row"
-				>
-					<ResizablePanel defaultSize={20} className="flex flex-col flex-grow">
-						<FilesExplorer
-							showTitle={false}
-							classSourceCode={sourceCode}
-							activeFile={activeFile}
-							handleFileClick={handleFileClick}
-						/>
-					</ResizablePanel>
-					<ResizableHandle withHandle className="w-[1px]" />
-					<ResizablePanel defaultSize={80} className="flex flex-col flex-grow">
-						{activeFile && (
-							<div className="flex flex-col w-full h-full">
-								<div className="flex gap-1 flex-row border-b  py-1 px-3 items-center">
-									<File size={16} />
-									{activeFile}
-								</div>
+	return sourceCode ? (
+		<ResizablePanelGroup direction="horizontal" className="w-full  flex flex-row">
+			<ResizablePanel defaultSize={20} className="flex flex-col flex-grow text-xs">
+				<FilesExplorer
+					showTitle={false}
+					classSourceCode={sourceCode}
+					activeFile={activeFile}
+					handleFileClick={handleFileClick}
+				/>
+			</ResizablePanel>
+			<ResizableHandle withHandle className="w-[1px]" />
+			<ResizablePanel defaultSize={80} className="flex flex-col flex-grow">
+				{activeFile && (
+					<div className="flex flex-col w-full h-full text-xs">
+						<div className="flex gap-1 flex-row border-b  py-1 px-3 items-center">
+							<File size={16} />
+							{activeFile}
+						</div>
 
-								<CodeViewer content={sourceCode[activeFile]} codeLocation={initialCodeLocation} />
-							</div>
-						)}
-					</ResizablePanel>
-				</ResizablePanelGroup>
-			) : (
-				<div className="flex items-center justify-center w-full h-full">
-					<Loader />
-				</div>
-			)}
+						<CodeViewer content={sourceCode[activeFile]} codeLocation={initialCodeLocation} />
+					</div>
+				)}
+			</ResizablePanel>
+		</ResizablePanelGroup>
+	) : (
+		<div className="flex items-center justify-center w-full h-full">
+			<Loader />
 		</div>
 	);
 }

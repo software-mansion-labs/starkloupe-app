@@ -41,9 +41,9 @@ export function ClassPage({ classHash }: { classHash: string }) {
 	return (
 		<>
 			<HeaderNav />
-			<main className="overflow-y-auto flex-grow flex-col flex justify-between">
-				<Container className="py-6">
-					<div className="flex flex-row items-baseline justify-between">
+			<main className="h-full flex flex-col overflow-hidden  short:overflow-scroll">
+				<Container className="py-4 sm:py-6 lg:py-8 h-full flex flex-col short:min-h-[600px]">
+					<div className="flex flex-col md:flex-row gap-2 mt-4 mb-2 items-baseline justify-between flex-none">
 						<h1 className="text-base font-medium leading-6 mt-4 mb-2 mr-2 flex flex-nowrap items-center">
 							Class{' '}
 							<CopyToClipboardElement
@@ -64,19 +64,24 @@ export function ClassPage({ classHash }: { classHash: string }) {
 					</div>
 					{classData && <ClassDetails classData={classData} />}
 					{classData ? (
-						<ClassSourceCode
-							isClassVerified={classData.verified}
-							sourceCode={classData.sourceCode ?? {}}
-							isContract={false}
-						/>
+						<div className="flex-1 flex flex-col overflow-hidden min-h-0 mt-12">
+							<div className="whitespace-nowrap rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 dark:bg-card">
+								{' '}
+								<ClassSourceCode
+									isClassVerified={classData.verified}
+									sourceCode={classData.sourceCode ?? {}}
+									isContract={false}
+								/>
+							</div>
+						</div>
 					) : error ? (
 						<Error message={error} />
 					) : (
 						<Loader randomQuote={false} />
 					)}
 				</Container>
-				<Footer />
 			</main>
+			<Footer />
 		</>
 	);
 }
