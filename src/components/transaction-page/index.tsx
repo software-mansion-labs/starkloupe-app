@@ -26,8 +26,8 @@ import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import { useUserContext } from '@/lib/context/user-context-provider';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { getCacheWithTTL, setCacheWithTTL } from '@/lib/utils/cache-utils';
 import AddressLink from '../address-link';
+import { cleanupCategory } from '@/lib/utils/cache-utils';
 
 export function TransactionPage({
 	txHash,
@@ -68,44 +68,8 @@ export function TransactionPage({
 		const fetchData = async () => {
 			try {
 				const skipTracking = !trackingActive;
-				const cacheKey = `${chainId || rpcUrl}:${txHash}`;
-				const cached = getCacheWithTTL<TransactionSimulationResult>(cacheKey);
 
-				if (cached) {
-					setTransactionSimulation(cached);
-					if (cached.l2TransactionData) {
-						setL2TransactionData(cached.l2TransactionData);
-						const l2 = cached.l2TransactionData;
-
-						const debuggerPayload: DebuggerPayload = {
-							chainId: l2.chainId ?? null,
-							blockNumber: l2.blockNumber ?? null,
-							blockTimestamp: l2.blockTimestamp,
-							nonce: l2.nonce,
-							senderAddress: l2.senderAddress,
-							calldata: l2.calldata,
-							transactionVersion: l2.transactionVersion,
-							transactionType: l2.transactionType,
-							transactionIndexInBlock: l2.transactionIndexInBlock ?? null,
-							totalTransactionsInBlock: l2.totalTransactionsInBlock ?? null,
-							l1TxHash: l2.l1TxHash ?? null,
-							l2TxHash: l2.l2TxHash ?? null
-						};
-						setDebuggerPayload(debuggerPayload);
-						if (l2.l2TxHash) {
-							setL2TxHash(l2.l2TxHash);
-							setL2TxHashShort(shortenHash(l2.l2TxHash));
-						}
-						if (l2.l1TxHash) {
-							setL1TxHash(l2.l1TxHash);
-							setL1TxHashShort(shortenHash(l2.l1TxHash));
-						}
-					} else if (cached.l1TransactionData) {
-						setL1TransactionData(cached.l1TransactionData);
-					}
-					return;
-				}
-
+				cleanupCategory();
 				let simulation: TransactionSimulationResult;
 
 				if (chainId) {
@@ -120,7 +84,6 @@ export function TransactionPage({
 					simulation = {};
 				}
 
-				setCacheWithTTL(cacheKey, simulation);
 				setTransactionSimulation(simulation);
 
 				if (simulation.l2TransactionData) {

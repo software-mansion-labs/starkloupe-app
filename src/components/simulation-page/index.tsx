@@ -19,7 +19,7 @@ import { Loader } from '../ui/loader';
 import { Error } from '../ui/error';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { useRouter } from 'next/navigation';
-import { getCacheWithTTL, safeStringify, setCacheWithTTL } from '@/lib/utils/cache-utils';
+import { cleanupCategory } from '@/lib/utils/cache-utils';
 export function SimulationPage({
 	simulationPayload
 }: {
@@ -43,34 +43,8 @@ export function SimulationPage({
 				setIsLoading(true);
 				const skipTracking = !trackingActive;
 
-				const cacheKey = `simulation:${safeStringify(simulationPayload)}`;
-				const cached = getCacheWithTTL<TransactionSimulationResult>(cacheKey);
-				if (cached) {
-					if (cached.l2TransactionData) {
-						setL2TransactionData(cached.l2TransactionData);
-						const l2 = cached.l2TransactionData;
-						const debuggerPayload: DebuggerPayload = {
-							chainId: l2.chainId ?? null,
-							blockNumber: l2.blockNumber.toString() === 'Latest' ? null : l2.blockNumber,
-							blockTimestamp: l2.blockTimestamp,
-							nonce: l2.nonce,
-							senderAddress: l2.senderAddress,
-							calldata: l2.calldata,
-							transactionVersion: l2.transactionVersion,
-							transactionType: l2.transactionType,
-							transactionIndexInBlock: l2.transactionIndexInBlock ?? null,
-							totalTransactionsInBlock: l2.totalTransactionsInBlock ?? null,
-							l1TxHash: l2.l1TxHash ?? null,
-							l2TxHash: l2.l2TxHash ?? null
-						};
-						setDebuggerPayload(debuggerPayload);
-					}
-					setIsLoading(false);
-					return;
-				}
-
+				cleanupCategory();
 				const simulation = await simulateTransactionByData(simulationPayload, skipTracking);
-				setCacheWithTTL(cacheKey, simulation);
 
 				if (simulation.l2TransactionData) {
 					setL2TransactionData(simulation.l2TransactionData);

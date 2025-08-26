@@ -141,139 +141,25 @@ export const saveCustomSettingsToStorage = (settings: {
 	}
 };
 
-export function safeStringify(value: any): string {
-	return JSON.stringify(value, (_, v) => (typeof v === 'bigint' ? v.toString() + 'n' : v));
-}
-
-export function safeParse<T = any>(value: string): T {
-	return JSON.parse(value, (_, v) => {
-		if (typeof v === 'string' && /^\d+n$/.test(v)) {
-			return BigInt(v.slice(0, -1));
-		}
-		return v;
-	});
-}
-
-function cleanupCategory(keyPrefix: string | null, maxItems: number) {
-	const now = Date.now();
+export function cleanupCategory() {
 	const txRegex = /^[^:]+:0x[0-9a-fA-F]+$/;
 
-	if (keyPrefix === null) {
-		cleanupCategory('simulation:', maxItems);
-		cleanupCategory('tx', maxItems);
-		return;
-	}
+	const keysToDelete: string[] = [];
 
-	const isSimulation = keyPrefix === 'simulation:';
-	const isDebugger = keyPrefix === 'debugger:';
-	const isTx = keyPrefix === 'tx';
-
-	const keys: string[] = [];
 	for (let i = 0; i < localStorage.length; i++) {
-		const k = localStorage.key(i);
-		if (!k) continue;
-		if (
-			(isSimulation && k.startsWith('simulation:')) ||
-			(isDebugger && k.startsWith('debugger:')) ||
-			(isTx && txRegex.test(k))
-		) {
-			keys.push(k);
+		const key = localStorage.key(i);
+		if (!key) continue;
+
+		const isTx = txRegex.test(key);
+		const isSimulation = key.startsWith('simulation:');
+		const isDebugger = key.startsWith('debugger:');
+
+		if (isTx || isSimulation || isDebugger) {
+			keysToDelete.push(key);
 		}
 	}
 
-	if (keys.length <= maxItems) return;
-
-	const items: { key: string; timestamp: number }[] = [];
-	for (const k of keys) {
-		const raw = localStorage.getItem(k);
-		if (!raw) {
-			resetStorage(k);
-			continue;
-		}
-		try {
-			const rec = safeParse<{ timestamp: number }>(raw);
-			if (!rec.timestamp || now - rec.timestamp > CACHE_TTL_MS) {
-				resetStorage(k);
-			} else {
-				items.push({ key: k, timestamp: rec.timestamp });
-			}
-		} catch {
-			resetStorage(k);
-		}
-	}
-	if (items.length > maxItems) {
-		items
-			.sort((a, b) => b.timestamp - a.timestamp)
-			.slice(maxItems)
-			.forEach((item) => resetStorage(item.key));
-	}
-}
-
-export function setCacheWithTTL(key: string, value: any) {
-	cleanupCategory(key, 1);
-
-	const record = {
-		timestamp: Date.now(),
-		data: value
-	};
-	const serialized = safeStringify(record);
-
-	// Check size limit before attempting to cache
-	// Using 100KB as strict limit for localStorage cache
-	const MAX_CACHE_SIZE_BYTES = 100 * 1024; // 100KB
-	const sizeInBytes = new Blob([serialized]).size;
-
-	if (sizeInBytes > MAX_CACHE_SIZE_BYTES) {
-		const sizeKB = sizeInBytes / 1024;
-		const limitKB = MAX_CACHE_SIZE_BYTES / 1024;
-		console.warn(
-			`Response too large to cache (${sizeKB.toFixed(
-				1
-			)}KB > ${limitKB}KB) for key: ${key}. Skipping cache.`
-		);
-		return;
-	}
-
-	try {
-		localStorage.setItem(key, serialized);
-	} catch (e) {
-		if (e instanceof DOMException && e.name === 'QuotaExceededError') {
-			console.warn('localStorage quota exceeded for key:', key);
-			// Try to clear expired items and retry
-			cleanupCategory(null, 1);
-			try {
-				localStorage.setItem(key, serialized);
-			} catch (e2) {
-				console.error('Failed to cache after cleanup:', e2);
-			}
-		} else {
-			console.error('localStorage write failed:', e);
-		}
-	}
-}
-
-export function getCacheWithTTL<T = any>(key: string): T | null {
-	cleanupCategory(null, 2);
-
-	const raw = localStorage.getItem(key);
-	if (!raw) return null;
-
-	let record: { timestamp: number; data: any };
-	try {
-		record = safeParse(raw);
-	} catch {
-		resetStorage(key);
-		return null;
-	}
-
-	if (!record.timestamp || !record.data) {
-		resetStorage(key);
-		return null;
-	}
-	if (Date.now() - record.timestamp > CACHE_TTL_MS) {
-		resetStorage(key);
-		return null;
-	}
-
-	return record.data as T;
+	keysToDelete.forEach((key) => {
+		localStorage.removeItem(key);
+	});
 }
