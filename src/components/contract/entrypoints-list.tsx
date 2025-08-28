@@ -72,7 +72,6 @@ const EntryPoint = ({
 		<React.Fragment key={key}>
 			<div className="py-2 font-mono border-b border-border">
 				<span className="text-function_purple">{entryPoint[1].name}</span>
-
 				<span className="text-highlight_yellow">{'('}</span>
 				<span>
 					{entryPoint[1].inputs.map((i, idx) => (
@@ -82,7 +81,15 @@ const EntryPoint = ({
 						</span>
 					))}
 				</span>
-
+				<span className="text-highlight_yellow">{')'}</span>{' '}
+				<span className="text-highlight_yellow">{'->'}</span>{' '}
+				<span className="text-highlight_yellow">{'('}</span>
+				{entryPoint[1].outputs.map((o, idx) => (
+					<span key={`${o.type} + ${idx}`}>
+						<span className="text-typeColor">{o.type}</span>
+						{idx < entryPoint[1].outputs.length - 1 && ', '}
+					</span>
+				))}
 				<span className="text-highlight_yellow">{')'}</span>
 				<div className="flex flex-row items-center trace-line_content">
 					<span className="text-function_purple"></span>
