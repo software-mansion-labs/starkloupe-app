@@ -4,12 +4,20 @@ import { L1TransactionData } from '@/lib/simulation';
 
 export function L1TransactionDetails({
 	transactionData,
-	rpcUrl
+	rpcUrl,
+	chainDetails
 }: {
 	transactionData: L1TransactionData;
 	rpcUrl?: string;
+	chainDetails?:
+		| {
+				stack?: string | undefined;
+				chain?: string | undefined;
+		  }
+		| null
+		| undefined;
 }) {
-	const { getNetworkByRpcUrl } = useSettings();
+	const { getNetworkByRpcUrl, parseChain } = useSettings();
 	let details: InfoBoxItem[] = [];
 
 	// 1. Transaction Type (always first)
@@ -52,10 +60,21 @@ export function L1TransactionDetails({
 
 	// 4. Chain and Block info
 	if (transactionData.chainId) {
-		details.push({
-			name: 'Chain',
-			value: transactionData.chainId
-		});
+		if (chainDetails) {
+			details.push({
+				name: 'Stack',
+				value: chainDetails?.stack
+			});
+			details.push({
+				name: 'Chain',
+				value: chainDetails?.chain
+			});
+		} else {
+			details.push({
+				name: 'Chain',
+				value: transactionData.chainId
+			});
+		}
 	}
 
 	if (transactionData.blockNumber) {

@@ -27,6 +27,7 @@ import { useUserContext } from '@/lib/context/user-context-provider';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AddressLink from '../address-link';
+import { NetworkBadge } from '../ui/network-badge';
 import { cleanupCategory } from '@/lib/utils/cache-utils';
 
 export function TransactionPage({
@@ -51,6 +52,7 @@ export function TransactionPage({
 	const [l2TxHashShort, setL2TxHashShort] = useState<string>();
 	const router = useRouter();
 	const [showIO, setShowIO] = useState(false);
+	const { parseChain, getNetworkByRpcUrl } = useSettings();
 	function normalizeTxHash(hash: string) {
 		if (typeof hash !== 'string') return hash as unknown as string;
 		const trimmed = hash.trim();
@@ -146,6 +148,15 @@ export function TransactionPage({
 		}
 	};
 
+	const network = rpcUrl ? getNetworkByRpcUrl(rpcUrl) : null;
+	const chainDetails = chainId
+		? parseChain(chainId)
+		: network?.networkName
+		? parseChain(network?.networkName)
+		: l2TransactionData?.chainId
+		? parseChain(l2TransactionData?.chainId)
+		: undefined;
+
 	return (
 		<>
 			<HeaderNav />
@@ -173,6 +184,7 @@ export function TransactionPage({
 											>
 												<AddressLink address={l2TxHash}>{l2TxHashShort}</AddressLink>
 											</CopyToClipboardElement>
+											{chainDetails ? <NetworkBadge network={chainDetails} /> : <></>}
 										</h1>
 									)}
 									{l1TxHash && (
@@ -192,6 +204,7 @@ export function TransactionPage({
 											>
 												{l1TxHashShort}
 											</CopyToClipboardElement>
+											{chainDetails && <NetworkBadge network={chainDetails} />}
 										</h2>
 									)}
 								</div>
@@ -211,7 +224,11 @@ export function TransactionPage({
 									</Link>
 								)}
 							</div>
-							<TransactionDetails transactionData={l2TransactionData} rpcUrl={rpcUrl} />
+							<TransactionDetails
+								transactionData={l2TransactionData}
+								rpcUrl={rpcUrl}
+								chainDetails={chainDetails}
+							/>
 							<CallTraceRoot
 								simulationResult={l2TransactionData.simulationResult}
 								l2Flamegraph={l2TransactionData.flamechart}
@@ -241,6 +258,7 @@ export function TransactionPage({
 											>
 												{shortenHash(l1TransactionData.l1TxHash)}
 											</CopyToClipboardElement>
+											{chainDetails && <NetworkBadge network={chainDetails} />}
 										</h1>
 									)}
 								</div>
@@ -256,7 +274,11 @@ export function TransactionPage({
 									</Link>
 								)}
 							</div>
-							<L1TransactionDetails transactionData={l1TransactionData} rpcUrl={rpcUrl} />
+							<L1TransactionDetails
+								transactionData={l1TransactionData}
+								rpcUrl={rpcUrl}
+								chainDetails={chainDetails}
+							/>
 							{l1TransactionData.messageHashes && l1TransactionData.messageHashes.length > 0 && (
 								<div className="mt-4">
 									<div className="rounded-xl border bg-card">
@@ -338,6 +360,7 @@ export function TransactionPage({
 												{shortenHash(normalizedTxHash)}
 											</AddressLink>
 										</CopyToClipboardElement>
+										{chainDetails && <NetworkBadge network={chainDetails} />}
 									</h1>
 								</div>
 								<Button variant="outline" disabled>

@@ -19,9 +19,10 @@ import { shortenHash } from '@/lib/utils';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import AddressLink from '../address-link';
 import { ContractRoot } from '../contract/root';
+import { NetworkBadge } from '../ui/network-badge';
 
 export function ContractPage({ contractAddress }: { contractAddress: string }) {
-	const { networks } = useSettings();
+	const { networks, parseChain, getNetworkByRpcUrl } = useSettings();
 	const [contractData, setContractData] = useState<GetContractResponse>();
 	const [entryPoints, setEntrypoints] = useState<ContractFunctions>();
 	const [error, setError] = useState<string | undefined>();
@@ -63,6 +64,16 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 		fetchEntrypoints();
 	}, [contractData]);
 
+	let networkBadges = contractData?.deployedSources.map((item) => {
+		const network = item?.rpcUrl ? getNetworkByRpcUrl(item?.rpcUrl) : null;
+		const chainDetails = network?.networkName
+			? parseChain(network?.networkName)
+			: item?.chainId
+			? parseChain(item?.chainId)
+			: undefined;
+		return chainDetails && <NetworkBadge network={chainDetails} />;
+	});
+
 	let content = null;
 	if (error) {
 		content = <Error message={error} />;
@@ -102,6 +113,7 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 							>
 								<AddressLink address={contractAddress}>{shortenHash(contractAddress)}</AddressLink>
 							</CopyToClipboardElement>
+							{networkBadges}
 						</h1>
 					</div>
 					{contractData && <ContractDetails contractData={contractData} />}
@@ -125,7 +137,7 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 }
 
 function ContractDetails({ contractData }: { contractData: GetContractResponse }) {
-	const { networks } = useSettings();
+	const { networks, parseChain } = useSettings();
 
 	const details: InfoBoxItem[] = [
 		{
@@ -147,21 +159,34 @@ function ContractDetails({ contractData }: { contractData: GetContractResponse }
 		const deployedOnNetworks = [];
 		for (const source of contractData.deployedSources) {
 			if (source.chainId) {
-				deployedOnNetworks.push(source.chainId);
+				deployedOnNetworks.push(parseChain(source.chainId));
 			} else {
 				const networkInSettings = (networks ?? []).find(
 					(network) => network.rpcUrl === source.rpcUrl
 				);
 				if (networkInSettings) {
-					deployedOnNetworks.push(networkInSettings.networkName);
-				} else {
-					deployedOnNetworks.push(source.rpcUrl);
+					deployedOnNetworks.push(parseChain(networkInSettings.networkName));
+				} else if (source.rpcUrl) {
+					deployedOnNetworks.push(parseChain(source.rpcUrl));
 				}
 			}
 		}
+
 		details.push({
 			name: 'Deployed on networks',
-			value: deployedOnNetworks.join(', ')
+			value: deployedOnNetworks
+				.map((network) => {
+					if (!network?.customNetworkName) {
+						const stack = network?.stack || '';
+						const chain = network?.chain || '';
+
+						return [stack, chain].filter(Boolean).join(' ');
+					} else {
+						return [network?.customNetworkName];
+					}
+				})
+				.filter(Boolean)
+				.join(', ')
 		});
 	}
 

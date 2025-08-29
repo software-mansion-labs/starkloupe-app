@@ -20,6 +20,8 @@ import Link from 'next/link';
 import debounce from 'lodash/debounce';
 import { useUserContext } from '@/lib/context/user-context-provider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { NetworkBadge } from './network-badge';
+import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
 export function Search({
 	className,
@@ -36,9 +38,26 @@ export function Search({
 	const [isMac, setIsMac] = useState(true);
 	const { networks } = useSettings();
 	const { isLogged } = useUserContext();
-	const coreNetworks = 'sn_main, sn_sepolia';
-	const [allAvailableNetworksString, setAllAvailableNetworksString] =
-		useState<string>(coreNetworks);
+	const [tooltipOpen, setTooltipOpen] = useState(false);
+
+	const { parseChain } = useSettings();
+	const coreNetworks = ['sn_main', 'sn_sepolia']
+		.map((item) => {
+			const chainData = parseChain(item);
+			if (chainData) {
+				return (
+					<NetworkBadge
+						key={`${chainData.chain}-${chainData.stack}`}
+						network={chainData}
+						withoutStack
+					/>
+				);
+			} else {
+				return <NetworkBadge key={item} network={{ chain: item }} withoutStack />;
+			}
+		})
+		.filter(Boolean);
+	const [allAvailableNetworksString, setAllAvailableNetworksString] = useState(coreNetworks);
 
 	const fetchSearchDataResponse = useCallback(
 		async (value: string) => {
@@ -60,10 +79,26 @@ export function Search({
 	);
 
 	useEffect(() => {
-		if (networks.length > 0) {
-			const networkNames = networks.map((network) => network.networkName);
-			setAllAvailableNetworksString(`${coreNetworks}, ${networkNames.join(', ')}`);
+		if (!networks || networks.length === 0) {
+			return;
 		}
+
+		const dynamicBadges = networks
+			.map(({ networkName }) => {
+				const chainData = parseChain(networkName);
+				return chainData ? (
+					<NetworkBadge
+						key={`${chainData.chain}-${chainData.stack}`}
+						network={chainData}
+						withoutStack
+					/>
+				) : (
+					<NetworkBadge key={networkName} network={{ chain: networkName }} withoutStack />
+				);
+			})
+			.filter(Boolean);
+
+		setAllAvailableNetworksString([...coreNetworks, ...dynamicBadges]);
 	}, [networks]);
 
 	useEffect(() => {
@@ -110,6 +145,63 @@ export function Search({
 		);
 	}, []); // Run only once after the component mounts
 
+	const getFoundNetworks = useCallback(() => {
+		if (!searchDataResponse) return [];
+
+		const foundNetworkIds = new Set<string>();
+
+		[
+			...searchDataResponse.transactions,
+			...searchDataResponse.classes,
+			...searchDataResponse.contracts
+		].forEach((item) => {
+			if (item.source.chainId) {
+				foundNetworkIds.add(item.source.chainId);
+			} else if (item.source.rpcUrl) {
+				foundNetworkIds.add(item.source.rpcUrl);
+			}
+		});
+		return Array.from(foundNetworkIds)
+			.map((networkId) => {
+				let chainData = parseChain(networkId);
+				if (chainData) {
+					return (
+						<NetworkBadge
+							key={`found-${chainData.chain}-${chainData.stack}`}
+							network={chainData}
+							withoutStack
+						/>
+					);
+				}
+				const network = networks.find((n) => n.rpcUrl === networkId);
+				if (network) {
+					chainData = parseChain(network.networkName);
+					if (chainData) {
+						return (
+							<NetworkBadge
+								key={`found-${chainData.chain}-${chainData.stack}`}
+								network={chainData}
+								withoutStack
+							/>
+						);
+					} else {
+						return (
+							<NetworkBadge
+								key={`found-${network.networkName}`}
+								network={{ chain: network.networkName }}
+								withoutStack
+							/>
+						);
+					}
+				}
+
+				return (
+					<NetworkBadge key={`found-${networkId}`} network={{ chain: networkId }} withoutStack />
+				);
+			})
+			.filter(Boolean);
+	}, [searchDataResponse, networks, parseChain]);
+
 	return (
 		<div className={cn('flex flex-row', className)} {...props}>
 			<label htmlFor="search" className="sr-only">
@@ -142,6 +234,7 @@ export function Search({
 				<CommandInput
 					placeholder="Search for transaction or contract"
 					onValueChange={(value) => onSearchValueChanged(value)}
+					className="pr-6"
 					displayBorder={!!searchDataResponse || !!error || searchValue.length > 3}
 				/>
 				<CommandList>
@@ -155,6 +248,8 @@ export function Search({
 											data={tx}
 											type="transactions"
 											networks={networks}
+											chainData={tx.source.chainId ? parseChain(tx.source.chainId) : {}}
+											parseChain={parseChain}
 										/>
 									))}
 								</CommandGroup>
@@ -167,6 +262,8 @@ export function Search({
 											data={cls}
 											type="classes"
 											networks={networks}
+											chainData={cls.source.chainId ? parseChain(cls.source.chainId) : {}}
+											parseChain={parseChain}
 										/>
 									))}
 								</CommandGroup>
@@ -179,6 +276,8 @@ export function Search({
 											data={contract}
 											type="contracts"
 											networks={networks}
+											chainData={contract.source.chainId ? parseChain(contract.source.chainId) : {}}
+											parseChain={parseChain}
 										/>
 									))}
 								</CommandGroup>
@@ -197,9 +296,35 @@ export function Search({
 							>
 								<p className="text-muted-foreground">
 									<span className="font-semibold">{dataResponseResults}</span>
-									&nbsp;{dataResponseResults === 1 ? 'result' : 'results'} found on&nbsp;
-									<span className="font-semibold">{allAvailableNetworksString}</span>
-									&nbsp;networks.&nbsp;
+									&nbsp;found {dataResponseResults === 1 ? 'result' : 'results'} across{' '}
+									<Popover open={tooltipOpen} onOpenChange={setTooltipOpen}>
+										<PopoverTrigger
+											className="underline"
+											onMouseEnter={() => setTooltipOpen(true)}
+											onMouseLeave={() => setTooltipOpen(false)}
+										>
+											{allAvailableNetworksString.length}{' '}
+											{allAvailableNetworksString.length > 1 ? 'networks' : 'network'}
+										</PopoverTrigger>
+										<PopoverContent className="w-80 p-4" side="top">
+											<div className="space-y-2">
+												<h4 className="font-semibold text-sm text-gray-900 dark:text-gray-100 border-b pb-1">
+													All Available Networks
+												</h4>
+												<div className="space-y-1">
+													{allAvailableNetworksString.map((network, index) => (
+														<div
+															key={index}
+															className="flex items-center space-x-2 text-xs text-gray-700 dark:text-gray-300"
+														>
+															<span className="break-words">{network}</span>
+														</div>
+													))}
+												</div>
+											</div>
+										</PopoverContent>
+									</Popover>
+									.{' '}
 									<Link href="/settings" className="underline">
 										Add custom networks to search.
 									</Link>
@@ -216,11 +341,21 @@ export function Search({
 const SearchItem = ({
 	data,
 	type,
-	networks
+	networks,
+	chainData,
+	parseChain
 }: {
 	data: SearchData;
 	type: 'transactions' | 'contracts' | 'classes';
 	networks: Network[];
+	chainData?: {
+		stack?: string | undefined;
+		chain?: string | undefined;
+	} | null;
+	parseChain?: (chainString: string) => {
+		stack?: string | undefined;
+		chain?: string | undefined;
+	} | null;
 }) => {
 	const handleSearchItem = useCallback(() => {
 		if (type === 'transactions') {
@@ -243,17 +378,32 @@ const SearchItem = ({
 	const network = data.source.rpcUrl
 		? networks.find((n) => n.rpcUrl === data.source.rpcUrl)
 		: undefined;
-
+	const networkChainData =
+		parseChain && network?.networkName ? parseChain(network?.networkName) : '';
 	return (
 		<CommandItem
 			onSelect={handleSearchItem}
-			className="truncate cursor-pointer !bg-transparent hover:!bg-accent"
+			className="truncate cursor-pointer !bg-transparent hover:!bg-accent flex gap-2"
 			style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
 		>
 			{network ? (
-				<Badge className="hover:bg-primary">{network.networkName}</Badge>
-			) : data.source.chainId ? (
-				<Badge className="hover:bg-primary">{data.source.chainId}</Badge>
+				networkChainData ? (
+					<div className="flex-shrink-0">
+						<NetworkBadge network={networkChainData} withoutStack />
+					</div>
+				) : (
+					<div className="flex-shrink-0">
+						<NetworkBadge
+							key={network?.networkName}
+							network={{ chain: network?.networkName }}
+							withoutStack
+						/>
+					</div>
+				)
+			) : data.source.chainId && chainData ? (
+				<div className="flex-shrink-0">
+					<NetworkBadge network={chainData} withoutStack />
+				</div>
 			) : null}
 			<p className="ml-2 text-sm truncate">{data.hash}</p>
 		</CommandItem>

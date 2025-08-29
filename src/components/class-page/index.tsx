@@ -13,9 +13,10 @@ import { useSettings } from '@/lib/context/settings-context-provider';
 import { shortenHash } from '@/lib/utils';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import AddressLink from '../address-link';
+import { NetworkBadge } from '../ui/network-badge';
 
 export function ClassPage({ classHash }: { classHash: string }) {
-	const { networks } = useSettings();
+	const { networks, getNetworkByRpcUrl, parseChain } = useSettings();
 	const [classData, setClassData] = useState<GetClassResponse>();
 	const [error, setError] = useState<string | undefined>();
 
@@ -37,6 +38,16 @@ export function ClassPage({ classHash }: { classHash: string }) {
 
 		fetchData();
 	}, [classHash, networks]);
+
+	let networkBadges = classData?.declaredSources.map((item) => {
+		const network = item?.rpcUrl ? getNetworkByRpcUrl(item?.rpcUrl) : null;
+		const chainDetails = network?.networkName
+			? parseChain(network?.networkName)
+			: item?.chainId
+			? parseChain(item?.chainId)
+			: undefined;
+		return chainDetails && <NetworkBadge network={chainDetails} />;
+	});
 
 	return (
 		<>
@@ -60,6 +71,7 @@ export function ClassPage({ classHash }: { classHash: string }) {
 							>
 								<AddressLink address={classHash}>{shortenHash(classHash)}</AddressLink>
 							</CopyToClipboardElement>
+							{networkBadges}
 						</h1>
 					</div>
 					{classData && <ClassDetails classData={classData} />}
@@ -87,7 +99,7 @@ export function ClassPage({ classHash }: { classHash: string }) {
 }
 
 function ClassDetails({ classData }: { classData: GetClassResponse }) {
-	const { networks } = useSettings();
+	const { networks, parseChain } = useSettings();
 
 	const details: InfoBoxItem[] = [
 		{
@@ -100,21 +112,34 @@ function ClassDetails({ classData }: { classData: GetClassResponse }) {
 		const declaredOnNetworks = [];
 		for (const source of classData.declaredSources) {
 			if (source.chainId) {
-				declaredOnNetworks.push(source.chainId);
+				declaredOnNetworks.push(parseChain(source.chainId));
 			} else {
 				const networkInSettings = (networks ?? []).find(
 					(network) => network.rpcUrl === source.rpcUrl
 				);
 				if (networkInSettings) {
-					declaredOnNetworks.push(networkInSettings.networkName);
-				} else {
-					declaredOnNetworks.push(source.rpcUrl);
+					declaredOnNetworks.push(parseChain(networkInSettings.networkName));
+				} else if (source.rpcUrl) {
+					declaredOnNetworks.push(parseChain(source.rpcUrl));
 				}
 			}
 		}
+
 		details.push({
 			name: 'Declared on networks',
-			value: declaredOnNetworks.join(', ')
+			value: declaredOnNetworks
+				.map((network) => {
+					if (!network?.customNetworkName) {
+						const stack = network?.stack || '';
+						const chain = network?.chain || '';
+
+						return [stack, chain].filter(Boolean).join(' ');
+					} else {
+						return [network?.customNetworkName];
+					}
+				})
+				.filter(Boolean)
+				.join(', ')
 		});
 	}
 
