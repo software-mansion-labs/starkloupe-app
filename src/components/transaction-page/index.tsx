@@ -165,30 +165,32 @@ export function TransactionPage({
 					{l2TransactionData ? (
 						<>
 							{/* === L2 Transaction === */}
-							<div className="lg:flex flex-row items-baseline justify-between">
+							<div className="xl:flex flex-row items-baseline justify-between">
 								<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
 									{l2TxHash && (
-										<h1 className="text-base font-medium leading-6 flex flex-nowrap items-center">
-											Transaction{' '}
-											<CopyToClipboardElement
-												value={l2TxHash}
-												toastDescription="The address has been copied."
-												className="hidden lg:block p-0"
-											>
-												<AddressLink address={l2TxHash}>{l2TxHash}</AddressLink>
-											</CopyToClipboardElement>
-											<CopyToClipboardElement
-												value={l2TxHash}
-												toastDescription="The address has been copied."
-												className="lg:hidden p-0"
-											>
-												<AddressLink address={l2TxHash}>{l2TxHashShort}</AddressLink>
-											</CopyToClipboardElement>
-											{chainDetails ? <NetworkBadge network={chainDetails} /> : <></>}
+										<h1 className="text-base font-medium leading-6">
+											<div className="flex flex-wrap items-center gap-1">
+												<span>Transaction</span>
+												<CopyToClipboardElement
+													value={l2TxHash}
+													toastDescription="The address has been copied."
+													className="hidden lg:block p-0 mr-2"
+												>
+													<AddressLink address={l2TxHash}>{l2TxHash}</AddressLink>
+												</CopyToClipboardElement>
+												<CopyToClipboardElement
+													value={l2TxHash}
+													toastDescription="The address has been copied."
+													className="lg:hidden p-0 mr-2"
+												>
+													<AddressLink address={l2TxHash}>{l2TxHashShort}</AddressLink>
+												</CopyToClipboardElement>
+												{chainDetails && <NetworkBadge network={chainDetails} />}
+											</div>
 										</h1>
 									)}
 									{l1TxHash && (
-										<h2 className="text-base leading-6 flex flex-nowrap items-center">
+										<h2 className="text-base font-medium leading-6">
 											Corresponding L1 Transaction{' '}
 											<CopyToClipboardElement
 												value={l1TxHash}
@@ -340,29 +342,32 @@ export function TransactionPage({
 						<Error message={error} />
 					) : (
 						<>
-							<div className="lg:flex flex-row items-baseline justify-between">
+							<div className="xl:flex flex-row items-baseline justify-between">
 								<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
-									<h1 className="text-base font-medium leading-6 flex flex-nowrap items-center">
-										Transaction{' '}
-										<CopyToClipboardElement
-											value={normalizedTxHash}
-											toastDescription="The address has been copied."
-											className="hidden lg:block p-0"
-										>
-											<AddressLink address={normalizedTxHash}>{normalizedTxHash}</AddressLink>
-										</CopyToClipboardElement>
-										<CopyToClipboardElement
-											value={normalizedTxHash}
-											toastDescription="The address has been copied."
-											className="lg:hidden p-0"
-										>
-											<AddressLink address={normalizedTxHash}>
-												{shortenHash(normalizedTxHash)}
-											</AddressLink>
-										</CopyToClipboardElement>
-										{chainDetails && <NetworkBadge network={chainDetails} />}
+									<h1 className="text-base font-medium leading-6">
+										<div className="flex flex-wrap items-center gap-1">
+											Transaction
+											<CopyToClipboardElement
+												value={normalizedTxHash}
+												toastDescription="The address has been copied."
+												className="hidden lg:block p-0 mr-2"
+											>
+												<AddressLink address={normalizedTxHash}>{normalizedTxHash}</AddressLink>
+											</CopyToClipboardElement>
+											<CopyToClipboardElement
+												value={normalizedTxHash}
+												toastDescription="The address has been copied."
+												className="lg:hidden p-0 mr-2"
+											>
+												<AddressLink address={normalizedTxHash}>
+													{shortenHash(normalizedTxHash)}
+												</AddressLink>
+											</CopyToClipboardElement>
+											{chainDetails && <NetworkBadge network={chainDetails} />}
+										</div>
 									</h1>
 								</div>
+
 								<Button variant="outline" disabled>
 									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
 								</Button>

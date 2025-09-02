@@ -97,23 +97,27 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 			<main className="h-full flex flex-col overflow-hidden  short:overflow-scroll">
 				<Container className="py-4 sm:py-6 lg:py-8 h-full flex flex-col short:min-h-[600px]">
 					<div className="flex flex-col md:flex-row gap-2 mt-4 mb-2 items-baseline justify-between flex-none">
-						<h1 className="text-base font-medium leading-6 mt-4 mb-2 mr-2 flex flex-nowrap items-center">
-							Contract{' '}
-							<CopyToClipboardElement
-								value={contractAddress}
-								toastDescription="The address has been copied."
-								className="hidden lg:block p-0"
-							>
-								<AddressLink address={contractAddress}>{contractAddress}</AddressLink>
-							</CopyToClipboardElement>
-							<CopyToClipboardElement
-								value={contractAddress}
-								toastDescription="The address has been copied."
-								className="lg:hidden p-0"
-							>
-								<AddressLink address={contractAddress}>{shortenHash(contractAddress)}</AddressLink>
-							</CopyToClipboardElement>
-							{networkBadges}
+						<h1 className="text-base font-medium leading-6">
+							<div className="flex flex-wrap items-center gap-1">
+								Contract{' '}
+								<CopyToClipboardElement
+									value={contractAddress}
+									toastDescription="The address has been copied."
+									className="hidden lg:block p-0"
+								>
+									<AddressLink address={contractAddress}>{contractAddress}</AddressLink>
+								</CopyToClipboardElement>
+								<CopyToClipboardElement
+									value={contractAddress}
+									toastDescription="The address has been copied."
+									className="lg:hidden p-0"
+								>
+									<AddressLink address={contractAddress}>
+										{shortenHash(contractAddress)}
+									</AddressLink>
+								</CopyToClipboardElement>
+								{networkBadges}
+							</div>
 						</h1>
 					</div>
 					{contractData && <ContractDetails contractData={contractData} />}

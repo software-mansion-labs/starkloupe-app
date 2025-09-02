@@ -45,10 +45,12 @@ function getNetworkStyle(network: Network) {
 
 export function NetworkBadge({
 	network,
-	withoutStack
+	withoutStack,
+	className
 }: {
 	network: Network;
 	withoutStack?: boolean;
+	className?: string;
 }) {
 	if (!network) return null;
 
@@ -60,10 +62,10 @@ export function NetworkBadge({
 				<TooltipTrigger>
 					<Badge
 						className={`px-2 py-1  ${
-							!withoutStack ? 'ml-4' : 'my-0.5'
+							withoutStack && 'my-0.5'
 						} text-xs border rounded-full w-fit flex items-center ${style.logo && 'space-x-1'} ${
 							style.class
-						}`}
+						} ${className}`}
 					>
 						{style.logo ? (
 							<Image src={style.logo} alt={`${network.stack} logo`} className="w-4 h-4" />

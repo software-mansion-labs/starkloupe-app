@@ -133,7 +133,9 @@ export function SimulationPage({
 				<Container className="py-4 sm:py-6 lg:py-8 h-full flex flex-col short:min-h-[600px]">
 					<div className="flex flex-col md:flex-row gap-2 mt-4 mb-2 items-baseline justify-between flex-none">
 						<h1 className="text-xl font-medium leading-6 mb-2">
-							Transaction simulation {chainDetails && <NetworkBadge network={chainDetails} />}
+							<div className="flex flex-wrap items-center gap-2">
+								Transaction simulation {chainDetails && <NetworkBadge network={chainDetails} />}
+							</div>
 						</h1>
 
 						<Button

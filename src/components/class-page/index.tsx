@@ -55,23 +55,25 @@ export function ClassPage({ classHash }: { classHash: string }) {
 			<main className="h-full flex flex-col overflow-hidden  short:overflow-scroll">
 				<Container className="py-4 sm:py-6 lg:py-8 h-full flex flex-col short:min-h-[600px]">
 					<div className="flex flex-col md:flex-row gap-2 mt-4 mb-2 items-baseline justify-between flex-none">
-						<h1 className="text-base font-medium leading-6 mt-4 mb-2 mr-2 flex flex-nowrap items-center">
-							Class{' '}
-							<CopyToClipboardElement
-								value={classHash}
-								toastDescription="The address has been copied."
-								className="hidden lg:block p-0"
-							>
-								<AddressLink address={classHash}>{classHash}</AddressLink>
-							</CopyToClipboardElement>
-							<CopyToClipboardElement
-								value={classHash}
-								toastDescription="The address has been copied."
-								className="lg:hidden p-0"
-							>
-								<AddressLink address={classHash}>{shortenHash(classHash)}</AddressLink>
-							</CopyToClipboardElement>
-							{networkBadges}
+						<h1 className="text-base font-medium leading-6">
+							<div className="flex flex-wrap items-center gap-1">
+								Class{' '}
+								<CopyToClipboardElement
+									value={classHash}
+									toastDescription="The address has been copied."
+									className="hidden lg:block p-0"
+								>
+									<AddressLink address={classHash}>{classHash}</AddressLink>
+								</CopyToClipboardElement>
+								<CopyToClipboardElement
+									value={classHash}
+									toastDescription="The address has been copied."
+									className="lg:hidden p-0"
+								>
+									<AddressLink address={classHash}>{shortenHash(classHash)}</AddressLink>
+								</CopyToClipboardElement>
+								{networkBadges}
+							</div>
 						</h1>
 					</div>
 					{classData && <ClassDetails classData={classData} />}
