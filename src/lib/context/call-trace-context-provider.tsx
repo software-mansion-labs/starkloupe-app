@@ -59,6 +59,8 @@ interface CallTraceContextProps {
 	chosenCallName: string | null;
 	setChosenCallName: (callName: string | null) => void;
 	callWithError: ContractCall | FunctionCall | undefined;
+	showGasChips: boolean;
+	gasChipToggle: (checkboxState: boolean) => void;
 }
 
 export const CallTraceContext = createContext<CallTraceContextProps>({
@@ -85,7 +87,9 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	setActiveTab: () => undefined,
 	scrollToTraceLineElement: (key: number) => undefined,
 	chosenCallName: null,
-	setChosenCallName: () => undefined
+	setChosenCallName: () => undefined,
+	showGasChips: true,
+	gasChipToggle: () => undefined
 });
 
 export const CallTraceContextProvider: React.FC<
@@ -109,6 +113,7 @@ export const CallTraceContextProvider: React.FC<
 	const [callWithError, setContractCallWithError] = useState<
 		ContractCall | FunctionCall | undefined
 	>(undefined);
+	const [showGasChips, setShowGasChips] = useState(true);
 	const errorMessage =
 		simulationResult.executionResult.executionStatus === 'REVERTED'
 			? simulationResult.executionResult.revertReason
@@ -119,6 +124,10 @@ export const CallTraceContextProvider: React.FC<
 		if (element) {
 			element.scrollIntoView({ behavior: 'smooth' });
 		}
+	};
+
+	const gasChipToggle = (checkboxState: boolean) => {
+		setShowGasChips(checkboxState);
 	};
 
 	const toggleCallCollapse = (id: number) => {
@@ -203,7 +212,9 @@ export const CallTraceContextProvider: React.FC<
 				scrollToTraceLineElement,
 				chosenCallName,
 				setChosenCallName,
-				callWithError
+				callWithError,
+				gasChipToggle,
+				showGasChips
 			}}
 		>
 			{children}

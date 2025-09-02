@@ -25,7 +25,8 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 		errorMessage,
 		l2Flamegraph,
 		setChosenCallName,
-		setActiveTab
+		setActiveTab,
+		showGasChips
 	} = useCallTrace();
 
 	const formatter = new Intl.NumberFormat(navigator.language);
@@ -113,6 +114,7 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 						/>
 					</div>
 					{typeof call.sierraGas === 'number' &&
+					showGasChips &&
 					call.sierraGas > 0 &&
 					l2Flamegraph &&
 					!previewMode ? (
@@ -135,7 +137,8 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 							{formatter.format(call.sierraGas)}
 						</span>
 					) : (
-						!previewMode && (
+						!previewMode &&
+						showGasChips && (
 							<TooltipProvider>
 								<Tooltip delayDuration={100}>
 									<TooltipTrigger asChild>

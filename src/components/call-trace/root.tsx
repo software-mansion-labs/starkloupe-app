@@ -59,7 +59,9 @@ function CallTraceRootContent() {
 		l1DataFlamegraph,
 		setChosenCallName,
 		debuggerPayload,
-		callWithError
+		callWithError,
+		showGasChips,
+		gasChipToggle
 	} = useCallTrace();
 	const onValueChange = useCallback(
 		(value: string) => {
@@ -106,7 +108,23 @@ function CallTraceRootContent() {
 								<div className="border-b shadow-sm flex-none">
 									<div className="flex justify-between w-full items-center px-4">
 										<CalldataSearch />
-										<div className="pt-1 flex gap-1">
+										<div className="pt-1 flex gap-1 border-l pl-2">
+											<Tooltip delayDuration={100}>
+												<TooltipTrigger>
+													<label className="flex items-center gap-1.5 p-1 rounded-sm hover:bg-accent cursor-pointer select-none">
+														<input
+															type="checkbox"
+															checked={showGasChips}
+															onChange={(e) => gasChipToggle(e.target.checked)}
+															className="w-4 h-4 rounded border-border accent-primary"
+														/>
+														<span className="text-sm font-medium">Gas</span>
+													</label>
+												</TooltipTrigger>
+												<TooltipContent className="bg-background border-border text-black dark:text-white border">
+													<p>Show gas chips</p>
+												</TooltipContent>
+											</Tooltip>
 											<Tooltip delayDuration={100}>
 												<TooltipTrigger>
 													<div
