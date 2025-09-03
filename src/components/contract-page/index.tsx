@@ -20,6 +20,7 @@ import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import AddressLink from '../address-link';
 import { ContractRoot } from '../contract/root';
 import { NetworkBadge } from '../ui/network-badge';
+import { VerifiedBadge } from '../ui/verified-badge';
 
 export function ContractPage({ contractAddress }: { contractAddress: string }) {
 	const { networks, parseChain, getNetworkByRpcUrl } = useSettings();
@@ -45,6 +46,8 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 
 		fetchData();
 	}, [contractAddress, networks]);
+
+	console.log('contractData', contractData);
 
 	useEffect(() => {
 		if (!contractData) return;
@@ -117,6 +120,7 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 									</AddressLink>
 								</CopyToClipboardElement>
 								{networkBadges}
+								{contractData?.verified && <VerifiedBadge />}
 							</div>
 						</h1>
 					</div>
