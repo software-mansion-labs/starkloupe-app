@@ -312,7 +312,7 @@ export function TransactionPage({
 																<CopyToClipboardElement
 																	value={hash}
 																	toastDescription="Message hash copied"
-																	className="font-mono cursor-pointer rounded-sm py-1 px-0"
+																	className="font-mono cursor-pointer rounded-sm p-0"
 																>
 																	<AddressLink address={hash}>
 																		<span className="hidden lg:inline">{hash}</span>

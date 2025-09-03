@@ -256,12 +256,14 @@ const AddressLink = ({
 	}
 	return (
 		<span
-			className={`text-primary dark:hover:brightness-150 hover:brightness-125`}
+			className={`text-primary dark:hover:brightness-150 hover:brightness-125 inline-block min-w-0`}
 			onMouseEnter={handleMouseEnter}
 			onMouseLeave={handleMouseLeave}
 		>
 			<span
-				className={`relative p-1 ${addressClassName} ${currentColor ? 'rounded border' : ''}`}
+				className={`relative p-1 inline-block min-w-0 ${addressClassName} ${
+					currentColor ? 'rounded border' : ''
+				}`}
 				style={
 					currentColor
 						? {

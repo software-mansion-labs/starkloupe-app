@@ -61,113 +61,132 @@ const StorageChanges: React.FC<StorageChangesProps> = (props) => {
 
 	if (Object.entries(storageChanges).length > 0) {
 		return (
-			<div className="flex flex-col">
-				{Object.entries(storageChanges).map(
-					([contractAddress, { contractName, storageChanges }], index) => {
-						const isExpanded = expandedCalls[index];
-						return (
-							<div
-								key={contractAddress}
-								className="flex-1 flex flex-col min-h-0 border-b border-border bg-card"
-							>
-								<button
-									onClick={() => toggleCallExpand(index)}
-									className="w-full flex items-center justify-between p-3 gap-4 transition-colors hover:bg-muted/50"
+			<div className="h-full w-full">
+				<div className="flex flex-col min-h-full">
+					{Object.entries(storageChanges).map(
+						([contractAddress, { contractName, storageChanges }], index) => {
+							const isExpanded = expandedCalls[index];
+							return (
+								<div
+									key={contractAddress}
+									className=" flex flex-col min-h-0 border-b border-border bg-card"
 								>
-									<div className="flex flex-row items-baseline gap-2">
-										{contractName ? (
-											<>
-												<a href={`/contracts/${contractAddress}`} className=" font-mono">
-													<AddressLink
-														customSettings={customSettings}
-														updateContractName={updateContractName}
-														updateContractColor={updateContractColor}
-														updateContractSettings={updateContractSettings}
-														address={contractAddress}
-														addressClassName=" px-0.5 p-1"
-													>
-														{contractName}
-													</AddressLink>
-												</a>
-												<CopyToClipboardElement
-													className="font-mono text-muted py-1 px-0"
-													toastDescription="The address has been copied."
-													value={contractAddress}
-												>
-													<AddressLink address={contractAddress}>
-														{shortenHash(contractAddress, 13)}
-													</AddressLink>
-												</CopyToClipboardElement>
-											</>
-										) : (
-											<>
-												<span className="font-mono">Contract address:</span>
-
-												<AddressLink
-													address={contractAddress}
-													addressClassName="font-mono px-0.5 p-1"
-												>
-													{shortenHash(contractAddress, 13)}
-												</AddressLink>
-											</>
-										)}
-									</div>
-									{isExpanded ? (
-										<ChevronUp size={18} className="text-muted-foreground" />
-									) : (
-										<ChevronDown size={18} className="text-muted-foreground" />
-									)}
-								</button>
-								{isExpanded && (
-									<div className="flex flex-col gap-2 dark:bg-background border-t py-2 px-4">
-										{Object.entries(storageChanges).map(([storageAddress, [before, after]]) => (
-											<div key={storageAddress} className="flex flex-col gap-1">
-												<div className="flex flex-row items-center gap-2">
-													<span className="text-gray-400">Key:</span>
+									<button
+										onClick={() => toggleCallExpand(index)}
+										className="w-full flex items-center justify-between p-3 gap-4 transition-colors hover:bg-muted/50"
+									>
+										<div className="flex flex-row items-baseline gap-2">
+											{contractName ? (
+												<>
+													<a href={`/contracts/${contractAddress}`} className=" font-mono">
+														<AddressLink
+															customSettings={customSettings}
+															updateContractName={updateContractName}
+															updateContractColor={updateContractColor}
+															updateContractSettings={updateContractSettings}
+															address={contractAddress}
+															addressClassName=" px-0.5 p-1"
+														>
+															{contractName}
+														</AddressLink>
+													</a>
 													<CopyToClipboardElement
-														className="font-mono py-1 px-0"
-														toastDescription="The key has been copied."
-														value={storageAddress}
+														className="font-mono text-muted p-0"
+														toastDescription="The address has been copied."
+														value={contractAddress}
 													>
-														<AddressLink address={storageAddress} addressClassName="font-mono">
-															{storageAddress}
+														<AddressLink
+															address={contractAddress}
+															customSettings={customSettings}
+															addressClassName=" px-0.5 p-1"
+														>
+															{shortenHash(contractAddress, 13)}
 														</AddressLink>
 													</CopyToClipboardElement>
-												</div>
-												<div className="flex flex-col pl-4">
-													<div className="flex flex-row gap-2">
-														<span className="text-gray-400">Before:</span>
+												</>
+											) : (
+												<>
+													<span className="font-mono">Contract address:</span>
+
+													<AddressLink
+														address={contractAddress}
+														addressClassName="font-mono px-0.5 p-1"
+														customSettings={customSettings}
+													>
+														{shortenHash(contractAddress, 13)}
+													</AddressLink>
+												</>
+											)}
+										</div>
+										{isExpanded ? (
+											<ChevronUp size={18} className="text-muted-foreground" />
+										) : (
+											<ChevronDown size={18} className="text-muted-foreground" />
+										)}
+									</button>
+									{isExpanded && (
+										<div className="w-full flex flex-col gap-2 dark:bg-background border-t py-2 px-4">
+											{Object.entries(storageChanges).map(([storageAddress, [before, after]]) => (
+												<div key={storageAddress} className="flex flex-col gap-1 w-full ">
+													<div className="flex flex-row items-center gap-2">
+														<span className="text-gray-400">Key:</span>
 														<CopyToClipboardElement
-															className="font-mono py-1 px-0"
+															className="font-mono p-0"
 															toastDescription="The key has been copied."
-															value={before}
+															value={storageAddress}
 														>
-															<AddressLink address={before} addressClassName="font-mono">
-																{before}
+															<AddressLink
+																address={storageAddress}
+																addressClassName="font-mono "
+																customSettings={customSettings}
+															>
+																{storageAddress}
 															</AddressLink>
 														</CopyToClipboardElement>
 													</div>
-													<div className="flex flex-row gap-2">
-														<span className="text-gray-400">After:</span>
-														<CopyToClipboardElement
-															className="font-mono py-1 px-0"
-															toastDescription="The key has been copied."
-															value={after}
-														>
-															<AddressLink address={after} addressClassName="font-mono">
-																{after}
-															</AddressLink>
-														</CopyToClipboardElement>
+													<div className="flex flex-col pl-4">
+														<div className="flex flex-row items-center gap-2">
+															<span className="text-gray-400">Before:</span>
+															<CopyToClipboardElement
+																className="font-mono  p-0"
+																toastDescription="The key has been copied."
+																value={before}
+															>
+																<AddressLink
+																	address={before}
+																	addressClassName="font-mono"
+																	customSettings={customSettings}
+																>
+																	{before}
+																</AddressLink>
+															</CopyToClipboardElement>
+														</div>
+														<div className="flex flex-row items-center gap-2">
+															<span className="text-gray-400">After:</span>
+															<CopyToClipboardElement
+																className="font-mono p-0"
+																toastDescription="The key has been copied."
+																value={after}
+															>
+																<AddressLink
+																	address={after}
+																	addressClassName="font-mono"
+																	customSettings={customSettings}
+																>
+																	{after}
+																</AddressLink>
+															</CopyToClipboardElement>
+														</div>
 													</div>
 												</div>
-											</div>
-										))}
-									</div>
-								)}
-							</div>
-						);
-					}
-				)}
+											))}
+										</div>
+									)}
+								</div>
+							);
+						}
+					)}
+				</div>
 			</div>
 		);
 	} else {

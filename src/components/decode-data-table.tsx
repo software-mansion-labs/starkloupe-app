@@ -100,7 +100,7 @@ export function DecodeDataTable({
 			return formattedValue?.startsWith('0x') ? (
 				<CopyToClipboardElement
 					value={formattedValue}
-					className="py-1 px-0"
+					className="px-0"
 					toastDescription="Value has been copied!"
 				>
 					<AddressLink
@@ -216,7 +216,7 @@ export function DecodeDataTable({
 												{item.startsWith('0x') ? (
 													<CopyToClipboardElement
 														value={item}
-														className="py-1 px-0"
+														className="px-0"
 														toastDescription="Value has been copied!"
 													>
 														<AddressLink address={item} addressClassName="cursor-pointer">

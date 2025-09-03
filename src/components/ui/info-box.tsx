@@ -21,31 +21,33 @@ export function InfoBox({ details }: { details: InfoBoxItem[] }) {
 						value && (
 							<span key={name} className="whitespace-nowrap">
 								<span className="text-neutral-500">{name}:</span>{' '}
-								<CopyToClipboardElement
-									value={
-										isCopyable && valueToCopy
-											? valueToCopy
-											: typeof value === 'string'
-											? value
-											: null
-									}
-									toastDescription={`${name} has been copied.`}
-									className={`rounded-sm font-mono ${
-										typeof value === 'string' && value.startsWith('0x') ? 'py-1 px-0' : 'px-1'
-									} ${isCopyable ? 'cursor-pointer' : ''}`}
-								>
-									{typeof value === 'string' && value.startsWith('0x') ? (
-										<AddressLink
-											address={value}
-											addressClassName=""
-											customSettings={customSettings}
-										>
-											{value}
-										</AddressLink>
-									) : (
-										value
-									)}
-								</CopyToClipboardElement>
+								<span className="inline-block leading-normal align-baseline">
+									<CopyToClipboardElement
+										value={
+											isCopyable && valueToCopy
+												? valueToCopy
+												: typeof value === 'string'
+												? value
+												: null
+										}
+										toastDescription={`${name} has been copied.`}
+										className={`rounded-sm font-mono leading-normal ${
+											typeof value === 'string' && value.startsWith('0x') ? ' px-0 ' : 'px-1 '
+										} ${isCopyable ? 'cursor-pointer' : ''}`}
+									>
+										{typeof value === 'string' && value.startsWith('0x') ? (
+											<AddressLink
+												address={value}
+												addressClassName="leading-normal"
+												customSettings={customSettings}
+											>
+												{value}
+											</AddressLink>
+										) : (
+											value
+										)}
+									</CopyToClipboardElement>
+								</span>
 							</span>
 						)
 				)}

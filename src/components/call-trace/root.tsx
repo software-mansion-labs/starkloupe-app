@@ -201,6 +201,7 @@ function CallTraceRootContent() {
 						<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs dark:bg-card">
 							<ScrollArea className="flex-1 overflow-auto">
 								<StorageChanges />
+								<ScrollBar orientation="horizontal" />
 							</ScrollArea>
 						</div>
 					</TabsContent>
