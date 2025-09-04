@@ -1,7 +1,13 @@
 import { ExclamationTriangleIcon } from '@radix-ui/react-icons';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import React, { useEffect, useState } from 'react';
-import { ContractFunctions, EntryPointItem } from '@/lib/contracts';
+import { ContractFunctions, EntryPointItem, FunctionInput, FunctionOutput } from '@/lib/contracts';
+import TypeMembersViewer from '../ui/type-members-viewer';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
+import CopyToClipboardElement from '../ui/copy-to-clipboard';
+import { Copy } from 'lucide-react';
+import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { useSettings } from '@/lib/context/settings-context-provider';
 
 export function EntrypointsList({ entryPoints }: { entryPoints: ContractFunctions | undefined }) {
@@ -102,7 +108,6 @@ const EntryPoint = ({
 	}, [searchResultAddress, entryPoint]);
 
 	const key = `${prefix}-${index}-${entryPoint[0]}`;
-
 	return (
 		<React.Fragment key={key}>
 			<div className={`py-2 font-mono border-b border-border  `} ref={customRef}>
@@ -117,7 +122,12 @@ const EntryPoint = ({
 				<span>
 					{entryPoint[1].inputs.map((i, idx) => (
 						<span key={i.name}>
-							{i.name}: <span className="text-typeColor break-words">{i.type}</span>
+							{i.name}:{' '}
+							{i.members || i.variants ? (
+								<InpuOutputDetailsDropdown data={i} entrypointAddress={entryPoint[0]} />
+							) : (
+								<span className="text-typeColor">{i.type}</span>
+							)}
 							{idx < entryPoint[1].inputs.length - 1 && ', '}
 						</span>
 					))}
@@ -127,7 +137,11 @@ const EntryPoint = ({
 				<span className="text-highlight_yellow">{'('}</span>
 				{entryPoint[1].outputs.map((o, idx) => (
 					<span key={`${o.type} + ${idx}`}>
-						<span className="text-typeColor break-words">{o.type}</span>
+						{o.members || o.variants ? (
+							<InpuOutputDetailsDropdown data={o} entrypointAddress={entryPoint[0]} />
+						) : (
+							<span className="text-typeColor">{o.type}</span>
+						)}
 						{idx < entryPoint[1].outputs.length - 1 && ', '}
 					</span>
 				))}
@@ -137,5 +151,62 @@ const EntryPoint = ({
 				</div>
 			</div>
 		</React.Fragment>
+	);
+};
+
+const InpuOutputDetailsDropdown = ({
+	data,
+	entrypointAddress
+}: {
+	data: FunctionInput | FunctionOutput;
+	entrypointAddress: string;
+}) => {
+	return (
+		<DropdownMenu>
+			<TooltipProvider delayDuration={100}>
+				<Tooltip>
+					<TooltipTrigger asChild>
+						<DropdownMenuTrigger asChild>
+							<span
+								className={`py-1 mb-0.5 hover:bg-accent_2 h-full text-typeColor border-typeColor border-b
+								transition-colors duration-200 focus:outline-none rounded-sm cursor-pointer`}
+							>
+								{data.type}
+							</span>
+						</DropdownMenuTrigger>
+					</TooltipTrigger>
+					<TooltipContent className="bg-background border-border text-black dark:text-white border">
+						Click to show full value
+					</TooltipContent>
+				</Tooltip>
+			</TooltipProvider>
+			<DropdownMenuContent
+				className="bg-card shadow-xl border rounded-lg text-xs max-w-[90vw] w-fit min-w-[16rem] p-0"
+				onClick={(e) => e.stopPropagation()}
+				onMouseDown={(e) => e.stopPropagation()}
+				onWheel={(e) => e.stopPropagation()}
+				onScroll={(e) => e.stopPropagation()}
+			>
+				<div className="relative">
+					<CopyToClipboardElement
+						value={JSON.stringify(data.members, null, 2)}
+						toastDescription="Full JSON copied"
+						className="absolute top-2 right-3 z-10 bg-accent p-1.5 rounded focus:outline-none focus:ring-2"
+						aria-label="Copy"
+					>
+						<Copy size={14} />
+					</CopyToClipboardElement>
+					<ScrollArea
+						className="md:w-[40rem] h-60 px-3 overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-accent [&::-webkit-scrollbar-thumb]:rounded-full"
+						onScroll={(e) => e.stopPropagation()}
+					>
+						<div className="pt-2">
+							<TypeMembersViewer data={data} entrypointAddress={entrypointAddress} />
+						</div>
+						<ScrollBar orientation="horizontal" className="sticky bottom-0 left-0 right-0 h-2" />
+					</ScrollArea>
+				</div>
+			</DropdownMenuContent>
+		</DropdownMenu>
 	);
 };

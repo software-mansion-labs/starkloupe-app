@@ -12,13 +12,17 @@ export interface GetContractResponse {
 	sourceCode?: Record<string, string>;
 }
 
-interface FunctionInput {
+export interface FunctionInput {
 	name: string;
 	type: string;
+	members?: FunctionInput[];
+	variants?: FunctionInput[];
 }
-interface FunctionOutput {
+export interface FunctionOutput {
 	type: string;
 	name?: string;
+	members?: FunctionInput[];
+	variants?: FunctionInput[];
 }
 
 export interface FunctionData {

@@ -47,8 +47,6 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 		fetchData();
 	}, [contractAddress, networks]);
 
-	console.log('contractData', contractData);
-
 	useEffect(() => {
 		if (!contractData) return;
 		const fetchEntrypoints = async () => {
@@ -67,14 +65,24 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 		fetchEntrypoints();
 	}, [contractData]);
 
-	let networkBadges = contractData?.deployedSources.map((item) => {
+	let networkBadges = contractData?.deployedSources.map((item, idx) => {
 		const network = item?.rpcUrl ? getNetworkByRpcUrl(item?.rpcUrl) : null;
 		const chainDetails = network?.networkName
 			? parseChain(network?.networkName)
 			: item?.chainId
 			? parseChain(item?.chainId)
 			: undefined;
-		return chainDetails && <NetworkBadge network={chainDetails} />;
+		return (
+			chainDetails && (
+				<span
+					key={`${
+						chainDetails.customNetworkName || chainDetails.chain || chainDetails.stack
+					}-${idx}`}
+				>
+					<NetworkBadge network={chainDetails} />
+				</span>
+			)
+		);
 	});
 
 	let content = null;
