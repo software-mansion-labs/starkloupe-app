@@ -1,6 +1,15 @@
 'use client';
 
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, {
+	createContext,
+	MutableRefObject,
+	RefObject,
+	useCallback,
+	useContext,
+	useEffect,
+	useRef,
+	useState
+} from 'react';
 import { useUserContext } from '@/lib/context/user-context-provider';
 import { toast } from '@/components/hooks/use-toast';
 import {
@@ -42,6 +51,11 @@ type SettingsContextType = {
 	parseChain: (
 		chainString: string
 	) => { stack?: string; chain?: string; customNetworkName?: string } | null;
+	scrollToEntrypointElement: (key: string) => void;
+	contractEntrypointsElementRefs: MutableRefObject<{
+		[key: string]: RefObject<HTMLDivElement>;
+	}>;
+	searchResultAddress: string;
 };
 
 const SettingsContext = createContext<SettingsContextType | undefined>(undefined);
@@ -51,10 +65,13 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 	const { isLogged, organizationId } = useUserContext();
 	const [trackingActive, setTrackingActive] = useState<boolean>(true);
 	const [trackingFlagLoaded, setTrackingFlagLoaded] = useState<boolean>(false);
-
+	const contractEntrypointsElementRefs = useRef<{
+		[entrypintAddress: string]: React.RefObject<HTMLDivElement>;
+	}>({});
 	const [customSettings, setCustomSettings] = useState<{
 		[key: string]: { name: string | null; color: string | null };
 	}>({});
+	const [searchResultAddress, setSearchResultAddress] = useState('');
 
 	useEffect(() => {
 		const savedSettings = loadCustomSettingsFromStorage();
@@ -144,6 +161,15 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 
 		return Object.keys(result).length > 0 ? result : null;
 	};
+
+	const scrollToEntrypointElement = (entrypintAddress: string) => {
+		const element = contractEntrypointsElementRefs.current[entrypintAddress]?.current;
+		if (element) {
+			element.scrollIntoView({ behavior: 'smooth' });
+		}
+		setSearchResultAddress(entrypintAddress);
+	};
+
 	const updateContractSettings = (
 		contractAddress: string,
 		settings: { name?: string | null; color?: string | null } | null
@@ -252,7 +278,10 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 				updateContractColor,
 				updateContractName,
 				updateContractSettings,
-				parseChain
+				parseChain,
+				contractEntrypointsElementRefs,
+				scrollToEntrypointElement,
+				searchResultAddress
 			}}
 		>
 			{children}

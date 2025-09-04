@@ -21,7 +21,7 @@ interface FunctionOutput {
 	name?: string;
 }
 
-interface FunctionData {
+export interface FunctionData {
 	name: string;
 	inputs: FunctionInput[];
 	outputs: FunctionOutput[];

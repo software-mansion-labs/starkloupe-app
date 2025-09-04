@@ -4,6 +4,7 @@ import { useCallback, useState } from 'react';
 import { ClassSourceCode } from '../class-source-code';
 import { EntrypointsList } from './entrypoints-list';
 import { ContractFunctions } from '@/lib/contracts';
+import EntryPointsSearch from '../ui/entrypoints-search';
 
 export function ContractRoot({
 	isClassVerified,
@@ -76,6 +77,11 @@ function ContractRootContent({
 						}`}
 					>
 						<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs dark:bg-card">
+							<div className="border-b shadow-sm flex-none">
+								<div className="flex justify-between w-full items-center px-4">
+									<EntryPointsSearch entryPoints={entryPoints} />
+								</div>
+							</div>
 							<ScrollArea className="flex-1 overflow-auto">
 								<div className="p-0 py-2">
 									<EntrypointsList entryPoints={entryPoints} />
