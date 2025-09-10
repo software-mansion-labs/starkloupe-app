@@ -14,6 +14,7 @@ import { shortenHash } from '@/lib/utils';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import AddressLink from '../address-link';
 import { NetworkBadge } from '../ui/network-badge';
+import { VerifiedBadge } from '../ui/verified-badge';
 
 export function ClassPage({ classHash }: { classHash: string }) {
 	const { networks, getNetworkByRpcUrl, parseChain } = useSettings();
@@ -73,6 +74,7 @@ export function ClassPage({ classHash }: { classHash: string }) {
 									<AddressLink address={classHash}>{shortenHash(classHash)}</AddressLink>
 								</CopyToClipboardElement>
 								{networkBadges}
+								{classData?.verified && <VerifiedBadge />}
 							</div>
 						</h1>
 					</div>
