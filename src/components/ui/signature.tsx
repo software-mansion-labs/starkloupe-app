@@ -10,7 +10,8 @@ export function ContractCallSignature({
 	updateContractName,
 	updateContractColor,
 	customSettings,
-	updateContractSettings
+	updateContractSettings,
+	isActiveDropdown = true
 }: {
 	contractCall: ContractCall;
 	displayContractName?: boolean;
@@ -23,6 +24,7 @@ export function ContractCallSignature({
 		contractAddress: string,
 		settings: { name?: string | null; color?: string | null } | null
 	) => void;
+	isActiveDropdown?: boolean;
 }) {
 	const contractName = getContractName({ contractCall });
 	const contractAddress = contractCall?.entryPoint.storageAddress;
@@ -39,6 +41,7 @@ export function ContractCallSignature({
 					addressClassName={`${
 						variant === 'search-result' ? '' : 'text-classGreen'
 					} px-0.5 hover:underline cursor-pointer`}
+					isActiveDropdown={isActiveDropdown}
 				>
 					{contractName}
 				</AddressLink>

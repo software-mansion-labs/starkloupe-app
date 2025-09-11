@@ -31,6 +31,7 @@ interface AddressLinkProps {
 		contractAddress: string,
 		settings: { name?: string | null; color?: string | null } | null
 	) => void;
+	isActiveDropdown?: boolean;
 }
 
 const AddressLink = ({
@@ -40,7 +41,8 @@ const AddressLink = ({
 	customSettings,
 	updateContractName,
 	updateContractColor,
-	updateContractSettings
+	updateContractSettings,
+	isActiveDropdown = true
 }: AddressLinkProps) => {
 	const { state, dispatch } = useContext(AddressContext);
 
@@ -131,7 +133,11 @@ const AddressLink = ({
 		return `${address.slice(0, 6)}...${address.slice(-4)}`;
 	};
 
-	if (customSettings && (updateContractName || updateContractColor || updateContractSettings)) {
+	if (
+		customSettings &&
+		(updateContractName || updateContractColor || updateContractSettings) &&
+		isActiveDropdown
+	) {
 		return (
 			<DropdownMenu
 				open={dropdownOpen}
