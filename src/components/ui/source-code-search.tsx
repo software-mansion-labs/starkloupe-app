@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useContext, memo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, memo, useCallback } from 'react';
 
 import {
 	Command,
@@ -8,26 +8,23 @@ import {
 	CommandItem,
 	CommandList
 } from './command';
-import { ContractFunctions, FunctionData } from '@/lib/contracts';
-import { useSettings } from '@/lib/context/settings-context-provider';
+import { File } from 'lucide-react';
 import { ScrollArea, ScrollBar } from './scroll-area';
-import { shortenHash } from '@/lib/utils';
 
-const EntryPointsSearch = memo(function EntryPointsSearch({
-	entryPoints
+const SourceCodeSearch = memo(function SourceCodeSearch({
+	sourceCode,
+	handleFileClick
 }: {
-	entryPoints: ContractFunctions | undefined;
+	sourceCode: { [key: string]: string } | undefined;
+	handleFileClick: (filePath: string) => void;
 }) {
-	const { scrollToEntrypointElement } = useSettings();
-
 	const [searchTerm, setSearchTerm] = useState<string>('');
-	const [searchResults, setSearchResults] = useState<[string, FunctionData][]>([]);
+	const [searchResults, setSearchResults] = useState<string[]>([]);
 
-	const inputRef = useRef<HTMLInputElement | null>(null);
 	const componentRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
-		const results = searchCalls(searchTerm);
+		const results = searchFiles(searchTerm);
 		setSearchResults(results);
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [searchTerm]);
@@ -45,33 +42,22 @@ const EntryPointsSearch = memo(function EntryPointsSearch({
 		};
 	}, []);
 
-	const searchCalls = useCallback(
-		(term: string): [string, FunctionData][] => {
-			if (!term || !entryPoints) return [];
+	const searchFiles = useCallback(
+		(term: string): string[] => {
+			if (!term || !sourceCode) return [];
 
-			const entrypointsResults: [string, FunctionData][] = entryPoints.entry_point_datas
-				.filter(([address, functionData]) => {
-					let entryPointName: string = functionData.name;
+			const filesResults = Object.keys(sourceCode).filter((fileName) => {
+				const lowercaseTerm = term.toLowerCase().trim();
+				return fileName.toLowerCase().includes(lowercaseTerm);
+			});
 
-					const lowercaseTerm = term.toLowerCase();
-					return (
-						address?.includes(lowercaseTerm) || entryPointName.toLowerCase().includes(lowercaseTerm)
-					);
-				})
-				.map(([address, entryPointName]) => [address, entryPointName]);
-
-			return [...entrypointsResults];
+			return [...filesResults];
 		},
-		[entryPoints]
+		[sourceCode]
 	);
 
 	const handleSearchChange = (value: string) => {
 		setSearchTerm(value);
-	};
-
-	const handleResultClick = (result: FunctionData) => {
-		setSearchTerm('');
-		inputRef.current?.focus();
 	};
 
 	return (
@@ -93,28 +79,26 @@ const EntryPointsSearch = memo(function EntryPointsSearch({
 
 				<CommandList className="pr-2">
 					{searchTerm && (
-						<CommandGroup className="absolute shadow-md p-0 bg-white dark:bg-background border flex flex-col md:block rounded-b-lg w-full md:w-2/5 items-start z-20">
+						<CommandGroup className="absolute shadow-md p-0 bg-white dark:bg-background border  flex flex-col md:block rounded-b-lg w-full md:w-2/5 items-start z-20">
 							{searchResults.length > 0 ? (
 								<ScrollArea className="h-96 w-full">
 									<div className="flex flex-col pb-4">
-										{searchResults?.map(([key, value]) => (
+										{searchResults?.map((value) => (
 											<CommandItem
-												className="cursor-pointer !w-full first:rounded-t-none"
+												className="cursor-pointer pr-2 !w-full first:rounded-t-none"
 												onSelect={() => {
-													handleResultClick(value);
-													scrollToEntrypointElement(key);
+													handleFileClick(value);
+													setSearchTerm('');
 												}}
-												key={key}
+												key={value}
 											>
 												<div className="pr-2">
-													<div className="pr-2">
-														<>
-															<div className=" ">{value.name}</div>
-															<div className="!text-xs text-muted-foreground">
-																{shortenHash(key, 13)}
-															</div>
+													<div className="pr-2 !text-xs">
+														<div className="flex items-center gap-1">
+															<File size={16} />
+															<div className="">{value}</div>
 															<div className="flex items-center gap-1 !text-xs"></div>
-														</>
+														</div>
 													</div>
 												</div>
 											</CommandItem>
@@ -135,4 +119,4 @@ const EntryPointsSearch = memo(function EntryPointsSearch({
 	);
 });
 
-export default EntryPointsSearch;
+export default SourceCodeSearch;
