@@ -36,7 +36,10 @@ export function DebuggerView() {
 		nextStep,
 		prevStep,
 		stepOver,
-		runToBreakpoint
+		runToBreakpoint,
+		loading,
+		hasDebuggableContract,
+		error
 	} = debuggerContext;
 
 	return (
@@ -49,17 +52,28 @@ export function DebuggerView() {
 			</ResizablePanel>
 			<ResizableHandle withHandle className="w-[1px]" />
 			<ResizablePanel defaultSize={70} className="flex flex-col flex-grow">
-				<Controls
-					nextStep={nextStep}
-					previousStep={prevStep}
-					stepOver={stepOver}
-					stepIndex={currentStepIndex}
-					totalSteps={totalSteps}
-					contractCall={contractCall}
-					runToBreakpoint={runToBreakpoint}
-				/>
+				{!loading && !error && (
+					<Controls
+						nextStep={nextStep}
+						previousStep={prevStep}
+						stepOver={stepOver}
+						stepIndex={currentStepIndex}
+						totalSteps={totalSteps}
+						contractCall={contractCall}
+						runToBreakpoint={runToBreakpoint}
+					/>
+				)}
+
 				<div className="flex-grow">
-					{currentStep?.withLocation ? (
+					{loading ? (
+						<Alert className="m-4 py-4 w-fit min-w-[2rem] flex items-center gap-4">
+							<span className="h-6 w-6 block rounded-full border-4 dark:border-t-accent_2 border-t-gray-800 animate-spin" />
+							<div className="flex flex-col">
+								<AlertTitle>Loading</AlertTitle>
+								<AlertDescription>Please wait, debugger is loading</AlertDescription>
+							</div>
+						</Alert>
+					) : currentStep?.withLocation ? (
 						<CodeViewer
 							content={activeFile ? sourceCode[activeFile] : ''}
 							codeLocation={codeLocation}
@@ -74,10 +88,13 @@ export function DebuggerView() {
 							<ExclamationTriangleIcon className="h-5 w-5" />
 							<AlertTitle>No Source Code Available.</AlertTitle>
 							<AlertDescription>
-								<p className="mt-2 mb-1">
-									Contract Address:{' '}
-									<span className="font-mono">{contractCall?.entryPoint.storageAddress}</span>
-								</p>
+								{!hasDebuggableContract && (
+									<p className="mt-2 mb-1">
+										Contract Address:{' '}
+										<span className="font-mono">{contractCall?.entryPoint.storageAddress}</span>
+									</p>
+								)}
+
 								<p>
 									The source code for this contract is missing. To enable the step-by-step debugger,
 									verify the contract on Walnut by following{' '}

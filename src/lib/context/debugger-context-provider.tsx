@@ -1,24 +1,14 @@
-import {
-	createContext,
-	useContext,
-	useEffect,
-	useMemo,
-	useState,
-	useCallback,
-	PropsWithChildren
-} from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, PropsWithChildren } from 'react';
 import {
 	ClassDebuggerData,
 	CodeLocation,
 	ContractCall,
 	DebuggerExecutionTraceEntry,
 	FunctionCall,
-	SimulationDebuggerData,
-	TransactionSimulationResult
+	SimulationDebuggerData
 } from '@/lib/simulation';
 import { CallTraceContext } from './call-trace-context-provider';
 import { debugTransactionByData, DebuggerPayload, DebuggerInfo } from '@/lib/debugger';
-import { compressToUTF16, decompressFromUTF16 } from 'lz-string';
 
 interface DebuggerContextProps {
 	functionCallsMap: { [key: number]: FunctionCall };
@@ -50,6 +40,7 @@ interface DebuggerContextProps {
 	hasDebuggableContract: boolean;
 	getStepForFunctionCall: (functionCallId: number) => DebuggerExecutionTraceEntry | undefined;
 	getStepForContractCall: (contractCallId: number) => DebuggerExecutionTraceEntry | undefined;
+	setIsClickedDebuggerTab: (clickedDebugger: boolean) => void;
 }
 
 export const DebuggerContext = createContext<DebuggerContextProps | undefined>(undefined);
@@ -81,58 +72,47 @@ export const DebuggerContextProvider = ({
 	const [sourceCode, setSourceCode] = useState<Record<string, string>>({});
 	const [isExpressionHover, setExpressionHover] = useState(false);
 	const [hasDebuggableContract, setHasDebuggableContract] = useState(false);
+	const [clickedDebuggerTab, setIsClickedDebuggerTab] = useState(false);
 
 	const { contractCallsMap: callTraceContractCalls, functionCallsMap: callTraceFunctionCalls } =
 		useContext(CallTraceContext);
-	const CACHE_TTL_MS = 15 * 60 * 1000;
-
-	function safeStringify(value: any): string {
-		return JSON.stringify(value, (_, v) => (typeof v === 'bigint' ? v.toString() + 'n' : v));
-	}
-
-	function safeParse<T = any>(value: string): T {
-		return JSON.parse(value, (_, v) => {
-			if (typeof v === 'string' && /^\d+n$/.test(v)) {
-				return BigInt(v.slice(0, -1));
-			}
-			return v;
-		});
-	}
 
 	useEffect(() => {
-		const fetch = async () => {
-			if (!debuggerPayload) return;
+		if (clickedDebuggerTab) {
+			const fetch = async () => {
+				if (!debuggerPayload) return;
+				setLoading(true);
 
-			setLoading(true);
+				try {
+					const hasDebuggableContract_ = Object.values(callTraceContractCalls).some(
+						(call) => call.callDebuggerDataAvailable
+					);
+					setHasDebuggableContract(hasDebuggableContract_);
 
-			try {
-				const hasDebuggableContract_ = Object.values(callTraceContractCalls).some(
-					(call) => call.callDebuggerDataAvailable
-				);
-				setHasDebuggableContract(hasDebuggableContract_);
+					if (!hasDebuggableContract_) {
+						setLoading(false);
+						return;
+					}
 
-				if (!hasDebuggableContract_) {
+					const result = await debugTransactionByData(debuggerPayload);
+					setDebuggerInfo(result);
+
+					if (result?.simulationDebuggerData?.debuggerTrace) {
+						const i = findInitialIndex(result.simulationDebuggerData.debuggerTrace);
+						_setCurrentStepIndex(i);
+						_setCurrentStep(result.simulationDebuggerData.debuggerTrace[i]);
+					}
+				} catch (err: any) {
+					setError(err.message || 'Unknown error');
+				} finally {
 					setLoading(false);
-					return;
 				}
+			};
 
-				const result = await debugTransactionByData(debuggerPayload);
-				setDebuggerInfo(result);
+			fetch();
+		}
+	}, [debuggerPayload, clickedDebuggerTab]);
 
-				if (result?.simulationDebuggerData?.debuggerTrace) {
-					const i = findInitialIndex(result.simulationDebuggerData.debuggerTrace);
-					_setCurrentStepIndex(i);
-					_setCurrentStep(result.simulationDebuggerData.debuggerTrace[i]);
-				}
-			} catch (err: any) {
-				setError(err.message || 'Unknown error');
-			} finally {
-				setLoading(false);
-			}
-		};
-
-		fetch();
-	}, [debuggerPayload]);
 	const simulationDebuggerData = debuggerInfo?.simulationDebuggerData;
 	const contractCallsMap = debuggerInfo?.contractCallsMap || {};
 	const functionCallsMap = debuggerInfo?.functionCallsMap || {};
@@ -371,7 +351,8 @@ export const DebuggerContextProvider = ({
 				error,
 				getStepForFunctionCall,
 				getStepForContractCall,
-				hasDebuggableContract
+				hasDebuggableContract,
+				setIsClickedDebuggerTab
 			}}
 		>
 			{children}

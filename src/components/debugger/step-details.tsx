@@ -5,15 +5,24 @@ import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import FunctionCallViewer from '../ui/function-call-viewer';
 import { useCallback, useEffect, useState } from 'react';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Skeleton } from '../ui/skeleton';
 
 interface StepDetailsProps {
-	step: DebuggerExecutionTraceEntry;
+	step: DebuggerExecutionTraceEntry | undefined;
 	functionCallsMap: { [key: number]: FunctionCall };
 	className?: string;
 	toggleExpand: () => void;
+	loading?: boolean;
 }
 
-export function StepDetails({ step, functionCallsMap, className, toggleExpand }: StepDetailsProps) {
+export function StepDetails({
+	step,
+	functionCallsMap,
+	className,
+	toggleExpand,
+	loading = false
+}: StepDetailsProps) {
 	const [isCallTraceExpanded, setIsCallTraceExpanded] = useState(true);
 
 	const toggleCallTrace = useCallback(() => {
@@ -36,7 +45,7 @@ export function StepDetails({ step, functionCallsMap, className, toggleExpand }:
 		);
 	}
 
-	const stepWithLocation = step.withLocation;
+	const stepWithLocation = step?.withLocation || undefined;
 
 	let functionName: string | undefined = undefined;
 	let args: InternalFnCallIO[] = [];
@@ -80,7 +89,9 @@ export function StepDetails({ step, functionCallsMap, className, toggleExpand }:
 				<ChevronDown className="w-4 h-4" />
 			</button>
 			<ScrollArea className="flex-1">
-				{stepWithLocation ? (
+				{loading ? (
+					<StepDetailsSkeleton />
+				) : step && stepWithLocation ? (
 					<FunctionCallViewer data={filteredStepInfo} />
 				) : (
 					<div className="flex px-2 py-1">No Function Call Details</div>
@@ -91,3 +102,57 @@ export function StepDetails({ step, functionCallsMap, className, toggleExpand }:
 		</div>
 	);
 }
+
+const StepDetailsSkeleton = () => {
+	return (
+		<div className="font-mono px-2 my-2">
+			<div className="font-bold mb-1.5 flex items-center gap-2">
+				<span>fn:</span>
+				<Skeleton className="h-4 w-24" />
+			</div>
+			<div className="mb-1.5">
+				<div className="whitespace-nowrap mb-1.5">
+					<div className="flex items-center gap-2 mb-2">
+						<span className="font-bold">args:</span>
+					</div>
+					<div className="ml-2">
+						<div className="flex items-center gap-2 mb-1.5">
+							<Skeleton className="h-4 w-4" />
+							<Skeleton className="h-4 w-16" />
+							<Skeleton className="h-4 w-12" />
+						</div>
+						<div className="ml-4">
+							<div className="flex items-center gap-2 mb-1.5">
+								<Skeleton className="h-4 w-12" />
+								<Skeleton className="h-4 w-20" />
+							</div>
+							<div className="flex items-center gap-2 mb-1.5">
+								<Skeleton className="h-4 w-8" />
+								<Skeleton className="h-4 w-16" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div className="mb-1.5">
+				<div className="whitespace-nowrap mb-1.5">
+					<div className="flex items-center gap-2 mb-2">
+						<span className="font-bold">result:</span>
+					</div>
+					<div className="ml-2">
+						<div className="flex items-center gap-2 mb-1.5">
+							<Skeleton className="h-4 w-4" />
+							<Skeleton className="h-4 w-20" />
+						</div>
+						<div className="ml-4">
+							<div className="flex items-center gap-2 mb-1.5">
+								<Skeleton className="h-4 w-10" />
+								<Skeleton className="h-4 w-24" />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	);
+};

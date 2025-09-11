@@ -7,6 +7,8 @@ import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { FilesExplorer } from './file-explorer';
+import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Skeleton } from '../ui/skeleton';
 
 export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 	showTitle = true,
@@ -16,7 +18,8 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 	handleFileClick,
 	className,
 	toggleExpand,
-	currentStepIndex
+	currentStepIndex,
+	loading = false
 }: {
 	showTitle?: boolean;
 	classSourceCode: {
@@ -30,6 +33,7 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 	className?: string;
 	toggleExpand?: () => void;
 	currentStepIndex: number;
+	loading?: boolean;
 }) {
 	const [isCallTraceExpanded, setIsCallTraceExpanded] = useState(false);
 	const { contractCallsMap } = useCallTrace();
@@ -120,7 +124,9 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 				<ScrollArea className="flex-1">
 					<div className="min-w-full">
 						<div className="flex flex-col pb-2">
-							{contracts.length > 0 ? (
+							{loading ? (
+								<DebuggerFilesExplorerSkeleton />
+							) : classSourceCode && contracts.length > 0 ? (
 								contracts.map((contract) => {
 									let currentContractCall = Object.values(contractCallsMap).find(
 										(item) => item.classHash === contract?.classHash
@@ -186,3 +192,39 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 		</div>
 	);
 });
+
+const DebuggerFilesExplorerSkeleton = () => {
+	return (
+		<div className="overflow-hidden">
+			<div className="flex items-center py-1 px-2" style={{ paddingLeft: '4px' }}>
+				<span className="mr-1">
+					<Skeleton className="h-4 w-4" />
+				</span>
+				<Skeleton className="h-4 w-16" />
+			</div>
+			<div className="flex items-center py-1 px-2" style={{ paddingLeft: '4px' }}>
+				<span className="mr-1">
+					<Skeleton className="h-4 w-4" />
+				</span>
+				<Skeleton className="h-4 w-16" />
+			</div>
+
+			<div className="flex items-center py-1 px-2" style={{ paddingLeft: '24px' }}>
+				<span className="mr-1">
+					<Skeleton className="h-4 w-4" />
+				</span>
+				<span className="mr-1">
+					<Skeleton className="h-4 w-4" />
+				</span>
+				<Skeleton className="h-4 w-20" />
+			</div>
+
+			<div className="flex items-center py-1 px-2" style={{ paddingLeft: '28px' }}>
+				<span className="mr-1">
+					<Skeleton className="h-4 w-4" />
+				</span>
+				<Skeleton className="h-4 w-24" />
+			</div>
+		</div>
+	);
+};

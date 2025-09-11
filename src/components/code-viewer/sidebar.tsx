@@ -62,19 +62,11 @@ export default function Sidebar({
 	const {
 		currentStep,
 		activeFile,
-		setActiveFile,
-		codeLocation,
 		sourceCode,
-		contractCall,
-		isExpressionHover,
 		currentStepIndex,
-		totalSteps,
-		nextStep,
-		prevStep,
-		stepOver,
-		runToBreakpoint,
 		functionCallsMap,
-		classesDebuggerData
+		classesDebuggerData,
+		loading
 	} = debuggerContext;
 
 	const toggleExpand = (setState: React.Dispatch<React.SetStateAction<boolean>>) => {
@@ -91,13 +83,12 @@ export default function Sidebar({
 				className="min-h-[32px]"
 				maxSize={isStepDetailsExpanded ? 90 : 5}
 			>
-				{currentStep && (
-					<StepDetails
-						step={currentStep}
-						functionCallsMap={functionCallsMap}
-						toggleExpand={() => toggleExpand(setStepDetailsExpanded)}
-					/>
-				)}
+				<StepDetails
+					step={currentStep}
+					loading={loading}
+					functionCallsMap={functionCallsMap}
+					toggleExpand={() => toggleExpand(setStepDetailsExpanded)}
+				/>
 			</ResizablePanel>
 			<ResizableHandle
 				disabled={!(isCallTraceExpanded && isStepDetailsExpanded)}
@@ -125,6 +116,7 @@ export default function Sidebar({
 				collapsedSize={5}
 			>
 				<DebuggerFilesExplorer
+					loading={loading}
 					currentStepIndex={currentStepIndex}
 					className="flex h-full"
 					classesDebuggerData={classesDebuggerData}
