@@ -122,6 +122,14 @@ export function CodeViewer({
 		[editorDecorations, highlightClass]
 	);
 
+	useEffect(() => {
+		if (editorRef.current && content) {
+			editorRef.current.setScrollTop(0);
+			editorRef.current.setScrollLeft(0);
+			editorRef.current.setPosition({ lineNumber: 1, column: 1 });
+		}
+	}, [content]);
+
 	const handleEditorDidMount = useCallback(
 		async (editor: Editor.IStandaloneCodeEditor, monaco: Monaco) => {
 			editorRef.current = editor;
