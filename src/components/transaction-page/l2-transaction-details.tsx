@@ -40,15 +40,10 @@ export function TransactionDetails({
 				</span>
 			)
 		});
-	} else {
+	} else if (transactionData.simulationResult.executionResult.executionStatus === 'REVERTED') {
 		details.push({
 			name: 'Execution status',
-			value: (
-				<span className="text-red-600">
-					{transactionData.simulationResult.executionResult.executionStatus}: &quot;
-					{transactionData.simulationResult.executionResult.revertReason}&quot;
-				</span>
-			)
+			value: <span className={'text-red-600 '}>REVERTED</span>
 		});
 	}
 

@@ -30,16 +30,15 @@ export function L1TransactionDetails({
 	}
 
 	// 2. Execution Status
-	if (transactionData.status) {
+	if (transactionData.status && transactionData.status === 'SUCCEEDED') {
 		details.push({
 			name: 'Execution status',
-			value: (
-				<span
-					className={transactionData.status === 'SUCCEEDED' ? 'text-classGreen ' : 'text-red-600'}
-				>
-					{transactionData.status}
-				</span>
-			)
+			value: <span className={'text-classGreen '}>{transactionData.status}</span>
+		});
+	} else if (transactionData.status && transactionData.status === 'REVERTED') {
+		details.push({
+			name: 'Execution status',
+			value: <span className={'text-red-600 '}>REVERTED</span>
 		});
 	}
 
