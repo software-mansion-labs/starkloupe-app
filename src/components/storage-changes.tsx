@@ -91,7 +91,7 @@ const StorageChanges: React.FC<StorageChangesProps> = (props) => {
 														</AddressLink>
 													</a>
 													<CopyToClipboardElement
-														className="font-mono text-muted p-0"
+														className="font-mono text-muted p-0 hover:bg-inherit"
 														toastDescription="The address has been copied."
 														value={contractAddress}
 													>
@@ -131,7 +131,7 @@ const StorageChanges: React.FC<StorageChangesProps> = (props) => {
 													<div className="flex flex-row items-center gap-2">
 														<span className="text-gray-400">Key:</span>
 														<CopyToClipboardElement
-															className="font-mono p-0"
+															className="font-mono p-0 hover:bg-inherit"
 															toastDescription="The key has been copied."
 															value={storageAddress}
 														>
@@ -148,7 +148,7 @@ const StorageChanges: React.FC<StorageChangesProps> = (props) => {
 														<div className="flex flex-row items-center gap-2">
 															<span className="text-gray-400">Before:</span>
 															<CopyToClipboardElement
-																className="font-mono  p-0"
+																className="font-mono  p-0 hover:bg-inherit"
 																toastDescription="The key has been copied."
 																value={before}
 															>
@@ -164,7 +164,7 @@ const StorageChanges: React.FC<StorageChangesProps> = (props) => {
 														<div className="flex flex-row items-center gap-2">
 															<span className="text-gray-400">After:</span>
 															<CopyToClipboardElement
-																className="font-mono p-0"
+																className="font-mono p-0 hover:bg-inherit"
 																toastDescription="The key has been copied."
 																value={after}
 															>

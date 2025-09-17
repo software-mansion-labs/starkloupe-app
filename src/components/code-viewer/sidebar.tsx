@@ -4,6 +4,7 @@ import { StepDetails } from '../debugger/step-details';
 import CallTracePreview from './call-trace-preview';
 import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { DebuggerFilesExplorer } from './debugger-file-explorer';
+import { ContractCall } from '@/lib/simulation';
 
 interface PanelHandle {
 	collapse: () => void;

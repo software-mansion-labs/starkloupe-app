@@ -32,7 +32,9 @@ export function InfoBox({ details }: { details: InfoBoxItem[] }) {
 										}
 										toastDescription={`${name} has been copied.`}
 										className={`rounded-sm font-mono leading-normal ${
-											typeof value === 'string' && value.startsWith('0x') ? ' px-0 ' : 'px-1 '
+											typeof value === 'string' && value.startsWith('0x')
+												? ' px-0  hover:bg-inherit'
+												: 'px-1 '
 										} ${isCopyable ? 'cursor-pointer' : ''}`}
 									>
 										{typeof value === 'string' && value.startsWith('0x') ? (

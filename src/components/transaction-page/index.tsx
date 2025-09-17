@@ -174,14 +174,14 @@ export function TransactionPage({
 												<CopyToClipboardElement
 													value={l2TxHash}
 													toastDescription="The address has been copied."
-													className="hidden lg:block p-0 mr-2"
+													className="hidden lg:block p-0 mr-2 hover:bg-inherit"
 												>
 													<AddressLink address={l2TxHash}>{l2TxHash}</AddressLink>
 												</CopyToClipboardElement>
 												<CopyToClipboardElement
 													value={l2TxHash}
 													toastDescription="The address has been copied."
-													className="lg:hidden p-0 mr-2"
+													className="lg:hidden p-0 mr-2 hover:bg-inherit"
 												>
 													<AddressLink address={l2TxHash}>{l2TxHashShort}</AddressLink>
 												</CopyToClipboardElement>
@@ -312,7 +312,7 @@ export function TransactionPage({
 																<CopyToClipboardElement
 																	value={hash}
 																	toastDescription="Message hash copied"
-																	className="font-mono cursor-pointer rounded-sm p-0"
+																	className="font-mono cursor-pointer rounded-sm p-0 hover:bg-inherit"
 																>
 																	<AddressLink address={hash}>
 																		<span className="hidden lg:inline">{hash}</span>
@@ -350,14 +350,14 @@ export function TransactionPage({
 											<CopyToClipboardElement
 												value={normalizedTxHash}
 												toastDescription="The address has been copied."
-												className="hidden lg:block p-0 mr-2"
+												className="hidden lg:block p-0 mr-2  hover:bg-inherit"
 											>
 												<AddressLink address={normalizedTxHash}>{normalizedTxHash}</AddressLink>
 											</CopyToClipboardElement>
 											<CopyToClipboardElement
 												value={normalizedTxHash}
 												toastDescription="The address has been copied."
-												className="lg:hidden p-0 mr-2"
+												className="lg:hidden p-0 mr-2  hover:bg-inherit"
 											>
 												<AddressLink address={normalizedTxHash}>
 													{shortenHash(normalizedTxHash)}

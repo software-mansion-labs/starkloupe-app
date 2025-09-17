@@ -1,6 +1,4 @@
 import { useContext, useEffect, useState } from 'react';
-import Link from 'next/link';
-import { SquareArrowOutUpRight } from 'lucide-react';
 import { AddressContext } from '@/lib/context/address-context';
 import {
 	DropdownMenu,
@@ -8,13 +6,12 @@ import {
 	DropdownMenuContent
 } from '@/components/ui/dropdown-menu';
 import { Button } from './ui/button';
-import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 
 const CONTRACT_COLORS = [
 	'#ef4444', // red-500
 	'#f97316', // orange-500
-	'#eab308', // yellow-500
-	'#22c55e', // green-500
+	'#ad8302', // yellow-500
+	'#288703', // green-500
 	'#3b82f6', // blue-500
 	'#a855f7', // purple-500
 	'#F5276F'

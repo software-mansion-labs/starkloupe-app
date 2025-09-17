@@ -2,7 +2,7 @@ import React, { memo, useCallback, useEffect, useState } from 'react';
 import { cn, getContractName } from '@/lib/utils';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { ChevronRight, ChevronDown } from 'lucide-react';
-import { ClassDebuggerData } from '@/lib/simulation/types';
+import { ClassDebuggerData, ContractCall } from '@/lib/simulation/types';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import { useDebugger } from '@/lib/context/debugger-context-provider';
@@ -167,6 +167,7 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 											</TooltipProvider>
 											{contract?.classHash && openContracts[contract?.classHash] && (
 												<FilesExplorer
+													setContractCall={debuggerContext?.setContractCall}
 													showTitle={false}
 													activeFile={activeFile}
 													contract={contract}

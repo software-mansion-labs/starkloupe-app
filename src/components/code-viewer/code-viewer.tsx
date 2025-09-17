@@ -50,7 +50,7 @@ export function CodeViewer({
 	const classFileBreakpoints = contractCall ? fileBreakpoints[contractCall.classHash] : undefined;
 	const classHash = contractCall ? contractCall.classHash : undefined;
 
-	if (!highlightClass) highlightClass = 'bg-neutral-300 bg-opacity-40 dark:bg-opacity-20';
+	if (!highlightClass) highlightClass = '';
 
 	useEffect(() => {
 		activeFileRef.current = activeFile;

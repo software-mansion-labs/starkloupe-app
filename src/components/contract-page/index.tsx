@@ -121,7 +121,7 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 								<CopyToClipboardElement
 									value={contractAddress}
 									toastDescription="The address has been copied."
-									className="lg:hidden p-0"
+									className="lg:hidden p-0 hover:bg-inherit"
 								>
 									<AddressLink address={contractAddress}>
 										{shortenHash(contractAddress)}

@@ -39,9 +39,11 @@ export function DebuggerView() {
 		runToBreakpoint,
 		loading,
 		hasDebuggableContract,
-		error
+		error,
+		setContractCall
 	} = debuggerContext;
 
+	console.log('contractCall', contractCall);
 	return (
 		<ResizablePanelGroup direction="horizontal" className="w-full flex flex-row">
 			<ResizablePanel
@@ -79,7 +81,7 @@ export function DebuggerView() {
 							codeLocation={codeLocation}
 							highlightClass={`${
 								isExpressionHover ? 'bg-yellow-500' : 'bg-yellow-300'
-							} bg-opacity-20 dark:bg-opacity-10 transition-all`}
+							} bg-opacity-40 `}
 							args={codeLocation ? currentStep.withLocation.arguments : undefined}
 							results={codeLocation ? currentStep.withLocation.results : undefined}
 						/>

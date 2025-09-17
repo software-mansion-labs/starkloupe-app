@@ -100,7 +100,7 @@ export function DecodeDataTable({
 			return formattedValue?.startsWith('0x') ? (
 				<CopyToClipboardElement
 					value={formattedValue}
-					className="px-0"
+					className="px-0 hover:bg-inherit"
 					toastDescription="Value has been copied!"
 				>
 					<AddressLink

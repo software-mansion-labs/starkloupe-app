@@ -3,14 +3,16 @@ import { TriangleRightIcon, TriangleDownIcon } from '@radix-ui/react-icons';
 import { useDebugger } from '@/lib/context/debugger-context-provider';
 import CopyToClipboardElement from './copy-to-clipboard';
 import AddressLink from '../address-link';
-import { DecodedItem, InternalFnCallIO, TextPosition } from '@/lib/simulation';
+import { ContractCall, DecodedItem, InternalFnCallIO, TextPosition } from '@/lib/simulation';
 import { useSettings } from '@/lib/context/settings-context-provider';
+import { toast } from '@/components/hooks/use-toast';
 
 interface FilteredStepInfo {
 	function?: string | undefined;
 	args: InternalFnCallIO[] | string | string[] | DecodedItem[] | boolean;
 	result?: InternalFnCallIO[];
 	typeName?: string;
+	contractCallDetails?: ContractCall | undefined;
 }
 
 const FunctionCallViewer = ({
@@ -27,7 +29,8 @@ const FunctionCallViewer = ({
 	const [results, setResults] = useState<InternalFnCallIO[] | undefined>(undefined);
 	const [args, setArgs] = useState<InternalFnCallIO[] | undefined>(undefined);
 	const debuggerContext = useDebugger();
-	const { customSettings } = useSettings();
+	const { customSettings, updateContractName, updateContractSettings, updateContractColor } =
+		useSettings();
 
 	useEffect(() => {
 		if (!debuggerContext) return;
@@ -228,7 +231,7 @@ const FunctionCallViewer = ({
 				<CopyToClipboardElement
 					value={item.toString()}
 					toastDescription="Copied!"
-					className={`${isAddress ? 'py-1 px-0' : 'px-1'}`}
+					className={`${isAddress ? 'py-1 px-0 hover:bg-inherit' : 'px-1'}`}
 				>
 					{isAddress ? (
 						<AddressLink address={item} customSettings={customSettings}>
@@ -249,20 +252,37 @@ const FunctionCallViewer = ({
 		return null;
 	}
 
-	const { codeLocation, setExpressionHover } = debuggerContext;
+	const { codeLocation, setExpressionHover, setActiveFile, activeFile, setContractCall } =
+		debuggerContext;
 
 	return (
 		<div className="font-mono px-2 my-2">
+			{data.contractCallDetails && (
+				<div className="font-bold mb-1.5">
+					Contract:{' '}
+					<AddressLink
+						customSettings={customSettings}
+						updateContractName={updateContractName}
+						updateContractColor={updateContractColor}
+						updateContractSettings={updateContractSettings}
+						address={data.contractCallDetails.entryPoint.storageAddress}
+					>
+						{data.contractCallDetails.contractName
+							? data.contractCallDetails.contractName
+							: data.contractCallDetails.entryPoint.storageAddress}
+					</AddressLink>
+				</div>
+			)}
 			{data.function && (
 				<div className="font-bold mb-1.5">
-					{isContract ? 'arg: ' : 'fn: '}{' '}
-					<span className="text-function_pink">{data.function}</span>
+					{isContract ? 'Parameters: ' : 'Function: '}{' '}
+					<span className="text-function_purple">{data.function}</span>
 				</div>
 			)}
 			{data.typeName && (
 				<div className="mb-1.5">
 					<span className="font-semibold ">
-						type: <span className="font-normal text-typeColor">{data.typeName}</span>
+						Type: <span className="font-normal text-typeColor">{data.typeName}</span>
 					</span>
 				</div>
 			)}
@@ -275,10 +295,16 @@ const FunctionCallViewer = ({
 					  Object.keys(data.args).length > 0) ||
 				typeof data.args === 'string' ? (
 					<div className="whitespace-nowrap mb-1.5">
-						{renderData(formattedArgs, tooltipValue ? 'value' : 'args', 'args', false, true)}
+						{renderData(
+							formattedArgs,
+							tooltipValue ? 'Value' : 'Parameters',
+							'Parameters',
+							false,
+							true
+						)}
 					</div>
 				) : (
-					<span className="font-semibold ">{tooltipValue ? 'value: ' : 'args: '} </span>
+					<span className="font-semibold ">{tooltipValue ? 'Value: ' : 'Parameters: '} </span>
 				)}
 			</div>
 
@@ -286,10 +312,10 @@ const FunctionCallViewer = ({
 				<div className="mb-1.5">
 					{data.result.length > 0 ? (
 						<div className="whitespace-nowrap mb-1.5">
-							{renderData(formattedResult, 'result', 'result', false, true)}
+							{renderData(formattedResult, 'Results', 'Results', false, true)}
 						</div>
 					) : (
-						<span className="font-semibold ">result: </span>
+						<span className="font-semibold ">Results: </span>
 					)}
 				</div>
 			)}
@@ -297,33 +323,67 @@ const FunctionCallViewer = ({
 				<div className="mt-4">
 					<div className="mb-1.5">
 						<span className="font-semibold whitespace-nowrap">
-							expression:{' '}
+							Expression:{' '}
 							<span
 								className="bg-yellow-300 bg-opacity-40 font-normal cursor-pointer hover:bg-yellow-500 hover:bg-opacity-40 trasition-all"
-								onMouseEnter={() => setExpressionHover(true)}
+								onMouseEnter={() => {
+									setExpressionHover(true);
+									if (
+										debuggerContext?.codeLocation &&
+										activeFile !== debuggerContext?.codeLocation?.filePath
+									) {
+										if (data.contractCallDetails) setContractCall(data.contractCallDetails);
+										setActiveFile(debuggerContext?.codeLocation?.filePath);
+										toast({
+											title: 'Active file changed',
+											description: `The ${debuggerContext?.codeLocation?.filePath} was opened for expression demonstration`
+										});
+									}
+								}}
 								onMouseLeave={() => setExpressionHover(false)}
 							>
 								{expression}
 							</span>
-						</span>
-					</div>
-					<div className="mb-1.5">
-						<span className="font-semibold whitespace-nowrap">
-							line:{' '}
-							<span className="font-normal">
-								{codeLocation?.start.line &&
-									(codeLocation?.start.line === codeLocation?.end.line
-										? `${codeLocation?.start.line + 1}`
-										: `${codeLocation?.start.line + 1}-${codeLocation?.end.line + 1}`)}
+							<span className="font-semibold whitespace-nowrap">
+								<span className="font-normal">
+									{' - line '}
+									{codeLocation?.start.line &&
+										(codeLocation?.start.line === codeLocation?.end.line
+											? `${codeLocation?.start.line + 1}`
+											: `${codeLocation?.start.line + 1}-${codeLocation?.end.line + 1}`)}
+								</span>{' '}
+								{debuggerContext?.codeLocation?.filePath && (
+									<span className="font-normal">
+										in{' '}
+										<span
+											onClick={() => {
+												if (
+													debuggerContext?.codeLocation &&
+													activeFile !== debuggerContext?.codeLocation?.filePath
+												) {
+													if (data.contractCallDetails) setContractCall(data.contractCallDetails);
+													setActiveFile(debuggerContext?.codeLocation?.filePath);
+													toast({
+														title: 'Active file changed',
+														description: `The file ${debuggerContext?.codeLocation?.filePath} was opened.`
+													});
+												}
+											}}
+											className="hover:underline cursor-pointer"
+										>
+											{debuggerContext?.codeLocation?.filePath}
+										</span>
+									</span>
+								)}
 							</span>
 						</span>
 					</div>
 					<div className="mb-1.5">
 						{args && args.length > 0 && (
 							<div>
-								<span className="font-semibold">args: </span>
+								<span className="font-semibold">Parameters: </span>
 								<div className="whitespace-nowrap mb-1.5">
-									{renderData(formatObject(args), 'args', 'expr_args', true, true)}
+									{renderData(formatObject(args), 'Parameters', 'expr_args', true, true)}
 								</div>
 							</div>
 						)}
@@ -331,9 +391,9 @@ const FunctionCallViewer = ({
 					<div className="mb-1.5">
 						{results && results.length > 0 && (
 							<div>
-								<span className="font-semibold">result: </span>
+								<span className="font-semibold">Results: </span>
 								<div className="whitespace-nowrap mb-1.5">
-									{renderData(formatObject(results), 'result', 'expr_result', true, true)}
+									{renderData(formatObject(results), 'Results', 'expr_result', true, true)}
 								</div>
 							</div>
 						)}

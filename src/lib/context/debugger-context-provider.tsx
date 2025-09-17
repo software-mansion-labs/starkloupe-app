@@ -41,6 +41,7 @@ interface DebuggerContextProps {
 	getStepForFunctionCall: (functionCallId: number) => DebuggerExecutionTraceEntry | undefined;
 	getStepForContractCall: (contractCallId: number) => DebuggerExecutionTraceEntry | undefined;
 	setIsClickedDebuggerTab: (clickedDebugger: boolean) => void;
+	setContractCall: (contractCall: ContractCall) => void;
 }
 
 export const DebuggerContext = createContext<DebuggerContextProps | undefined>(undefined);
@@ -352,7 +353,8 @@ export const DebuggerContextProvider = ({
 				getStepForFunctionCall,
 				getStepForContractCall,
 				hasDebuggableContract,
-				setIsClickedDebuggerTab
+				setIsClickedDebuggerTab,
+				setContractCall
 			}}
 		>
 			{children}

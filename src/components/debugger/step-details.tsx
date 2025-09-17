@@ -25,6 +25,8 @@ export function StepDetails({
 }: StepDetailsProps) {
 	const [isCallTraceExpanded, setIsCallTraceExpanded] = useState(true);
 
+	const { contractCallsMap } = useCallTrace();
+
 	const toggleCallTrace = useCallback(() => {
 		setIsCallTraceExpanded((prev) => !prev);
 	}, []);
@@ -51,6 +53,10 @@ export function StepDetails({
 	let args: InternalFnCallIO[] = [];
 	let result: InternalFnCallIO[] = [];
 
+	const contractCallDetails = stepWithLocation?.contractCallId
+		? contractCallsMap[stepWithLocation?.contractCallId]
+		: undefined;
+
 	const functionCallDetails = stepWithLocation?.functionCallId
 		? functionCallsMap?.[stepWithLocation.functionCallId]
 		: undefined;
@@ -71,6 +77,7 @@ export function StepDetails({
 	}
 
 	const filteredStepInfo = {
+		contractCallDetails,
 		function: functionName,
 		args,
 		result
@@ -107,13 +114,17 @@ const StepDetailsSkeleton = () => {
 	return (
 		<div className="font-mono px-2 my-2">
 			<div className="font-bold mb-1.5 flex items-center gap-2">
-				<span>fn:</span>
+				<span>Contract:</span>
+				<Skeleton className="h-4 w-24" />
+			</div>
+			<div className="font-bold mb-1.5 flex items-center gap-2">
+				<span>Function:</span>
 				<Skeleton className="h-4 w-24" />
 			</div>
 			<div className="mb-1.5">
 				<div className="whitespace-nowrap mb-1.5">
 					<div className="flex items-center gap-2 mb-2">
-						<span className="font-bold">args:</span>
+						<span className="font-bold">Paramenters:</span>
 					</div>
 					<div className="ml-2">
 						<div className="flex items-center gap-2 mb-1.5">
@@ -137,7 +148,7 @@ const StepDetailsSkeleton = () => {
 			<div className="mb-1.5">
 				<div className="whitespace-nowrap mb-1.5">
 					<div className="flex items-center gap-2 mb-2">
-						<span className="font-bold">result:</span>
+						<span className="font-bold">Results:</span>
 					</div>
 					<div className="ml-2">
 						<div className="flex items-center gap-2 mb-1.5">

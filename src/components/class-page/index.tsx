@@ -62,14 +62,14 @@ export function ClassPage({ classHash }: { classHash: string }) {
 								<CopyToClipboardElement
 									value={classHash}
 									toastDescription="The address has been copied."
-									className="hidden lg:block p-0"
+									className="hidden lg:block p-0 hover:bg-inherit"
 								>
 									<AddressLink address={classHash}>{classHash}</AddressLink>
 								</CopyToClipboardElement>
 								<CopyToClipboardElement
 									value={classHash}
 									toastDescription="The address has been copied."
-									className="lg:hidden p-0"
+									className="lg:hidden p-0 hover:bg-inherit"
 								>
 									<AddressLink address={classHash}>{shortenHash(classHash)}</AddressLink>
 								</CopyToClipboardElement>
