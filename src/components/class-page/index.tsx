@@ -16,6 +16,11 @@ import AddressLink from '../address-link';
 import { NetworkBadge } from '../ui/network-badge';
 import { VerifiedBadge } from '../ui/verified-badge';
 
+interface Network {
+	stack?: string;
+	chain?: string;
+	customNetworkName?: string;
+}
 export function ClassPage({ classHash }: { classHash: string }) {
 	const { networks, getNetworkByRpcUrl, parseChain } = useSettings();
 	const [classData, setClassData] = useState<GetClassResponse>();
@@ -40,16 +45,20 @@ export function ClassPage({ classHash }: { classHash: string }) {
 		fetchData();
 	}, [classHash, networks]);
 
-	let networkBadges = classData?.declaredSources.map((item) => {
+	let networksArray = classData?.declaredSources.map((item) => {
 		const network = item?.rpcUrl ? getNetworkByRpcUrl(item?.rpcUrl) : null;
 		const chainDetails = network?.networkName
 			? parseChain(network?.networkName)
 			: item?.chainId
 			? parseChain(item?.chainId)
 			: undefined;
-		return chainDetails && <NetworkBadge network={chainDetails} />;
+		return chainDetails;
 	});
 
+	const networkBadge =
+		networksArray && networksArray.length > 0 ? (
+			<NetworkBadge networks={networksArray as Network[]} />
+		) : null;
 	return (
 		<>
 			<HeaderNav />
@@ -73,7 +82,7 @@ export function ClassPage({ classHash }: { classHash: string }) {
 								>
 									<AddressLink address={classHash}>{shortenHash(classHash)}</AddressLink>
 								</CopyToClipboardElement>
-								{networkBadges}
+								{networkBadge}
 								{classData?.verified && <VerifiedBadge />}
 							</div>
 						</h1>

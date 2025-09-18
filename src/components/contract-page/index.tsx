@@ -19,7 +19,7 @@ import { shortenHash } from '@/lib/utils';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import AddressLink from '../address-link';
 import { ContractRoot } from '../contract/root';
-import { NetworkBadge } from '../ui/network-badge';
+import { Network, NetworkBadge } from '../ui/network-badge';
 import { VerifiedBadge } from '../ui/verified-badge';
 
 export function ContractPage({ contractAddress }: { contractAddress: string }) {
@@ -65,25 +65,20 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 		fetchEntrypoints();
 	}, [contractData]);
 
-	let networkBadges = contractData?.deployedSources.map((item, idx) => {
+	let networksArray = contractData?.deployedSources.map((item) => {
 		const network = item?.rpcUrl ? getNetworkByRpcUrl(item?.rpcUrl) : null;
 		const chainDetails = network?.networkName
 			? parseChain(network?.networkName)
 			: item?.chainId
 			? parseChain(item?.chainId)
 			: undefined;
-		return (
-			chainDetails && (
-				<span
-					key={`${
-						chainDetails.customNetworkName || chainDetails.chain || chainDetails.stack
-					}-${idx}`}
-				>
-					<NetworkBadge network={chainDetails} />
-				</span>
-			)
-		);
+		return chainDetails;
 	});
+
+	const networkBadge =
+		networksArray && networksArray.length > 0 ? (
+			<NetworkBadge networks={networksArray as Network[]} />
+		) : null;
 
 	let content = null;
 	if (error) {
@@ -127,7 +122,7 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 										{shortenHash(contractAddress)}
 									</AddressLink>
 								</CopyToClipboardElement>
-								{networkBadges}
+								{networkBadge}
 								{contractData?.verified && <VerifiedBadge />}
 							</div>
 						</h1>
