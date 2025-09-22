@@ -70,9 +70,9 @@ const FileSystemItem = memo(function FileSystemItem({
 	expandedFolders,
 	onToggleFolder,
 	contract,
-	contractCall,
-	setContractCall
-}: {
+	contractCall
+}: // setContractCall
+{
 	node: FileSystemNode;
 	level?: number;
 	activeFile?: string;
@@ -81,7 +81,7 @@ const FileSystemItem = memo(function FileSystemItem({
 	onToggleFolder: (path: string) => void;
 	contract?: ContractCall;
 	contractCall?: ContractCall;
-	setContractCall?: ((contractCall: ContractCall) => void) | undefined;
+	// setContractCall?: ((contractCall: ContractCall) => void) | undefined;
 }) {
 	const isFile = node.type === 'file';
 	const isExpanded = expandedFolders.has(node.path);
@@ -95,11 +95,11 @@ const FileSystemItem = memo(function FileSystemItem({
 
 	const handleClick = useCallback(() => {
 		if (isFile) {
-			if (contract?.callId !== contractCall?.callId && setContractCall && contract) {
-				setContractCall(contract);
-			}
+			// if (contract?.callId !== contractCall?.callId && setContractCall && contract) {
+			// 	setContractCall(contract);
+			// }
 
-			handleFileClick(node.path);
+			setTimeout(() => handleFileClick(node.path), 100);
 		} else {
 			toggleFolder();
 		}
@@ -148,7 +148,7 @@ const FileSystemItem = memo(function FileSystemItem({
 								onToggleFolder={onToggleFolder}
 								contract={contract}
 								contractCall={contractCall}
-								setContractCall={setContractCall}
+								// setContractCall={setContractCall}
 							/>
 						))}
 				</div>
@@ -164,9 +164,9 @@ export const FilesExplorer = memo(function FilesExplorer({
 	handleFileClick,
 	className,
 	contract,
-	contractCall,
-	setContractCall
-}: {
+	contractCall
+}: // setContractCall
+{
 	showTitle?: boolean;
 	classSourceCode: { [key: string]: string };
 	activeFile?: string;
@@ -174,7 +174,7 @@ export const FilesExplorer = memo(function FilesExplorer({
 	className?: string;
 	contract?: ContractCall;
 	contractCall?: ContractCall;
-	setContractCall?: ((contractCall: ContractCall) => void) | undefined;
+	// setContractCall?: ((contractCall: ContractCall) => void) | undefined;
 }) {
 	const files = Object.keys(classSourceCode);
 
@@ -237,7 +237,7 @@ export const FilesExplorer = memo(function FilesExplorer({
 									handleFileClick={handleFileClick}
 									expandedFolders={expandedFolders}
 									onToggleFolder={handleToggleFolder}
-									setContractCall={setContractCall}
+									// setContractCall={setContractCall}
 								/>
 							))}
 				</div>

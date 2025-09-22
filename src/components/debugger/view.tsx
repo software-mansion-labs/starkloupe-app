@@ -43,7 +43,6 @@ export function DebuggerView() {
 		setContractCall
 	} = debuggerContext;
 
-	console.log('contractCall', contractCall);
 	return (
 		<ResizablePanelGroup direction="horizontal" className="w-full flex flex-row">
 			<ResizablePanel

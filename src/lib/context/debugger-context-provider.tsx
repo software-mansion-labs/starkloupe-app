@@ -9,6 +9,7 @@ import {
 } from '@/lib/simulation';
 import { CallTraceContext } from './call-trace-context-provider';
 import { debugTransactionByData, DebuggerPayload, DebuggerInfo } from '@/lib/debugger';
+import { toast } from '@/components/hooks/use-toast';
 
 interface DebuggerContextProps {
 	functionCallsMap: { [key: number]: FunctionCall };
@@ -132,7 +133,7 @@ export const DebuggerContextProvider = ({
 		setSourceCode(classSourceCode);
 		setActiveFile(activeFile);
 		setCodeLocation(codeLocation);
-	}, [currentStepIndex, simulationDebuggerData]);
+	}, [simulationDebuggerData]);
 
 	const availableBreakpoints = useMemo(() => {
 		if (!simulationDebuggerData) return {};
@@ -213,6 +214,7 @@ export const DebuggerContextProvider = ({
 		setContractCall(contractCall);
 		setSourceCode(classSourceCode);
 		setActiveFile(activeFile);
+
 		setCodeLocation(codeLocation);
 	}
 
@@ -232,7 +234,7 @@ export const DebuggerContextProvider = ({
 	const debugContractCall = (contractCallId: number) => {
 		const cc = contractCallsMap[contractCallId];
 		if (cc?.debuggerTraceStepIndex != null) {
-			setCurrentStepIndex(cc.debuggerTraceStepIndex);
+			setCurrentStepIndex(cc.debuggerTraceStepIndex as number);
 		}
 	};
 

@@ -167,15 +167,16 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 											</TooltipProvider>
 											{contract?.classHash && openContracts[contract?.classHash] && (
 												<FilesExplorer
-													setContractCall={debuggerContext?.setContractCall}
 													showTitle={false}
 													activeFile={activeFile}
 													contract={contract}
 													contractCall={contractCall}
 													classSourceCode={classesDebuggerData[contract?.classHash].sourceCode}
 													handleFileClick={(filePath) => {
-														setCurrentContractCall(contract);
-														handleFileClick(filePath);
+														debuggerContext?.debugContractCall(contract.callId);
+														setTimeout(() => {
+															handleFileClick(filePath);
+														});
 													}}
 												/>
 											)}
