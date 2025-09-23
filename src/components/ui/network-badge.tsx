@@ -135,7 +135,7 @@ export function NetworkBadge({
 									withoutStack && 'my-0.5'
 								} text-xs border rounded-full w-fit flex items-center ${
 									style.logo && 'space-x-1'
-								} ${style.class} ${className} cursor-pointer hover:opacity-80 transition-opacity`}
+								} ${style.class} ${className} cursor-pointer hover:opacity-80 transition-opacity `}
 							>
 								{style.logo ? (
 									<Image src={style.logo} alt={`${singleNetwork.stack} logo`} className="w-4 h-4" />
@@ -182,10 +182,10 @@ export function NetworkBadge({
 					<Badge
 						className={`px-2 py-1 ${
 							withoutStack && 'my-0.5'
-						} text-xs border rounded-full w-fit flex items-center space-x-1 ${badgeStyle} ${className} cursor-pointer hover:opacity-80 transition-opacity`}
+						} text-xs border rounded-full w-fit flex items-center space-x-1 ${badgeStyle} ${className} cursor-pointer hover:opacity-80 transition-opacity min-w-[6rem] text-center`}
 					>
 						{logos.length > 0 && (
-							<div className="flex items-center -space-x-1">
+							<div className="flex items-center -space-x-1 text-center justify-center">
 								{logos.slice(0, 3).map((logo, index) => (
 									<div
 										key={index}

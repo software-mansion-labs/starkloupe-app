@@ -18,7 +18,7 @@ export function TransactionDetails({
 		| null
 		| undefined;
 }) {
-	const { getNetworkByRpcUrl } = useSettings();
+	const { getNetworkByRpcUrl, parseChain } = useSettings();
 	let details: InfoBoxItem[] = [];
 
 	// 1. Transaction Type (always first)
@@ -74,10 +74,10 @@ export function TransactionDetails({
 			});
 		}
 
-		if (!chainDetails || !chainDetails.chain) {
+		if ((!chainDetails || !chainDetails.chain) && parseChain(transactionData.chainId)?.chain) {
 			details.push({
 				name: 'Chain',
-				value: transactionData.chainId
+				value: parseChain(transactionData.chainId)?.chain
 			});
 		}
 	}

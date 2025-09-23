@@ -383,13 +383,19 @@ const SearchItem = ({
 	return (
 		<CommandItem
 			onSelect={handleSearchItem}
-			className="truncate cursor-pointer !bg-transparent hover:!bg-accent flex gap-2"
+			className={`truncate cursor-pointer !bg-transparent hover:!bg-accent flex gap-2 ${
+				network || (data.source.chainId && chainData) ? 'flex justify-between' : ''
+			}`}
 			style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}
 		>
 			{network ? (
 				networkChainData ? (
 					<div className="flex-shrink-0">
-						<NetworkBadge network={networkChainData} withoutStack />
+						<NetworkBadge
+							network={networkChainData}
+							withoutStack
+							className="min-w-[6rem] text-center justify-center"
+						/>
 					</div>
 				) : (
 					<div className="flex-shrink-0">
@@ -397,12 +403,17 @@ const SearchItem = ({
 							key={network?.networkName}
 							network={{ chain: network?.networkName }}
 							withoutStack
+							className="min-w-[6rem] text-center justify-center"
 						/>
 					</div>
 				)
 			) : data.source.chainId && chainData ? (
 				<div className="flex-shrink-0">
-					<NetworkBadge network={chainData} withoutStack />
+					<NetworkBadge
+						network={chainData}
+						withoutStack
+						className="min-w-[6rem] text-center justify-center"
+					/>
 				</div>
 			) : null}
 			<p className="ml-2 text-sm truncate">{data.hash}</p>

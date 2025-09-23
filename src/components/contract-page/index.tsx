@@ -49,12 +49,14 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 
 	useEffect(() => {
 		if (!contractData) return;
+		const chainId = contractData.deployedSources[0].chainId;
+		if (!chainId) return;
 		const fetchEntrypoints = async () => {
 			try {
 				setEntrypoints(
 					await fetchContractFunctions({
 						contractAddress,
-						network: contractData.deployedSources[0].chainId || ''
+						network: chainId
 					})
 				);
 			} catch (error: any) {

@@ -109,7 +109,6 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 			return newSettings;
 		});
 	};
-
 	const parseChain = (chainString: string) => {
 		const parts = chainString.toLowerCase().split('_');
 		let stack: string | undefined;
@@ -136,6 +135,14 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 			chain = chainMapping[chainPart];
 		}
 
+		const chainPart = parts.length > 1 ? parts[1] : parts[0];
+		const isChainFoundInMapping = chainMapping[chainPart] !== undefined;
+
+		if (!isChainFoundInMapping) {
+			const customName = chainString.charAt(0).toUpperCase() + chainString.slice(1);
+			return { customNetworkName: customName };
+		}
+
 		const result: Record<string, string> = {};
 
 		if (stack) {
@@ -147,7 +154,6 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 		if (chain) {
 			result.chain = chain;
 		} else {
-			const chainPart = parts.length > 1 ? parts[1] : parts[0];
 			result.chain = chainPart.charAt(0).toUpperCase() + chainPart.slice(1);
 		}
 
@@ -158,10 +164,8 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 				chainMapping[chainPart] || chainPart.charAt(0).toUpperCase() + chainPart.slice(1);
 			result.customNetworkName = `${formattedPrefix} ${formattedChain}`;
 		}
-
 		return Object.keys(result).length > 0 ? result : null;
 	};
-
 	const scrollToEntrypointElement = (entrypintAddress: string) => {
 		const element = contractEntrypointsElementRefs.current[entrypintAddress]?.current;
 		if (element) {
