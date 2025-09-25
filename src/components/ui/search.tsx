@@ -41,7 +41,7 @@ export function Search({
 	const [tooltipOpen, setTooltipOpen] = useState(false);
 
 	const { parseChain } = useSettings();
-	const coreNetworks = ['sn_main', 'sn_sepolia']
+	const coreNetworks = ['sn_mainnet', 'sn_sepolia']
 		.map((item) => {
 			const chainData = parseChain(item);
 			if (chainData) {
