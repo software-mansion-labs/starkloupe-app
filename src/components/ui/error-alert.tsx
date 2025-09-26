@@ -7,6 +7,8 @@ import { FnName } from './function-name';
 import { CommandDialog } from './command';
 import { useState } from 'react';
 import CopyToClipboardElement from './copy-to-clipboard';
+import { ScrollArea, ScrollBar } from './scroll-area';
+import { Button } from './button';
 
 const ErrorAlert = ({ callError }: { callError: ContractCall | FunctionCall | undefined }) => {
 	const errorDescription = callError?.errorMessage;
@@ -58,20 +60,22 @@ const ErrorAlert = ({ callError }: { callError: ContractCall | FunctionCall | un
 		<div className="!font-light">
 			<span className="whitespace-pre-wrap">
 				{errorDescription && parseErrorDescription(errorDescription)}
-				<span className="inline-flex items-center my-1">
-					<span> in </span>
-					{callError && 'classHash' in callError ? (
-						<ContractCallSignature
-							contractCall={callError}
-							customSettings={customSettings}
-							updateContractColor={updateContractColor}
-							updateContractName={updateContractName}
-							updateContractSettings={updateContractSettings}
-						/>
-					) : (
-						callError?.fnName && <FnName fnName={callError?.fnName} />
-					)}
-				</span>
+				{!isLongError && (
+					<span className="inline-flex items-center my-1">
+						<span> in </span>
+						{callError && 'classHash' in callError ? (
+							<ContractCallSignature
+								contractCall={callError}
+								customSettings={customSettings}
+								updateContractColor={updateContractColor}
+								updateContractName={updateContractName}
+								updateContractSettings={updateContractSettings}
+							/>
+						) : (
+							callError?.fnName && <FnName fnName={callError?.fnName} />
+						)}
+					</span>
+				)}
 			</span>
 		</div>
 	);
@@ -116,14 +120,12 @@ const ErrorAlert = ({ callError }: { callError: ContractCall | FunctionCall | un
 					<div className="flex items-center justify-between p-4 border-b">
 						<div className="flex items-center gap-3">
 							<ExclamationTriangleIcon className="h-6 w-6 text-red-600" />
-							<h2 className="text-lg font-semibold text-gray-900 dark:text-white">Error Details</h2>
+							<h2 className="text-lg font-semibold ">Error Details</h2>
 						</div>
 					</div>
 					<div className="p-4 space-y-4">
 						<div className="w-full">
-							<span className="text-sm text-gray-600 dark:text-gray-400 block mb-2">
-								Error occurred in:{' '}
-							</span>
+							<span className="text-sm text-muted-foreground block mb-2">Error occurred in: </span>
 							{callError && 'classHash' in callError ? (
 								<ContractCallSignature
 									contractCall={callError}
@@ -138,21 +140,19 @@ const ErrorAlert = ({ callError }: { callError: ContractCall | FunctionCall | un
 						</div>
 
 						<div className="w-full">
-							<span className="text-sm text-gray-600 dark:text-gray-400 block mb-2">
-								Error message:
-							</span>
-							<div className="max-h-96 overflow-y-auto w-full border border-gray-200 dark:border-gray-700 rounded-md p-4 bg-gray-50 dark:bg-gray-800/50">
-								<ErrorContent />
-							</div>
+							<span className="text-sm text-muted-foreground block mb-2">Error message:</span>
+							<ScrollArea className="h-96 overflow-auto w-full border border-border rounded-md bg-card">
+								<div className="m-4">
+									<ErrorContent />
+								</div>
+								<ScrollBar orientation="horizontal" />
+							</ScrollArea>
 						</div>
 					</div>
-					<div className="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
-						<button
-							onClick={toggleAlert}
-							className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
-						>
+					<div className="flex justify-end gap-2 p-4 border-t border-border">
+						<Button onClick={toggleAlert} variant="outline">
 							Close
-						</button>
+						</Button>
 					</div>
 				</CommandDialog>
 			</>
