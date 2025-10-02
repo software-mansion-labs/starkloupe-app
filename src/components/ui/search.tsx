@@ -62,8 +62,18 @@ export function Search({
 	const fetchSearchDataResponse = useCallback(
 		async (value: string) => {
 			try {
+				// Trim whitespace from the beginning and end of the hash
+				const trimmedHash = value.trim();
+
+				// Don't make API call if hash is empty after trimming
+				if (!trimmedHash) {
+					setDataResponseResults(0);
+					setSearchDataResponse(undefined);
+					return;
+				}
+
 				const searchData: SearchDataResponse = await fetchSearchData({
-					hash: value,
+					hash: trimmedHash,
 					rpcUrls: networks.map((n) => n.rpcUrl)
 				});
 				setSearchDataResponse(searchData);
@@ -105,8 +115,9 @@ export function Search({
 		setSearchDataResponse(undefined);
 		setError(undefined);
 
-		if (open && searchValue.trim().length > 3) {
-			fetchSearchDataResponse(searchValue);
+		const trimmedSearchValue = searchValue.trim();
+		if (open && trimmedSearchValue.length > 3) {
+			fetchSearchDataResponse(trimmedSearchValue);
 		} else {
 			setSearchValue('');
 		}
@@ -124,7 +135,9 @@ export function Search({
 	}, [debounceSearch]);
 
 	const onSearchValueChanged = (val: string) => {
-		debounceSearch(val);
+		// Trim the input value immediately to provide better UX
+		const trimmedVal = val.trim();
+		debounceSearch(trimmedVal);
 	};
 
 	useEffect(() => {

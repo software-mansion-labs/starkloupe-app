@@ -339,7 +339,39 @@ export function TransactionPage({
 							)}
 						</>
 					) : error ? (
-						<Error message={error} />
+						<>
+							<div className="xl:flex flex-row items-baseline justify-between">
+								<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
+									<h1 className="text-base font-medium leading-6">
+										<div className="flex flex-wrap items-center gap-1">
+											Transaction
+											<CopyToClipboardElement
+												value={normalizedTxHash}
+												toastDescription="The address has been copied."
+												className="hidden lg:block p-0 mr-2  hover:bg-inherit"
+											>
+												<AddressLink address={normalizedTxHash}>{normalizedTxHash}</AddressLink>
+											</CopyToClipboardElement>
+											<CopyToClipboardElement
+												value={normalizedTxHash}
+												toastDescription="The address has been copied."
+												className="lg:hidden p-0 mr-2  hover:bg-inherit"
+											>
+												<AddressLink address={normalizedTxHash}>
+													{shortenHash(normalizedTxHash)}
+												</AddressLink>
+											</CopyToClipboardElement>
+											{chainDetails && <NetworkBadge network={chainDetails} />}
+										</div>
+									</h1>
+								</div>
+
+								<Button variant="outline" disabled>
+									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+								</Button>
+							</div>
+							<Error message={error} />
+						</>
 					) : (
 						<>
 							<div className="xl:flex flex-row items-baseline justify-between">
