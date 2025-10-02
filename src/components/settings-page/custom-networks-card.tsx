@@ -10,13 +10,13 @@ export function CustomNetworksCard() {
 			<CardHeader>
 				<CardTitle>Custom networks</CardTitle>
 				<CardDescription>
-					By default, Walnut supports <strong>sn_main</strong> and{' '}
-					<strong>sn_sepolia</strong>. You can add custom networks to expand transaction
-					search, debugging, and simulation functionality to those networks.
+					By default, Walnut supports <strong>sn_mainnet</strong> and <strong>sn_sepolia</strong>.
+					You can add custom networks to expand transaction search, debugging, and simulation
+					functionality to those networks.
 				</CardDescription>
 			</CardHeader>
 			<CardContent>
-				<NetworksList/>
+				<NetworksList />
 			</CardContent>
 		</Card>
 	);

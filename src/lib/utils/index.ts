@@ -102,18 +102,18 @@ export function formatTimestampToUTC(timestamp: number): string {
 export function useStarknetChain(): { chainId: ChainId; chainName: string } {
 	const path = usePathname();
 	const isSepolia = path.includes('SN_SEPOLIA');
-	const chainId = isSepolia ? ChainId.SN_SEPOLIA : ChainId.SN_MAIN;
+	const chainId = isSepolia ? ChainId.SN_SEPOLIA : ChainId.SN_MAINNET;
 	return { chainId, chainName: isSepolia ? 'Sepolia' : 'Mainnet' };
 }
 
 export function extractChainId(chainIdStr: string): ChainId | undefined {
 	switch (chainIdStr) {
-		case ChainId.SN_MAIN:
-			return ChainId.SN_MAIN;
+		case ChainId.SN_MAINNET:
+			return ChainId.SN_MAINNET;
 		case ChainId.SN_SEPOLIA:
 			return ChainId.SN_SEPOLIA;
-		case ChainId.ETH_MAIN:
-			return ChainId.ETH_MAIN;
+		case ChainId.ETH_MAINNET:
+			return ChainId.ETH_MAINNET;
 		case ChainId.ETH_SEPOLIA:
 			return ChainId.ETH_SEPOLIA;
 		default:
