@@ -15,14 +15,14 @@ export interface GetContractResponse {
 export interface FunctionInput {
 	name: string;
 	type: string;
-	members?: FunctionInput[];
-	variants?: FunctionInput[];
+	struct_members?: FunctionInput[];
+	enum_variants?: FunctionInput[];
 }
 export interface FunctionOutput {
 	type: string;
 	name?: string;
-	members?: FunctionInput[];
-	variants?: FunctionInput[];
+	struct_members?: FunctionInput[];
+	enum_variants?: FunctionInput[];
 }
 
 export interface FunctionData {
