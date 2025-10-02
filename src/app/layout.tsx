@@ -17,9 +17,14 @@ export const metadata: Metadata = generateMetadata(title, description, 'https://
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
 	return (
-		<html lang="en" className="h-full">
+		<html lang="en" className="h-full" suppressHydrationWarning>
 			<body className={`${inter.className} h-full md:overflow-hidden`}>
-				<ThemeProvider attribute="class" defaultTheme="system" enableSystem={true}>
+				<ThemeProvider
+					attribute="class"
+					enableSystem
+					defaultTheme="system"
+					disableTransitionOnChange
+				>
 					<UserContextProvider>
 						<SettingsContextProvider>
 							<AddressProvider>

@@ -164,6 +164,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 					))}
 					{functionCall.isDeepestPanicResult && errorMessage && !previewMode && (
 						<ErrorTraceLine
+							errorCall={functionCall}
 							executionFailed
 							errorMessage={errorMessage}
 							nestingLevel={nestingLevel + 1}
