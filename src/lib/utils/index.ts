@@ -112,8 +112,8 @@ export function extractChainId(chainIdStr: string): ChainId | undefined {
 			return ChainId.SN_MAINNET;
 		case ChainId.SN_SEPOLIA:
 			return ChainId.SN_SEPOLIA;
-		case ChainId.ETH_MAIN:
-			return ChainId.ETH_MAIN;
+		case ChainId.ETH_MAINNET:
+			return ChainId.ETH_MAINNET;
 		case ChainId.ETH_SEPOLIA:
 			return ChainId.ETH_SEPOLIA;
 		default:
