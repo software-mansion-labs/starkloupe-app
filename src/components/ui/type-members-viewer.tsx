@@ -27,11 +27,11 @@ const TypeMembersViewer = ({
 		isVariant = false
 	) => {
 		const key = path;
-		const hasMembers = member.members && member.members.length > 0;
-		const hasVariants = member.variants && member.variants.length > 0;
+		const hasMembers = member.struct_members && member.struct_members.length > 0;
+		const hasVariants = member.enum_variants && member.enum_variants.length > 0;
 
 		if (hasMembers || hasVariants) {
-			const childItems = hasMembers ? member.members! : member.variants!;
+			const childItems = hasMembers ? member.struct_members! : member.enum_variants!;
 			return (
 				<div className={`font-mono ${isRoot ? '' : 'ml-2'}`}>
 					<div
@@ -53,7 +53,7 @@ const TypeMembersViewer = ({
 						)}
 						{!expanded.has(key) && (
 							<span className="italic font-normal ml-1">
-								[{hasVariants ? 'variants...' : '{...}'}]
+								[{hasVariants ? 'enum_variants...' : '{...}'}]
 							</span>
 						)}
 					</div>
@@ -61,7 +61,7 @@ const TypeMembersViewer = ({
 					{expanded.has(key) && (
 						<div className="ml-2 mb-1.5 pl-2">
 							<div className={`text-xs italic tracking-wider font-bold mb-2 `}>
-								{hasVariants ? 'variants:' : 'members:'}
+								{hasVariants ? 'enum_variants:' : 'struct_members:'}
 							</div>
 
 							{childItems.map((childMember, idx) => (
@@ -89,8 +89,8 @@ const TypeMembersViewer = ({
 
 	const renderRootType = () => {
 		const rootKey = data.name || `${data.type}-${entrypointAddress}`;
-		const hasMembers = data.members && data.members.length > 0;
-		const hasVariants = data.variants && data.variants.length > 0;
+		const hasMembers = data.struct_members && data.struct_members.length > 0;
+		const hasVariants = data.enum_variants && data.enum_variants.length > 0;
 
 		if (!hasMembers && !hasVariants) {
 			return (
@@ -101,7 +101,7 @@ const TypeMembersViewer = ({
 			);
 		}
 
-		const childItems = hasMembers ? data.members! : data.variants!;
+		const childItems = hasMembers ? data.struct_members! : data.enum_variants!;
 
 		return (
 			<div className="font-mono px-2 my-2">
@@ -120,7 +120,7 @@ const TypeMembersViewer = ({
 					<span className="ml-1 text-typeColor">{data.type}</span>
 					{!expanded.has(rootKey) && (
 						<span className="italic font-normal ml-1">
-							[{hasVariants ? 'variants...' : '{...}'}]
+							[{hasVariants ? 'enum_variants...' : '{...}'}]
 						</span>
 					)}
 				</div>
@@ -128,7 +128,7 @@ const TypeMembersViewer = ({
 				{expanded.has(rootKey) && (
 					<div className="ml-2 mb-1.5  pl-2">
 						<div className={`text-xs italic tracking-wider font-bold mb-1 `}>
-							{hasVariants ? 'variants:' : 'members:'}
+							{hasVariants ? 'enum_variants:' : 'struct_members:'}
 						</div>
 
 						{childItems.map((member, idx) => (

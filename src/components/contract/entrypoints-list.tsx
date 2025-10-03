@@ -123,7 +123,7 @@ const EntryPoint = ({
 					{entryPoint[1].inputs.map((i, idx) => (
 						<span key={i.name}>
 							{i.name}:{' '}
-							{i.members || i.variants ? (
+							{i.struct_members || i.enum_variants ? (
 								<InpuOutputDetailsDropdown data={i} entrypointAddress={entryPoint[0]} />
 							) : (
 								<span className="text-typeColor">{i.type}</span>
@@ -137,7 +137,7 @@ const EntryPoint = ({
 				<span className="text-highlight_yellow">{'('}</span>
 				{entryPoint[1].outputs.map((o, idx) => (
 					<span key={`${o.type} + ${idx}`}>
-						{o.members || o.variants ? (
+						{o.struct_members || o.enum_variants ? (
 							<InpuOutputDetailsDropdown data={o} entrypointAddress={entryPoint[0]} />
 						) : (
 							<span className="text-typeColor">{o.type}</span>
@@ -189,7 +189,7 @@ const InpuOutputDetailsDropdown = ({
 			>
 				<div className="relative">
 					<CopyToClipboardElement
-						value={JSON.stringify(data.members, null, 2)}
+						value={JSON.stringify(data.struct_members, null, 2)}
 						toastDescription="Full JSON copied"
 						className="absolute top-2 right-3 z-10 bg-accent p-1.5 rounded focus:outline-none focus:ring-2"
 						aria-label="Copy"
