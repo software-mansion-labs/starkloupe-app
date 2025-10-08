@@ -93,6 +93,7 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 					sourceCode={contractData.sourceCode ?? {}}
 					isContract={true}
 					entryPoints={entryPoints}
+					contractData={contractData}
 				/>
 			</>
 		);
@@ -104,32 +105,43 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 			<HeaderNav />
 			<main className="h-full flex flex-col overflow-hidden  short:overflow-scroll">
 				<Container className="py-4 sm:py-6 lg:py-8 h-full flex flex-col short:min-h-[600px]">
-					<div className="flex flex-col md:flex-row gap-2 mt-4 mb-2 items-baseline justify-between flex-none">
-						<h1 className="text-base font-medium leading-6">
-							<div className="flex flex-wrap items-center gap-1">
-								Contract{' '}
-								<CopyToClipboardElement
-									value={contractAddress}
-									toastDescription="The address has been copied."
-									className="hidden lg:block p-0"
-								>
-									<AddressLink address={contractAddress}>{contractAddress}</AddressLink>
-								</CopyToClipboardElement>
-								<CopyToClipboardElement
-									value={contractAddress}
-									toastDescription="The address has been copied."
-									className="lg:hidden p-0 hover:bg-inherit"
-								>
-									<AddressLink address={contractAddress}>
-										{shortenHash(contractAddress)}
-									</AddressLink>
-								</CopyToClipboardElement>
-								{networkBadge}
-								{contractData?.verified && <VerifiedBadge />}
-							</div>
-						</h1>
+					<div className="xl:flex flex-row items-baseline justify-between">
+						<div className="flex flex-col gap-2 mt-4 mb-2 mr-2">
+							<h1 className="text-base font-medium leading-6">
+								<div className="flex flex-wrap items-center gap-1">
+									<span>Contract</span>
+									<CopyToClipboardElement
+										value={contractAddress}
+										toastDescription="The address has been copied."
+										className="hidden lg:block p-0 mr-2 hover:bg-inherit"
+									>
+										<AddressLink address={contractAddress}>{contractAddress}</AddressLink>
+									</CopyToClipboardElement>
+									<CopyToClipboardElement
+										value={contractAddress}
+										toastDescription="The address has been copied."
+										className="lg:hidden p-0 mr-2 hover:bg-inherit"
+									>
+										<AddressLink address={contractAddress}>
+											{shortenHash(contractAddress)}
+										</AddressLink>
+									</CopyToClipboardElement>
+
+									<div className="hidden md:flex  gap-2 ">
+										{networkBadge}
+										{contractData?.verified && <VerifiedBadge />}
+									</div>
+								</div>
+							</h1>
+						</div>
+						<div className="flex md:hidden gap-2 justify-between">
+							{networkBadge}
+							{contractData?.verified && <VerifiedBadge />}
+						</div>
 					</div>
-					{contractData && <ContractDetails contractData={contractData} />}
+					<div className="hidden md:block">
+						{contractData && <ContractDetails contractData={contractData} />}
+					</div>
 					<div className="flex-1 flex flex-col overflow-hidden min-h-0 ">{content}</div>
 					{/* {contractData ? (
 						<ClassSourceCode
@@ -144,7 +156,9 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 					)} */}
 				</Container>
 			</main>
-			<Footer />
+			<div className="hidden md:block">
+				<Footer />
+			</div>
 		</>
 	);
 }

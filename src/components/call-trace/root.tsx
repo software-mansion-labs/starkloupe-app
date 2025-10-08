@@ -1,4 +1,4 @@
-import { SimulationResult, FlameNode } from '@/lib/simulation';
+import { L2TransactionData } from '@/lib/simulation';
 import { DebuggerPayload } from '@/lib/debugger';
 import {
 	CallTraceContextProvider,
@@ -19,24 +19,36 @@ import StorageChanges from '../storage-changes';
 import { GasProfiler } from '../gas-profiler';
 import { MultiCallIO } from '../multi-call-io';
 import ErrorAlert from '../ui/error-alert';
+import { TransactionDetails } from '../transaction-page/l2-transaction-details';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 export function CallTraceRoot({
-	simulationResult,
-	l2Flamegraph,
-	l1DataFlamegraph,
-	debuggerPayload
+	debuggerPayload,
+	transactionData,
+	rpcUrl,
+	chainDetails
 }: {
-	simulationResult: SimulationResult;
-	l2Flamegraph: FlameNode | undefined;
-	l1DataFlamegraph: FlameNode | undefined;
 	debuggerPayload: DebuggerPayload | null;
+	transactionData: L2TransactionData;
+	rpcUrl: string | undefined;
+	chainDetails:
+		| {
+				stack?: string | undefined;
+				chain?: string | undefined;
+				customNetworkName?: string | undefined;
+		  }
+		| null
+		| undefined;
 }) {
 	return (
 		<CallTraceContextProvider
-			simulationResult={simulationResult}
-			l2Flamegraph={l2Flamegraph}
-			l1DataFlamegraph={l1DataFlamegraph}
+			simulationResult={transactionData.simulationResult}
+			l2Flamegraph={transactionData.flamechart}
+			l1DataFlamegraph={transactionData.l1DataFlamechart}
 			debuggerPayload={debuggerPayload}
+			transactionData={transactionData}
+			rpcUrl={rpcUrl}
+			chainDetails={chainDetails}
 		>
 			{debuggerPayload && (
 				<DebuggerContextProvider debuggerPayload={debuggerPayload}>
@@ -61,7 +73,10 @@ function CallTraceRootContent() {
 		debuggerPayload,
 		callWithError,
 		showGasChips,
-		gasChipToggle
+		gasChipToggle,
+		rpcUrl,
+		transactionData,
+		chainDetails
 	} = useCallTrace();
 	const onValueChange = useCallback(
 		(value: string) => {
@@ -81,7 +96,7 @@ function CallTraceRootContent() {
 			)}
 			<div
 				className={`${
-					simulationResult.executionResult.executionStatus !== 'SUCCEEDED' ? '' : 'mt-12'
+					simulationResult.executionResult.executionStatus !== 'SUCCEEDED' ? '' : 'md:mt-12 mt-2'
 				} h-full flex flex-col overflow-hidden`}
 			>
 				<Tabs
@@ -89,14 +104,33 @@ function CallTraceRootContent() {
 					onValueChange={onValueChange}
 					className="flex flex-col flex-1 overflow-hidden min-h-0"
 				>
-					<TabsList className="flex md:inline-flex md:w-fit dark:bg-card !justify-start md:justify-center flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-rounded">
+					<TabsList className="hidden sm:inline-flex md:w-fit dark:bg-card justify-center">
 						<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
+						<TabsTrigger value="transaction-details" className="md:hidden">
+							Transaction Details
+						</TabsTrigger>
 						<TabsTrigger value="input-output">Input/Output</TabsTrigger>
 						<TabsTrigger value="events-list">Events</TabsTrigger>
 						<TabsTrigger value="debugger">Debugger</TabsTrigger>
 						<TabsTrigger value="storage-changes">Storage</TabsTrigger>
 						<TabsTrigger value="gas-profiler">Gas Profiler</TabsTrigger>
 					</TabsList>
+					<div className="sm:hidden">
+						<Select value={activeTab} onValueChange={setActiveTab}>
+							<SelectTrigger className="w-full focus:outline-none focus:ring-0 focus:ring-offset-0">
+								<SelectValue />
+							</SelectTrigger>
+							<SelectContent>
+								<SelectItem value="call-trace">Call Trace</SelectItem>
+								<SelectItem value="transaction-details">Transaction Details</SelectItem>
+								<SelectItem value="input-output">Input/Output</SelectItem>
+								<SelectItem value="events-list">Events</SelectItem>
+								<SelectItem value="debugger">Debugger</SelectItem>
+								<SelectItem value="storage-changes">Storage</SelectItem>
+								<SelectItem value="gas-profiler">Gas Profiler</SelectItem>
+							</SelectContent>
+						</Select>
+					</div>
 					<TabsContent
 						value="call-trace"
 						className={`h-full flex flex-col flex-1 overflow-hidden min-h-0 ${
@@ -164,6 +198,18 @@ function CallTraceRootContent() {
 								</div>
 							</ScrollArea>
 						</div>
+					</TabsContent>
+					<TabsContent
+						value="transaction-details"
+						className={`h-full flex flex-col flex-1 overflow-hidden min-h-0 ${
+							activeTab !== 'transaction-details' ? 'hidden' : ''
+						}`}
+					>
+						<TransactionDetails
+							transactionData={transactionData}
+							rpcUrl={rpcUrl}
+							chainDetails={chainDetails}
+						/>
 					</TabsContent>
 					<TabsContent
 						value="events-list"

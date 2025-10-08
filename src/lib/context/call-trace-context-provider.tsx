@@ -16,7 +16,8 @@ import {
 	ContractCallEvent,
 	SimulationDebuggerData,
 	SimulationResult,
-	FlameNode
+	FlameNode,
+	L2TransactionData
 } from '@/lib/simulation';
 import { DebuggerPayload } from '@/lib/debugger';
 
@@ -30,7 +31,8 @@ export type TabId =
 	| 'debugger'
 	| 'storage-changes'
 	| 'gas-profiler'
-	| 'input-output';
+	| 'input-output'
+	| 'transaction-details';
 
 interface CallTraceContextProps {
 	contractCallsMap: { [key: number]: ContractCall };
@@ -61,6 +63,16 @@ interface CallTraceContextProps {
 	callWithError: ContractCall | FunctionCall | undefined;
 	showGasChips: boolean;
 	gasChipToggle: (checkboxState: boolean) => void;
+	transactionData: L2TransactionData;
+	rpcUrl: string | undefined;
+	chainDetails:
+		| {
+				stack?: string | undefined;
+				chain?: string | undefined;
+				customNetworkName?: string | undefined;
+		  }
+		| null
+		| undefined;
 }
 
 export const CallTraceContext = createContext<CallTraceContextProps>({
@@ -89,7 +101,10 @@ export const CallTraceContext = createContext<CallTraceContextProps>({
 	chosenCallName: null,
 	setChosenCallName: () => undefined,
 	showGasChips: true,
-	gasChipToggle: () => undefined
+	gasChipToggle: () => undefined,
+	transactionData: {} as L2TransactionData,
+	rpcUrl: undefined,
+	chainDetails: undefined
 });
 
 export const CallTraceContextProvider: React.FC<
@@ -98,8 +113,27 @@ export const CallTraceContextProvider: React.FC<
 		l2Flamegraph: FlameNode | undefined;
 		l1DataFlamegraph: FlameNode | undefined;
 		debuggerPayload: DebuggerPayload | null;
+		transactionData: L2TransactionData;
+		rpcUrl: string | undefined;
+		chainDetails:
+			| {
+					stack?: string | undefined;
+					chain?: string | undefined;
+					customNetworkName?: string | undefined;
+			  }
+			| null
+			| undefined;
 	}>
-> = ({ children, simulationResult, l2Flamegraph, l1DataFlamegraph, debuggerPayload }) => {
+> = ({
+	children,
+	simulationResult,
+	l2Flamegraph,
+	l1DataFlamegraph,
+	debuggerPayload,
+	transactionData,
+	rpcUrl,
+	chainDetails
+}) => {
 	// Initialize with empty collapsed state since core:: calls are now hidden and don't need collapsing
 	const initiallyCollapsed: StringBooleanDict = {};
 
@@ -214,7 +248,10 @@ export const CallTraceContextProvider: React.FC<
 				setChosenCallName,
 				callWithError,
 				gasChipToggle,
-				showGasChips
+				showGasChips,
+				transactionData,
+				rpcUrl,
+				chainDetails
 			}}
 		>
 			{children}

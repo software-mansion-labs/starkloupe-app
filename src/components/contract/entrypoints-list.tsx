@@ -3,15 +3,23 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import React, { useEffect, useState } from 'react';
 import { ContractFunctions, EntryPointItem, FunctionInput, FunctionOutput } from '@/lib/contracts';
 import TypeMembersViewer from '../ui/type-members-viewer';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu';
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger
+} from '../ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import { Copy } from 'lucide-react';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { useSettings } from '@/lib/context/settings-context-provider';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 
 export function EntrypointsList({ entryPoints }: { entryPoints: ContractFunctions | undefined }) {
 	const { contractEntrypointsElementRefs, searchResultAddress } = useSettings();
+	const [mode, setMode] = useState('read');
+
 	if (entryPoints?.entry_point_datas.length === 0) {
 		return (
 			<Alert className="mx-4 mt-2 w-fit">
@@ -31,9 +39,41 @@ export function EntrypointsList({ entryPoints }: { entryPoints: ContractFunction
 			readEntrypoints.push(entryPoint);
 		}
 	});
+	const currentEntrypoints = mode === 'read' ? readEntrypoints : writeEntrypoints;
 	return (
-		<div>
-			<div className="flex flex-row w-full ">
+		<>
+			<div className="flex-row w-full block md:hidden">
+				<Select value={mode} onValueChange={setMode}>
+					<SelectTrigger className="w-full focus:outline-none rounded-none focus:ring-0 focus:ring-offset-0 border-0 border-b border-border">
+						<SelectValue />
+					</SelectTrigger>
+					<SelectContent className="w-[var(--radix-select-trigger-width)]">
+						<SelectItem value="read">Read</SelectItem>
+						<SelectItem value="write">Write</SelectItem>
+					</SelectContent>
+				</Select>
+
+				<div className="px-4 ">
+					{currentEntrypoints.map((entryPoint, index) => {
+						if (!contractEntrypointsElementRefs.current[entryPoint[0]]) {
+							contractEntrypointsElementRefs.current[entryPoint[0]] =
+								React.createRef<HTMLDivElement>();
+						}
+
+						return (
+							<EntryPoint
+								key={`entrypoint-${index}-${entryPoint[0]}`}
+								entryPoint={entryPoint}
+								index={index}
+								prefix={mode}
+								customRef={contractEntrypointsElementRefs.current[entryPoint[0]]}
+								searchResultAddress={searchResultAddress}
+							/>
+						);
+					})}
+				</div>
+			</div>
+			<div className=" flex-row w-full hidden md:flex">
 				<div className="w-1/2 px-4">
 					<div className="mb-2 text-sm">Read</div>
 					<div className="border-b border-border mb-4"></div>
@@ -76,7 +116,7 @@ export function EntrypointsList({ entryPoints }: { entryPoints: ContractFunction
 					})}
 				</div>
 			</div>
-		</div>
+		</>
 	);
 }
 

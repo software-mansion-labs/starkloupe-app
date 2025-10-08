@@ -185,7 +185,9 @@ export function TransactionPage({
 												>
 													<AddressLink address={l2TxHash}>{l2TxHashShort}</AddressLink>
 												</CopyToClipboardElement>
-												{chainDetails && <NetworkBadge network={chainDetails} />}
+												<div className="hidden md:block">
+													{chainDetails && <NetworkBadge network={chainDetails} />}
+												</div>
 											</div>
 										</h1>
 									)}
@@ -206,35 +208,58 @@ export function TransactionPage({
 											>
 												{l1TxHashShort}
 											</CopyToClipboardElement>
-											{chainDetails && <NetworkBadge network={chainDetails} />}
+											{/* {chainDetails && <NetworkBadge network={chainDetails} />} */}
 										</h2>
 									)}
 								</div>
-								{isLogged ? (
-									<Button
-										onClick={handleReSimulateClick}
-										variant="outline"
-										disabled={l2TransactionData.transactionType !== 'INVOKE'}
-									>
-										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
-									</Button>
-								) : (
-									<Link href="/login">
-										<Button variant="outline">
-											<PlayIcon className="mr-2 h-4 w-4" /> Re-simulate transaction
+								<div className="hidden md:block">
+									{isLogged ? (
+										<Button
+											onClick={handleReSimulateClick}
+											variant="outline"
+											disabled={l2TransactionData.transactionType !== 'INVOKE'}
+										>
+											<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
 										</Button>
-									</Link>
-								)}
+									) : (
+										<Link href="/login">
+											<Button variant="outline">
+												<PlayIcon className="mr-2 h-4 w-4" /> Re-simulate transaction
+											</Button>
+										</Link>
+									)}
+								</div>
+
+								<div className="flex md:hidden gap-2 justify-between">
+									{chainDetails && <NetworkBadge network={chainDetails} />}
+									{isLogged ? (
+										<Button
+											onClick={handleReSimulateClick}
+											variant="outline"
+											disabled={l2TransactionData.transactionType !== 'INVOKE'}
+										>
+											<PlayIcon className="h-4 w-4 mr-2" />
+											Re-simulate
+										</Button>
+									) : (
+										<Link href="/login">
+											<Button variant="outline"></Button>
+										</Link>
+									)}
+								</div>
 							</div>
-							<TransactionDetails
+							<div className="hidden md:block">
+								<TransactionDetails
+									transactionData={l2TransactionData}
+									rpcUrl={rpcUrl}
+									chainDetails={chainDetails}
+								/>
+							</div>
+
+							<CallTraceRoot
 								transactionData={l2TransactionData}
 								rpcUrl={rpcUrl}
 								chainDetails={chainDetails}
-							/>
-							<CallTraceRoot
-								simulationResult={l2TransactionData.simulationResult}
-								l2Flamegraph={l2TransactionData.flamechart}
-								l1DataFlamegraph={l2TransactionData.l1DataFlamechart}
 								debuggerPayload={debuggerPayload}
 							/>
 						</>
@@ -395,13 +420,22 @@ export function TransactionPage({
 													{shortenHash(normalizedTxHash)}
 												</AddressLink>
 											</CopyToClipboardElement>
-											{chainDetails && <NetworkBadge network={chainDetails} />}
+											<div className="hidden md:block">
+												{chainDetails && <NetworkBadge network={chainDetails} />}
+											</div>
 										</div>
 									</h1>
 								</div>
 
-								<Button variant="outline" disabled>
-									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+								<div className="flex md:hidden gap-2 justify-between">
+									{chainDetails && <NetworkBadge network={chainDetails} />}
+									<Button variant="outline" disabled>
+										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+									</Button>
+								</div>
+
+								<Button variant="outline" disabled className="hidden md:flex">
+									<PlayIcon className="h-4 w-4 mr-2 " /> Re-simulate
 								</Button>
 							</div>
 							<Loader />
@@ -409,7 +443,9 @@ export function TransactionPage({
 					)}
 				</Container>
 			</main>
-			<Footer />
+			<div className="hidden md:block">
+				<Footer />
+			</div>
 		</>
 	);
 }
