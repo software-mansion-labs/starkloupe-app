@@ -1,3 +1,5 @@
+import { DecodedContractCall } from '../contracts';
+
 export type CallResult =
 	| {
 			Success: {
@@ -273,6 +275,17 @@ export interface TransactionSimulationResult {
 export interface SimulationPayloadWithCalldata {
 	senderAddress: string;
 	calldata: string[];
+	blockNumber?: number;
+	transactionVersion: number;
+	nonce?: number;
+	// Either chainId or rpcUrl should be provided
+	chainId?: string;
+	rpcUrl?: string;
+}
+
+export interface SimulationPayloadWithParameters {
+	senderAddress: string;
+	decoded_calldata: DecodedContractCall[];
 	blockNumber?: number;
 	transactionVersion: number;
 	nonce?: number;

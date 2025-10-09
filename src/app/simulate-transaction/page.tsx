@@ -60,6 +60,7 @@ export default function Page({
 		<SimulateTransactionPage
 			txHash={txHash}
 			simulationPayload={simulationPayload}
+			parsedCalldata={searchParams?.calldata && (searchParams.calldata as string)}
 			title={simulationPayload && 'Re-simulate'}
 			description={
 				simulationPayload &&

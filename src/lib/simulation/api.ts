@@ -1,23 +1,60 @@
 import { ChainId } from '@/lib/types';
 import { fetchApi } from '@/lib/utils';
-import { SimulationPayloadWithCalldata, TransactionSimulationResult } from '@/lib/simulation';
+import {
+	SimulationPayloadWithCalldata,
+	SimulationPayloadWithParameters,
+	TransactionSimulationResult
+} from '@/lib/simulation';
 
 export async function simulateTransactionByData(
 	simulationPayload: SimulationPayloadWithCalldata,
 	skipTracking?: boolean
 ): Promise<TransactionSimulationResult> {
+	const payload: any = {
+		sender_address: simulationPayload.senderAddress,
+		calldata: simulationPayload.calldata,
+		transaction_version: simulationPayload.transactionVersion,
+		nonce: simulationPayload.nonce,
+		rpc_url: simulationPayload.rpcUrl,
+		chain_id: simulationPayload.chainId
+	};
+
+	if (simulationPayload.blockNumber !== undefined) {
+		payload.block_number = simulationPayload.blockNumber;
+	}
+
 	const a = await fetchApi<TransactionSimulationResult>(`/v1/simulate-transaction`, {
 		method: 'POST',
 		data: {
-			WithCalldata: {
-				sender_address: simulationPayload.senderAddress,
-				calldata: simulationPayload.calldata,
-				block_number: simulationPayload.blockNumber,
-				transaction_version: simulationPayload.transactionVersion,
-				nonce: simulationPayload.nonce,
-				rpc_url: simulationPayload.rpcUrl,
-				chain_id: simulationPayload.chainId
-			}
+			WithCalldata: payload
+		},
+		renameToCamelCase: true,
+		queryParams: skipTracking ? { skip_tracking: 'true' } : undefined
+	});
+	return a;
+}
+
+export async function simulateTransactionByParameters(
+	simulationPayload: SimulationPayloadWithParameters,
+	skipTracking?: boolean
+): Promise<TransactionSimulationResult> {
+	const payload: any = {
+		sender_address: simulationPayload.senderAddress,
+		decoded_calldata: simulationPayload.decoded_calldata,
+		transaction_version: simulationPayload.transactionVersion,
+		nonce: simulationPayload.nonce,
+		rpc_url: simulationPayload.rpcUrl,
+		chain_id: simulationPayload.chainId
+	};
+
+	if (simulationPayload.blockNumber !== undefined) {
+		payload.block_number = simulationPayload.blockNumber;
+	}
+
+	const a = await fetchApi<TransactionSimulationResult>(`/v1/simulate-transaction`, {
+		method: 'POST',
+		data: {
+			WithDecodedCalldata: payload
 		},
 		renameToCamelCase: true,
 		queryParams: skipTracking ? { skip_tracking: 'true' } : undefined

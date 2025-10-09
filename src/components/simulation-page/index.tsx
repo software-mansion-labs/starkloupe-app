@@ -7,7 +7,6 @@ import { useEffect, useState } from 'react';
 import {
 	simulateTransactionByData,
 	SimulationPayloadWithCalldata,
-	TransactionSimulationResult,
 	L2TransactionData
 } from '@/lib/simulation';
 import { DebuggerPayload } from '@/lib/debugger';

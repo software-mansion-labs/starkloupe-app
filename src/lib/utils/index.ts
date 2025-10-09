@@ -14,7 +14,8 @@ export interface SimpleContractCall {
 
 export interface SimulationPayload {
 	senderAddress: string;
-	calls: SimpleContractCall[];
+	calls?: SimpleContractCall[];
+	calldata?: string[];
 	blockNumber?: number;
 	transactionVersion: number;
 	nonce?: number;
@@ -212,11 +213,15 @@ export function parseContractCalls(calldata: string[]): SimpleContractCall[] {
 }
 
 export function openSimulationPage(simulationPayload: SimulationPayload): void {
-	const serializedCalls = serializeContractCalls(simulationPayload.calls);
+	const calldata = simulationPayload.calldata
+		? simulationPayload.calldata
+		: simulationPayload.calls
+		? serializeContractCalls(simulationPayload.calls)
+		: [];
 
 	const params = new URLSearchParams({
 		senderAddress: simulationPayload.senderAddress,
-		calldata: serializedCalls.join(','),
+		calldata: calldata.join(','),
 		transactionVersion: simulationPayload.transactionVersion.toString()
 	});
 

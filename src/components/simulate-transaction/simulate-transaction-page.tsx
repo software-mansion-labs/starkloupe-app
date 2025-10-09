@@ -1,24 +1,15 @@
 'use client';
 
 import { HeaderNav } from '../header';
-import { Container } from '../ui/container';
 import { Footer } from '../footer';
-import { AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeftIcon, PlayIcon } from '@heroicons/react/24/solid';
-import { useCallback, useEffect, useState } from 'react';
-import {
-	openSimulationPage,
-	shortenHash,
-	SimpleContractCall,
-	SimulationPayload
-} from '@/lib/utils';
+import { useEffect, useState } from 'react';
+import { shortenHash, SimulationPayload } from '@/lib/utils';
 import { Chain, NetworksSelect } from '@/components/networks-select';
-import { Textarea } from '../ui/textarea';
-import { fetchContractFunctions } from '@/lib/contracts';
-import { EntryPointSelect } from '../entry-point-select';
+import { fetchContractDecodeCalldata } from '@/lib/contracts';
 import {
 	Select,
 	SelectContent,
@@ -27,67 +18,162 @@ import {
 	SelectValue
 } from '@/components/ui/select';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { useRouter } from 'next/navigation';
+import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
+import { normalizeDecodedCalldata, validateHexFormat } from '../../lib/utils/validation-utils';
+import { FieldAlert } from './field-alert';
+import { ContractCallFieldset } from './contract-call-fieldset';
+import { useContractFunctions } from '../hooks/use-contract-functions';
+import { useDecodeCalldata } from '../hooks/use-decode-calldata';
+import { useSimulationForm, useFormValidation } from '../hooks/use-simulation-form';
+import {
+	handleParameterSubmission,
+	handleRawSubmission
+} from '../../lib/utils/simulation-handlers';
+import { flattenParameters } from '@/lib/utils/parameter-utils';
+import { toast } from '@/components/hooks/use-toast';
+
+interface SimulateTransactionPageProps {
+	txHash?: string;
+	title?: string;
+	description?: string;
+	simulationPayload?: SimulationPayload;
+	parsedCalldata?: string;
+}
 
 export function SimulateTransactionPage({
 	txHash,
 	title = 'Simulate transaction',
 	description = 'Configure your invoke transaction for simulation.',
-	simulationPayload
-}: {
-	txHash?: string;
-	title?: string;
-	description?: string;
-	simulationPayload?: SimulationPayload;
-}) {
+	simulationPayload,
+	parsedCalldata
+}: SimulateTransactionPageProps) {
 	const defaultTransactionVersion = 3;
-	const [alert, setAlert] = useState(false);
-	const validateHexFormat = (value: string) => /^0x[0-9a-fA-F]+$/.test(value) || value === '';
-	const validateCalldata = useCallback((calldata: string[]) => {
-		return calldata.every((item) => validateHexFormat(item));
-	}, []);
 	const router = useRouter();
 
-	const [isLoading, setIsLoading] = useState(false);
-	const [isLoadingFunctions, setIsLoadingFunctions] = useState<{ [key: string]: boolean }>({});
+	const {
+		alert,
+		setAlert,
+		isParameterInvalid,
+		setIsParameterInvalid,
+		serverDataLoaded,
+		setServerDataLoaded,
+		isSimulating,
+		setIsSimulating,
+		calldataDecodeError,
+		setCalldataDecodeError,
+		_senderAddress,
+		_setSenderAddress,
+		_numberOfContracts,
+		_setNumberOfContracts,
+		_contractCalls,
+		_setContractCalls,
+		_blockNumber,
+		_setBlockNumber,
+		_transactionVersion,
+		_setTransactionVersion,
+		_chain,
+		_setChain,
+		activeTabs,
+		setActiveTabs
+	} = useSimulationForm(simulationPayload, defaultTransactionVersion);
 
-	const [_senderAddress, _setSenderAddress] = useState<string>(
-		simulationPayload?.senderAddress ?? ''
-	);
-	const [_numberOfContracts, _setNumberOfContracts] = useState<number>(
-		simulationPayload?.calls?.length || 1
+	const {
+		contractCallsFunctions,
+		isLoadingFunctions,
+		contractFetchErrors,
+		isLoading,
+		fetchFunctionsForContractAddress
+	} = useContractFunctions(_chain, _contractCalls);
+
+	const { decodeCalldata, setDecodeCalldata } = useDecodeCalldata(
+		_contractCalls,
+		contractCallsFunctions,
+		serverDataLoaded,
+		txHash
 	);
 
-	const [_contractCalls, _setContractCalls] = useState<SimpleContractCall[]>([]);
+	useEffect(() => {
+		const fetchServerDecodeCalldata = async () => {
+			if (
+				!parsedCalldata ||
+				!_senderAddress ||
+				!_blockNumber ||
+				!_chain?.chainId ||
+				!contractCallsFunctions ||
+				Object.keys(contractCallsFunctions).length === 0
+			) {
+				return;
+			}
 
-	const [_contractCallsFunctions, _setContractCallsFunctions] = useState<{ [key: string]: any }>(
-		{}
-	);
+			if (serverDataLoaded) {
+				return;
+			}
 
-	const [_blockNumber, _setBlockNumber] = useState<number | ''>(
-		simulationPayload?.blockNumber ?? ''
-	);
+			try {
+				const response = await fetchContractDecodeCalldata({
+					tx_hash: txHash,
+					sender_address: _senderAddress,
+					calldata: parsedCalldata,
+					block_number: _blockNumber,
+					chain_id: _chain.chainId,
+					transaction_version: _transactionVersion
+				});
 
-	const [_transactionVersion, _setTransactionVersion] = useState<number>(
-		simulationPayload?.transactionVersion || defaultTransactionVersion
+				if (response && typeof response === 'object') {
+					const normalizedData = normalizeDecodedCalldata(response);
+					setDecodeCalldata(normalizedData);
+					setServerDataLoaded(true);
+					setCalldataDecodeError({});
+				}
+			} catch (error) {
+				console.error('Error fetching decode calldata:', error);
+
+				const errorMap: { [key: number]: boolean } = {};
+				_contractCalls.forEach((call, index) => {
+					if (call.calldata && call.calldata.trim() !== '') {
+						errorMap[index] = true;
+					}
+				});
+				setCalldataDecodeError(errorMap);
+
+				toast({
+					title: 'Error',
+					description: 'Failed to decode raw calldata. Please check your input.',
+					variant: 'destructive'
+				});
+			}
+		};
+
+		fetchServerDecodeCalldata();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [
+		txHash,
+		_senderAddress,
+		parsedCalldata,
+		_blockNumber,
+		_chain?.chainId,
+		_transactionVersion,
+		contractCallsFunctions,
+		serverDataLoaded
+	]);
+
+	useFormValidation(
+		_senderAddress,
+		_contractCalls,
+		_transactionVersion,
+		alert,
+		contractCallsFunctions,
+		setAlert
 	);
-	const [_chain, _setChain] = useState<Chain | undefined>(undefined);
 
 	const onChainChangedCallback = async (chain: Chain) => {
 		_setChain(chain);
-		_setContractCalls((prev) => {
-			const newCalls = prev.map((item) => ({
-				...item
-			}));
-			return newCalls;
-		});
 	};
+
 	const handleNumberOfContractsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 		const inputValue = e.target.value;
-
 		const numValue = Math.max(1, parseInt(inputValue) || 1);
-
 		_setNumberOfContracts(numValue);
 	};
 
@@ -107,296 +193,6 @@ export function SimulateTransactionPage({
 		}
 	};
 
-	useEffect(() => {
-		if (!simulationPayload) return;
-
-		_setSenderAddress(simulationPayload.senderAddress ?? '');
-		_setBlockNumber(simulationPayload.blockNumber ?? '');
-
-		if (simulationPayload.chainId) {
-			_setChain({ chainId: simulationPayload.chainId });
-		} else if (simulationPayload.rpcUrl) {
-			_setChain({
-				network: {
-					rpcUrl: simulationPayload.rpcUrl,
-					networkName: 'Custom Network'
-				}
-			});
-		}
-
-		if (simulationPayload.calls && simulationPayload.calls.length > 0) {
-			_setContractCalls(simulationPayload.calls);
-			_setNumberOfContracts(simulationPayload.calls.length);
-		} else {
-			_setContractCalls([{ address: '', function_name: '', calldata: '' }]);
-			_setNumberOfContracts(1);
-		}
-
-		_setTransactionVersion(simulationPayload.transactionVersion || defaultTransactionVersion);
-	}, [simulationPayload]);
-
-	useEffect(() => {
-		_setContractCallsFunctions({});
-		const initializeContractFunctions = async () => {
-			if (_chain && _contractCalls && _contractCalls.length > 0) {
-				const validContracts = _contractCalls.filter(
-					(call) => call.address && validateHexFormat(call.address)
-				);
-
-				if (validContracts.length > 0) {
-					setIsLoading(true);
-					const uniqueContracts = Array.from(
-						new Map(validContracts.map((call) => [call.address, call])).values()
-					);
-					try {
-						await Promise.all(
-							uniqueContracts.map((call) => fetchFunctionsForContractAddress(call.address))
-						);
-					} finally {
-						setIsLoading(false);
-					}
-				}
-			}
-		};
-		initializeContractFunctions();
-	}, [_chain]);
-
-	const fetchFunctionsForContractAddress = async (
-		contractAddress: string,
-		chainIdOverride?: string
-	) => {
-		const chainId = chainIdOverride || _chain?.chainId;
-
-		if (!chainId || !validateHexFormat(contractAddress)) {
-			return;
-		}
-
-		setIsLoadingFunctions((prev) => ({
-			...prev,
-			[contractAddress]: true
-		}));
-		try {
-			const result = await fetchContractFunctions({
-				contractAddress,
-				network: chainId
-			});
-
-			if (result && result.entry_point_datas) {
-				_setContractCallsFunctions((prev) => ({
-					...prev,
-					[contractAddress]: result.entry_point_datas
-				}));
-			}
-		} catch (error) {
-			console.log('Error fetching functions:', error);
-
-			if (error instanceof Error && error.message === 'ABI not found for contract address') {
-				_setContractCallsFunctions((prev) => {
-					const { contractAddress, ...rest } = prev;
-					return rest;
-				});
-				_setContractCalls((prev) => {
-					const newState = prev.map((item) => {
-						if (item.address === contractAddress) {
-							item.function_name = '';
-						}
-						return item;
-					});
-					return newState;
-				});
-			}
-		} finally {
-			setIsLoadingFunctions((prev) => ({
-				...prev,
-				[contractAddress]: false
-			}));
-		}
-	};
-
-	useEffect(() => {
-		if (_contractCalls.length === _numberOfContracts) return;
-
-		const newCalls = [..._contractCalls];
-
-		if (newCalls.length < _numberOfContracts) {
-			for (let i = newCalls.length; i < _numberOfContracts; i++) {
-				newCalls.push({
-					address: '',
-					function_name: '',
-					calldata: ''
-				});
-			}
-		} else if (newCalls.length > _numberOfContracts) {
-			newCalls.splice(_numberOfContracts);
-		}
-
-		_setContractCalls(newCalls);
-	}, [_numberOfContracts]);
-
-	function onDialogSubmit() {
-		const processedCalls = _contractCalls.map((call) => ({
-			...call,
-			calldata: call.calldata.trim() === '' ? '' : call.calldata
-		}));
-
-		const allCallsValid = processedCalls.every(
-			(call) => validateHexFormat(call.address) && call.function_name
-		);
-
-		const allCalldataValid = processedCalls.every((call) => {
-			if (call.calldata.trim() === '') {
-				return true;
-			}
-
-			const calldataLines = call.calldata
-				.trim()
-				.split('\n')
-				.filter((line) => line.trim() !== '');
-			return validateCalldata(calldataLines);
-		});
-
-		if (!allCallsValid || !allCalldataValid) {
-			setAlert(true);
-			return;
-		}
-
-		const simulationPayload: SimulationPayload = {
-			senderAddress: _senderAddress,
-			calls: processedCalls,
-			blockNumber: _blockNumber === '' ? undefined : _blockNumber,
-			transactionVersion: _transactionVersion
-		};
-
-		if (_chain) {
-			if (_chain.chainId) {
-				simulationPayload.chainId = _chain.chainId;
-			} else if (_chain.network) {
-				simulationPayload.rpcUrl = _chain.network.rpcUrl;
-			}
-		} else {
-			throw new Error('Chain is not defined');
-		}
-
-		if (
-			simulationPayload.senderAddress === '' ||
-			!validateHexFormat(simulationPayload.senderAddress) ||
-			![1, 3].includes(simulationPayload.transactionVersion)
-		) {
-			setAlert(true);
-		} else {
-			openSimulationPage(simulationPayload);
-		}
-	}
-
-	const FieldAlert = () => {
-		const getValidationErrors = () => {
-			const errors = [];
-			const emptyFields = [];
-
-			if (!_senderAddress) emptyFields.push('Sender Address');
-
-			const hasEmptyAddresses = _contractCalls.some(
-				(call) => !call.address || !validateHexFormat(call.address)
-			);
-			if (hasEmptyAddresses) {
-				emptyFields.push('Contract Address');
-			}
-
-			const hasEmptyFunctions = _contractCalls.some((call) => !call.function_name);
-			if (hasEmptyFunctions) {
-				emptyFields.push('Entry Point');
-			}
-
-			if (!_transactionVersion) emptyFields.push('Transaction version');
-
-			if (emptyFields.length > 0) {
-				errors.push(
-					`The ${emptyFields.join(', ')} field${emptyFields.length > 1 ? 's' : ''} ${
-						emptyFields.length === 1 ? 'is' : 'are'
-					} required for all calls`
-				);
-			}
-
-			if (_senderAddress && !validateHexFormat(_senderAddress)) {
-				errors.push('Sender address must be a hexadecimal number starting with 0x');
-			}
-
-			_contractCalls.forEach((call, index) => {
-				if (call.address && !validateHexFormat(call.address)) {
-					errors.push(
-						`Contract address in call #${index + 1} must be a hexadecimal number starting with 0x`
-					);
-				}
-
-				if (call.address && call.calldata && call.calldata.trim() !== '') {
-					const calldataArray = call.calldata
-						.trim()
-						.split('\n')
-						.filter((line) => line.trim() !== '');
-					if (!validateCalldata(calldataArray)) {
-						errors.push(
-							`Calldata in call #${
-								index + 1
-							} must be a list of hexadecimal numbers, each starting with 0x`
-						);
-					}
-				}
-			});
-
-			if (![1, 3].includes(_transactionVersion)) {
-				errors.push('Transaction version must be either 1 or 3');
-			}
-
-			return errors.join('. ');
-		};
-
-		const validationMessage = getValidationErrors();
-
-		if (!validationMessage) {
-			return null;
-		}
-		return (
-			<Alert variant="destructive" className="mt-4">
-				<AlertCircle className="h-4 w-4" />
-				<AlertTitle>Error</AlertTitle>
-				<AlertDescription>Your form contains errors. Scroll up to see them.</AlertDescription>
-			</Alert>
-		);
-	};
-
-	useEffect(() => {
-		if (alert) {
-			const allAddressesValid = _contractCalls.every((call) => validateHexFormat(call.address));
-
-			const allFunctionsSelected = _contractCalls.every((call) => !!call.function_name);
-
-			const allCalldataValid = _contractCalls.every((call) => {
-				const calldataLines = call.calldata
-					.trim()
-					.split('\n')
-					.filter((line) => line.trim() !== '');
-				return (
-					validateCalldata(calldataLines) &&
-					calldataLines.length ===
-						_contractCallsFunctions[call.address]?.find(
-							(item: string) => item[0] === call.function_name
-						)?.[1]?.inputs?.length
-				);
-			});
-
-			if (
-				_senderAddress !== '' &&
-				validateHexFormat(_senderAddress) &&
-				allAddressesValid &&
-				allFunctionsSelected &&
-				allCalldataValid &&
-				[1, 3].includes(_transactionVersion)
-			) {
-				setAlert(false);
-			}
-		}
-	}, [_senderAddress, _contractCalls, _transactionVersion, alert, validateCalldata]);
-
 	const handleContractAddressChange = async (index: number, newAddress: string) => {
 		const newCalls = [..._contractCalls];
 		const oldAddress = newCalls[index].address;
@@ -409,7 +205,14 @@ export function SimulateTransactionPage({
 
 		_setContractCalls(newCalls);
 
-		if (newAddress && validateHexFormat(newAddress) && newAddress !== oldAddress) {
+		if (
+			newAddress &&
+			validateHexFormat(newAddress) &&
+			newAddress !== oldAddress &&
+			_chain?.chainId &&
+			!contractCallsFunctions[newAddress] &&
+			!isLoadingFunctions[newAddress]
+		) {
 			await fetchFunctionsForContractAddress(newAddress);
 		}
 	};
@@ -418,22 +221,58 @@ export function SimulateTransactionPage({
 		_setContractCalls((prevCalls) => {
 			return prevCalls.map((call, idx) => {
 				if (idx === index) {
-					if (newFunctionName === simulationPayload?.calls[index]?.function_name) {
-						return {
-							...call,
-							address: call.address,
-							function_name: newFunctionName
-						};
-					} else {
-						return {
-							calldata: call.calldata,
-							address: call.address,
-							function_name: newFunctionName
-						};
-					}
+					return {
+						address: call.address,
+						function_name: newFunctionName,
+						calldata: ''
+					};
 				}
 				return call;
 			});
+		});
+
+		setDecodeCalldata((prevData) => {
+			if (!prevData) return prevData;
+
+			const updatedData = { ...prevData };
+			updatedData.decoded_calldata = [...prevData.decoded_calldata];
+
+			const contractAddress = _contractCalls[index].address;
+			const functions = contractCallsFunctions[contractAddress];
+
+			if (!functions || !newFunctionName) {
+				updatedData.decoded_calldata[index] = {
+					contract_address: contractAddress,
+					function_selector: newFunctionName,
+					function_name: '',
+					parameters: []
+				};
+				return updatedData;
+			}
+
+			const functionData = functions.find((fn: any) => fn[0] === newFunctionName);
+
+			if (!functionData) {
+				updatedData.decoded_calldata[index] = {
+					contract_address: contractAddress,
+					function_selector: newFunctionName,
+					function_name: '',
+					parameters: []
+				};
+				return updatedData;
+			}
+
+			const functionInfo = functionData[1];
+			const parameters = flattenParameters(functionInfo?.inputs || []);
+
+			updatedData.decoded_calldata[index] = {
+				contract_address: contractAddress,
+				function_selector: functionData[0],
+				function_name: functionInfo.name,
+				parameters
+			};
+
+			return updatedData;
 		});
 	};
 
@@ -444,6 +283,165 @@ export function SimulateTransactionPage({
 			calldata: newCalldata
 		};
 		_setContractCalls(newCalls);
+
+		setServerDataLoaded(false);
+	};
+
+	const handleTabChange = async (newTab: string) => {
+		setActiveTabs(newTab);
+
+		if (newTab === 'parameters') {
+			const hasAnyRawCalldata = _contractCalls.some(
+				(call) => call.calldata && call.calldata.trim() !== ''
+			);
+
+			const hasExistingErrors = Object.keys(calldataDecodeError).length > 0;
+
+			if (
+				!hasAnyRawCalldata ||
+				serverDataLoaded ||
+				hasExistingErrors ||
+				!_senderAddress ||
+				!_blockNumber ||
+				!_chain?.chainId
+			) {
+				return;
+			}
+
+			const callsWithCalldata = _contractCalls.filter(
+				(call) => call.calldata && call.calldata.trim() !== ''
+			);
+			const combinedCalldata = callsWithCalldata
+				.map((call) => call.calldata?.trim() || '')
+				.join(',');
+
+			try {
+				const response = await fetchContractDecodeCalldata({
+					tx_hash: txHash,
+					sender_address: _senderAddress,
+					calldata: combinedCalldata,
+					block_number: _blockNumber,
+					chain_id: _chain.chainId,
+					transaction_version: _transactionVersion
+				});
+
+				if (response && typeof response === 'object') {
+					const normalizedData = normalizeDecodedCalldata(response);
+					setDecodeCalldata(normalizedData);
+					setServerDataLoaded(true);
+					setCalldataDecodeError({});
+				}
+			} catch (error) {
+				console.error('Error decoding calldata:', error);
+				const errorMap: { [key: number]: boolean } = {};
+				_contractCalls.forEach((call, index) => {
+					if (call.calldata && call.calldata.trim() !== '') {
+						errorMap[index] = true;
+					}
+				});
+				setCalldataDecodeError(errorMap);
+
+				toast({
+					title: 'Error',
+					description: 'Failed to decode raw calldata. Please check your input.',
+					variant: 'destructive'
+				});
+			}
+		}
+	};
+
+	const handleResetCalldata = (index: number) => {
+		const newCalls = [..._contractCalls];
+		newCalls[index] = {
+			...newCalls[index],
+			calldata: ''
+		};
+		_setContractCalls(newCalls);
+
+		const newErrors = { ...calldataDecodeError };
+		delete newErrors[index];
+		setCalldataDecodeError(newErrors);
+	};
+
+	const handleParameterValueChange = (callIndex: number, paramIndex: number, newValue: any) => {
+		setDecodeCalldata((prevData) => {
+			if (!prevData) return prevData;
+
+			const updatedData = { ...prevData };
+			updatedData.decoded_calldata = [...prevData.decoded_calldata];
+			updatedData.decoded_calldata[callIndex] = {
+				...prevData.decoded_calldata[callIndex],
+				parameters: [...prevData.decoded_calldata[callIndex].parameters]
+			};
+
+			const parameter = updatedData.decoded_calldata[callIndex].parameters[paramIndex];
+			const contractAddress = _contractCalls[callIndex].address;
+			const functionName = _contractCalls[callIndex].function_name;
+			const functions = contractCallsFunctions[contractAddress];
+			const functionData = functions?.find((fn: any) => fn[0] === functionName);
+			const functionInput = functionData?.[1]?.inputs?.[paramIndex];
+
+			let finalValue = newValue;
+			let newTypeName: string;
+
+			if (
+				typeof newValue === 'object' &&
+				newValue !== null &&
+				'__enum_variant' in newValue
+			) {
+				const enumBase = parameter.type_name.includes('::')
+					? parameter.type_name.split('::')[0]
+					: (functionInput?.type || parameter.type_name);
+				newTypeName = `${enumBase}::${newValue.__enum_variant}`;
+
+				if ('__enum_value' in newValue) {
+					finalValue = newValue.__enum_value;
+				} else {
+					const { __enum_variant, ...rest } = newValue;
+					finalValue = rest;
+				}
+			} else if (functionInput?.enum_variants && typeof newValue === 'string') {
+				const enumBase = parameter.type_name.includes('::')
+					? parameter.type_name.split('::')[0]
+					: parameter.type_name;
+				newTypeName = `${enumBase}::${newValue}`;
+			} else {
+				newTypeName = parameter.type_name.includes('::')
+					? parameter.type_name.split('::')[0]
+					: parameter.type_name;
+			}
+
+			updatedData.decoded_calldata[callIndex].parameters[paramIndex] = {
+				...parameter,
+				type_name: newTypeName,
+				value: finalValue
+			};
+
+			return updatedData;
+		});
+	};
+
+	const onDialogSubmit = async () => {
+		if (activeTabs === 'parameters' && decodeCalldata) {
+			await handleParameterSubmission(
+				_senderAddress,
+				decodeCalldata,
+				_blockNumber,
+				_transactionVersion,
+				_chain,
+				setIsSimulating,
+				setAlert
+			);
+		} else {
+			await handleRawSubmission(
+				_senderAddress,
+				_contractCalls,
+				_blockNumber,
+				_transactionVersion,
+				_chain,
+				setAlert
+			);
+		}
 	};
 
 	return (
@@ -504,7 +502,7 @@ export function SimulateTransactionPage({
 										className={`col-span-3 font-mono ${
 											alert &&
 											(_senderAddress === '' || !validateHexFormat(_senderAddress)) &&
-											' border-red-500'
+											'border-red-500'
 										}`}
 									/>
 									{alert && _senderAddress === '' && (
@@ -530,112 +528,44 @@ export function SimulateTransactionPage({
 										min={1}
 										onChange={handleNumberOfContractsChange}
 										className={`col-span-3 font-mono ${
-											alert && _numberOfContracts < 1 && ' border-red-500'
+											alert && _numberOfContracts < 1 && 'border-red-500'
 										}`}
 									/>
 								</div>
 
-								{_contractCalls.map((call, index) => {
-									return (
-										<fieldset key={index} className="border  rounded-md p-4">
-											<legend className="px-2 font-medium text-sm">Call #{index + 1}</legend>
-											<div className="grid gap-4">
-												<div className="grid grid-cols-4 items-center gap-x-4 gap-y-2">
-													<Label htmlFor={`contract-address-${index}`} className="text-right">
-														Contract address
-													</Label>
-													<Input
-														id={`contract-address-${index}`}
-														value={call.address}
-														onChange={(e) => handleContractAddressChange(index, e.target.value)}
-														className={`col-span-3 font-mono ${
-															alert &&
-															(!call.address ||
-																!validateHexFormat(call.address) ||
-																!_contractCallsFunctions[call.address]) &&
-															' border-red-500'
-														}`}
-													/>
-													{alert && !call.address && (
-														<p className="text-xs text-red-500 col-span-3 col-start-2">
-															Contract address is required.
-														</p>
-													)}
-													{alert && !validateHexFormat(call.address) && (
-														<p className="text-xs text-red-500 col-span-3 col-start-2">
-															Contract address must be a hexadecimal number.
-														</p>
-													)}
-													{alert &&
-														!_contractCallsFunctions[call.address] &&
-														call.address &&
-														validateHexFormat(call.address) && (
-															<p className="text-xs text-red-500 col-span-3 col-start-2">
-																This contract is not deployed on {_chain?.chainId}.
-															</p>
-														)}
-												</div>
-												<EntryPointSelect
-													chain={_chain}
-													entryPoints={call.address ? _contractCallsFunctions[call.address] : null}
-													value={call.function_name}
-													isLoading={call.address ? isLoadingFunctions[call.address] : false}
-													isError={alert && call.function_name === ''}
-													onChange={(value) => handleFunctionNameChange(index, value)}
-												/>
-												<div className="grid grid-cols-4 items-center gap-y-2 gap-x-4">
-													<Label htmlFor={`calldata-${index}`} className="text-right">
-														Calldata
-													</Label>
-													<Textarea
-														disabled={call.function_name === ''}
-														id={`calldata-${index}`}
-														value={call.calldata}
-														placeholder={`Enter raw calldata here. For example:\n\n0x0000000000000000000000000000000000000000000000000000000000000001\n0x014c52727fc025f10d431efafb3945a06601e3703fc06c934df177a6c30f3280\n0x02f67e6aeaad1ab7487a680eb9d3363a597afa7a3de33fa9bf3ae6edcb88435d`}
-														className={`col-span-3 font-mono h-32 ${
-															alert &&
-															call.address &&
-															call.calldata.trim() !== '' &&
-															!validateCalldata(
-																call.calldata
-																	.trim()
-																	.split('\n')
-																	.filter((line) => line.trim() !== '')
-															)
-																? 'border-red-500'
-																: ''
-														}`}
-														onChange={(e) => handleCalldataChange(index, e.target.value)}
-													/>
-													{(() => {
-														const calldataLines = call.calldata.trim()
-															? call.calldata
-																	.trim()
-																	.split('\n')
-																	.filter((line) => line.trim() !== '')
-															: [];
+								<Tabs defaultValue="parameters" onValueChange={handleTabChange}>
+									<div className="grid grid-cols-4 items-center gap-4">
+										<Label className="text-right">Calldata mode</Label>
 
-														const hasInvalidCalldataFormat =
-															call.calldata !== '' && !validateCalldata(calldataLines);
+										<TabsList className="flex md:inline-flex col-span-3 w-fit dark:bg-card !justify-start md:justify-center flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-rounded">
+											<TabsTrigger value="raw">Raw</TabsTrigger>
+											<TabsTrigger value="parameters">Parameters</TabsTrigger>
+										</TabsList>
+									</div>
 
-														if (alert) {
-															if (hasInvalidCalldataFormat) {
-																return (
-																	<p className="text-xs text-red-500 col-span-3 col-start-2">
-																		Calldata must be a list of hexadecimal numbers, each starting
-																		with 0x on a new line.
-																	</p>
-																);
-															}
-														}
-
-														return null;
-													})()}
-												</div>
-											</div>
-										</fieldset>
-									);
-								})}
+									{_contractCalls.map((call, index) => (
+										<ContractCallFieldset
+											key={`${index}-${call.address}-${call.function_name}`}
+											call={call}
+											index={index}
+											chain={_chain}
+											contractCallsFunctions={contractCallsFunctions}
+											isLoadingFunctions={isLoadingFunctions}
+											contractFetchErrors={contractFetchErrors}
+											alert={alert}
+											decodeCalldata={decodeCalldata}
+											serverDataLoaded={serverDataLoaded}
+											isParameterInvalid={isParameterInvalid}
+											hasDecodeError={calldataDecodeError[index] || false}
+											onContractAddressChange={handleContractAddressChange}
+											onFunctionNameChange={handleFunctionNameChange}
+											onCalldataChange={handleCalldataChange}
+											onParameterValueChange={handleParameterValueChange}
+											onValidationChange={(isValid) => setIsParameterInvalid(!isValid)}
+											onResetCalldata={handleResetCalldata}
+										/>
+									))}
+								</Tabs>
 
 								<div className="grid grid-cols-4 items-center gap-x-4 gap-y-2">
 									<Label htmlFor="block-number" className="text-right">
@@ -675,10 +605,30 @@ export function SimulateTransactionPage({
 									</div>
 								</div>
 
-								{alert && <FieldAlert />}
+								{alert && (
+									<FieldAlert
+										senderAddress={_senderAddress}
+										contractCalls={_contractCalls}
+										transactionVersion={_transactionVersion}
+									/>
+								)}
+
 								<div className="flex justify-end mt-4 mb-12">
-									<Button type="submit" onClick={onDialogSubmit}>
-										<PlayIcon className="w-4 h-4 mr-2" /> Run Simulation
+									<Button
+										type="submit"
+										onClick={onDialogSubmit}
+										disabled={isParameterInvalid || isSimulating}
+									>
+										{isSimulating ? (
+											<>
+												<span className="h-4 w-4 block rounded-full border-2 border-t-transparent animate-spin mr-2"></span>
+												Simulating...
+											</>
+										) : (
+											<>
+												<PlayIcon className="w-4 h-4 mr-2" /> Run Simulation
+											</>
+										)}
 									</Button>
 								</div>
 							</div>

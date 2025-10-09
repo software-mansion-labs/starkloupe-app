@@ -6,10 +6,8 @@ import {
 	SelectValue
 } from '@/components/ui/select';
 import { useEffect, useState } from 'react';
-import { ArrowPathIcon } from '@heroicons/react/24/outline';
 import { Label } from '@/components/ui/label';
 import { Input } from './ui/input';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Chain } from './networks-select';
 
 interface FunctionInput {
