@@ -118,7 +118,7 @@ export const ParameterInput = ({
 								<span
 									className={`text-xs ${!itemValid ? 'text-red-500' : 'text-muted-foreground'}`}
 								>
-									{!itemValid && ' - invalid format'}
+									{!itemValid && 'Invalid format'}
 								</span>
 							</div>
 						);
@@ -378,7 +378,7 @@ export const ParameterInput = ({
 								<span
 									className={`text-xs ${!itemValid ? 'text-red-500' : 'text-muted-foreground'}`}
 								>
-									{!itemValid && ' - invalid format'}
+									{!itemValid && 'Invalid format'}
 								</span>
 							</div>
 						);
@@ -479,7 +479,7 @@ export const ParameterInput = ({
 								<span
 									className={`text-xs ${!fieldValid ? 'text-red-500' : 'text-muted-foreground'}`}
 								>
-									{!fieldValid && ' - invalid format'}
+									{!fieldValid && 'Invalid format'}
 								</span>
 							</div>
 						);
@@ -540,7 +540,7 @@ export const ParameterInput = ({
 										<span
 											className={`text-xs ${!itemValid ? 'text-red-500' : 'text-muted-foreground'}`}
 										>
-											{!itemValid && ' - invalid format'}
+											{!itemValid && 'Invalid format'}
 										</span>
 									</div>
 								);
@@ -665,7 +665,7 @@ export const ParameterInput = ({
 									: 'text-muted-foreground'
 							}`}
 						>
-							{!validateType(actualValue || '', currentVariant.type) && ' - invalid format'}
+							{!validateType(actualValue || '', currentVariant.type) && 'Invalid format'}
 						</span>
 					</div>
 				)}
@@ -901,7 +901,7 @@ export const ParameterInput = ({
 				placeholder={`Enter ${parameter.type_name}...`}
 			/>
 			<span className={`text-xs ${!isValid ? 'text-red-500' : 'text-muted-foreground'}`}>
-				{!isValid && ' - invalid format'}
+				{!isValid && 'Invalid format'}
 			</span>
 		</div>
 	);

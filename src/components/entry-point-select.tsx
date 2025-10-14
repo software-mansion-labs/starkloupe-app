@@ -1,14 +1,20 @@
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue
-} from '@/components/ui/select';
+	Command,
+	CommandEmpty,
+	CommandGroup,
+	CommandInput,
+	CommandItem,
+	CommandList
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useEffect, useState } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from './ui/input';
+import { Button } from '@/components/ui/button';
+import { Check, ChevronsUpDown } from 'lucide-react';
 import { Chain } from './networks-select';
+import { CaretSortIcon } from '@radix-ui/react-icons';
+import { ScrollArea, ScrollBar } from './ui/scroll-area';
 
 interface FunctionInput {
 	name: string;
@@ -79,6 +85,8 @@ export function EntryPointSelect({
 	>(undefined);
 
 	const [entrypointValue, setEntrypointValue] = useState<string>('');
+	const [open, setOpen] = useState(false);
+	const [searchQuery, setSearchQuery] = useState('');
 
 	useEffect(() => {
 		if (!entryPoints) {
@@ -144,49 +152,75 @@ export function EntryPointSelect({
 
 	const handleValueChange = (newValue: string) => {
 		onChange(newValue);
+		setOpen(false);
+		setSearchQuery('');
 	};
+
+	const filteredOptions = entryPointsOptions.filter((option) => {
+		const search = searchQuery.toLowerCase().trim();
+		return (
+			option.label.toLowerCase().includes(search) || option.value.toLowerCase().includes(search)
+		);
+	});
+
 	return (
 		<>
 			<div className="grid grid-cols-4 !items-center gap-x-4 gap-y-2">
 				<Label className="text-right">Entrypoint</Label>
-				<Select
-					value={entrypointValue}
-					onValueChange={handleValueChange}
-					disabled={entryPointsOptions.length === 0}
-				>
-					<SelectTrigger
-						disabled={entryPointsOptions.length === 0}
-						className={` col-span-3 font-mono ${isError && 'border-red-500'}`}
-					>
-						<SelectValue
-							className="col-span-3"
-							placeholder={
-								isLoading
-									? 'Loading Entrypoints...'
-									: !entryPointsOptions || entryPointsOptions.length === 0
-									? `Enter a valid contract address above to see available entrypoints.`
-									: 'Select an Entrypoint'
-							}
+				<Popover open={open} onOpenChange={setOpen}>
+					<PopoverTrigger asChild>
+						<Button
+							variant="outline"
+							role="combobox"
+							aria-expanded={open}
+							className={`col-span-3 justify-between font-mono ${isError && 'border-red-500'}`}
+							disabled={entryPointsOptions.length === 0}
 						>
-							{selectedOption ? selectedOption.label : 'Select an Entrypoint'}
-						</SelectValue>
-					</SelectTrigger>
-
-					<SelectContent>
-						{isLoading ? (
-							<div className="p-2 text-sm text-gray-500">Loading Entrypoints...</div>
-						) : entryPointsOptions.length > 0 ? (
-							entryPointsOptions.map((option) => (
-								<SelectItem key={option.value} value={option.value}>
-									<div className="font-medium">{option.label}</div>
-									<div className="text-xs text-gray-500">{option.value}</div>
-								</SelectItem>
-							))
-						) : (
-							<div className="p-2 text-sm text-gray-500">No Entryoints available</div>
-						)}
-					</SelectContent>
-				</Select>
+							{selectedOption
+								? selectedOption.label
+								: isLoading
+								? 'Loading Entrypoints...'
+								: !entryPointsOptions || entryPointsOptions.length === 0
+								? `Enter a valid contract address above`
+								: 'Select an Entrypoint'}
+							<CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+						</Button>
+					</PopoverTrigger>
+					<PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+						<Command shouldFilter={false}>
+							<CommandInput
+								placeholder="Search entrypoint..."
+								value={searchQuery}
+								onValueChange={setSearchQuery}
+							/>
+							<CommandList>
+								<ScrollArea className="overflow-auto">
+									<CommandEmpty>No entrypoint found.</CommandEmpty>
+									<CommandGroup>
+										{filteredOptions.map((option) => (
+											<CommandItem
+												key={option.value}
+												value={option.value}
+												onSelect={() => handleValueChange(option.value)}
+											>
+												<Check
+													className={`mr-2 h-4 w-4 ${
+														entrypointValue === option.value ? 'opacity-100' : 'opacity-0'
+													}`}
+												/>
+												<div className="flex flex-col">
+													<div className="font-medium">{option.label}</div>
+													<div className="text-xs text-gray-500">{option.value}</div>
+												</div>
+											</CommandItem>
+										))}
+									</CommandGroup>
+									<ScrollBar orientation="horizontal" />
+								</ScrollArea>
+							</CommandList>
+						</Command>
+					</PopoverContent>
+				</Popover>
 				{isError && (
 					<p className="text-xs text-red-500 text-muted-foreground col-span-3 col-start-2">
 						Entrypoint is required.
