@@ -147,6 +147,7 @@ export function SimulationPage({
 						<div className="flex md:hidden gap-2 justify-between">
 							{chainDetails && <NetworkBadge network={chainDetails} />}
 							<Button variant="outline" disabled={isLoading} onClick={handleReSimulateClick}>
+								<PlayIcon className="h-4 w-4 mr-2" />
 								Re-simulate
 							</Button>
 						</div>
