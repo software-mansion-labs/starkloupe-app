@@ -112,7 +112,9 @@ export function DecodeDataTable({
 					</AddressLink>
 				</CopyToClipboardElement>
 			) : (
-				<span>{formattedValue}</span>
+				<CopyToClipboardElement value={formattedValue} toastDescription="Value has been copied!">
+					{formattedValue}
+				</CopyToClipboardElement>
 			);
 		}
 	};
