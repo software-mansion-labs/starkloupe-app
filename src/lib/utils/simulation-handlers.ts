@@ -104,8 +104,10 @@ export async function handleRawSubmission(
 	}
 
 	if (
+		!simulationPayload.senderAddress ||
 		simulationPayload.senderAddress === '' ||
 		!validateHexFormat(simulationPayload.senderAddress) ||
+		!simulationPayload.transactionVersion ||
 		![1, 3].includes(simulationPayload.transactionVersion)
 	) {
 		setAlert(true);

@@ -14,13 +14,15 @@ export function ContractRoot({
 	sourceCode,
 	isContract,
 	entryPoints,
-	contractData
+	contractData,
+	contractAddress
 }: {
 	isClassVerified: boolean;
 	sourceCode: any;
 	isContract: boolean;
 	entryPoints: ContractFunctions | undefined;
 	contractData: GetContractResponse;
+	contractAddress: string;
 }) {
 	return (
 		<ContractRootContent
@@ -29,6 +31,7 @@ export function ContractRoot({
 			isContract={true}
 			entryPoints={entryPoints}
 			contractData={contractData}
+			contractAddress={contractAddress}
 		/>
 	);
 }
@@ -38,13 +41,15 @@ function ContractRootContent({
 	sourceCode,
 	isContract,
 	entryPoints,
-	contractData
+	contractData,
+	contractAddress
 }: {
 	isClassVerified: boolean;
 	sourceCode: any;
 	isContract: boolean;
 	entryPoints: ContractFunctions | undefined;
 	contractData: GetContractResponse;
+	contractAddress: string;
 }) {
 	const [activeTab, setActiveTab] = useState('source-code');
 
@@ -115,7 +120,11 @@ function ContractRootContent({
 							</div>
 							<ScrollArea className="flex-1 overflow-auto">
 								<div className="p-0 md:py-2">
-									<EntrypointsList entryPoints={entryPoints} />
+									<EntrypointsList
+										entryPoints={entryPoints}
+										contractAddress={contractAddress}
+										chainId={contractData.deployedSources[0].chainId}
+									/>
 								</div>
 								<ScrollBar orientation="horizontal" />
 							</ScrollArea>

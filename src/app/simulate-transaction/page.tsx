@@ -53,6 +53,15 @@ export default function Page({
 
 				setSimulationPayload(payload);
 			}
+			if (chainId && calldata && (!senderAddress || !transactionVersion)) {
+				const parsedCalldata = calldata.split(',');
+				const calls = parseContractCalls(parsedCalldata);
+				const payload = {
+					calls,
+					chainId: chainId || undefined
+				};
+				setSimulationPayload(payload);
+			}
 		}
 	}, [searchParams]);
 

@@ -11,12 +11,22 @@ import {
 } from '../ui/dropdown-menu';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
-import { Copy } from 'lucide-react';
+import { Copy, PlayIcon } from 'lucide-react';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
+import { Button } from '../ui/button';
+import Link from 'next/link';
 
-export function EntrypointsList({ entryPoints }: { entryPoints: ContractFunctions | undefined }) {
+export function EntrypointsList({
+	entryPoints,
+	contractAddress,
+	chainId
+}: {
+	entryPoints: ContractFunctions | undefined;
+	contractAddress: string;
+	chainId?: string;
+}) {
 	const { contractEntrypointsElementRefs, searchResultAddress } = useSettings();
 	const [mode, setMode] = useState('read');
 
@@ -29,6 +39,15 @@ export function EntrypointsList({ entryPoints }: { entryPoints: ContractFunction
 			</Alert>
 		);
 	}
+
+	const getSimulateUrl = (entryPoint: EntryPointItem, contractAddress: string) => {
+		const calldata = `0x1,${contractAddress},${entryPoint[0]}`;
+		if (chainId)
+			return `/simulate-transaction?calldata=${encodeURIComponent(
+				calldata
+			)}&chainId=${chainId.toUpperCase()}`;
+		else return `/simulate-transaction?calldata=${encodeURIComponent(calldata)}`;
+	};
 
 	let readEntrypoints: EntryPointItem[] = [];
 	let writeEntrypoints: EntryPointItem[] = [];
@@ -62,10 +81,11 @@ export function EntrypointsList({ entryPoints }: { entryPoints: ContractFunction
 
 						return (
 							<EntryPoint
-								key={`entrypoint-${index}-${entryPoint[0]}`}
 								entryPoint={entryPoint}
+								key={`entrypoint-${index}-${entryPoint[0]}`}
 								index={index}
 								prefix={mode}
+								simulateLink={getSimulateUrl(entryPoint, contractAddress)}
 								customRef={contractEntrypointsElementRefs.current[entryPoint[0]]}
 								searchResultAddress={searchResultAddress}
 							/>
@@ -85,6 +105,7 @@ export function EntrypointsList({ entryPoints }: { entryPoints: ContractFunction
 						return (
 							<EntryPoint
 								key={`entrypoint-${index}-${entryPoint[0]}`}
+								simulateLink={getSimulateUrl(entryPoint, contractAddress)}
 								entryPoint={entryPoint}
 								index={index}
 								prefix="read"
@@ -108,6 +129,7 @@ export function EntrypointsList({ entryPoints }: { entryPoints: ContractFunction
 								key={`entrypoint-${index}-${entryPoint[0]}`}
 								entryPoint={entryPoint}
 								index={index}
+								simulateLink={getSimulateUrl(entryPoint, contractAddress)}
 								prefix="write"
 								customRef={contractEntrypointsElementRefs.current[entryPoint[0]]}
 								searchResultAddress={searchResultAddress}
@@ -125,13 +147,15 @@ const EntryPoint = ({
 	index,
 	prefix = 'entrypoint',
 	customRef,
-	searchResultAddress
+	searchResultAddress,
+	simulateLink
 }: {
 	entryPoint: EntryPointItem;
 	index: number;
 	prefix: string;
 	customRef: any;
 	searchResultAddress: string;
+	simulateLink: string;
 }) => {
 	const [isHighlighted, setIsHighlighted] = useState(false);
 
@@ -150,45 +174,57 @@ const EntryPoint = ({
 	const key = `${prefix}-${index}-${entryPoint[0]}`;
 	return (
 		<React.Fragment key={key}>
-			<div className={`py-2 font-mono border-b border-border  `} ref={customRef}>
-				<span
-					className={`text-function_purple break-words transition-colors duration-300 ${
-						isHighlighted ? 'bg-yellow-200' : ''
-					}`}
-				>
-					{entryPoint[1].name}
-				</span>
-				<span className="text-highlight_yellow">{'('}</span>
-				<span>
-					{entryPoint[1].inputs.map((i, idx) => (
-						<span key={i.name}>
-							{i.name}:{' '}
-							{i.struct_members || i.enum_variants ? (
-								<InpuOutputDetailsDropdown data={i} entrypointAddress={entryPoint[0]} />
+			<div
+				className={`py-2 font-mono border-b border-border min-h-[40px] flex justify-between items-center gap-2`}
+				ref={customRef}
+			>
+				<div>
+					<span
+						className={`text-function_purple break-words transition-colors duration-300 ${
+							isHighlighted ? 'bg-yellow-200' : ''
+						}`}
+					>
+						{entryPoint[1].name}
+					</span>
+					<span className="text-highlight_yellow">{'('}</span>
+					<span>
+						{entryPoint[1].inputs.map((i, idx) => (
+							<span key={i.name}>
+								{i.name}:{' '}
+								{i.struct_members || i.enum_variants ? (
+									<InpuOutputDetailsDropdown data={i} entrypointAddress={entryPoint[0]} />
+								) : (
+									<span className="text-typeColor">{i.type}</span>
+								)}
+								{idx < entryPoint[1].inputs.length - 1 && ', '}
+							</span>
+						))}
+					</span>
+					<span className="text-highlight_yellow">{')'}</span>{' '}
+					<span className="text-highlight_yellow">{'->'}</span>{' '}
+					<span className="text-highlight_yellow">{'('}</span>
+					{entryPoint[1].outputs.map((o, idx) => (
+						<span key={`${o.type} + ${idx}`}>
+							{o.struct_members || o.enum_variants ? (
+								<InpuOutputDetailsDropdown data={o} entrypointAddress={entryPoint[0]} />
 							) : (
-								<span className="text-typeColor">{i.type}</span>
+								<span className="text-typeColor">{o.type}</span>
 							)}
-							{idx < entryPoint[1].inputs.length - 1 && ', '}
+							{idx < entryPoint[1].outputs.length - 1 && ', '}
 						</span>
 					))}
-				</span>
-				<span className="text-highlight_yellow">{')'}</span>{' '}
-				<span className="text-highlight_yellow">{'->'}</span>{' '}
-				<span className="text-highlight_yellow">{'('}</span>
-				{entryPoint[1].outputs.map((o, idx) => (
-					<span key={`${o.type} + ${idx}`}>
-						{o.struct_members || o.enum_variants ? (
-							<InpuOutputDetailsDropdown data={o} entrypointAddress={entryPoint[0]} />
-						) : (
-							<span className="text-typeColor">{o.type}</span>
-						)}
-						{idx < entryPoint[1].outputs.length - 1 && ', '}
-					</span>
-				))}
-				<span className="text-highlight_yellow">{')'}</span>
-				<div className="flex flex-row items-center trace-line_content">
-					<span className="text-function_purple"></span>
+					<span className="text-highlight_yellow">{')'}</span>
+					<div className="flex flex-row items-center trace-line_content">
+						<span className="text-function_purple"></span>
+					</div>
 				</div>
+				<Link
+					href={simulateLink}
+					className="flex items-center gap-2 text-xs border border-border py-1 px-2 rounded-md hover:opacity-70 transition-opacity"
+				>
+					<PlayIcon className="h-3 w-3" />
+					{/* Simulate */}
+				</Link>
 			</div>
 		</React.Fragment>
 	);

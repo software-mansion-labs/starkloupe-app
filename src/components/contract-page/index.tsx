@@ -94,6 +94,7 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 					isContract={true}
 					entryPoints={entryPoints}
 					contractData={contractData}
+					contractAddress={contractAddress}
 				/>
 			</>
 		);

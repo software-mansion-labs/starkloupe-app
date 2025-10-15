@@ -13,11 +13,11 @@ export interface SimpleContractCall {
 }
 
 export interface SimulationPayload {
-	senderAddress: string;
+	senderAddress?: string;
 	calls?: SimpleContractCall[];
 	calldata?: string[];
 	blockNumber?: number;
-	transactionVersion: number;
+	transactionVersion?: number;
 	nonce?: number;
 	rpcUrl?: string;
 	chainId?: string;
@@ -187,13 +187,10 @@ export function parseContractCalls(calldata: string[]): SimpleContractCall[] {
 
 	let index = 1;
 	for (let i = 0; i < numContracts; i++) {
-		if (index >= calldata.length) break;
 		const address = calldata[index++];
 
-		if (index >= calldata.length) break;
 		const function_name = calldata[index++];
 
-		if (index >= calldata.length) break;
 		const numCalldataElements = parseInt(calldata[index++], 16);
 
 		const contractCalldata: string[] = [];
@@ -208,7 +205,6 @@ export function parseContractCalls(calldata: string[]): SimpleContractCall[] {
 			calldata: contractCalldata.join('\n')
 		});
 	}
-
 	return result;
 }
 
@@ -219,20 +215,22 @@ export function openSimulationPage(simulationPayload: SimulationPayload): void {
 		? serializeContractCalls(simulationPayload.calls)
 		: [];
 
-	const params = new URLSearchParams({
-		senderAddress: simulationPayload.senderAddress,
-		calldata: calldata.join(','),
-		transactionVersion: simulationPayload.transactionVersion.toString()
-	});
+	if (simulationPayload.senderAddress && simulationPayload.transactionVersion) {
+		const params = new URLSearchParams({
+			senderAddress: simulationPayload.senderAddress,
+			calldata: calldata.join(','),
+			transactionVersion: simulationPayload.transactionVersion.toString()
+		});
 
-	if (simulationPayload.blockNumber !== undefined)
-		params.set('blockNumber', simulationPayload.blockNumber.toString());
-	if (simulationPayload.nonce !== undefined)
-		params.set('nonce', simulationPayload.nonce.toString());
-	if (simulationPayload.chainId) params.set('chainId', simulationPayload.chainId);
-	if (simulationPayload.rpcUrl) params.set('rpcUrl', simulationPayload.rpcUrl);
+		if (simulationPayload.blockNumber !== undefined)
+			params.set('blockNumber', simulationPayload.blockNumber.toString());
+		if (simulationPayload.nonce !== undefined)
+			params.set('nonce', simulationPayload.nonce.toString());
+		if (simulationPayload.chainId) params.set('chainId', simulationPayload.chainId);
+		if (simulationPayload.rpcUrl) params.set('rpcUrl', simulationPayload.rpcUrl);
 
-	window.location.href = `/simulations?${params.toString()}`;
+		window.location.href = `/simulations?${params.toString()}`;
+	}
 }
 
 export function parseCalldata(calldata: string): string[] {

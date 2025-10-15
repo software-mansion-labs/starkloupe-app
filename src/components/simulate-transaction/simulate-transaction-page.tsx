@@ -147,16 +147,7 @@ export function SimulateTransactionPage({
 
 		fetchServerDecodeCalldata();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [
-		txHash,
-		_senderAddress,
-		parsedCalldata,
-		_blockNumber,
-		_chain?.chainId,
-		_transactionVersion,
-		contractCallsFunctions,
-		serverDataLoaded
-	]);
+	}, [txHash, parsedCalldata, contractCallsFunctions, serverDataLoaded]);
 
 	useFormValidation(
 		_senderAddress,
@@ -384,14 +375,10 @@ export function SimulateTransactionPage({
 			let finalValue = newValue;
 			let newTypeName: string;
 
-			if (
-				typeof newValue === 'object' &&
-				newValue !== null &&
-				'__enum_variant' in newValue
-			) {
+			if (typeof newValue === 'object' && newValue !== null && '__enum_variant' in newValue) {
 				const enumBase = parameter.type_name.includes('::')
 					? parameter.type_name.split('::')[0]
-					: (functionInput?.type || parameter.type_name);
+					: functionInput?.type || parameter.type_name;
 				newTypeName = `${enumBase}::${newValue.__enum_variant}`;
 
 				if ('__enum_value' in newValue) {
