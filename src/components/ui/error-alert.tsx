@@ -55,7 +55,10 @@ const ErrorAlert = ({ callError }: { callError: ContractCall | FunctionCall | un
 	const ErrorContent = () => (
 		<div className="!font-light">
 			<span className="whitespace-pre-wrap">
-				{errorDescription && parseErrorDescription(errorDescription)}
+				<span className={`${!isLongError ? 'text-red-600' : ''}`}>
+					{errorDescription && parseErrorDescription(errorDescription)}
+				</span>
+
 				{!isLongError && (
 					<span className="inline-flex items-center my-1">
 						<span className="mx-1"> in </span>
@@ -185,7 +188,9 @@ const ErrorAlert = ({ callError }: { callError: ContractCall | FunctionCall | un
 							</div>
 							<div className="p-4 space-y-4">
 								<div className="w-full">
-									<span className="text-sm text-muted-foreground block mb-2">Error occurred in: </span>
+									<span className="text-sm text-muted-foreground block mb-2">
+										Error occurred in:{' '}
+									</span>
 									{callError && 'classHash' in callError ? (
 										<ContractCallSignature
 											contractCall={callError}
