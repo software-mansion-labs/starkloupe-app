@@ -5,6 +5,7 @@ import { InfoBox } from '@/components/ui/info-box';
 import { EventCall, ContractCall, DataType } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
 import { DecodeDataTable } from '../decode-data-table';
+import ValueWithTooltip from '../ui/value-with-tooltip';
 
 export const EventCallTrace = memo(function EventCallTrace({
 	eventCallId,
@@ -29,6 +30,35 @@ export const EventCallTrace = memo(function EventCallTrace({
 		traceLineElementRefs.current[eventCallId] = React.createRef<HTMLDivElement>();
 	}
 
+	function ArgsWithTooltips() {
+		if (eventCall.datas) {
+			return (
+				<>
+					{eventCall.datas?.map((decoded, i) => {
+						if (decoded == null) return <React.Fragment key={i}>,&nbsp;</React.Fragment>;
+
+						return (
+							<React.Fragment key={i}>
+								<span className="relative inline-block whitespace-nowrap">
+									{decoded.name && <span>{decoded.name}: </span>}
+									<span className="text-typeColor">{decoded.typeName}</span>
+									<span> = </span>
+									<ValueWithTooltip
+										value={decoded}
+										fullObject={decoded}
+										typeName={decoded.typeName}
+										isContract
+									/>
+									{i < (eventCall.datas?.length ?? 0) - 1 && ',\u00A0'}
+								</span>
+							</React.Fragment>
+						);
+					})}
+				</>
+			);
+		}
+	}
+
 	return (
 		<React.Fragment key={eventCallId}>
 			<TraceLine
@@ -43,6 +73,7 @@ export const EventCallTrace = memo(function EventCallTrace({
 				{isExecutionFailed && <div className="w-5 mr-0.5"></div>}
 
 				{/* Debug button */}
+
 				<div className="w-5"></div>
 
 				<div
@@ -50,15 +81,8 @@ export const EventCallTrace = memo(function EventCallTrace({
 					className="flex flex-row items-center trace-line_content"
 				>
 					<div className={`w-5 h-5 p-1 mr-1`}></div>
-					<span className="text-function_purple">{eventCall.name}</span> (
-					{(eventCall.members ?? []).map((member, index) => (
-						<span key={index}>
-							<span className="">{member.name}</span>:&nbsp;
-							<span className="text-typeColor">{member.type}</span>
-							{index < (eventCall.members?.length ?? 0) - 1 && <span>,&nbsp;</span>}
-						</span>
-					))}
-					)
+					<span className="text-function_purple">{eventCall.name}</span>
+					(<ArgsWithTooltips />)
 				</div>
 			</TraceLine>
 			{expandedCalls[eventCallId] && (

@@ -9,6 +9,7 @@ import AddressLink from '../address-link';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import ValueWithTooltip from '../ui/value-with-tooltip';
 
 export function EventsList({ events }: { events: ContractCallEvent[] }) {
 	const { toggleCallExpand, traceLineElementRefs, expandedCalls } = useCallTrace();
@@ -30,6 +31,35 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 		const key: any = `event-${index}`;
 		if (!traceLineElementRefs.current[key]) {
 			traceLineElementRefs.current[key] = React.createRef<HTMLDivElement>();
+		}
+
+		function ArgsWithTooltips() {
+			if (event.datas) {
+				return (
+					<>
+						{event.datas?.map((decoded, i) => {
+							if (decoded == null) return <React.Fragment key={i}>,&nbsp;</React.Fragment>;
+
+							return (
+								<React.Fragment key={i}>
+									<span className="relative inline-block whitespace-nowrap">
+										<span>{decoded.name}: </span>
+										<span className="text-typeColor">{decoded.typeName}</span>
+										<span> = </span>
+										<ValueWithTooltip
+											value={decoded}
+											fullObject={decoded}
+											typeName={decoded.typeName}
+											isContract
+										/>
+										{i < (event.datas?.length ?? 0) - 1 && ',\u00A0'}
+									</span>
+								</React.Fragment>
+							);
+						})}
+					</>
+				);
+			}
 		}
 
 		const contractName = event.contractName?.startsWith('0x')
@@ -66,13 +96,8 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 						{'.'}
 						<span className="text-function_purple">{event.name}</span>
 						<span className="text-highlight_yellow">{'('}</span>
-						{(event.datas ?? []).map((param: DecodedItem, index: number) => (
-							<span key={index}>
-								<span className="">{param.name}</span>:&nbsp;
-								<span className="text-typeColor">{param.typeName}</span>
-								{index < (event.datas?.length ?? 0) - 1 && <span>,&nbsp;</span>}
-							</span>
-						))}
+
+						<ArgsWithTooltips />
 						<span className="text-highlight_yellow">{')'}</span>
 					</div>
 				</TraceLine>
