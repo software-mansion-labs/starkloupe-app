@@ -124,7 +124,7 @@ const StepDetailsSkeleton = () => {
 			<div className="mb-1.5">
 				<div className="whitespace-nowrap mb-1.5">
 					<div className="flex items-center gap-2 mb-2">
-						<span className="font-bold">Paramenters:</span>
+						<span className="font-bold">Parameters:</span>
 					</div>
 					<div className="ml-2">
 						<div className="flex items-center gap-2 mb-1.5">
