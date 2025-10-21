@@ -79,7 +79,7 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 
 	const networkBadge =
 		networksArray && networksArray.length > 0 ? (
-			<NetworkBadge networks={networksArray as Network[]} />
+			<NetworkBadge type="contract" networks={networksArray as Network[]} />
 		) : null;
 
 	let content = null;
