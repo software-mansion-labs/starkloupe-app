@@ -261,6 +261,7 @@ const FunctionCallViewer = ({
 				<div className="font-bold mb-1.5">
 					Contract:{' '}
 					<AddressLink
+						addressClassName="text-classGreen font-normal"
 						customSettings={customSettings}
 						updateContractName={updateContractName}
 						updateContractColor={updateContractColor}
