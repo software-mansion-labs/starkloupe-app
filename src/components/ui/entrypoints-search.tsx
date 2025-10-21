@@ -58,7 +58,7 @@ const EntryPointsSearch = memo(function EntryPointsSearch({
 						address?.includes(lowercaseTerm) || entryPointName.toLowerCase().includes(lowercaseTerm)
 					);
 				})
-				.map(([address, entryPointName]) => [address, entryPointName]);
+				.map(([address, functionData]) => [address, functionData]);
 
 			return [...entrypointsResults];
 		},
@@ -108,13 +108,23 @@ const EntryPointsSearch = memo(function EntryPointsSearch({
 											>
 												<div className="pr-2">
 													<div className="pr-2">
-														<>
+														<div className="flex gap-2 items-center">
+															<div
+																className={`w-14 border text-center text-xs px-1.5 py-0.5 rounded font-medium ${
+																	value.state_mutability === 'view'
+																		? 'bg-gray-100 border-gray-400 text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200'
+																		: 'bg-gray-800 border-gray-900 text-white dark:bg-gray-300 dark:border-gray-400 dark:text-gray-900'
+																}`}
+															>
+																{value.state_mutability === 'view' ? 'Read' : 'Write'}
+															</div>
+
 															<div className=" ">{value.name}</div>
 															<div className="!text-xs text-muted-foreground">
 																{shortenHash(key, 13)}
 															</div>
 															<div className="flex items-center gap-1 !text-xs"></div>
-														</>
+														</div>
 													</div>
 												</div>
 											</CommandItem>
