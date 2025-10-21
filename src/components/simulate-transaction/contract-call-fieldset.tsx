@@ -276,7 +276,9 @@ export function ContractCallFieldset({
 						</div>
 					</div>
 				) : (
-					<div className="text-sm text-muted-foreground">No parameters</div>
+					<div className="text-sm text-muted-foreground col-span-3">
+						Selected entrypoint does not accept any calldata.
+					</div>
 				)}
 			</TabsContent>
 		</fieldset>
