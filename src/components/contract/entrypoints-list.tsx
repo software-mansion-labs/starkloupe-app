@@ -218,13 +218,22 @@ const EntryPoint = ({
 						<span className="text-function_purple"></span>
 					</div>
 				</div>
-				<Link
-					href={simulateLink}
-					className="flex items-center gap-2 text-xs border border-border py-1 px-2 rounded-md hover:opacity-70 transition-opacity"
-				>
-					<PlayIcon className="h-3 w-3" />
-					{/* Simulate */}
-				</Link>
+				<TooltipProvider delayDuration={100}>
+					<Tooltip>
+						<TooltipTrigger asChild>
+							<Link
+								href={simulateLink}
+								className="flex items-center gap-2 text-xs border border-border py-1 px-2 rounded-md hover:opacity-70 transition-opacity"
+							>
+								<PlayIcon className="h-3 w-3" />
+								{/* Simulate */}
+							</Link>
+						</TooltipTrigger>
+						<TooltipContent className="bg-background border-border text-black dark:text-white border">
+							Click to simulate <span className="text-function_purple">{entryPoint[1].name}</span>
+						</TooltipContent>
+					</Tooltip>
+				</TooltipProvider>
 			</div>
 		</React.Fragment>
 	);
