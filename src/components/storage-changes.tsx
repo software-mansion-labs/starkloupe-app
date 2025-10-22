@@ -85,9 +85,9 @@ const StorageChanges = () => {
 													updateContractColor={updateContractColor}
 													updateContractSettings={updateContractSettings}
 													address={contractAddress}
-													addressClassName="px-0.5 p-1"
+													addressClassName="px-0.5 p-1 еext-classGreen"
 												>
-													<span className="text-classGreen ">{contractName}</span>
+													{contractName}
 												</AddressLink>
 												<span className="text-muted-foreground">·</span>
 												<CopyToClipboardElement
@@ -136,9 +136,10 @@ const StorageChanges = () => {
 															<div className="flex items-center justify-center px-2 py-1 rounded-md bg-primary/10 text-primary text-xs">
 																{idx + 1}
 															</div>
-															<div>
+															<div className="">
+																<span className="p-1">Key: </span>
 																<CopyToClipboardElement
-																	className="font-mono text-xs p-0 hover:bg-inherit w-full text-left"
+																	className="font-mono text-xs p-0 hover:bg-inherit w-full text-left hidden md:block"
 																	toastDescription="The key has been copied."
 																	value={storageAddress}
 																>
@@ -148,6 +149,19 @@ const StorageChanges = () => {
 																		customSettings={customSettings}
 																	>
 																		{storageAddress}
+																	</AddressLink>
+																</CopyToClipboardElement>
+																<CopyToClipboardElement
+																	className="font-mono text-xs p-0 hover:bg-inherit w-full text-left md:hidden"
+																	toastDescription="The key has been copied."
+																	value={storageAddress}
+																>
+																	<AddressLink
+																		address={storageAddress}
+																		addressClassName="font-mono text-foreground/80 break-all"
+																		customSettings={customSettings}
+																	>
+																		{shortenHash(storageAddress, 13)}
 																	</AddressLink>
 																</CopyToClipboardElement>
 															</div>
