@@ -208,9 +208,21 @@ export function EntryPointSelect({
 														entrypointValue === option.value ? 'opacity-100' : 'opacity-0'
 													}`}
 												/>
-												<div className="flex flex-col">
-													<div className="font-medium">{option.label}</div>
-													<div className="text-xs text-gray-500">{option.value}</div>
+												<div className="flex justify-between w-full items-center">
+													{' '}
+													<div className="flex flex-col">
+														<div className="font-medium">{option.label}</div>
+														<div className="text-xs text-gray-500">{option.value}</div>
+													</div>
+													<div
+														className={`w-14 border text-center text-xs px-1.5 py-0.5 rounded font-medium ${
+															option.data.state_mutability === 'view'
+																? 'bg-gray-100 border-gray-400 text-gray-700 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200'
+																: 'bg-gray-800 border-gray-900 text-white dark:bg-gray-300 dark:border-gray-400 dark:text-gray-900'
+														}`}
+													>
+														{option.data.state_mutability === 'view' ? 'Read' : 'Write'}
+													</div>
 												</div>
 											</CommandItem>
 										))}

@@ -86,13 +86,15 @@ export function NetworkBadge({
 	networks,
 	title,
 	withoutStack,
-	className
+	className,
+	type
 }: {
 	network?: Network;
 	networks?: Network[];
 	withoutStack?: boolean;
 	className?: string;
 	title?: string;
+	type?: string;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
 	const contentRef = useRef<HTMLDivElement | null>(null);
@@ -154,10 +156,17 @@ export function NetworkBadge({
 							side="top"
 							sideOffset={5}
 						>
-							<div className="text-xs">
-								This transaction was executed on the {getNetworkDisplayName(singleNetwork, false)}{' '}
-								network.
-							</div>
+							{type && type === 'contract' ? (
+								<div className="text-xs">
+									This contract was found on the {getNetworkDisplayName(singleNetwork, false)}{' '}
+									network.
+								</div>
+							) : (
+								<div className="text-xs">
+									This transaction was executed on the {getNetworkDisplayName(singleNetwork, false)}{' '}
+									network.
+								</div>
+							)}
 						</TooltipContent>
 					)}
 				</Tooltip>
