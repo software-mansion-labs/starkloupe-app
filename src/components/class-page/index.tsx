@@ -60,7 +60,10 @@ export function ClassPage({ classHash }: { classHash: string }) {
 
 	const networkBadge =
 		networksArray && networksArray.length > 0 ? (
-			<NetworkBadge networks={networksArray as Network[]} />
+			<NetworkBadge
+				title="This class was found on the following networks"
+				networks={networksArray as Network[]}
+			/>
 		) : null;
 	return (
 		<>

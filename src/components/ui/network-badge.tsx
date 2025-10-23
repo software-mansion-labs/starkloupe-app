@@ -84,6 +84,7 @@ function SingleNetworkBadge({
 export function NetworkBadge({
 	network,
 	networks,
+	title,
 	withoutStack,
 	className,
 	type
@@ -92,6 +93,7 @@ export function NetworkBadge({
 	networks?: Network[];
 	withoutStack?: boolean;
 	className?: string;
+	title?: string;
 	type?: string;
 }) {
 	const [isOpen, setIsOpen] = useState(false);
@@ -226,6 +228,8 @@ export function NetworkBadge({
 					side="bottom"
 					sideOffset={5}
 				>
+					<div className="text-xs text-center pb-1 mb-2">{title}</div>
+
 					<div className="space-y-2">
 						<div className="flex flex-wrap gap-2">
 							{uniqueNetworks.map((net, index) => (
