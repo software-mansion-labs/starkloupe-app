@@ -106,7 +106,7 @@ export function DecodeDataTable({
 					<AddressLink
 						address={formattedValue}
 						customSettings={customSettings}
-						addressClassName="cursor-pointer"
+						addressClassName="cursor-pointer whitespace-nowrap"
 					>
 						{formattedValue}
 					</AddressLink>
