@@ -47,18 +47,18 @@ export const ParameterInput = ({
 	useEffect(() => {
 		if (parameter.type_name.includes('::')) {
 			const variantFromType = parameter.type_name.split('::')[1];
-			if (variantFromType !== enumVariant) {
-				setEnumVariant(variantFromType);
-			}
+			setEnumVariant(variantFromType);
 		} else if (
 			typeof parameter.value === 'object' &&
 			parameter.value !== null &&
-			'__enum_variant' in parameter.value &&
-			parameter.value.__enum_variant !== enumVariant
+			'__enum_variant' in parameter.value
 		) {
 			setEnumVariant(parameter.value.__enum_variant);
+		} else {
+			const initialVariant = getInitialEnumVariant(parameter, functionInput);
+			setEnumVariant(initialVariant);
 		}
-	}, [parameter.type_name, parameter.value, enumVariant]);
+	}, [parameter.type_name, parameter.value, parameter.name, functionInput]);
 	useEffect(() => {
 		if (typeof parameter.value === 'string') {
 			const valid = validateType(parameter.value, parameter.type_name);
@@ -136,6 +136,105 @@ export const ParameterInput = ({
 			functionInput?.struct_members && functionInput.struct_members.length > 0;
 
 		const _hasComplexElements = hasComplexArrayElements(arrayValue);
+
+		const elementTupleTypes = parseTupleType(elementType);
+		const isArrayOfTuples = elementTupleTypes && elementTupleTypes.length > 0;
+
+		if (isArrayOfTuples) {
+			return (
+				<div className="space-y-3 border col-span-3 rounded-lg p-4 ">
+					<div className="flex items-center justify-between">
+						<Label className="font-medium">{parameter.name}</Label>
+						<span className="text-xs text-muted-foreground">{parameter.type_name}</span>
+					</div>
+
+					<div className="space-y-3 pl-4 ">
+						{arrayValue.map((tupleItem: any, tupleIdx: number) => {
+							const tupleValue = Array.isArray(tupleItem) ? tupleItem : [];
+
+							return (
+								<div key={tupleIdx} className="space-y-2 border rounded-lg p-3">
+									<div className="flex items-center justify-between border-b pb-2">
+										<Label className="text-sm font-medium">
+											[{tupleIdx}] {elementType}
+										</Label>
+									</div>
+									<div className="space-y-3 pl-4">
+										{elementTupleTypes.map((tupleElementType: string, elementIdx: number) => {
+											const elementValue = tupleValue[elementIdx];
+
+											let elementFunctionInput = undefined;
+											if (functionInput?.struct_members) {
+												elementFunctionInput = functionInput.struct_members[elementIdx];
+											}
+
+											return (
+												<ParameterInput
+													key={elementIdx}
+													parameter={{
+														name: `[${elementIdx}]`,
+														type_name: tupleElementType.trim(),
+														value: elementValue
+													}}
+													functionInput={elementFunctionInput}
+													onValueChange={(newValue) => {
+														const newArray = [...arrayValue];
+														const newTuple = [
+															...(Array.isArray(newArray[tupleIdx]) ? newArray[tupleIdx] : [])
+														];
+														newTuple[elementIdx] = newValue;
+														newArray[tupleIdx] = newTuple;
+														onValueChange(newArray);
+													}}
+													onValidationChange={(valid) => {
+														setChildrenValidation((prev) => {
+															const next = new Map(prev);
+															next.set(`array-tuple-${tupleIdx}-${elementIdx}`, valid);
+															return next;
+														});
+													}}
+												/>
+											);
+										})}
+									</div>
+								</div>
+							);
+						})}
+
+						<div className="flex gap-2 items-center">
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={() => {
+									const newTuple = elementTupleTypes.map((type: string) =>
+										getDefaultValue(type.trim())
+									);
+									const newArray = [...arrayValue, newTuple];
+									onValueChange(newArray);
+								}}
+							>
+								Add element
+							</Button>
+
+							{arrayValue.length > 0 && (
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									onClick={() => {
+										const newArray = arrayValue.slice(0, -1);
+										onValueChange(newArray);
+									}}
+								>
+									Remove last
+								</Button>
+							)}
+						</div>
+					</div>
+				</div>
+			);
+		}
 
 		if (_hasComplexElements || hasStructMembers) {
 			return (
@@ -243,9 +342,26 @@ export const ParameterInput = ({
 																  };
 														});
 
+														let newTypeName = member.type_name;
+														if (memberDef?.enum_variants && typeof newFieldValue === 'string') {
+															const enumBase = member.type_name.includes('::')
+																? member.type_name.split('::')[0]
+																: memberDef.type || member.type_name;
+															newTypeName = `${enumBase}::${newFieldValue}`;
+														} else if (
+															typeof newFieldValue === 'object' &&
+															newFieldValue !== null &&
+															'__enum_variant' in newFieldValue
+														) {
+															const enumBase = member.type_name.includes('::')
+																? member.type_name.split('::')[0]
+																: memberDef?.type || member.type_name;
+															newTypeName = `${enumBase}::${newFieldValue.__enum_variant}`;
+														}
+
 														newItem[memberIdx.toString()] = {
 															name: member.name,
-															type_name: member.type_name,
+															type_name: newTypeName,
 															value: newFieldValue
 														};
 
@@ -619,9 +735,14 @@ export const ParameterInput = ({
 								});
 								return;
 							}
-							onValueChange({
-								__enum_variant: variant.name
-							});
+
+							if (hasServerDecodedVariant) {
+								onValueChange(variant.name);
+							} else {
+								onValueChange({
+									__enum_variant: variant.name
+								});
+							}
 						}}
 					>
 						<SelectTrigger>
@@ -707,9 +828,22 @@ export const ParameterInput = ({
 											});
 										}
 
+										let newTypeName = member.type;
+										if (member.enum_variants && typeof newFieldValue === 'string') {
+											const enumBase = member.type;
+											newTypeName = `${enumBase}::${newFieldValue}`;
+										} else if (
+											typeof newFieldValue === 'object' &&
+											newFieldValue !== null &&
+											'__enum_variant' in newFieldValue
+										) {
+											const enumBase = member.type;
+											newTypeName = `${enumBase}::${newFieldValue.__enum_variant}`;
+										}
+
 										newValue[idx.toString()] = {
 											name: member.name,
-											type_name: member.type,
+											type_name: newTypeName,
 											value: newFieldValue
 										};
 
@@ -746,6 +880,13 @@ export const ParameterInput = ({
 				<Label className="text-sm text-muted-foreground">Struct members</Label>
 				<div className="space-y-3 pl-4 ">
 					{structMembers.map((member: any, idx: number) => {
+						let memberFunctionInput: any = undefined;
+						if (functionInput?.struct_members) {
+							memberFunctionInput = functionInput.struct_members.find(
+								(m: any) => m.name === member.name
+							);
+						}
+
 						return (
 							<ParameterInput
 								key={idx}
@@ -754,7 +895,7 @@ export const ParameterInput = ({
 									type_name: member.type_name,
 									value: member.value
 								}}
-								functionInput={undefined}
+								functionInput={memberFunctionInput}
 								onValueChange={(newFieldValue) => {
 									let newValue: any = {};
 
@@ -774,9 +915,26 @@ export const ParameterInput = ({
 										});
 									}
 
+									let newTypeName = member.type_name;
+									if (memberFunctionInput?.enum_variants && typeof newFieldValue === 'string') {
+										const enumBase = member.type_name.includes('::')
+											? member.type_name.split('::')[0]
+											: memberFunctionInput.type || member.type_name;
+										newTypeName = `${enumBase}::${newFieldValue}`;
+									} else if (
+										typeof newFieldValue === 'object' &&
+										newFieldValue !== null &&
+										'__enum_variant' in newFieldValue
+									) {
+										const enumBase = member.type_name.includes('::')
+											? member.type_name.split('::')[0]
+											: memberFunctionInput?.type || member.type_name;
+										newTypeName = `${enumBase}::${newFieldValue.__enum_variant}`;
+									}
+
 									newValue[idx.toString()] = {
 										name: member.name,
-										type_name: member.type_name,
+										type_name: newTypeName,
 										value: newFieldValue
 									};
 
@@ -839,9 +997,23 @@ export const ParameterInput = ({
 											};
 										});
 									}
+
+									let newTypeName = member.type;
+									if (member.enum_variants && typeof newFieldValue === 'string') {
+										const enumBase = member.type;
+										newTypeName = `${enumBase}::${newFieldValue}`;
+									} else if (
+										typeof newFieldValue === 'object' &&
+										newFieldValue !== null &&
+										'__enum_variant' in newFieldValue
+									) {
+										const enumBase = member.type;
+										newTypeName = `${enumBase}::${newFieldValue.__enum_variant}`;
+									}
+
 									newValue[idx.toString()] = {
 										name: member.name,
-										type_name: member.type,
+										type_name: newTypeName,
 										value: newFieldValue
 									};
 

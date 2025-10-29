@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { ArrowLeftIcon, PlayIcon } from '@heroicons/react/24/solid';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { shortenHash, SimulationPayload } from '@/lib/utils';
 import { Chain, NetworksSelect } from '@/components/networks-select';
-import { fetchContractDecodeCalldata } from '@/lib/contracts';
+import { fetchContractDecodeCalldata, StarknetTransactionData } from '@/lib/contracts';
 import {
 	Select,
 	SelectContent,
@@ -86,12 +86,9 @@ export function SimulateTransactionPage({
 		fetchFunctionsForContractAddress
 	} = useContractFunctions(_chain, _contractCalls);
 
-	const { decodeCalldata, setDecodeCalldata } = useDecodeCalldata(
-		_contractCalls,
-		contractCallsFunctions,
-		serverDataLoaded,
-		txHash
-	);
+	const { decodeCalldata, setDecodeCalldata } = useDecodeCalldata();
+
+	const manuallyUpdatedRef = useRef(false);
 
 	useEffect(() => {
 		const fetchServerDecodeCalldata = async () => {
@@ -147,7 +144,7 @@ export function SimulateTransactionPage({
 
 		fetchServerDecodeCalldata();
 		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [txHash, parsedCalldata, contractCallsFunctions, serverDataLoaded]);
+	}, [txHash, parsedCalldata, contractCallsFunctions]);
 
 	useFormValidation(
 		_senderAddress,
@@ -157,6 +154,8 @@ export function SimulateTransactionPage({
 		contractCallsFunctions,
 		setAlert
 	);
+
+	console.log('decodeCalldata', decodeCalldata?.decoded_calldata);
 
 	const onChainChangedCallback = async (chain: Chain) => {
 		_setChain(chain);
@@ -209,6 +208,12 @@ export function SimulateTransactionPage({
 	};
 
 	const handleFunctionNameChange = (index: number, newFunctionName: string) => {
+		const contractAddress = _contractCalls[index].address;
+		const functions = contractCallsFunctions[contractAddress];
+
+		setServerDataLoaded(false);
+		manuallyUpdatedRef.current = true;
+
 		_setContractCalls((prevCalls) => {
 			return prevCalls.map((call, idx) => {
 				if (idx === index) {
@@ -222,49 +227,70 @@ export function SimulateTransactionPage({
 			});
 		});
 
-		setDecodeCalldata((prevData) => {
-			if (!prevData) return prevData;
+		const currentData = decodeCalldata;
 
-			const updatedData = { ...prevData };
-			updatedData.decoded_calldata = [...prevData.decoded_calldata];
+		let baseData: StarknetTransactionData;
+		if (!currentData) {
+			const emptyDecodedCalls = _contractCalls.map(() => ({
+				contract_address: '',
+				function_selector: '',
+				function_name: '',
+				parameters: []
+			}));
 
-			const contractAddress = _contractCalls[index].address;
-			const functions = contractCallsFunctions[contractAddress];
+			baseData = {
+				decoded_calldata: emptyDecodedCalls,
+				raw_calldata: []
+			} as unknown as StarknetTransactionData;
+		} else {
+			baseData = { ...currentData };
+			baseData.decoded_calldata = [...currentData.decoded_calldata];
+		}
 
-			if (!functions || !newFunctionName) {
-				updatedData.decoded_calldata[index] = {
-					contract_address: contractAddress,
-					function_selector: newFunctionName,
-					function_name: '',
-					parameters: []
-				};
-				return updatedData;
-			}
+		while (baseData.decoded_calldata.length <= index) {
+			baseData.decoded_calldata.push({
+				contract_address: '',
+				function_selector: '',
+				function_name: '',
+				parameters: []
+			});
+		}
 
-			const functionData = functions.find((fn: any) => fn[0] === newFunctionName);
-
-			if (!functionData) {
-				updatedData.decoded_calldata[index] = {
-					contract_address: contractAddress,
-					function_selector: newFunctionName,
-					function_name: '',
-					parameters: []
-				};
-				return updatedData;
-			}
-
-			const functionInfo = functionData[1];
-			const parameters = flattenParameters(functionInfo?.inputs || []);
-
-			updatedData.decoded_calldata[index] = {
+		if (!functions || !newFunctionName) {
+			baseData.decoded_calldata[index] = {
 				contract_address: contractAddress,
-				function_selector: functionData[0],
-				function_name: functionInfo.name,
-				parameters
+				function_selector: newFunctionName,
+				function_name: '',
+				parameters: []
 			};
+			setDecodeCalldata(baseData);
+			return;
+		}
 
-			return updatedData;
-		});
+		const functionData = functions.find((fn: any) => fn[0] === newFunctionName);
+
+		if (!functionData) {
+			baseData.decoded_calldata[index] = {
+				contract_address: contractAddress,
+				function_selector: newFunctionName,
+				function_name: '',
+				parameters: []
+			};
+			setDecodeCalldata(baseData);
+			return;
+		}
+
+		const functionInfo = functionData[1];
+		const parameters = flattenParameters(functionInfo?.inputs || []);
+
+		baseData.decoded_calldata[index] = {
+			contract_address: contractAddress,
+			function_selector: functionData[0],
+			function_name: functionInfo.name,
+			parameters
+		};
+
+		setDecodeCalldata(baseData);
 	};
 
 	const handleCalldataChange = (index: number, newCalldata: string) => {
