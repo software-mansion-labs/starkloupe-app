@@ -146,6 +146,33 @@ export function ContractCallFieldset({
 								(fn: any) => fn[0] === call.function_name
 							);
 
+							const decodedFunctionSelector =
+								decodeCalldata?.decoded_calldata[index]?.function_selector;
+							const isFunctionMatching = decodedFunctionSelector === call.function_name;
+
+							if (serverDataLoaded && isFunctionMatching) {
+								return parameters.map((parameter: any, idx: number) => {
+									let paramFunctionInput = undefined;
+									if (functionData && functionData[1]?.inputs) {
+										paramFunctionInput = functionData[1].inputs.find(
+											(input: any) => input.name === parameter.name
+										);
+									}
+
+									return (
+										<div key={`${index}-${idx}-${call.function_name}-server`}>
+											<ParameterInput
+												key={`param-${index}-${idx}-${call.function_name}`}
+												parameter={parameter}
+												functionInput={paramFunctionInput}
+												onValidationChange={onValidationChange}
+												onValueChange={(newValue) => onParameterValueChange(index, idx, newValue)}
+											/>
+										</div>
+									);
+								});
+							}
+
 							const grouped: { structName?: string; structType?: string; params: any[] }[] = [];
 							const structPrefixes = new Map<string, { type: string; params: any[] }>();
 
@@ -182,9 +209,7 @@ export function ContractCallFieldset({
 							});
 
 							return grouped.map((group, groupIdx) => {
-								const functionInput = serverDataLoaded
-									? undefined
-									: functionData?.[1]?.inputs?.[group.params[0].idx];
+								const functionInput = functionData?.[1]?.inputs?.[group.params[0].idx];
 
 								if (group.structName) {
 									return (
@@ -215,7 +240,7 @@ export function ContractCallFieldset({
 
 													return (
 														<ParameterInput
-															key={`${index}-${idx}-${serverDataLoaded}`}
+															key={`param-${index}-${idx}-${call.function_name}-struct-entrypoints`}
 															parameter={displayParameter}
 															functionInput={paramFunctionInput}
 															onValidationChange={onValidationChange}
@@ -239,8 +264,9 @@ export function ContractCallFieldset({
 									}
 
 									return (
-										<div key={`${index}-${idx}-${serverDataLoaded}`}>
+										<div key={`${index}-${idx}-${call.function_name}-entrypoints`}>
 											<ParameterInput
+												key={`param-${index}-${idx}-${call.function_name}-entrypoints`}
 												parameter={parameter}
 												functionInput={paramFunctionInput}
 												onValidationChange={onValidationChange}
