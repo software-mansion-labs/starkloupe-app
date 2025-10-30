@@ -95,16 +95,31 @@ export function StepDetails({
 				<span className="font-medium uppercase whitespace-nowrap">Function Call Details</span>
 				<ChevronDown className="w-4 h-4" />
 			</button>
-			<ScrollArea className="flex-1">
-				{loading ? (
-					<StepDetailsSkeleton />
-				) : step && stepWithLocation ? (
-					<FunctionCallViewer data={filteredStepInfo} />
-				) : (
-					<div className="flex px-2 py-1">No Function Call Details</div>
-				)}
-
-				<ScrollBar orientation="horizontal" />
+			<ScrollArea className="flex-1 bg-background">
+				<div className="">
+					{loading ? (
+						<StepDetailsSkeleton />
+					) : step && stepWithLocation ? (
+						<FunctionCallViewer data={filteredStepInfo} />
+					) : (
+						<div className="flex flex-col items-center justify-center h-40 text-muted-foreground m-2">
+							<svg
+								className="w-12 h-12 mb-2 opacity-20"
+								fill="none"
+								viewBox="0 0 24 24"
+								stroke="currentColor"
+							>
+								<path
+									strokeLinecap="round"
+									strokeLinejoin="round"
+									strokeWidth={1.5}
+									d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+								/>
+							</svg>
+							<p className="text-sm">No call details available</p>
+						</div>
+					)}
+				</div>
 			</ScrollArea>
 		</div>
 	);
@@ -112,56 +127,29 @@ export function StepDetails({
 
 const StepDetailsSkeleton = () => {
 	return (
-		<div className="font-mono px-2 my-2">
-			<div className="font-bold mb-1.5 flex items-center gap-2">
-				<span>Contract:</span>
-				<Skeleton className="h-4 w-24" />
-			</div>
-			<div className="font-bold mb-1.5 flex items-center gap-2">
-				<span>Function:</span>
-				<Skeleton className="h-4 w-24" />
-			</div>
-			<div className="mb-1.5">
-				<div className="whitespace-nowrap mb-1.5">
-					<div className="flex items-center gap-2 mb-2">
-						<span className="font-bold">Parameters:</span>
-					</div>
-					<div className="ml-2">
-						<div className="flex items-center gap-2 mb-1.5">
-							<Skeleton className="h-4 w-4" />
-							<Skeleton className="h-4 w-16" />
-							<Skeleton className="h-4 w-12" />
-						</div>
-						<div className="ml-4">
-							<div className="flex items-center gap-2 mb-1.5">
-								<Skeleton className="h-4 w-12" />
-								<Skeleton className="h-4 w-20" />
-							</div>
-							<div className="flex items-center gap-2 mb-1.5">
-								<Skeleton className="h-4 w-8" />
-								<Skeleton className="h-4 w-16" />
-							</div>
-						</div>
-					</div>
+		<div className="space-y-1.5 px-2">
+			<div className="flex gap-1.5"></div>
+
+			<div className="bg-card/50 backdrop-blur-sm rounded-md border border-border/50 p-2">
+				<div className="flex items-center gap-1.5 mb-1">
+					<div className="w-1.5 h-1.5 rounded-full bg-green-500/60" />
+					<Skeleton className="h-2.5 w-16" />
+				</div>
+				<div className="ml-4 space-y-1">
+					<Skeleton className="h-3 w-full" />
+					<Skeleton className="h-3 w-4/5 ml-2" />
+					<Skeleton className="h-3 w-3/4 ml-2" />
 				</div>
 			</div>
-			<div className="mb-1.5">
-				<div className="whitespace-nowrap mb-1.5">
-					<div className="flex items-center gap-2 mb-2">
-						<span className="font-bold">Results:</span>
-					</div>
-					<div className="ml-2">
-						<div className="flex items-center gap-2 mb-1.5">
-							<Skeleton className="h-4 w-4" />
-							<Skeleton className="h-4 w-20" />
-						</div>
-						<div className="ml-4">
-							<div className="flex items-center gap-2 mb-1.5">
-								<Skeleton className="h-4 w-10" />
-								<Skeleton className="h-4 w-24" />
-							</div>
-						</div>
-					</div>
+
+			<div className="bg-card/50 backdrop-blur-sm rounded-md border border-border/50 p-2">
+				<div className="flex items-center gap-1.5 mb-1">
+					<div className="w-1.5 h-1.5 rounded-full bg-orange-500/60" />
+					<Skeleton className="h-2.5 w-12" />
+				</div>
+				<div className="ml-4 space-y-1">
+					<Skeleton className="h-3 w-full" />
+					<Skeleton className="h-3 w-3/4 ml-2" />
 				</div>
 			</div>
 		</div>

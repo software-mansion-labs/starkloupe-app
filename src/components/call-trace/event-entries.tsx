@@ -50,6 +50,7 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 											value={decoded}
 											fullObject={decoded}
 											typeName={decoded.typeName}
+											functionName={decoded.name ?? ''}
 											isContract
 										/>
 										{i < (event.datas?.length ?? 0) - 1 && ',\u00A0'}

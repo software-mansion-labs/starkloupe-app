@@ -17,6 +17,7 @@ export interface ValueWithTooltipProps {
 	typeName?: string;
 	functionName?: string;
 	isContract?: boolean;
+	isResult?: boolean;
 }
 
 const MAX_LEN = 13;
@@ -65,7 +66,8 @@ const ValueWithTooltip: React.FC<ValueWithTooltipProps> = memo(function VWT({
 	fullObject,
 	typeName,
 	functionName,
-	isContract
+	isContract,
+	isResult
 }) {
 	const { text, isTruncated } = useMemo(() => {
 		const valueToExtract = value?.value !== undefined ? value.value : value;
@@ -145,6 +147,7 @@ const ValueWithTooltip: React.FC<ValueWithTooltipProps> = memo(function VWT({
 										args: value?.value !== undefined ? value.value : value,
 										typeName
 									}}
+									isResult={isResult}
 									tooltipValue
 									isContract={isContract}
 								/>

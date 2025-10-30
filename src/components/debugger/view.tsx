@@ -9,7 +9,7 @@ import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { ContractCallSignature } from '../ui/signature';
-import { ContractCall } from '@/lib/simulation';
+import { ContractCall, DebuggerExecutionTraceEntry } from '@/lib/simulation';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
 import Link from 'next/link';
 import Sidebar from '../code-viewer/sidebar';
@@ -40,8 +40,26 @@ export function DebuggerView() {
 		loading,
 		hasDebuggableContract,
 		error,
-		setContractCall
+		functionCallsMap
 	} = debuggerContext;
+
+	const stepWithLocation = currentStep?.withLocation || undefined;
+	let functionName: string | undefined = undefined;
+
+	const functionCallDetails = stepWithLocation?.functionCallId
+		? functionCallsMap?.[stepWithLocation.functionCallId]
+		: undefined;
+	if (functionCallDetails) {
+		const fullFnName = functionCallDetails?.fnName;
+		functionName =
+			fullFnName && fullFnName.includes('::')
+				? fullFnName
+						.replace(/::[^:]*<.*>/, '')
+						.trim()
+						.split('::')
+						.pop()
+				: fullFnName || '';
+	}
 
 	return (
 		<ResizablePanelGroup direction="horizontal" className="w-full flex flex-row">
@@ -62,6 +80,7 @@ export function DebuggerView() {
 						totalSteps={totalSteps}
 						contractCall={contractCall}
 						runToBreakpoint={runToBreakpoint}
+						functionName={functionName}
 					/>
 				)}
 
@@ -123,7 +142,8 @@ function Controls({
 	stepIndex,
 	totalSteps,
 	contractCall,
-	runToBreakpoint
+	runToBreakpoint,
+	functionName
 }: {
 	nextStep: () => void;
 	previousStep: () => void;
@@ -132,6 +152,7 @@ function Controls({
 	totalSteps: number;
 	contractCall?: ContractCall;
 	runToBreakpoint: () => void;
+	functionName?: string | undefined;
 }) {
 	const { customSettings, updateContractName, updateContractColor, updateContractSettings } =
 		useSettings();
@@ -154,7 +175,7 @@ function Controls({
 			window.removeEventListener('keydown', handleKeyDown);
 		};
 	}, [previousStep, nextStep, stepOver]);
-	const { contractCallsMap } = useCallTrace();
+	const { contractCallsMap, functionCallsMap } = useCallTrace();
 
 	let call = contractCall?.callId && contractCallsMap[contractCall?.callId];
 
@@ -168,6 +189,7 @@ function Controls({
 						updateContractSettings={updateContractSettings}
 						updateContractColor={updateContractColor}
 						contractCall={call || contractCall}
+						functionName={functionName}
 					/>
 				)}
 			</div>

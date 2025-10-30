@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TriangleRightIcon, TriangleDownIcon } from '@radix-ui/react-icons';
+import { ChevronRight, ChevronDown, Box, Code2, ArrowDownRight, ArrowUpLeft } from 'lucide-react';
 import { useDebugger } from '@/lib/context/debugger-context-provider';
 import CopyToClipboardElement from './copy-to-clipboard';
 import AddressLink from '../address-link';
 import { ContractCall, DecodedItem, InternalFnCallIO, TextPosition } from '@/lib/simulation';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { toast } from '@/components/hooks/use-toast';
+import { ScrollArea, ScrollBar } from './scroll-area';
+import { shortenHash } from '@/lib/utils';
 
 interface FilteredStepInfo {
 	function?: string | undefined;
@@ -18,13 +20,17 @@ interface FilteredStepInfo {
 const FunctionCallViewer = ({
 	data,
 	isContract = false,
-	tooltipValue = false
+	tooltipValue = false,
+	isResult
 }: {
 	data: FilteredStepInfo;
 	isContract?: boolean;
 	tooltipValue?: boolean;
+	isResult?: boolean;
 }) => {
 	const [expanded, setExpanded] = useState<Set<string>>(new Set());
+	const [isParametersExpanded, setIsParametersExpanded] = useState<boolean>(true);
+	const [isExpressionExpanded, setIsExpressionExpanded] = useState<boolean>(false);
 	const [expression, setExpression] = useState<string>('');
 	const [results, setResults] = useState<InternalFnCallIO[] | undefined>(undefined);
 	const [args, setArgs] = useState<InternalFnCallIO[] | undefined>(undefined);
@@ -123,36 +129,56 @@ const FunctionCallViewer = ({
 		return obj;
 	};
 
+	const renderValue = (item: any, depth: number = 0) => {
+		const isAddress = typeof item === 'string' && item.startsWith('0x');
+
+		if (isAddress) {
+			return (
+				<CopyToClipboardElement
+					value={item}
+					toastDescription="Copied!"
+					className="px-0 py-0 hover:bg-inherit inline-flex"
+				>
+					<AddressLink address={item} customSettings={customSettings}>
+						<span className="font-mono text-[11px]">{item}</span>
+					</AddressLink>
+				</CopyToClipboardElement>
+			);
+		}
+
+		return <span className="font-mono text-[11px]">{item?.toString() || 'null'}</span>;
+	};
+
 	const renderData = (
 		item: any,
 		name: string | number,
 		path: string,
 		skipName = false,
-		isRoot = false
+		depth = 0
 	) => {
 		const key = path;
 		const isExpandable = item && typeof item === 'object';
 		const isArray = Array.isArray(item);
-		const isAddress = typeof item === 'string' && item.startsWith('0x');
 
 		if (isExpandable) {
 			const entries = isArray ? item : Object.entries(item);
+
 			if (isArray && entries.length === 1) {
 				const singleItem = entries[0];
 				if (typeof singleItem === 'object' && singleItem !== null) {
 					return (
-						<div className={`font-mono ${isRoot ? '' : 'ml-2'}`}>
+						<div className={depth > 0 ? 'ml-3' : ''}>
 							{!skipName && (
-								<div className="mb-1.5">
-									<span className={`font-semibold ${isRoot ? '' : 'text-pink-900 dark:text-keys'}`}>
-										{name}:{' '}
+								<div className="flex items-center gap-1 mb-0.5">
+									<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium">
+										{name}:
 									</span>
 								</div>
 							)}
-							<div className={skipName ? '' : 'ml-2 mb-1.5'}>
+							<div className="space-y-0.5">
 								{Object.entries(singleItem).map(([childKey, childVal]) => (
-									<div key={childKey} className="whitespace-pre">
-										{renderData(childVal, childKey, `${key}.0.${childKey}`, false, false)}
+									<div key={childKey}>
+										{renderData(childVal, childKey, `${key}.0.${childKey}`, false, depth + 1)}
 									</div>
 								))}
 							</div>
@@ -161,49 +187,50 @@ const FunctionCallViewer = ({
 				}
 			}
 
-			return (
-				<div className={`font-mono ${isRoot ? '' : 'ml-2'}`}>
-					<div
-						className="flex items-center cursor-pointer w-fit select-none hover:bg-accent pr-1 rounded-sm transition-all delay-75 ease-out mb-1.5 mr-2"
-						onClick={() => toggleExpand(key)}
-					>
-						<span className="-m-1">
-							{expanded.has(key) ? (
-								<TriangleDownIcon className="h-4 w-4 mr-1" />
-							) : (
-								<TriangleRightIcon className="h-4 w-4 mr-1" />
-							)}
-						</span>
-						{!skipName && (
-							<span className={`font-semibold ${isRoot ? '' : 'text-pink-900 dark:text-keys'} `}>
-								{typeof name === 'string' && name.includes('_') ? name.split('_')[0] : name}:
-							</span>
-						)}
-						{!expanded.has(key) && (
-							<span className="italic font-normal">
-								{isArray
-									? `(${entries.length}) [${
-											entries.length > 0
-												? entries.length === 1 && typeof entries[0] === 'string'
-													? entries[0]
-													: '...'
-												: ''
-									  }]`
-									: `(${entries.length}) {...}`}
-							</span>
-						)}
-					</div>
+			const shouldAutoExpand = skipName && depth === 0;
+			const isExpanded = shouldAutoExpand || expanded.has(key);
 
-					{expanded.has(key) && (
-						<div className="ml-2 mb-1.5">
+			return (
+				<div className={depth > 0 ? 'ml-3' : ''}>
+					{!shouldAutoExpand && (
+						<div
+							className="flex items-center gap-1 cursor-pointer hover:bg-accent/40 -mx-1 px-1 py-0.5 rounded transition-colors group"
+							onClick={() => toggleExpand(key)}
+						>
+							{isExpanded ? (
+								<ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+							) : (
+								<ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+							)}
+							{!skipName && (
+								<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium">
+									{typeof name === 'string' && name.includes('_') ? name.split('_')[0] : name}
+								</span>
+							)}
+							{!isExpanded && (
+								<span className="font-mono text-[11px] text-muted-foreground/60 italic ml-1">
+									{isArray
+										? `(${entries.length}) [${
+												entries.length > 0
+													? entries.length === 1 && typeof entries[0] === 'string'
+														? entries[0]
+														: '...'
+													: ''
+										  }]`
+										: `(${entries.length}) {...}`}
+								</span>
+							)}
+						</div>
+					)}
+
+					{isExpanded && (
+						<div className="space-y-0.5 mt-0.5">
 							{isArray
 								? entries.map((child, idx) => (
-										<div key={idx} className="whitespace-pre mb-1.5">
-											{renderData(child, idx, `${key}.${idx}`, false, false)}
-										</div>
+										<div key={idx}>{renderData(child, idx, `${key}.${idx}`, false, depth + 1)}</div>
 								  ))
 								: entries.map(([childKey, childVal]) => (
-										<div key={childKey} className="whitespace-pre mb-1.5">
+										<div key={childKey}>
 											{renderData(
 												childVal,
 												typeof childKey === 'string' && childKey.includes('_')
@@ -211,7 +238,7 @@ const FunctionCallViewer = ({
 													: childKey,
 												`${key}.${childKey}`,
 												false,
-												false
+												depth + 1
 											)}
 										</div>
 								  ))}
@@ -222,25 +249,13 @@ const FunctionCallViewer = ({
 		}
 
 		return (
-			<div className={`${isRoot ? '' : 'ml-2'} mb-1.5`}>
+			<div className={`flex items-baseline gap-1 ${depth > 0 ? 'ml-3' : ''}`}>
 				{!skipName && (
-					<span className={` ${isRoot ? '' : 'dark:text-keys text-pink-900'}  font-semibold`}>
+					<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium flex-shrink-0">
 						{typeof name === 'string' && name.includes('_') ? name.split('_')[0] : name}:
 					</span>
 				)}
-				<CopyToClipboardElement
-					value={item.toString()}
-					toastDescription="Copied!"
-					className={`${isAddress ? 'py-1 px-0 hover:bg-inherit' : 'px-1'}`}
-				>
-					{isAddress ? (
-						<AddressLink address={item} customSettings={customSettings}>
-							<span className="whitespace-nowrap">{item}</span>
-						</AddressLink>
-					) : (
-						item.toString()
-					)}
-				</CopyToClipboardElement>
+				<div className="flex-1 min-w-0">{renderValue(item, depth)}</div>
 			</div>
 		);
 	};
@@ -255,109 +270,344 @@ const FunctionCallViewer = ({
 	const { codeLocation, setExpressionHover, setActiveFile, activeFile, setContractCall } =
 		debuggerContext;
 
+	const hasArgs =
+		typeof data.args === 'boolean' ||
+		(Array.isArray(data.args)
+			? data.args.length > 0
+			: typeof data.args === 'object' && data.args !== null && Object.keys(data.args).length > 0) ||
+		typeof data.args === 'string';
+
+	const hasResults = data.result && data.result.length > 0;
+
+	console.log(data);
+
 	return (
-		<div className="font-mono px-2 my-2">
-			{data.contractCallDetails && (
-				<div className="font-bold mb-1.5">
-					Contract:{' '}
-					<AddressLink
-						addressClassName="text-classGreen font-normal"
-						customSettings={customSettings}
-						updateContractName={updateContractName}
-						updateContractColor={updateContractColor}
-						updateContractSettings={updateContractSettings}
-						address={data.contractCallDetails.entryPoint.storageAddress}
-					>
-						{data.contractCallDetails.contractName
-							? data.contractCallDetails.contractName
-							: data.contractCallDetails.entryPoint.storageAddress}
-					</AddressLink>
-				</div>
-			)}
-			{data.function && (
-				<div className="font-bold mb-1.5">
-					{isContract ? 'Parameters: ' : 'Function: '}{' '}
-					<span className="text-function_purple">{data.function}</span>
-				</div>
-			)}
-			{data.typeName && (
-				<div className="mb-1.5">
-					<span className="font-semibold ">
-						Type: <span className="font-normal text-typeColor">{data.typeName}</span>
-					</span>
-				</div>
-			)}
-			<div className="mb-1.5">
-				{typeof data.args === 'boolean' ||
-				(Array.isArray(data.args)
-					? data.args.length > 0
-					: typeof data.args === 'object' &&
-					  data.args !== null &&
-					  Object.keys(data.args).length > 0) ||
-				typeof data.args === 'string' ? (
-					<div className="whitespace-nowrap mb-1.5">
-						{renderData(
-							formattedArgs,
-							tooltipValue ? 'Value' : 'Parameters',
-							'Parameters',
-							false,
-							true
+		<div className="px-2 py-1 min-w-[16rem]">
+			<div className="space-y-2">
+				{(data.contractCallDetails || data.function) && (
+					<div className="flex gap-1.5">
+						{data.function && isContract && (
+							<div className="flex-1 flex bg-card/50 backdrop-blur-sm rounded-md border border-border/50 p-2 hover:border-border transition-colors">
+								<div>
+									<div className="flex items-center gap-1.5 mb-1">
+										{isContract && <ArrowDownRight className="w-3 h-3 text-green-500" />}
+										{isContract && (
+											<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+												{isContract && 'Argument'}
+											</span>
+										)}
+									</div>
+									<div className="ml-4">
+										{isContract && (
+											<span
+												className={`${
+													!isContract ? 'text-function_purple' : ''
+												} font-mono text-[11px] font-semibold`}
+											>
+												{data.function}
+											</span>
+										)}
+									</div>
+								</div>
+							</div>
+						)}
+						{data.typeName && tooltipValue && (
+							<div className="flex-1 bg-card/50 backdrop-blur-sm rounded-md border border-border/50 p-2 hover:border-border transition-colors">
+								<div className="flex items-center gap-1.5 mb-1">
+									<Box className="w-3 h-3 text-cyan-500" />
+									<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+										Type
+									</span>
+								</div>
+								<div className="ml-4">
+									<span className="text-typeColor font-mono text-[11px]">{data.typeName}</span>
+								</div>
+							</div>
 						)}
 					</div>
-				) : (
-					<span className="font-semibold ">{tooltipValue ? 'Value: ' : 'Parameters: '} </span>
 				)}
-			</div>
 
-			{!isContract && data.result && (
-				<div className="mb-1.5">
-					{data.result.length > 0 ? (
-						<div className="whitespace-nowrap mb-1.5">
-							{renderData(formattedResult, 'Results', 'Results', false, true)}
-						</div>
-					) : (
-						<span className="font-semibold ">Results: </span>
-					)}
-				</div>
-			)}
-			{!tooltipValue && (
-				<div className="mt-4">
-					<div className="mb-1.5">
-						<span className="font-semibold whitespace-nowrap">
-							Expression:{' '}
-							<span
-								className="bg-yellow-300 bg-opacity-40 font-normal cursor-pointer hover:bg-yellow-500 hover:bg-opacity-40 trasition-all"
-								onMouseEnter={() => {
-									setExpressionHover(true);
-									if (
-										debuggerContext?.codeLocation &&
-										activeFile !== debuggerContext?.codeLocation?.filePath
-									) {
-										if (data.contractCallDetails) setContractCall(data.contractCallDetails);
-										setActiveFile(debuggerContext?.codeLocation?.filePath);
-										toast({
-											title: 'Active file changed',
-											description: `The ${debuggerContext?.codeLocation?.filePath} was opened for expression demonstration`
-										});
-									}
-								}}
-								onMouseLeave={() => setExpressionHover(false)}
-							>
-								{expression}
+				{data.typeName && tooltipValue && !data.function && (
+					<div className="flex-1 bg-card/50 backdrop-blur-sm rounded-md border border-border/50 p-2 hover:border-border transition-colors">
+						<div className="flex items-center gap-1.5 mb-1">
+							<Box className="w-3 h-3 text-cyan-500" />
+							<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+								Type
 							</span>
-							<span className="font-semibold whitespace-nowrap">
-								<span className="font-normal">
-									{' - line '}
-									{codeLocation?.start.line &&
-										(codeLocation?.start.line === codeLocation?.end.line
-											? `${codeLocation?.start.line + 1}`
-											: `${codeLocation?.start.line + 1}-${codeLocation?.end.line + 1}`)}
-								</span>{' '}
-								{debuggerContext?.codeLocation?.filePath && (
-									<span className="font-normal">
-										in{' '}
-										<span
-											onClick={() => {
+						</div>
+						<div className="ml-4">
+							<span className="text-typeColor font-mono text-[11px]">{data.typeName}</span>
+						</div>
+					</div>
+				)}
+				{tooltipValue ? (
+					<div className="space-y-1.5">
+						{(() => {
+							const hasParamsOrResults = hasArgs || (!isContract && hasResults);
+							const hasType = !!data.typeName;
+							const blockCount = (hasParamsOrResults ? 1 : 0) + (hasType ? 1 : 0);
+
+							if (blockCount === 2) {
+								return (
+									<>
+										<div className="flex gap-1.5">
+											<div className="flex-1 bg-card/50 backdrop-blur-sm rounded-md border border-border/50 overflow-hidden hover:border-border transition-colors">
+												<div
+													className="flex items-center gap-1.5 p-2 cursor-pointer hover:bg-accent/20 transition-colors"
+													onClick={() => setIsParametersExpanded(!isParametersExpanded)}
+												>
+													{isParametersExpanded ? (
+														<ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+													) : (
+														<ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+													)}
+													<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+														{isResult ? 'Results' : 'Parameters'}
+													</span>
+												</div>
+
+												{isParametersExpanded && (
+													<ScrollArea className="overflow-auto">
+														<div className="w-full px-2 pb-2">
+															{hasArgs && (
+																<div className="space-y-0.5">
+																	{renderData(formattedArgs, 'params', 'Parameters', true, 0)}
+																</div>
+															)}
+															{!isContract && hasResults && (
+																<>
+																	{hasArgs && <div className="border-t border-border/30 my-2" />}
+																	<div className="space-y-0.5">
+																		{renderData(formattedResult, 'results', 'Results', true, 0)}
+																	</div>
+																</>
+															)}
+														</div>
+														<ScrollBar orientation="horizontal" />
+													</ScrollArea>
+												)}
+											</div>
+										</div>
+									</>
+								);
+							}
+							return (
+								<>
+									{hasParamsOrResults && (
+										<div className="bg-card/50 backdrop-blur-sm rounded-md border border-border/50 overflow-hidden hover:border-border transition-colors">
+											<div
+												className="flex items-center gap-1.5 p-2 cursor-pointer hover:bg-accent/20 transition-colors"
+												onClick={() => setIsParametersExpanded(!isParametersExpanded)}
+											>
+												{isParametersExpanded ? (
+													<ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+												) : (
+													<ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+												)}
+												<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+													{hasType ? 'Parameters' : 'Value'}
+												</span>
+											</div>
+
+											{isParametersExpanded && (
+												<ScrollArea className="overflow-auto">
+													<div className="w-full px-2 pb-2">
+														{hasArgs && (
+															<div className="space-y-0.5">
+																{renderData(
+																	formattedArgs,
+																	'params',
+																	hasType ? 'Parameters' : 'Value',
+																	true,
+																	0
+																)}
+															</div>
+														)}
+														{!isContract && hasResults && (
+															<>
+																{hasArgs && <div className="border-t border-border/30 my-2" />}
+																<div className="space-y-0.5">
+																	{renderData(
+																		formattedResult,
+																		'results',
+																		hasType ? 'Results' : 'Value',
+																		true,
+																		0
+																	)}
+																</div>
+															</>
+														)}
+													</div>
+													<ScrollBar orientation="horizontal" />
+												</ScrollArea>
+											)}
+										</div>
+									)}
+
+									{hasType && (
+										<>
+											<div className="bg-card/50 backdrop-blur-sm rounded-md border border-border/50 p-2 hover:border-border transition-colors">
+												<div className="flex items-center gap-1.5 mb-1">
+													<Box className="w-3 h-3 text-cyan-500" />
+													<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+														Type
+													</span>
+												</div>
+												<div className="ml-4">
+													<span className="text-typeColor font-mono text-[11px]">
+														{data.typeName}
+													</span>
+												</div>
+											</div>
+											{hasParamsOrResults && (
+												<div className="bg-card/50 backdrop-blur-sm rounded-md border border-border/50 overflow-hidden hover:border-border transition-colors">
+													<div
+														className="flex items-center gap-1.5 p-2 cursor-pointer hover:bg-accent/20 transition-colors"
+														onClick={() => setIsParametersExpanded(!isParametersExpanded)}
+													>
+														{isParametersExpanded ? (
+															<ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+														) : (
+															<ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+														)}
+														<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+															Value
+														</span>
+													</div>
+
+													{isParametersExpanded && (
+														<ScrollArea className="overflow-auto">
+															<div className="w-full px-2 pb-2">
+																{hasArgs && (
+																	<div className="space-y-0.5">
+																		{renderData(formattedArgs, 'params', 'Value', true, 0)}
+																	</div>
+																)}
+																{!isContract && hasResults && (
+																	<>
+																		{hasArgs && <div className="border-t border-border/30 my-2" />}
+																		<div className="space-y-0.5">
+																			{renderData(formattedResult, 'results', 'Value', true, 0)}
+																		</div>
+																	</>
+																)}
+															</div>
+															<ScrollBar orientation="horizontal" />
+														</ScrollArea>
+													)}
+												</div>
+											)}
+										</>
+									)}
+								</>
+							);
+						})()}
+					</div>
+				) : (
+					(hasArgs || (!isContract && hasResults) || data.typeName) && (
+						<div className="flex gap-1.5 min-w-[12rem]">
+							{(hasArgs || (!isContract && hasResults)) && (
+								<div className="flex-1 bg-card/50 backdrop-blur-sm rounded-md border border-border/50 overflow-hidden hover:border-border transition-colors">
+									<div
+										className="flex items-center gap-1.5 p-2 cursor-pointer hover:bg-accent transition-colors"
+										onClick={() => setIsParametersExpanded(!isParametersExpanded)}
+									>
+										{isParametersExpanded ? (
+											<ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+										) : (
+											<ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+										)}
+										<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+											{hasArgs && !isContract && hasResults
+												? 'Parameters & Results'
+												: hasArgs
+												? 'Parameters & Results'
+												: 'Results'}
+										</span>
+									</div>
+
+									{isParametersExpanded && (
+										<ScrollArea className="overflow-auto">
+											<div className="w-full px-2 pb-2">
+												{hasArgs && (
+													<div className="space-y-1">
+														{!tooltipValue && (
+															<div className="flex items-center gap-1.5">
+																<ArrowDownRight className="w-3 h-3 text-green-500" />
+																<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+																	Parameters
+																</span>
+															</div>
+														)}
+														<div className="space-y-0.5">
+															{renderData(formattedArgs, 'params', 'Parameters', true, 0)}
+														</div>
+													</div>
+												)}
+
+												{!isContract && hasResults && (
+													<>
+														{hasArgs && <div className="border-t border-border/30 my-2" />}
+														<div className="space-y-1">
+															<div className="flex items-center gap-1.5">
+																<ArrowUpLeft className="w-3 h-3 text-blue-500" />
+																<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+																	Results
+																</span>
+															</div>
+															<div className="space-y-0.5">
+																{renderData(formattedResult, 'results', 'Results', true, 0)}
+															</div>
+														</div>
+													</>
+												)}
+											</div>
+											<ScrollBar orientation="horizontal" />
+										</ScrollArea>
+									)}
+								</div>
+							)}
+							{data.typeName && (
+								<div className="flex-1 bg-card/50 backdrop-blur-sm rounded-md border border-border/50 p-2 hover:border-border transition-colors">
+									<div className="flex items-center gap-1.5 mb-1">
+										<Box className="w-3 h-3 text-cyan-500" />
+										<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+											Type
+										</span>
+									</div>
+									<div className="ml-4">
+										<span className="text-typeColor font-mono text-[11px]">{data.typeName}</span>
+									</div>
+								</div>
+							)}
+						</div>
+					)
+				)}
+				{!tooltipValue && expression && (
+					<div className="bg-gradient-to-br from-yellow-500/5 to-orange-500/5 backdrop-blur-sm rounded-md border border-yellow-500/20 overflow-hidden hover:border-yellow-500/30 transition-colors">
+						<div
+							className="flex items-center gap-1.5 p-2 cursor-pointer hover:bg-yellow-500/10 transition-colors"
+							onClick={() => setIsExpressionExpanded(!isExpressionExpanded)}
+						>
+							{isExpressionExpanded ? (
+								<ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+							) : (
+								<ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+							)}
+							<Code2 className="w-3 h-3 text-yellow-600 dark:text-yellow-500" />
+							<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+								Expression
+							</span>
+						</div>
+
+						{isExpressionExpanded && (
+							<ScrollArea className="overflow-auto">
+								<div className="w-full px-3 py-3">
+									<div className="flex flex-wrap items-center gap-2">
+										<div
+											className="inline-block bg-yellow-400/20 hover:bg-yellow-400/30 px-2 py-1 rounded border border-yellow-400/30 cursor-pointer transition-colors"
+											onMouseEnter={() => {
+												setExpressionHover(true);
 												if (
 													debuggerContext?.codeLocation &&
 													activeFile !== debuggerContext?.codeLocation?.filePath
@@ -366,41 +616,80 @@ const FunctionCallViewer = ({
 													setActiveFile(debuggerContext?.codeLocation?.filePath);
 													toast({
 														title: 'Active file changed',
-														description: `The file ${debuggerContext?.codeLocation?.filePath} was opened.`
+														description: `Opened ${debuggerContext?.codeLocation?.filePath}`
 													});
 												}
 											}}
-											className="hover:underline cursor-pointer"
+											onMouseLeave={() => setExpressionHover(false)}
 										>
-											{debuggerContext?.codeLocation?.filePath}
-										</span>
-									</span>
-								)}
-							</span>
-						</span>
-					</div>
-					<div className="mb-1.5">
-						{args && args.length > 0 && (
-							<div>
-								<span className="font-semibold">Parameters: </span>
-								<div className="whitespace-nowrap mb-1.5">
-									{renderData(formatObject(args), 'Parameters', 'expr_args', true, true)}
+											<code className="font-mono text-[11px] text-yellow-900 dark:text-yellow-100 whitespace-nowrap">
+												{expression}
+											</code>
+										</div>
+										<div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono">
+											<span className="flex items-center gap-1 whitespace-nowrap">
+												Line{' '}
+												{codeLocation?.start.line &&
+													(codeLocation?.start.line === codeLocation?.end.line
+														? `${codeLocation?.start.line + 1}`
+														: `${codeLocation?.start.line + 1}-${codeLocation?.end.line + 1}`)}
+											</span>
+											{debuggerContext?.codeLocation?.filePath && (
+												<>
+													<span className="text-muted-foreground/50">•</span>
+													<span
+														onClick={() => {
+															if (
+																debuggerContext?.codeLocation &&
+																activeFile !== debuggerContext?.codeLocation?.filePath
+															) {
+																if (data.contractCallDetails)
+																	setContractCall(data.contractCallDetails);
+																setActiveFile(debuggerContext?.codeLocation?.filePath);
+																toast({
+																	title: 'Active file changed',
+																	description: `Opened ${debuggerContext?.codeLocation?.filePath}`
+																});
+															}
+														}}
+														className="hover:underline cursor-pointer hover:text-foreground transition-colors truncate max-w-[200px]"
+													>
+														{debuggerContext?.codeLocation?.filePath}
+													</span>
+												</>
+											)}
+										</div>
+									</div>
+									{args && args.length > 0 && (
+										<div className="pt-2 border-t border-yellow-500/20">
+											<div className="flex items-center gap-1.5 mb-1.5">
+												<ArrowDownRight className="w-3 h-3 text-green-500" />
+												<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+													Parameters
+												</span>
+											</div>
+											{renderData(formatObject(args), 'params', 'expr_args', true, 0)}
+										</div>
+									)}
+
+									{results && results.length > 0 && (
+										<div className="pt-2 border-t border-yellow-500/20">
+											<div className="flex items-center gap-1.5 mb-1.5">
+												<ArrowUpLeft className="w-3 h-3 text-blue-500" />
+												<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+													Results
+												</span>
+											</div>
+											{renderData(formatObject(results), 'results', 'expr_result', true, 0)}
+										</div>
+									)}
 								</div>
-							</div>
+								<ScrollBar orientation="horizontal" />
+							</ScrollArea>
 						)}
 					</div>
-					<div className="mb-1.5">
-						{results && results.length > 0 && (
-							<div>
-								<span className="font-semibold">Results: </span>
-								<div className="whitespace-nowrap mb-1.5">
-									{renderData(formatObject(results), 'Results', 'expr_result', true, true)}
-								</div>
-							</div>
-						)}
-					</div>
-				</div>
-			)}
+				)}
+			</div>
 		</div>
 	);
 };

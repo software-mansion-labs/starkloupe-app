@@ -9,13 +9,6 @@ import { DebugButton } from './debug-btn';
 import { CommonCallTrace } from './common-call-trace';
 import { InfoBox } from '@/components/ui/info-box';
 import { FnName } from '../ui/function-name';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from '../ui/dropdown-menu';
-import CopyToClipboardElement from '../ui/copy-to-clipboard';
-import { Copy } from 'lucide-react';
-import { ScrollArea, ScrollBar } from '../ui/scroll-area';
-import FunctionCallViewer from '../ui/function-call-viewer';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import AddressLink from '../address-link';
 import ValueWithTooltip from '../ui/value-with-tooltip';
 
 interface DataItem {
@@ -146,7 +139,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 					<FnName fnName={functionCall.fnName} />
 					{!previewMode && <CallIO ios={functionCall.argumentsDecoded} />}
 					{!previewMode && <span className="text-variable">&nbsp;{'->'}&nbsp;</span>}
-					{!previewMode && <CallIO ios={functionCall.resultsDecoded} />}
+					{!previewMode && <CallIO ios={functionCall.resultsDecoded} isResult />}
 				</div>
 			</TraceLine>
 			{expandedCalls[functionCallId] && !previewMode && (
@@ -176,13 +169,14 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 	);
 });
 
-const CallIO = memo(function CallIO({ ios }: { ios: DataItem[] }) {
+const CallIO = memo(function CallIO({ ios, isResult }: { ios: DataItem[]; isResult?: boolean }) {
 	const iosList = useMemo(
 		() =>
 			ios?.map((io, i) => (
 				<React.Fragment key={i}>
 					<span className="text-typeColor">{io.typeName}</span>&nbsp;=&nbsp;
 					<ValueWithTooltip
+						isResult={isResult}
 						value={io}
 						fullObject={io}
 						typeName={io.typeName}

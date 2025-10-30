@@ -193,6 +193,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 									<span> = </span>
 									<ValueWithTooltip
 										value={val}
+										isResult
 										fullObject={call.result}
 										typeName={val.typeName}
 										isContract
