@@ -155,8 +155,6 @@ export function SimulateTransactionPage({
 		setAlert
 	);
 
-	console.log('decodeCalldata', decodeCalldata?.decoded_calldata);
-
 	const onChainChangedCallback = async (chain: Chain) => {
 		_setChain(chain);
 	};

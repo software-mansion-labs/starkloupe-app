@@ -279,8 +279,6 @@ const FunctionCallViewer = ({
 
 	const hasResults = data.result && data.result.length > 0;
 
-	console.log(data);
-
 	return (
 		<div className="px-2 py-1 min-w-[16rem]">
 			<div className="space-y-2">
