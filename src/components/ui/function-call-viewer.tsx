@@ -204,11 +204,15 @@ const FunctionCallViewer = ({
 							)}
 							{!skipName && (
 								<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium">
-									{typeof name === 'string' && name.includes('_') ? name.split('_')[0] : name}
+									{typeof name === 'string' &&
+									name.includes('_') &&
+									/\d$/.test(name.split('_').pop() || '')
+										? name.split('_').slice(0, -1).join('_')
+										: name}
 								</span>
 							)}
 							{!isExpanded && (
-								<span className="font-mono text-[11px] text-muted-foreground/60 italic ml-1">
+								<span className="font-mono text-[11px] text-muted-foreground/60 italic ml-1 whitespace-nowrap">
 									{isArray
 										? `(${entries.length}) [${
 												entries.length > 0
@@ -233,8 +237,10 @@ const FunctionCallViewer = ({
 										<div key={childKey}>
 											{renderData(
 												childVal,
-												typeof childKey === 'string' && childKey.includes('_')
-													? childKey.split('_')[0]
+												typeof childKey === 'string' &&
+													childKey.includes('_') &&
+													/\d$/.test(childKey.split('_').pop() || '')
+													? childKey.split('_').slice(0, -1).join('_')
 													: childKey,
 												`${key}.${childKey}`,
 												false,
@@ -252,7 +258,12 @@ const FunctionCallViewer = ({
 			<div className={`flex items-baseline gap-1 ${depth > 0 ? 'ml-3' : ''}`}>
 				{!skipName && (
 					<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium flex-shrink-0">
-						{typeof name === 'string' && name.includes('_') ? name.split('_')[0] : name}:
+						{typeof name === 'string' &&
+						name.includes('_') &&
+						/\d$/.test(name.split('_').pop() || '')
+							? name.split('_').slice(0, -1).join('_')
+							: name}
+						:
 					</span>
 				)}
 				<div className="flex-1 min-w-0">{renderValue(item, depth)}</div>
