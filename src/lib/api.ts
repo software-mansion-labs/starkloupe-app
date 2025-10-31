@@ -8,6 +8,7 @@ import {
 } from '@/lib/types';
 import { fetchApi } from '@/lib/utils';
 import { API_URL } from '@/lib/config';
+import { ContractItem, GetClassContractsResponse } from './classes';
 
 export async function fetchSearchData({
 	hash,
@@ -45,6 +46,13 @@ export function fetchSimulations({
 	if (projectSlug) queryParams.project_slug = projectSlug;
 	if (errorHash) queryParams.error_hash = errorHash;
 	return fetchApi<SimulationsResponse | null>('/v1/simulations', { queryParams });
+}
+
+export async function fetchClassContracts(classHash: string): Promise<ContractItem[]> {
+	const res = await fetch(`${API_URL}/v1/classes/${classHash}/contracts`);
+	if (!res.ok) throw new Error('Failed to fetch data');
+	const data = (await res.json()) as GetClassContractsResponse;
+	return data.contracts || [];
 }
 
 export async function fetchSimulation(simulationId: string) {
