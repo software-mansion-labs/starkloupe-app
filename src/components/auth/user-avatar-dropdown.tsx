@@ -15,12 +15,14 @@ import {
 	PlayIcon,
 	MoonIcon,
 	SunIcon,
-	DevicePhoneMobileIcon
+	DevicePhoneMobileIcon,
+	ArrowTopRightOnSquareIcon
 } from '@heroicons/react/24/outline';
+import ethLogo from '@/assets/network-logos/eth-purple.svg';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { Sun, Moon, Laptop } from 'lucide-react';
 import { navigation } from '../footer';
+import Image from 'next/image';
 
 const UserAvatarDropdown = ({ avatarSrc, userName }: { avatarSrc?: string; userName: string }) => {
 	const { theme, setTheme } = useTheme();
@@ -48,6 +50,12 @@ const UserAvatarDropdown = ({ avatarSrc, userName }: { avatarSrc?: string; userN
 						<DropdownMenuItem className="cursor-pointer">
 							<Cog6ToothIcon className="mr-2 h-4 w-4" />
 							<span>Settings</span>
+						</DropdownMenuItem>
+					</Link>
+					<Link href="https://evm.walnut.dev" target="_blank">
+						<DropdownMenuItem className="cursor-pointer">
+							<Image src={ethLogo} alt="Ethereum" className="mr-2 h-4 w-4" />
+							<span>Switch to Ethereum (EVM)</span>
 						</DropdownMenuItem>
 					</Link>
 
