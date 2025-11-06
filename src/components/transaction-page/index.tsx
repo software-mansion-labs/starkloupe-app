@@ -224,7 +224,7 @@ export function TransactionPage({
 									) : (
 										<Link href="/login">
 											<Button variant="outline">
-												<PlayIcon className="mr-2 h-4 w-4" /> Re-simulate transaction
+												<PlayIcon className="mr-2 h-4 w-4" /> Re-simulate
 											</Button>
 										</Link>
 									)}
@@ -299,7 +299,7 @@ export function TransactionPage({
 								) : (
 									<Link href="/login">
 										<Button variant="outline">
-											<PlayIcon className="mr-2 h-4 w-4" /> Re-simulate transaction
+											<PlayIcon className="mr-2 h-4 w-4" /> Re-simulate
 										</Button>
 									</Link>
 								)}
