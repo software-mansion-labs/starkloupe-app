@@ -146,135 +146,25 @@ export function ContractCallFieldset({
 								(fn: any) => fn[0] === call.function_name
 							);
 
-							const decodedFunctionSelector =
-								decodeCalldata?.decoded_calldata[index]?.function_selector;
-							const isFunctionMatching = decodedFunctionSelector === call.function_name;
-
-							if (serverDataLoaded && isFunctionMatching) {
-								return parameters.map((parameter: any, idx: number) => {
-									let paramFunctionInput = undefined;
-									if (functionData && functionData[1]?.inputs) {
-										paramFunctionInput = functionData[1].inputs.find(
-											(input: any) => input.name === parameter.name
-										);
-									}
-
-									return (
-										<div key={`${index}-${idx}-${call.function_name}-server`}>
-											<ParameterInput
-												key={`param-${index}-${idx}-${call.function_name}`}
-												parameter={parameter}
-												functionInput={paramFunctionInput}
-												onValidationChange={onValidationChange}
-												onValueChange={(newValue) => onParameterValueChange(index, idx, newValue)}
-											/>
-										</div>
-									);
-								});
-							}
-
-							const grouped: { structName?: string; structType?: string; params: any[] }[] = [];
-							const structPrefixes = new Map<string, { type: string; params: any[] }>();
-
-							parameters.forEach((parameter: any, idx: number) => {
-								if (parameter._struct_info) {
-									const structName = parameter._struct_info.name;
-
-									if (!structPrefixes.has(structName)) {
-										structPrefixes.set(structName, {
-											type: parameter._struct_info.type,
-											params: []
-										});
-									}
-									structPrefixes.get(structName)!.params.push({ parameter, idx });
-								} else {
-									grouped.push({
-										params: [{ parameter, idx }]
-									});
-								}
-							});
-
-							structPrefixes.forEach((value, structName) => {
-								grouped.push({
-									structName,
-									structType: value.type,
-									params: value.params
-								});
-							});
-
-							grouped.sort((a, b) => {
-								const aFirstIdx = a.params[0].idx;
-								const bFirstIdx = b.params[0].idx;
-								return aFirstIdx - bFirstIdx;
-							});
-
-							return grouped.map((group, groupIdx) => {
-								const functionInput = functionData?.[1]?.inputs?.[group.params[0].idx];
-
-								if (group.structName) {
-									return (
-										<div key={`group-${groupIdx}`} className="border rounded-lg p-4 space-y-3">
-											<div className="flex items-center justify-between border-b pb-2 mb-3">
-												<Label className="font-medium text-base">{group.structName}</Label>
-												<span className="text-xs text-muted-foreground">{group.structType}</span>
-											</div>
-											<Label className="text-sm text-muted-foreground">Struct members</Label>
-											<div className="space-y-3 pl-4">
-												{group.params.map(({ parameter, idx }) => {
-													const displayParameter = {
-														...parameter,
-														name: parameter.name.replace(new RegExp(`^${group.structName}_`), '')
-													};
-
-													let paramFunctionInput = undefined;
-													if (functionData) {
-														const structInput = functionData[1]?.inputs?.find(
-															(input: any) => input.name === group.structName
-														);
-														if (structInput?.struct_members) {
-															paramFunctionInput = structInput.struct_members.find(
-																(member: any) => member.name === displayParameter.name
-															);
-														}
-													}
-
-													return (
-														<ParameterInput
-															key={`param-${index}-${idx}-${call.function_name}-struct-entrypoints`}
-															parameter={displayParameter}
-															functionInput={paramFunctionInput}
-															onValidationChange={onValidationChange}
-															onValueChange={(newValue) =>
-																onParameterValueChange(index, idx, newValue)
-															}
-														/>
-													);
-												})}
-											</div>
-										</div>
-									);
-								} else {
-									const { parameter, idx } = group.params[0];
-
-									let paramFunctionInput = functionInput;
-									if (!paramFunctionInput && functionData) {
-										paramFunctionInput = functionData[1]?.inputs?.find(
-											(input: any) => input.name === parameter.name
-										);
-									}
-
-									return (
-										<div key={`${index}-${idx}-${call.function_name}-entrypoints`}>
-											<ParameterInput
-												key={`param-${index}-${idx}-${call.function_name}-entrypoints`}
-												parameter={parameter}
-												functionInput={paramFunctionInput}
-												onValidationChange={onValidationChange}
-												onValueChange={(newValue) => onParameterValueChange(index, idx, newValue)}
-											/>
-										</div>
+							return parameters.map((parameter: any, idx: number) => {
+								let paramFunctionInput = undefined;
+								if (functionData && functionData[1]?.inputs) {
+									paramFunctionInput = functionData[1].inputs.find(
+										(input: any) => input.name === parameter.name
 									);
 								}
+
+								return (
+									<div key={`${index}-${idx}-${call.function_name}`}>
+										<ParameterInput
+											key={`param-${index}-${idx}-${call.function_name}`}
+											parameter={parameter}
+											functionInput={paramFunctionInput}
+											onValidationChange={onValidationChange}
+											onValueChange={(newValue) => onParameterValueChange(index, idx, newValue)}
+										/>
+									</div>
+								);
 							});
 						})()}
 					</div>
@@ -303,7 +193,9 @@ export function ContractCallFieldset({
 					</div>
 				) : (
 					<div className="text-sm text-muted-foreground col-span-3">
-						Selected entrypoint does not accept any calldata.
+						{contractCallsFunctions[call.address]?.length
+							? 'Selected entrypoint does not accept any calldata.'
+							: 'No entrypoints found'}
 					</div>
 				)}
 			</TabsContent>

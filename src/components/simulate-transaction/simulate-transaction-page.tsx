@@ -21,7 +21,7 @@ import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import { useRouter } from 'next/navigation';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { normalizeDecodedCalldata, validateHexFormat } from '../../lib/utils/validation-utils';
-import { FieldAlert } from './field-alert';
+import { FieldAlert } from './parameter-input-components/field-alert';
 import { ContractCallFieldset } from './contract-call-fieldset';
 import { useContractFunctions } from '../hooks/use-contract-functions';
 import { useDecodeCalldata } from '../hooks/use-decode-calldata';
@@ -90,12 +90,52 @@ export function SimulateTransactionPage({
 
 	const manuallyUpdatedRef = useRef(false);
 
+	const createDecodedCalldataFromEntrypoints = () => {
+		const decodedCalls = _contractCalls.map((call) => {
+			const contractAddress = call.address;
+			const functionName = call.function_name;
+			const functions = contractCallsFunctions[contractAddress];
+
+			if (!functions || !functionName) {
+				return {
+					contract_address: contractAddress || '',
+					function_selector: functionName || '',
+					function_name: '',
+					parameters: []
+				};
+			}
+
+			const functionData = functions.find((fn: any) => fn[0] === functionName);
+			if (!functionData) {
+				return {
+					contract_address: contractAddress,
+					function_selector: functionName,
+					function_name: '',
+					parameters: []
+				};
+			}
+
+			const functionInfo = functionData[1];
+			const parameters = flattenParameters(functionInfo?.inputs || []);
+
+			return {
+				contract_address: contractAddress,
+				function_selector: functionData[0],
+				function_name: functionInfo.name,
+				parameters
+			};
+		});
+
+		return {
+			decoded_calldata: decodedCalls,
+			raw_calldata: []
+		} as unknown as StarknetTransactionData;
+	};
+
 	useEffect(() => {
 		const fetchServerDecodeCalldata = async () => {
 			if (
 				!parsedCalldata ||
-				!_senderAddress ||
-				!_blockNumber ||
 				!_chain?.chainId ||
 				!contractCallsFunctions ||
 				Object.keys(contractCallsFunctions).length === 0
@@ -104,6 +144,13 @@ export function SimulateTransactionPage({
 			}
 
 			if (serverDataLoaded) {
+				return;
+			}
+
+			if (!_senderAddress || !_blockNumber) {
+				const localDecodedData = createDecodedCalldataFromEntrypoints();
+				setDecodeCalldata(localDecodedData);
+				setServerDataLoaded(true);
 				return;
 			}
 
@@ -192,6 +239,24 @@ export function SimulateTransactionPage({
 		};
 
 		_setContractCalls(newCalls);
+
+		setDecodeCalldata((prevData) => {
+			if (!prevData) return prevData;
+
+			const updatedData = { ...prevData };
+			updatedData.decoded_calldata = [...prevData.decoded_calldata];
+
+			if (updatedData.decoded_calldata[index]) {
+				updatedData.decoded_calldata[index] = {
+					contract_address: newAddress,
+					function_selector: '',
+					function_name: '',
+					parameters: []
+				};
+			}
+
+			return updatedData;
+		});
 
 		if (
 			newAddress &&
@@ -312,14 +377,13 @@ export function SimulateTransactionPage({
 
 			const hasExistingErrors = Object.keys(calldataDecodeError).length > 0;
 
-			if (
-				!hasAnyRawCalldata ||
-				serverDataLoaded ||
-				hasExistingErrors ||
-				!_senderAddress ||
-				!_blockNumber ||
-				!_chain?.chainId
-			) {
+			if (!hasAnyRawCalldata || serverDataLoaded || hasExistingErrors || !_chain?.chainId) {
+				return;
+			}
+			if (!_senderAddress || !_blockNumber) {
+				const localDecodedData = createDecodedCalldataFromEntrypoints();
+				setDecodeCalldata(localDecodedData);
+				setServerDataLoaded(true);
 				return;
 			}
 
@@ -376,12 +440,59 @@ export function SimulateTransactionPage({
 		const newErrors = { ...calldataDecodeError };
 		delete newErrors[index];
 		setCalldataDecodeError(newErrors);
+
+		const contractAddress = _contractCalls[index].address;
+		const functionName = _contractCalls[index].function_name;
+		const functions = contractCallsFunctions[contractAddress];
+
+		if (functions && functionName) {
+			const functionData = functions.find((fn: any) => fn[0] === functionName);
+			if (functionData) {
+				const functionInfo = functionData[1];
+				const parameters = flattenParameters(functionInfo?.inputs || []);
+
+				setDecodeCalldata((prevData) => {
+					if (!prevData) {
+						const emptyDecodedCalls = _contractCalls.map(() => ({
+							contract_address: '',
+							function_selector: '',
+							function_name: '',
+							parameters: []
+						}));
+
+						const baseData = {
+							decoded_calldata: emptyDecodedCalls,
+							raw_calldata: []
+						} as unknown as StarknetTransactionData;
+
+						baseData.decoded_calldata[index] = {
+							contract_address: contractAddress,
+							function_selector: functionData[0],
+							function_name: functionInfo.name,
+							parameters
+						};
+
+						return baseData;
+					}
+
+					const updatedData = { ...prevData };
+					updatedData.decoded_calldata = [...prevData.decoded_calldata];
+					updatedData.decoded_calldata[index] = {
+						contract_address: contractAddress,
+						function_selector: functionData[0],
+						function_name: functionInfo.name,
+						parameters
+					};
+
+					return updatedData;
+				});
+			}
+		}
 	};
 
 	const handleParameterValueChange = (callIndex: number, paramIndex: number, newValue: any) => {
 		setDecodeCalldata((prevData) => {
 			if (!prevData) return prevData;
-
 			const updatedData = { ...prevData };
 			updatedData.decoded_calldata = [...prevData.decoded_calldata];
 			updatedData.decoded_calldata[callIndex] = {
@@ -406,7 +517,16 @@ export function SimulateTransactionPage({
 				newTypeName = `${enumBase}::${newValue.__enum_variant}`;
 
 				if ('__enum_value' in newValue) {
-					finalValue = newValue.__enum_value;
+					const enumValue = newValue.__enum_value;
+					if (
+						typeof enumValue === 'object' &&
+						enumValue !== null &&
+						'__enum_variant' in enumValue
+					) {
+						finalValue = { __enum_value: enumValue };
+					} else {
+						finalValue = enumValue;
+					}
 				} else {
 					const { __enum_variant, ...rest } = newValue;
 					finalValue = rest;

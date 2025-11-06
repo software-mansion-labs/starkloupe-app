@@ -4,6 +4,48 @@ import { validateHexFormat, validateCalldata } from './validation-utils';
 import { Chain } from '@/components/networks-select';
 import { toast } from '../../components/hooks/use-toast';
 
+function formatErrorMessage(error: unknown): string {
+	const errorStr = String(error);
+	if (errorStr.length > 300) {
+		return errorStr.substring(0, 297) + '...';
+	}
+
+	return errorStr;
+}
+
+function cleanEnumValue(value: any): any {
+	if (typeof value !== 'object' || value === null) {
+		return value;
+	}
+
+	if (Array.isArray(value)) {
+		return value.map(cleanEnumValue);
+	}
+
+	if ('__enum_value' in value && typeof value.__enum_value === 'object') {
+		return cleanEnumValue(value.__enum_value);
+	}
+
+	const cleaned: any = {};
+	for (const key in value) {
+		if (key !== '__enum_variant') {
+			cleaned[key] = cleanEnumValue(value[key]);
+		}
+	}
+
+	return cleaned;
+}
+
+function cleanDecodedCalldata(decodedCalldata: any[]): any[] {
+	return decodedCalldata.map((call) => ({
+		...call,
+		parameters: call.parameters.map((param: any) => ({
+			...param,
+			value: cleanEnumValue(param.value)
+		}))
+	}));
+}
+
 export async function handleParameterSubmission(
 	_senderAddress: string,
 	decodeCalldata: any,
@@ -13,9 +55,11 @@ export async function handleParameterSubmission(
 	setIsSimulating: (value: boolean) => void,
 	setAlert: (value: boolean) => void
 ) {
+	const cleanedCalldata = cleanDecodedCalldata(decodeCalldata.decoded_calldata);
+
 	const simulationPayload = {
 		senderAddress: _senderAddress,
-		decoded_calldata: decodeCalldata.decoded_calldata,
+		decoded_calldata: cleanedCalldata,
 		blockNumber: _blockNumber === '' ? undefined : _blockNumber,
 		transactionVersion: _transactionVersion,
 		chainId: _chain?.chainId
@@ -45,9 +89,11 @@ export async function handleParameterSubmission(
 		openSimulationPage(simulationPagePayload);
 
 		setIsSimulating(false);
-	} catch {
+	} catch (e) {
 		setIsSimulating(false);
-		toast({ description: 'Fetch error: invalid calldata or network issues' });
+		toast({
+			description: formatErrorMessage(e)
+		});
 		setAlert(true);
 	}
 }

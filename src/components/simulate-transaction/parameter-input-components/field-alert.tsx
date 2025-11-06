@@ -1,6 +1,6 @@
-import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '../../ui/alert';
 import { AlertCircle } from 'lucide-react';
-import { getValidationErrors, hasValidationErrors } from '../../lib/utils/validation-utils';
+import { getValidationErrors, hasValidationErrors } from '../../../lib/utils/validation-utils';
 
 interface FieldAlertProps {
 	senderAddress: string;

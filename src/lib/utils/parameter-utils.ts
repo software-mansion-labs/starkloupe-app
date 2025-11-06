@@ -3,7 +3,38 @@ export function getDefaultValue(type: string, inputDef?: any): any {
 	if (type.startsWith('Array<')) return [];
 	if (type.startsWith('Span<')) return [];
 	if (inputDef?.enum_variants && inputDef.enum_variants.length > 0) {
-		return inputDef.enum_variants[0]?.name || '';
+		const firstVariant = inputDef.enum_variants[0];
+		const variantName = firstVariant?.name || '';
+
+		if (firstVariant?.type && firstVariant.type !== '') {
+			const variantDefaultValue = getDefaultValue(firstVariant.type, firstVariant);
+			return {
+				__enum_variant: variantName,
+				__enum_value: variantDefaultValue
+			};
+		}
+		if (firstVariant?.struct_members && firstVariant.struct_members.length > 0) {
+			const structObj: any = {
+				__enum_variant: variantName
+			};
+			firstVariant.struct_members.forEach((member: any, idx: number) => {
+				structObj[idx.toString()] = {
+					name: member.name,
+					type_name: member.type,
+					value: getDefaultValue(member.type, member)
+				};
+			});
+			return structObj;
+		}
+
+		if (firstVariant?.enum_variants && firstVariant.enum_variants.length > 0) {
+			return {
+				__enum_variant: variantName,
+				__enum_value: getDefaultValue(firstVariant.type, firstVariant)
+			};
+		}
+
+		return variantName;
 	}
 	if (inputDef?.struct_members && inputDef.struct_members.length > 0) {
 		const structObj: any = {};
@@ -51,7 +82,6 @@ export function getInitialEnumVariant(
 	}
 
 	if (typeof parameter.value === 'string' && functionInput?.enum_variants) {
-		// Check if the string value is a variant name
 		const variantMatch = functionInput.enum_variants.find((v: any) => v.name === parameter.value);
 		if (variantMatch) {
 			return parameter.value;
@@ -126,37 +156,30 @@ export function extractStructMembers(value: any): any[] {
 		);
 }
 
-export function flattenParameters(
-	inputs: any[],
-	prefix: string = '',
-	structInfo?: { name: string; type: string }
-): any[] {
+export function flattenParameters(inputs: any[]): any[] {
 	const result: any[] = [];
 
 	for (const input of inputs) {
-		const paramName = prefix ? `${prefix}_${input.name}` : input.name;
+		const defaultValue = getDefaultValue(input.type, input);
+		let type_name = input.type;
 
-		if (input.struct_members && input.struct_members.length > 0) {
-			result.push(
-				...flattenParameters(input.struct_members, paramName, {
-					name: paramName,
-					type: input.type
-				})
-			);
-		} else {
-			const defaultValue = getDefaultValue(input.type, input);
-			const type_name =
-				input.enum_variants && input.enum_variants.length > 0 && typeof defaultValue === 'string'
-					? `${input.type}::${defaultValue}`
-					: input.type;
-
-			result.push({
-				name: paramName,
-				type_name,
-				value: defaultValue,
-				...(structInfo && { _struct_info: structInfo })
-			});
+		if (input.enum_variants && input.enum_variants.length > 0) {
+			if (typeof defaultValue === 'string') {
+				type_name = `${input.type}::${defaultValue}`;
+			} else if (
+				typeof defaultValue === 'object' &&
+				defaultValue !== null &&
+				'__enum_variant' in defaultValue
+			) {
+				type_name = `${input.type}::${defaultValue.__enum_variant}`;
+			}
 		}
+
+		result.push({
+			name: input.name,
+			type_name,
+			value: defaultValue
+		});
 	}
 
 	return result;
