@@ -103,7 +103,7 @@ export default function Page() {
 				<div className="w-[38rem] max-w-[92%] text-center">
 					<Search placeholder={`Search for transaction or contract`}></Search>
 					<Link
-						href="/transactions?chainId=SN_SEPOLIA&txHash=0x05c131a5809010a0d22baf1ddf063396c5941e8a4b8e2c3819c8a6faedbcabef"
+						href="/transactions?chainId=SN_SEPOLIA&txHash=0x3a96fd05defd943c9e9daeff4a8ab052bbda38db340e327924d47253babe014"
 						className="hover:underline text-sm inline-block mt-4 text-gray-500"
 					>
 						Try an example transaction.
