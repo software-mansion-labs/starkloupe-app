@@ -14,6 +14,7 @@ import CopyToClipboardElement from '@/components/ui/copy-to-clipboard';
 import { NetworkBadge, Network } from '@/components/ui/network-badge';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import Link from 'next/link';
 import { ChevronDown, ChevronRight } from 'lucide-react';
 
 interface ContractsTableProps {
@@ -151,24 +152,21 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
 												{group.contracts.map((contract, index) => (
 													<TableRow key={index}>
 														<TableCell className="!px-4">
-															<CopyToClipboardElement
-																value={contract.address}
-																toastDescription="The address has been copied."
-																className="p-0 hover:bg-inherit"
-															>
+															<Link href={`/contracts/${contract.address}`}>
 																<AddressLink
 																	address={contract.address}
 																	addressClassName="md:hidden w-fit"
 																>
 																	{shortenHash(contract.address)}
 																</AddressLink>
+
 																<AddressLink
 																	address={contract.address}
 																	addressClassName="md:block hidden w-fit"
 																>
 																	{contract.address}
 																</AddressLink>
-															</CopyToClipboardElement>
+															</Link>
 														</TableCell>
 														<TableCell className="text-muted-foreground">
 															{formatDate(contract.deployment_time)}
