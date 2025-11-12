@@ -89,10 +89,10 @@ export async function handleParameterSubmission(
 		openSimulationPage(simulationPagePayload);
 
 		setIsSimulating(false);
-	} catch (e) {
+	} catch (e: any) {
 		setIsSimulating(false);
 		toast({
-			description: formatErrorMessage(e)
+			description: formatErrorMessage(e.message)
 		});
 		setAlert(true);
 	}

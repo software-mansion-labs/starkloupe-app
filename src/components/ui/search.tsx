@@ -82,7 +82,7 @@ export function Search({
 				);
 			} catch (error: any) {
 				setDataResponseResults(0);
-				setError(error.toString());
+				setError(error.message.toString());
 			}
 		},
 		[networks]

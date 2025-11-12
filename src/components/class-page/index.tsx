@@ -15,6 +15,7 @@ import AddressLink from '../address-link';
 import { NetworkBadge } from '../ui/network-badge';
 import { VerifiedBadge } from '../ui/verified-badge';
 import { ClassRoot } from '../class/root';
+import { ServerError } from '../ui/server-error';
 
 interface Network {
 	stack?: string;
@@ -24,7 +25,7 @@ interface Network {
 export function ClassPage({ classHash }: { classHash: string }) {
 	const { networks, getNetworkByRpcUrl, parseChain } = useSettings();
 	const [classData, setClassData] = useState<GetClassResponse>();
-	const [error, setError] = useState<string | undefined>();
+	const [error, setError] = useState<{ message: string; status: number } | undefined>();
 
 	useEffect(() => {
 		if (!networks) return;
@@ -38,7 +39,7 @@ export function ClassPage({ classHash }: { classHash: string }) {
 					})
 				);
 			} catch (error: any) {
-				setError(error.toString());
+				setError(error);
 			}
 		};
 
@@ -65,7 +66,12 @@ export function ClassPage({ classHash }: { classHash: string }) {
 
 	let content = null;
 	if (error) {
-		content = <Error message={error} />;
+		content =
+			error.status === 500 ? (
+				<ServerError message={error.message} />
+			) : (
+				<Error message={error.message} />
+			);
 	} else if (classData) {
 		content = (
 			<>

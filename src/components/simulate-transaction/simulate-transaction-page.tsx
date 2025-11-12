@@ -170,8 +170,8 @@ export function SimulateTransactionPage({
 					setServerDataLoaded(true);
 					setCalldataDecodeError({});
 				}
-			} catch (error) {
-				console.error('Error fetching decode calldata:', error);
+			} catch (error: any) {
+				console.error('Error fetching decode calldata:', error.message);
 
 				const errorMap: { [key: number]: boolean } = {};
 				_contractCalls.forEach((call, index) => {
@@ -410,8 +410,8 @@ export function SimulateTransactionPage({
 					setServerDataLoaded(true);
 					setCalldataDecodeError({});
 				}
-			} catch (error) {
-				console.error('Error decoding calldata:', error);
+			} catch (error: any) {
+				console.error('Error decoding calldata:', error.message);
 				const errorMap: { [key: number]: boolean } = {};
 				_contractCalls.forEach((call, index) => {
 					if (call.calldata && call.calldata.trim() !== '') {

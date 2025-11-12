@@ -21,12 +21,13 @@ import AddressLink from '../address-link';
 import { ContractRoot } from '../contract/root';
 import { Network, NetworkBadge } from '../ui/network-badge';
 import { VerifiedBadge } from '../ui/verified-badge';
+import { ServerError } from '../ui/server-error';
 
 export function ContractPage({ contractAddress }: { contractAddress: string }) {
 	const { networks, parseChain, getNetworkByRpcUrl } = useSettings();
 	const [contractData, setContractData] = useState<GetContractResponse>();
 	const [entryPoints, setEntrypoints] = useState<ContractFunctions>();
-	const [error, setError] = useState<string | undefined>();
+	const [error, setError] = useState<{ message: string; status: number } | undefined>();
 
 	useEffect(() => {
 		if (!networks) return;
@@ -40,7 +41,7 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 					})
 				);
 			} catch (error: any) {
-				setError(error.toString());
+				setError(error);
 			}
 		};
 
@@ -60,7 +61,7 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 					})
 				);
 			} catch (error: any) {
-				setError(error.toString());
+				setError(error);
 			}
 		};
 
@@ -84,7 +85,12 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 
 	let content = null;
 	if (error) {
-		content = <Error message={error} />;
+		content =
+			error.status === 500 ? (
+				<ServerError message={error.message} />
+			) : (
+				<Error message={error.message} />
+			);
 	} else if (contractData) {
 		content = (
 			<>

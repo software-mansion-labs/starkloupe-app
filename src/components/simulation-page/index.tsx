@@ -20,6 +20,7 @@ import { useSettings } from '@/lib/context/settings-context-provider';
 import { useRouter } from 'next/navigation';
 import { NetworkBadge } from '../ui/network-badge';
 import { cleanupCategory } from '@/lib/utils/cache-utils';
+import { ServerError } from '../ui/server-error';
 export function SimulationPage({
 	simulationPayload
 }: {
@@ -27,7 +28,9 @@ export function SimulationPage({
 }) {
 	const [l2TransactionData, setL2TransactionData] = useState<L2TransactionData>();
 	const [debuggerPayload, setDebuggerPayload] = useState<DebuggerPayload | null>(null);
-	const [error, setError] = useState<string | undefined>();
+	const [error, setError] = useState<
+		{ message: string; status?: number | undefined } | undefined
+	>();
 	const [isLoading, setIsLoading] = useState<boolean>(false);
 	const { trackingActive, trackingFlagLoaded } = useSettings();
 	const router = useRouter();
@@ -36,7 +39,7 @@ export function SimulationPage({
 	useEffect(() => {
 		const fetchData = async () => {
 			if (!simulationPayload) {
-				setError('Invalid simulation parameters');
+				setError({ message: 'Invalid simulation parameters' });
 				return;
 			}
 
@@ -67,7 +70,7 @@ export function SimulationPage({
 					setDebuggerPayload(debuggerPayload);
 				}
 			} catch (err: any) {
-				setError(err.toString());
+				setError(err);
 			} finally {
 				setIsLoading(false);
 			}
@@ -87,7 +90,12 @@ export function SimulationPage({
 	if (isLoading) {
 		content = <Loader />;
 	} else if (error) {
-		content = <Error message={error} />;
+		content =
+			error.status === 500 ? (
+				<ServerError message={error.message} />
+			) : (
+				<Error message={error.message} />
+			);
 	} else if (l2TransactionData) {
 		content = (
 			<>
