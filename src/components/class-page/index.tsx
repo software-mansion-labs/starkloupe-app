@@ -40,8 +40,9 @@ export function ClassPage({ classHash }: { classHash: string }) {
 				);
 			} catch (error) {
 				setError({
-					message: (error as any)?.message || 'Unknown error occurred',
-					status: (error as any)?.status || 500
+					message:
+						(error as { message: string; status: number })?.message || 'Unknown error occurred',
+					status: (error as { message: string; status: number })?.status || 500
 				});
 			}
 		};

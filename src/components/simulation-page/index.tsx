@@ -71,8 +71,9 @@ export function SimulationPage({
 				}
 			} catch (err) {
 				setError({
-					message: (err as any)?.message || 'Unknown error occurred',
-					status: (err as any)?.status || 500
+					message:
+						(err as { message: string; status: number })?.message || 'Unknown error occurred',
+					status: (err as { message: string; status: number })?.status || 500
 				});
 			} finally {
 				setIsLoading(false);
