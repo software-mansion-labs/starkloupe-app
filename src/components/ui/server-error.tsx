@@ -70,7 +70,7 @@ export function ServerError({
 
 					<div className="relative group">
 						<div className="absolute -inset-0.5 bg-accent-2/20 rounded-lg blur group-hover:bg-accent-2/30 transition-all" />
-						<ScrollArea className="relative w-full h-40 rounded-lg border border-destructive/20 bg-muted/30 backdrop-blur-sm">
+						<div className="w-full max-h-[300px] overflow-auto rounded-md border border-border/50 bg-muted/30 hover:bg-muted/50 transition-colors [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:hover:bg-border/80 [&::-webkit-scrollbar-corner]:bg-transparent">
 							<Button
 								size="sm"
 								variant="outline"
@@ -94,9 +94,7 @@ export function ServerError({
 									<code>{message}</code>
 								</pre>
 							</div>
-							<ScrollBar orientation="horizontal" />
-							<ScrollBar orientation="vertical" />
-						</ScrollArea>
+						</div>
 					</div>
 
 					<div className="flex items-start gap-3 p-4 rounded-lg bg-accent/20 border-2 border-accent/30">

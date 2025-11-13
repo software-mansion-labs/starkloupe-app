@@ -119,8 +119,11 @@ export function TransactionPage({
 				} else if (simulation.l1TransactionData) {
 					setL1TransactionData(simulation.l1TransactionData);
 				}
-			} catch (error: any) {
-				setError(error);
+			} catch (error) {
+				setError({
+					message: (error as any)?.message || 'Unknown error occurred',
+					status: (error as any)?.status || 500
+				});
 			}
 		};
 
@@ -399,7 +402,7 @@ export function TransactionPage({
 									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
 								</Button>
 							</div>
-							{error.status === 500 ? (
+							{error.status >= 500 && error.status < 600 ? (
 								<ServerError message={error.message.toString()} />
 							) : (
 								<Error message={error.message.toString()} />

@@ -40,8 +40,11 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 						rpcUrls: networks.map((n) => n.rpcUrl)
 					})
 				);
-			} catch (error: any) {
-				setError(error);
+			} catch (error) {
+				setError({
+					message: (error as any)?.message || 'Unknown error occurred',
+					status: (error as any)?.status || 500
+				});
 			}
 		};
 
@@ -60,8 +63,11 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 						network: chainId
 					})
 				);
-			} catch (error: any) {
-				setError(error);
+			} catch (error) {
+				setError({
+					message: (error as any)?.message || 'Unknown error occurred',
+					status: (error as any)?.status || 500
+				});
 			}
 		};
 
@@ -86,7 +92,7 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 	let content = null;
 	if (error) {
 		content =
-			error.status === 500 ? (
+			error.status >= 500 && error.status < 600 ? (
 				<ServerError message={error.message} />
 			) : (
 				<Error message={error.message} />

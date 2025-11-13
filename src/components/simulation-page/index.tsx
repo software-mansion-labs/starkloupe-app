@@ -69,8 +69,11 @@ export function SimulationPage({
 					};
 					setDebuggerPayload(debuggerPayload);
 				}
-			} catch (err: any) {
-				setError(err);
+			} catch (err) {
+				setError({
+					message: (err as any)?.message || 'Unknown error occurred',
+					status: (err as any)?.status || 500
+				});
 			} finally {
 				setIsLoading(false);
 			}
@@ -89,9 +92,9 @@ export function SimulationPage({
 	let content = null;
 	if (isLoading) {
 		content = <Loader />;
-	} else if (error) {
+	} else if (error && error.status) {
 		content =
-			error.status === 500 ? (
+			error.status >= 500 && error.status < 600 ? (
 				<ServerError message={error.message} />
 			) : (
 				<Error message={error.message} />
