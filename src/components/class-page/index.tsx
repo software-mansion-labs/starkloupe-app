@@ -15,6 +15,7 @@ import AddressLink from '../address-link';
 import { NetworkBadge } from '../ui/network-badge';
 import { VerifiedBadge } from '../ui/verified-badge';
 import { ClassRoot } from '../class/root';
+import { ServerError } from '../ui/server-error';
 
 interface Network {
 	stack?: string;
@@ -24,7 +25,7 @@ interface Network {
 export function ClassPage({ classHash }: { classHash: string }) {
 	const { networks, getNetworkByRpcUrl, parseChain } = useSettings();
 	const [classData, setClassData] = useState<GetClassResponse>();
-	const [error, setError] = useState<string | undefined>();
+	const [error, setError] = useState<{ message: string; status?: number } | undefined>();
 
 	useEffect(() => {
 		if (!networks) return;
@@ -37,8 +38,12 @@ export function ClassPage({ classHash }: { classHash: string }) {
 						rpcUrls: networks.map((n) => n.rpcUrl)
 					})
 				);
-			} catch (error: any) {
-				setError(error.toString());
+			} catch (error) {
+				setError({
+					message:
+						(error as { message: string; status: number })?.message || 'Unknown error occurred',
+					status: (error as { message: string; status: number })?.status || 500
+				});
 			}
 		};
 
@@ -64,8 +69,13 @@ export function ClassPage({ classHash }: { classHash: string }) {
 		) : null;
 
 	let content = null;
-	if (error) {
-		content = <Error message={error} />;
+	if (error && error.status) {
+		content =
+			error.status >= 500 && error.status < 600 ? (
+				<ServerError message={error.message} />
+			) : (
+				<Error message={error.message} />
+			);
 	} else if (classData) {
 		content = (
 			<>

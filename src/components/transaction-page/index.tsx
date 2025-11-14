@@ -29,6 +29,7 @@ import { useRouter } from 'next/navigation';
 import AddressLink from '../address-link';
 import { NetworkBadge } from '../ui/network-badge';
 import { cleanupCategory } from '@/lib/utils/cache-utils';
+import { ServerError } from '../ui/server-error';
 
 export function TransactionPage({
 	txHash,
@@ -44,7 +45,7 @@ export function TransactionPage({
 	const [l2TransactionData, setL2TransactionData] = useState<L2TransactionData>();
 	const [debuggerPayload, setDebuggerPayload] = useState<DebuggerPayload | null>(null);
 	const { isLogged } = useUserContext();
-	const [error, setError] = useState<string | undefined>();
+	const [error, setError] = useState<{ message: string; status: number } | undefined>();
 	const { trackingActive, trackingFlagLoaded } = useSettings();
 	const [l2TxHash, setL2TxHash] = useState<string>();
 	const [l1TxHash, setL1TxHash] = useState<string | undefined>();
@@ -118,8 +119,12 @@ export function TransactionPage({
 				} else if (simulation.l1TransactionData) {
 					setL1TransactionData(simulation.l1TransactionData);
 				}
-			} catch (error: any) {
-				setError(error.toString());
+			} catch (error) {
+				setError({
+					message:
+						(error as { message: string; status: number })?.message || 'Unknown error occurred',
+					status: (error as { message: string; status: number })?.status || 500
+				});
 			}
 		};
 
@@ -398,7 +403,11 @@ export function TransactionPage({
 									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
 								</Button>
 							</div>
-							<Error message={error} />
+							{error.status >= 500 && error.status < 600 ? (
+								<ServerError message={error.message.toString()} />
+							) : (
+								<Error message={error.message.toString()} />
+							)}
 						</>
 					) : (
 						<>

@@ -21,12 +21,13 @@ import AddressLink from '../address-link';
 import { ContractRoot } from '../contract/root';
 import { Network, NetworkBadge } from '../ui/network-badge';
 import { VerifiedBadge } from '../ui/verified-badge';
+import { ServerError } from '../ui/server-error';
 
 export function ContractPage({ contractAddress }: { contractAddress: string }) {
 	const { networks, parseChain, getNetworkByRpcUrl } = useSettings();
 	const [contractData, setContractData] = useState<GetContractResponse>();
 	const [entryPoints, setEntrypoints] = useState<ContractFunctions>();
-	const [error, setError] = useState<string | undefined>();
+	const [error, setError] = useState<{ message: string; status: number } | undefined>();
 
 	useEffect(() => {
 		if (!networks) return;
@@ -39,8 +40,12 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 						rpcUrls: networks.map((n) => n.rpcUrl)
 					})
 				);
-			} catch (error: any) {
-				setError(error.toString());
+			} catch (error) {
+				setError({
+					message:
+						(error as { message: string; status: number })?.message || 'Unknown error occurred',
+					status: (error as { message: string; status: number })?.status || 500
+				});
 			}
 		};
 
@@ -59,8 +64,12 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 						network: chainId
 					})
 				);
-			} catch (error: any) {
-				setError(error.toString());
+			} catch (error) {
+				setError({
+					message:
+						(error as { message: string; status: number })?.message || 'Unknown error occurred',
+					status: (error as { message: string; status: number })?.status || 500
+				});
 			}
 		};
 
@@ -84,7 +93,12 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 
 	let content = null;
 	if (error) {
-		content = <Error message={error} />;
+		content =
+			error.status >= 500 && error.status < 600 ? (
+				<ServerError message={error.message} />
+			) : (
+				<Error message={error.message} />
+			);
 	} else if (contractData) {
 		content = (
 			<>
