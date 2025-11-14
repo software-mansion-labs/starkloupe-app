@@ -184,7 +184,8 @@ function ContractDetails({ contractData }: { contractData: GetContractResponse }
 	const details: InfoBoxItem[] = [
 		{
 			name: 'Class hash',
-			value: contractData.classHash
+			value: contractData.classHash,
+			linkHref: `/classes/${contractData.classHash}`
 		},
 		{
 			name: 'Cairo version',
