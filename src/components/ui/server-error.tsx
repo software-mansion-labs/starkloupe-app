@@ -75,22 +75,20 @@ export function ServerError({
 								size="sm"
 								variant="outline"
 								onClick={onCopyToClipboardClick}
-								className="flex-shrink-0 h-8 px-3 absolute right-2 top-2 text-xs gap-2 bg-card/90 backdrop-blur-sm border-accent-2/40 hover:bg-accent-2/10 hover:border-accent-2/60 transition-all z-10"
+								className="flex-shrink-0 h-6 px-3 absolute right-2 top-2 float-right text-xs gap-2 hover:bg-accent hover:border-accent-foreground/20 transition-all z-10 bg-background ml-2 mb-2"
 							>
 								{copyToastVisible ? (
 									<>
 										<CheckCircleIcon className="w-4 h-4 text-primary" />
-										<span className="text-primary font-medium">Copied!</span>
 									</>
 								) : (
 									<>
-										<ClipboardDocumentIcon className="w-4 h-4 text-accent-2" />
-										<span className="text-accent-2">Copy</span>
+										<ClipboardDocumentIcon className="w-4 h-4" />
 									</>
 								)}
 							</Button>
 							<div className="p-4">
-								<pre className="text-sm font-mono text-red-500">
+								<pre className="text-sm font-mono whitespace-pre-wrap break-words">
 									<code>{message}</code>
 								</pre>
 							</div>
