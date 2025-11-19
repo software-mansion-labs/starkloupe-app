@@ -16,6 +16,7 @@ import { NetworkBadge } from '../ui/network-badge';
 import { VerifiedBadge } from '../ui/verified-badge';
 import { ClassRoot } from '../class/root';
 import { ServerError } from '../ui/server-error';
+import { NonVerifiedBadge } from '../ui/non-verified-badge';
 
 interface Network {
 	stack?: string;
@@ -119,14 +120,14 @@ export function ClassPage({ classHash }: { classHash: string }) {
 
 									<div className="hidden md:flex  gap-2 ">
 										{networkBadge}
-										{classData?.verified && <VerifiedBadge />}
+										{classData && (classData?.verified ? <VerifiedBadge /> : <NonVerifiedBadge />)}
 									</div>
 								</div>
 							</h1>
 						</div>
 						<div className="flex md:hidden gap-2 justify-between">
 							{networkBadge}
-							{classData?.verified && <VerifiedBadge />}
+							{classData && (classData?.verified ? <VerifiedBadge /> : <NonVerifiedBadge />)}
 						</div>
 					</div>
 					<div className="hidden md:block">

@@ -22,6 +22,7 @@ import { ContractRoot } from '../contract/root';
 import { Network, NetworkBadge } from '../ui/network-badge';
 import { VerifiedBadge } from '../ui/verified-badge';
 import { ServerError } from '../ui/server-error';
+import { NonVerifiedBadge } from '../ui/non-verified-badge';
 
 export function ContractPage({ contractAddress }: { contractAddress: string }) {
 	const { networks, parseChain, getNetworkByRpcUrl } = useSettings();
@@ -144,14 +145,15 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 
 									<div className="hidden md:flex  gap-2 ">
 										{networkBadge}
-										{contractData?.verified && <VerifiedBadge />}
+										{contractData &&
+											(contractData?.verified ? <VerifiedBadge /> : <NonVerifiedBadge />)}
 									</div>
 								</div>
 							</h1>
 						</div>
 						<div className="flex md:hidden gap-2 justify-between">
 							{networkBadge}
-							{contractData?.verified && <VerifiedBadge />}
+							{contractData && (contractData?.verified ? <VerifiedBadge /> : <NonVerifiedBadge />)}
 						</div>
 					</div>
 					<div className="hidden md:block">
