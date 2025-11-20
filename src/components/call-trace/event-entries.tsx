@@ -109,12 +109,20 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 }
 
 const EventDetails = memo(function EventCallDetails({ call }: { call: ContractCallEvent }) {
-	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [];
+	const details: {
+		name: string;
+		value: string;
+		isCopyable?: boolean;
+		valueToCopy?: string;
+		linkHref?: string;
+	}[] = [];
 
 	details.push(
 		{
 			name: 'Contract Address',
-			value: call.contractAddress
+			value: call.contractAddress,
+			isCopyable: true,
+			linkHref: `/contracts/${call.contractAddress}`
 		},
 		{ name: 'Event Selector', value: call.selector }
 	);

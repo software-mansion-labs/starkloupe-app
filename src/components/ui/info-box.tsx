@@ -25,31 +25,7 @@ export function InfoBox({ details }: { details: InfoBoxItem[] }) {
 							<span key={name} className="whitespace-nowrap">
 								<span className="text-neutral-500">{name}:</span>{' '}
 								<span className="inline-block leading-normal align-baseline whitespace-nowrap">
-									{linkHref ? (
-										<Link
-											className={`rounded-sm flex items-center gap-0.5 font-mono leading-normal ${
-												typeof value === 'string' && value.startsWith('0x')
-													? ' px-0  hover:bg-inherit'
-													: 'px-1 '
-											} ${isCopyable ? 'cursor-pointer' : ''}`}
-											href={linkHref}
-											target="_blank"
-										>
-											{typeof value === 'string' && value.startsWith('0x') ? (
-												<AddressLink
-													address={value}
-													addressClassName="leading-normal"
-													customSettings={customSettings}
-												>
-													{value}
-												</AddressLink>
-											) : (
-												value
-											)}
-
-											{linkHref && <ArrowTopRightOnSquareIcon className="w-3 h-3" />}
-										</Link>
-									) : (
+									<div className="flex items-center gap-1">
 										<CopyToClipboardElement
 											value={
 												isCopyable && valueToCopy
@@ -77,7 +53,16 @@ export function InfoBox({ details }: { details: InfoBoxItem[] }) {
 												value
 											)}
 										</CopyToClipboardElement>
-									)}
+										{linkHref && (
+											<Link
+												href={linkHref}
+												target="_blank"
+												className="z-10 bg-accent focus:outline-none hover:bg-accent_2 cursor-pointer p-1 rounded-sm"
+											>
+												<ArrowTopRightOnSquareIcon className="w-3 h-3" />
+											</Link>
+										)}
+									</div>
 								</span>
 							</span>
 						)

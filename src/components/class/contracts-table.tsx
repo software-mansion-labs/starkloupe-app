@@ -16,6 +16,7 @@ import { useSettings } from '@/lib/context/settings-context-provider';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
 import { ChevronDown, ChevronRight } from 'lucide-react';
+import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
 
 interface ContractsTableProps {
 	contracts: ContractItem[];
@@ -151,8 +152,13 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
 											<TableBody>
 												{group.contracts.map((contract, index) => (
 													<TableRow key={index}>
-														<TableCell className="!px-4">
-															<Link href={`/contracts/${contract.address}`}>
+														<TableCell className="!px-4 flex items-center gap-1">
+															<CopyToClipboardElement
+																value={contract.address}
+																toastDescription={`Contract address has been copied.`}
+																className={`rounded-sm font-mono leading-normal  px-0  hover:bg-inherit
+																cursor-pointer`}
+															>
 																<AddressLink
 																	address={contract.address}
 																	addressClassName="md:hidden w-fit"
@@ -166,6 +172,14 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
 																>
 																	{contract.address}
 																</AddressLink>
+															</CopyToClipboardElement>
+															<Link
+																target="_blank"
+																href={`/contracts/${contract.address}`}
+																className="z-10 bg-accent focus:outline-none hover:bg-accent_2 cursor-pointer p-1 rounded-sm"
+															>
+																{' '}
+																<ArrowTopRightOnSquareIcon className="w-3 h-3" />
 															</Link>
 														</TableCell>
 														<TableCell className="text-muted-foreground">

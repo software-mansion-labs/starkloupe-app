@@ -3,7 +3,7 @@ import { ChevronDownIcon, ChevronRightIcon } from '@heroicons/react/20/solid';
 import { CodeLocation, DataType, ContractCall, FlameNode } from '@/lib/simulation';
 import { shortenHash } from '@/lib/utils';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
-import { InfoBox } from '@/components/ui/info-box';
+import { InfoBox, InfoBoxItem } from '@/components/ui/info-box';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { DecodeDataTable } from '../decode-data-table';
 import { useDebugger } from '@/lib/context/debugger-context-provider';
@@ -332,14 +332,16 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 });
 
 const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: ContractCall }) {
-	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [
+	const details: InfoBoxItem[] = [
 		{
 			name: 'Entry Point Type',
 			value: call.entryPoint.entryPointType
 		},
 		{
 			name: 'Caller Address',
-			value: call.entryPoint.callerAddress
+			value: call.entryPoint.callerAddress,
+			linkHref: `/contracts/${call.entryPoint.callerAddress}`,
+			isCopyable: true
 		},
 		{
 			name: 'Initial Gas',
@@ -347,11 +349,15 @@ const ContractCallDetails = memo(function ContractCallDetails({ call }: { call: 
 		},
 		{
 			name: 'Contract Address',
-			value: call.entryPoint.storageAddress
+			value: call.entryPoint.storageAddress,
+			linkHref: `/contracts/${call.entryPoint.storageAddress}`,
+			isCopyable: true
 		},
 		{
 			name: 'Class Hash',
-			value: call.entryPoint.classHash
+			value: call.entryPoint.classHash,
+			linkHref: `/classes/${call.entryPoint.classHash}`,
+			isCopyable: true
 		},
 		{
 			name: 'Entrypoint Selector',

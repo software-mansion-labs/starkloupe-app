@@ -132,7 +132,7 @@ export function TransactionDetails({
 		details.push({
 			name: 'Sender',
 			value: transactionData.senderAddress,
-			isCopyable: true
+			linkHref: `/contracts/${transactionData.senderAddress}`
 		});
 	}
 

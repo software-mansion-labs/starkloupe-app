@@ -89,7 +89,8 @@ export function L1TransactionDetails({
 		details.push({
 			name: 'Sender',
 			value: transactionData.senderAddress,
-			isCopyable: true
+			isCopyable: true,
+			linkHref: `/contracts/${transactionData.senderAddress}`
 		});
 	}
 

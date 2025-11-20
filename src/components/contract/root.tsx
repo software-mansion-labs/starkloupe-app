@@ -142,7 +142,9 @@ function ContractDetails({ contractData }: { contractData: GetContractResponse }
 	const details: InfoBoxItem[] = [
 		{
 			name: 'Class hash',
-			value: contractData.classHash
+			value: contractData.classHash,
+			isCopyable: true,
+			linkHref: `/classes/${contractData.classHash}`
 		},
 		{
 			name: 'Cairo version',

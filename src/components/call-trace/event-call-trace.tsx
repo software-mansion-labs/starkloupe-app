@@ -112,7 +112,13 @@ const EventCallDetails = memo(function EventCallDetails({
 		contractName = shortenHash(contractCall.entryPoint.storageAddress, 13);
 	}
 
-	const details: { name: string; value: string; isCopyable?: boolean; valueToCopy?: string }[] = [];
+	const details: {
+		name: string;
+		value: string;
+		isCopyable?: boolean;
+		valueToCopy?: string;
+		linkHref?: string;
+	}[] = [];
 
 	details.push(
 		{
@@ -121,11 +127,15 @@ const EventCallDetails = memo(function EventCallDetails({
 		},
 		{
 			name: 'Contract Address',
-			value: contractCall.entryPoint.storageAddress
+			value: contractCall.entryPoint.storageAddress,
+			isCopyable: true,
+			linkHref: `/contracts/${contractCall.entryPoint.storageAddress}`
 		},
 		{
 			name: 'Class Hash',
-			value: contractCall.entryPoint.classHash
+			value: contractCall.entryPoint.classHash,
+			isCopyable: true,
+			linkHref: `/classes/${contractCall.entryPoint.classHash}`
 		}
 	);
 
