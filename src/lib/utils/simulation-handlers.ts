@@ -1,5 +1,9 @@
 import { SimpleContractCall, SimulationPayload, openSimulationPage } from '@/lib/utils';
-import { simulateTransactionByParameters, SimulationPayloadWithParameters } from '@/lib/simulation';
+import {
+	simulateTransactionByParameters,
+	SimulationPayloadWithCalldata,
+	SimulationPayloadWithParameters
+} from '@/lib/simulation';
 import { validateHexFormat, validateCalldata } from './validation-utils';
 import { Chain } from '@/components/networks-select';
 import { toast } from '../../components/hooks/use-toast';
@@ -91,10 +95,35 @@ export async function handleParameterSubmission(
 		setIsSimulating(false);
 	} catch (e: any) {
 		setIsSimulating(false);
-		toast({
-			description: formatErrorMessage(e.message)
-		});
-		setAlert(true);
+
+		if (JSON.parse(e.message).simulation_args.WithCalldata) {
+			const simulation_args: SimulationPayloadWithCalldata = JSON.parse(e.message).simulation_args
+				.WithCalldata;
+			if (simulation_args) {
+				const simulationPagePayload: SimulationPayload = {
+					senderAddress: _senderAddress,
+					calldata: simulation_args.calldata,
+					blockNumber: _blockNumber === '' ? undefined : _blockNumber,
+					transactionVersion: _transactionVersion
+				};
+
+				if (_chain) {
+					if (_chain.chainId) {
+						simulationPagePayload.chainId = _chain.chainId;
+					} else if (_chain.network) {
+						simulationPagePayload.rpcUrl = _chain.network.rpcUrl;
+					}
+				} else {
+					throw new Error('Chain is not defined');
+				}
+				openSimulationPage(simulationPagePayload);
+			}
+		} else {
+			toast({
+				description: formatErrorMessage(JSON.parse(e.message).error)
+			});
+			setAlert(true);
+		}
 	}
 }
 
