@@ -20,6 +20,7 @@ interface CallData {
 
 export function MultiCallIO() {
 	const [expandedCalls, setExpandedCalls] = useState<Record<number, boolean>>({});
+	const [displayFormat, setDisplayFormat] = useState<'auto' | 'raw'>('auto');
 
 	const { contractCallsMap } = useCallTrace();
 
@@ -131,10 +132,17 @@ export function MultiCallIO() {
 														rawData={call.rawInput}
 														decodeData={call.input}
 														type={DataType.CALLDATA}
+														displayFormat={displayFormat}
+														setDisplayFormat={setDisplayFormat}
 													/>
 												</div>
 												<div className="w-1/2">
-													<DecodeDataTable decodeData={call.output} type={DataType.OUTPUT} />
+													<DecodeDataTable
+														decodeData={call.output}
+														type={DataType.OUTPUT}
+														displayFormat={displayFormat}
+														setDisplayFormat={setDisplayFormat}
+													/>
 												</div>
 											</div>
 										</div>

@@ -5,7 +5,7 @@ export type CallResult =
 			Success: {
 				retData: {
 					value: {
-						val: number[];
+						val: number[] | string[];
 					};
 				}[];
 			};

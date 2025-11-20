@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { InfoBox } from '@/components/ui/info-box';
@@ -100,6 +100,7 @@ const EventCallDetails = memo(function EventCallDetails({
 	contractCall: ContractCall;
 }) {
 	let contractName: string | undefined = undefined;
+	const [displayFormat, setDisplayFormat] = useState<'auto' | 'raw'>('auto');
 	if (contractCall.contractName) {
 		contractName = contractCall.contractName;
 	} else if (contractCall.erc20TokenName || contractCall.erc20TokenSymbol) {
@@ -159,7 +160,14 @@ const EventCallDetails = memo(function EventCallDetails({
 				<div className="">
 					<InfoBox details={details} />
 				</div>
-				{call.datas && <DecodeDataTable decodeData={call.datas} type={DataType.DATA} />}
+				{call.datas && (
+					<DecodeDataTable
+						decodeData={call.datas}
+						type={DataType.DATA}
+						displayFormat={displayFormat}
+						setDisplayFormat={setDisplayFormat}
+					/>
+				)}
 			</div>
 		</div>
 	);

@@ -1,4 +1,4 @@
-import React, { memo } from 'react';
+import React, { memo, useState } from 'react';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { CALL_NESTING_SPACE_BUMP, CallTypeChip, TraceLine } from '.';
 import { shortenHash } from '@/lib/utils';
@@ -109,6 +109,7 @@ export function EventsList({ events }: { events: ContractCallEvent[] }) {
 }
 
 const EventDetails = memo(function EventCallDetails({ call }: { call: ContractCallEvent }) {
+	const [displayFormat, setDisplayFormat] = useState<'auto' | 'raw'>('auto');
 	const details: {
 		name: string;
 		value: string;
@@ -132,7 +133,14 @@ const EventDetails = memo(function EventCallDetails({ call }: { call: ContractCa
 			<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
 				<div className=""></div>
 				<InfoBox details={details} />
-				{call.datas && <DecodeDataTable decodeData={call.datas} type={DataType.DATA} />}
+				{call.datas && (
+					<DecodeDataTable
+						decodeData={call.datas}
+						type={DataType.DATA}
+						displayFormat={displayFormat}
+						setDisplayFormat={setDisplayFormat}
+					/>
+				)}
 			</div>
 		</div>
 	);

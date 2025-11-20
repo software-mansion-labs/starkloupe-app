@@ -9,18 +9,21 @@ import CopyToClipboardElement from './ui/copy-to-clipboard';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './ui/tooltip';
 import { Button } from './ui/button';
 import { useSettings } from '@/lib/context/settings-context-provider';
+import FunctionCallViewer from './ui/function-call-viewer';
 
 export function DecodeDataTable({
 	rawData,
 	decodeData,
-	type
+	type,
+	displayFormat,
+	setDisplayFormat
 }: {
 	rawData?: string[];
 	decodeData: DataDecoded | null | undefined;
 	type: DataType;
+	displayFormat: 'auto' | 'raw';
+	setDisplayFormat: (v: 'auto' | 'raw') => void;
 }) {
-	const [displayFormat, setDisplayFormat] = useState<'auto' | 'raw'>(decodeData ? 'auto' : 'raw');
-
 	const { customSettings } = useSettings();
 	const isObject = (value: any): boolean => {
 		return (
@@ -55,7 +58,6 @@ export function DecodeDataTable({
 				</div>
 			);
 		} else if (typeof value === 'object' && value !== null) {
-			// Handle object values
 			if (isObject(value)) {
 				return (
 					<Table className="text-xs">
@@ -135,13 +137,13 @@ export function DecodeDataTable({
 		<div className="my-4">
 			<div className="flex flex-raw items-center mb-1">
 				<div className="font-medium uppercase mr-2">{type}</div>
-				{(type === DataType.CALLDATA || type === DataType.OUTPUT) && (
+				{type === DataType.CALLDATA && (
 					<ToggleGroup
 						type="single"
 						size={'sm'}
 						value={displayFormat}
 						variant="outline"
-						className={`mb-1 ${type === DataType.OUTPUT && 'invisible'}`}
+						className="mb-1"
 						defaultValue="auto"
 						aria-label="Native or Raw Toggle"
 						onValueChange={(value) => setDisplayFormat(value as 'auto' | 'raw')}
@@ -151,126 +153,107 @@ export function DecodeDataTable({
 								Auto
 							</ToggleGroupItem>
 						)}
-
-						<ToggleGroupItem value="raw" aria-label="Raw">
-							Raw
-						</ToggleGroupItem>
+						{rawData && (
+							<ToggleGroupItem value="raw" aria-label="Raw">
+								Raw
+							</ToggleGroupItem>
+						)}
 					</ToggleGroup>
 				)}
 			</div>
-			<Card>
-				{(!rawData || rawData.length === 0) && (!decodeData || decodeData.length === 0) ? (
-					<ScrollArea className="overflow-auto">
-						<Table className="w-auto py-0.5 px-2 text-xs w-full">
-							<TableBody>
-								<TableRow>
-									<TableCell
-										colSpan={type === DataType.CALLDATA ? 3 : 2}
-										className="text-center py-4 whitespace-nowrap"
-									>
-										No data
+
+			{(!rawData || rawData.length === 0) && (!decodeData || decodeData.length === 0) ? (
+				<Card className="overflow-auto">
+					<Table className="w-auto py-0.5 px-2 text-xs w-full">
+						<TableBody>
+							<TableRow>
+								<TableCell
+									colSpan={type === DataType.CALLDATA ? 3 : 2}
+									className="text-center py-4 whitespace-nowrap"
+								>
+									No data
+								</TableCell>
+							</TableRow>
+						</TableBody>
+					</Table>
+					<ScrollBar orientation="horizontal" />
+				</Card>
+			) : (displayFormat === 'raw' || !decodeData) && rawData && rawData.length > 0 ? (
+				<Card className="overflow-auto">
+					<Table className="w-auto py-0.5 px-2 text-xs w-full">
+						<TableHeader>
+							<TableRow>
+								<TableHead className="whitespace-break-spaces flex justify-between items-center">
+									Value
+									{!decodeData && (
+										<Button variant={'ghost'} onClick={toggleRawData} className="text-xs">
+											{isRawDataExpanded ? 'Collapse data' : 'Expand data'}
+										</Button>
+									)}
+								</TableHead>
+							</TableRow>
+						</TableHeader>
+						<TableBody>
+							{!decodeData && !isRawDataExpanded ? (
+								<TableRow className="cursor-pointer hover:bg-accent">
+									<TableCell className="border-r last:border-r-0">
+										<TooltipProvider>
+											<Tooltip delayDuration={100}>
+												<TooltipTrigger asChild>
+													<div onClick={toggleRawData} className="w-full">
+														{getCollapsedRawData(rawData)}
+													</div>
+												</TooltipTrigger>
+												<TooltipContent className="bg-background border-border text-black dark:text-white border">
+													Click to expand full data
+												</TooltipContent>
+											</Tooltip>
+										</TooltipProvider>
 									</TableCell>
 								</TableRow>
-							</TableBody>
-						</Table>
-						<ScrollBar orientation="horizontal" />
-					</ScrollArea>
-				) : (displayFormat === 'raw' || !decodeData) &&
-				  type === DataType.CALLDATA &&
-				  rawData &&
-				  rawData.length > 0 ? (
-					<ScrollArea className="overflow-auto">
-						<Table className="w-auto py-0.5 px-2 text-xs w-full">
-							<TableHeader>
-								<TableRow>
-									<TableHead className="whitespace-break-spaces flex justify-between items-center">
-										Value
-										{!decodeData && (
-											<Button variant={'ghost'} onClick={toggleRawData} className="text-xs">
-												{isRawDataExpanded ? 'Collapse data' : 'Expand data'}
-											</Button>
-										)}
-									</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{!decodeData && !isRawDataExpanded ? (
-									<TableRow className="cursor-pointer hover:bg-accent">
-										<TableCell className="border-r last:border-r-0">
-											<TooltipProvider>
-												<Tooltip delayDuration={100}>
-													<TooltipTrigger asChild>
-														<div onClick={toggleRawData} className="w-full">
-															{getCollapsedRawData(rawData)}
-														</div>
-													</TooltipTrigger>
-													<TooltipContent className="bg-background border-border text-black dark:text-white border">
-														Click to expand full data
-													</TooltipContent>
-												</Tooltip>
-											</TooltipProvider>
+							) : (
+								rawData.map((item: string, index: number) => (
+									<TableRow key={index}>
+										<TableCell className="border-r last:border-r-0 whitespace-break-spaces">
+											{item.startsWith('0x') ? (
+												<CopyToClipboardElement
+													value={item}
+													className="px-0"
+													toastDescription="Value has been copied!"
+												>
+													<AddressLink address={item} addressClassName="cursor-pointer">
+														{item}
+													</AddressLink>
+												</CopyToClipboardElement>
+											) : (
+												item
+											)}
 										</TableCell>
 									</TableRow>
-								) : (
-									rawData.map((item: string, index: number) => (
-										<TableRow key={index}>
-											<TableCell className="border-r last:border-r-0 whitespace-break-spaces">
-												{item.startsWith('0x') ? (
-													<CopyToClipboardElement
-														value={item}
-														className="px-0"
-														toastDescription="Value has been copied!"
-													>
-														<AddressLink address={item} addressClassName="cursor-pointer">
-															{item}
-														</AddressLink>
-													</CopyToClipboardElement>
-												) : (
-													item
-												)}
-											</TableCell>
-										</TableRow>
-									))
-								)}
-							</TableBody>
-						</Table>
-						<ScrollBar orientation="horizontal" />
-					</ScrollArea>
-				) : (
-					<ScrollArea className="overflow-auto">
-						<Table className="w-auto py-0.5 px-2 text-xs">
-							<TableHeader>
-								<TableRow>
-									{type === DataType.CALLDATA && (
-										<TableHead className="whitespace-break-spaces">Name</TableHead>
-									)}
-									<TableHead>Type</TableHead>
-									<TableHead>Value</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{decodeData &&
-									decodeData.map((item: DecodedItem, index: number) => (
-										<TableRow key={index}>
-											{type === DataType.CALLDATA && (
-												<TableCell className="border-r last:border-r-0 whitespace-break-spaces">
-													{item.name}
-												</TableCell>
-											)}
-											<TableCell className="border-r last:border-r-0 whitespace-break-spaces">
-												{item.typeName}
-											</TableCell>
-											<TableCell className="border-r last:border-r-0 w-full">
-												{renderValue(item.value)}
-											</TableCell>
-										</TableRow>
-									))}
-							</TableBody>
-						</Table>
-						<ScrollBar orientation="horizontal" />
-					</ScrollArea>
-				)}
-			</Card>
+								))
+							)}
+						</TableBody>
+					</Table>
+					<ScrollBar orientation="horizontal" />
+				</Card>
+			) : (
+				<div className="flex-col flex gap-y-2 ">
+					{decodeData?.map((item, idx) => (
+						<Card key={`${item.name}-${idx}`} className=" !p-2 ">
+							<FunctionCallViewer
+								data={{
+									function: item.name || '',
+									args: item.value,
+									typeName: item.typeName
+								}}
+								tooltipValue
+								isContract={true}
+								isResult={type === DataType.OUTPUT}
+							/>
+						</Card>
+					))}
+				</div>
+			)}
 		</div>
 	);
 }

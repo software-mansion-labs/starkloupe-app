@@ -7,7 +7,6 @@ import { ContractCall, DecodedItem, InternalFnCallIO, TextPosition } from '@/lib
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { toast } from '@/components/hooks/use-toast';
 import { ScrollArea, ScrollBar } from './scroll-area';
-import { shortenHash } from '@/lib/utils';
 
 interface FilteredStepInfo {
 	function?: string | undefined;
@@ -137,16 +136,16 @@ const FunctionCallViewer = ({
 				<CopyToClipboardElement
 					value={item}
 					toastDescription="Copied!"
-					className="px-0 py-0 hover:bg-inherit inline-flex"
+					className="px-0 py-0 hover:bg-inherit inline-flex whitespace-nowrap"
 				>
-					<AddressLink address={item} customSettings={customSettings}>
+					<AddressLink address={item} customSettings={customSettings} addressClassName=" ml-3">
 						<span className="font-mono text-[11px]">{item}</span>
 					</AddressLink>
 				</CopyToClipboardElement>
 			);
 		}
 
-		return <span className="font-mono text-[11px]">{item?.toString() || 'null'}</span>;
+		return <span className="font-mono text-[11px] ml-3">{item?.toString() || 'null'}</span>;
 	};
 
 	const renderData = (
@@ -163,30 +162,50 @@ const FunctionCallViewer = ({
 		if (isExpandable) {
 			const entries = isArray ? item : Object.entries(item);
 
+			if (entries.length === 0) {
+				return (
+					<div className={`flex items-baseline gap-1 ${depth > 0 ? 'ml-3' : ''}`}>
+						{!skipName && (
+							<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium flex-shrink-0">
+								{name}:
+							</span>
+						)}
+						<span className="font-mono text-[11px] text-muted-foreground/60 italic">
+							{isArray ? '[]' : '{}'}
+						</span>
+					</div>
+				);
+			}
+
 			if (isArray && entries.length === 1) {
 				const singleItem = entries[0];
 				if (typeof singleItem === 'object' && singleItem !== null) {
-					return (
-						<div className={depth > 0 ? 'ml-3' : ''}>
-							{!skipName && (
-								<div className="flex items-center gap-1 mb-0.5">
-									<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium">
-										{name}:
-									</span>
-								</div>
-							)}
-							<div className="space-y-0.5">
-								{Object.entries(singleItem).map(([childKey, childVal]) => (
-									<div key={childKey}>
-										{renderData(childVal, childKey, `${key}.0.${childKey}`, false, depth + 1)}
+					const singleItemIsArray = Array.isArray(singleItem);
+					const singleItemContent = singleItemIsArray ? singleItem : Object.entries(singleItem);
+
+					if (singleItemContent.length === 0) {
+					} else if (!singleItemIsArray) {
+						return (
+							<div className={depth > 0 ? 'ml-3' : ''}>
+								{!skipName && (
+									<div className="flex items-center gap-1 mb-0.5">
+										<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium">
+											{name}:
+										</span>
 									</div>
-								))}
+								)}
+								<div className="space-y-0.5">
+									{Object.entries(singleItem).map(([childKey, childVal]) => (
+										<div key={childKey}>
+											{renderData(childVal, childKey, `${key}.0.${childKey}`, false, depth + 1)}
+										</div>
+									))}
+								</div>
 							</div>
-						</div>
-					);
+						);
+					}
 				}
 			}
-
 			const shouldAutoExpand = skipName && depth === 0;
 			const isExpanded = shouldAutoExpand || expanded.has(key);
 
@@ -377,7 +396,7 @@ const FunctionCallViewer = ({
 
 												{isParametersExpanded && (
 													<ScrollArea className="overflow-auto">
-														<div className="w-full px-2 pb-2">
+														<div className="w-full p-2">
 															{hasArgs && (
 																<div className="space-y-0.5">
 																	{renderData(formattedArgs, 'params', 'Parameters', true, 0)}
