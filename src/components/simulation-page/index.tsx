@@ -187,7 +187,9 @@ export function SimulationPage({
 					<div className="flex-1 flex flex-col overflow-hidden min-h-0 ">{content}</div>
 				</Container>
 			</main>
-			<Footer />
+			<div className="hidden md:block">
+				<Footer />
+			</div>
 		</>
 	);
 }

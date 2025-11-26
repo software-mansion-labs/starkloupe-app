@@ -104,7 +104,7 @@ function CallTraceRootContent() {
 					onValueChange={onValueChange}
 					className="flex flex-col flex-1 overflow-hidden min-h-0"
 				>
-					<TabsList className="hidden sm:inline-flex md:w-fit dark:bg-card justify-center">
+					<TabsList className="inline-flex w-full sm:w-fit dark:bg-card justify-start sm:justify-center overflow-x-scroll sm:overflow-x-hidden">
 						<TabsTrigger value="call-trace">Call Trace</TabsTrigger>
 						<TabsTrigger value="transaction-details" className="md:hidden">
 							Transaction Details
@@ -115,22 +115,6 @@ function CallTraceRootContent() {
 						<TabsTrigger value="storage-changes">Storage</TabsTrigger>
 						<TabsTrigger value="gas-profiler">Gas Profiler</TabsTrigger>
 					</TabsList>
-					<div className="sm:hidden">
-						<Select value={activeTab} onValueChange={setActiveTab}>
-							<SelectTrigger className="w-full focus:outline-none focus:ring-0 focus:ring-offset-0">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="call-trace">Call Trace</SelectItem>
-								<SelectItem value="transaction-details">Transaction Details</SelectItem>
-								<SelectItem value="input-output">Input/Output</SelectItem>
-								<SelectItem value="events-list">Events</SelectItem>
-								<SelectItem value="debugger">Debugger</SelectItem>
-								<SelectItem value="storage-changes">Storage</SelectItem>
-								<SelectItem value="gas-profiler">Gas Profiler</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
 					<TabsContent
 						value="call-trace"
 						className={`h-full flex flex-col flex-1 overflow-hidden min-h-0 ${

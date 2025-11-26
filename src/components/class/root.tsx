@@ -50,25 +50,13 @@ export function ClassRoot({
 					onValueChange={onValueChange}
 					className="flex flex-col flex-1 overflow-hidden min-h-0"
 				>
-					<TabsList className="hidden sm:inline-flex md:w-fit dark:bg-card justify-center">
+					<TabsList className="inline-flex w-full sm:w-fit dark:bg-card justify-start sm:justify-center overflow-x-scroll sm:overflow-x-hidden">
 						<TabsTrigger value="source-code">Source Code</TabsTrigger>
 						<TabsTrigger value="contracts">Contracts</TabsTrigger>
 						<TabsTrigger value="class-details" className="md:hidden">
 							Class Details
 						</TabsTrigger>
 					</TabsList>
-					<div className="sm:hidden">
-						<Select value={activeTab} onValueChange={setActiveTab}>
-							<SelectTrigger className="w-full focus:outline-none focus:ring-0 focus:ring-offset-0">
-								<SelectValue />
-							</SelectTrigger>
-							<SelectContent>
-								<SelectItem value="source-code">Source Code</SelectItem>
-								<SelectItem value="contracts">Contracts</SelectItem>
-								<SelectItem value="class-details">Class Details</SelectItem>
-							</SelectContent>
-						</Select>
-					</div>
 					<TabsContent
 						value="source-code"
 						className={`h-full flex flex-col flex-1 overflow-hidden min-h-0 ${
