@@ -27,14 +27,17 @@ export interface StarknetTransactionData {
 export async function fetchContractDataByAddress({
 	contractAddress,
 	includeSourceCode,
-	rpcUrls
+	rpcUrls,
+	includeAbi
 }: {
 	contractAddress: string;
 	includeSourceCode: boolean;
+	includeAbi: boolean;
 	rpcUrls: string[];
 }): Promise<GetContractResponse> {
 	const queryParams: Record<string, string> = {
-		include_source_code: includeSourceCode ? 'true' : 'false'
+		include_source_code: includeSourceCode ? 'true' : 'false',
+		include_abi: includeAbi ? 'true' : 'false'
 	};
 	if (rpcUrls.length > 0) {
 		queryParams.rpc_urls = rpcUrls.join(',');

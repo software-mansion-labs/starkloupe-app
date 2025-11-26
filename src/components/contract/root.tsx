@@ -8,6 +8,7 @@ import EntryPointsSearch from '../ui/entrypoints-search';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { InfoBox, InfoBoxItem } from '../ui/info-box';
 import { useSettings } from '@/lib/context/settings-context-provider';
+import { ABIList } from './abi-list';
 
 export function ContractRoot({
 	isClassVerified,
@@ -71,6 +72,7 @@ function ContractRootContent({
 							Contract Details
 						</TabsTrigger>
 						<TabsTrigger value="entrypoints">Entrypoints</TabsTrigger>
+						<TabsTrigger value="ABI">ABI</TabsTrigger>
 					</TabsList>
 					<div className="sm:hidden">
 						<Select value={activeTab} onValueChange={setActiveTab}>
@@ -81,6 +83,7 @@ function ContractRootContent({
 								<SelectItem value="source-code">Source Code</SelectItem>
 								<SelectItem value="contract-details">Contract Details</SelectItem>
 								<SelectItem value="entrypoints">Entrypoints</SelectItem>
+								<SelectItem value="ABI">ABI</SelectItem>
 							</SelectContent>
 						</Select>
 					</div>
@@ -128,6 +131,18 @@ function ContractRootContent({
 								</div>
 								<ScrollBar orientation="horizontal" />
 							</ScrollArea>
+						</div>
+					</TabsContent>
+					<TabsContent
+						value="ABI"
+						className={`h-full flex flex-col flex-1 overflow-hidden min-h-0 ${
+							activeTab !== 'ABI' ? 'hidden' : ''
+						}`}
+					>
+						<div className="rounded-xl border flex flex-col flex-1 overflow-hidden min-h-0 text-xs dark:bg-card">
+							<div className="flex-1 overflow-auto">
+								<ABIList abi={contractData.abi} />
+							</div>
 						</div>
 					</TabsContent>
 				</Tabs>

@@ -10,6 +10,7 @@ export interface GetContractResponse {
 	cairoVersion: string;
 	classHash: string;
 	sourceCode?: Record<string, string>;
+	abi: string;
 }
 
 export interface FunctionInput {

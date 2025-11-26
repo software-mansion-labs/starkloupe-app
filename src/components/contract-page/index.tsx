@@ -38,7 +38,8 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 					await fetchContractDataByAddress({
 						contractAddress,
 						includeSourceCode: true,
-						rpcUrls: networks.map((n) => n.rpcUrl)
+						rpcUrls: networks.map((n) => n.rpcUrl),
+						includeAbi: true
 					})
 				);
 			} catch (error) {
@@ -116,6 +117,7 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 	} else {
 		content = <Loader randomQuote={false} />;
 	}
+
 	return (
 		<>
 			<HeaderNav />
