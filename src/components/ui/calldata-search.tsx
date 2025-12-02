@@ -151,7 +151,7 @@ const CalldataSearch = memo(function CalldataSearch() {
 
 				<CommandList className="">
 					{searchTerm && (
-						<CommandGroup className="absolute shadow-md [scrollbar-width:thin]  overflow-auto dark:bg-background border p-0 flex flex-col md:block rounded-b-lg w-full lg:w-2/5 items-start z-20">
+						<CommandGroup className="absolute shadow-md [scrollbar-width:thin] bg-card  overflow-auto dark:bg-background border p-0 flex flex-col md:block rounded-b-lg w-full lg:w-2/5 items-start z-20">
 							{searchResults.length > 0 ? (
 								<div className="h-96 w-full overflow-auto">
 									<div className="flex flex-col pb-4">
