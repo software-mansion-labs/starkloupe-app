@@ -7,6 +7,7 @@ import { ContractCall, DecodedItem, InternalFnCallIO, TextPosition } from '@/lib
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { toast } from '@/components/hooks/use-toast';
 import { ScrollArea, ScrollBar } from './scroll-area';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
 interface FilteredStepInfo {
 	function?: string | undefined;
@@ -36,7 +37,6 @@ const FunctionCallViewer = ({
 	const debuggerContext = useDebugger();
 	const { customSettings, updateContractName, updateContractSettings, updateContractColor } =
 		useSettings();
-
 	useEffect(() => {
 		if (!debuggerContext) return;
 		setResults(debuggerContext.currentStep?.withLocation?.resultsDecoded);
@@ -86,6 +86,17 @@ const FunctionCallViewer = ({
 		return cleanedStr.substring(0, maxLength) + '...';
 	}
 
+	const getArrayElementType = (typeName?: string): string | undefined => {
+		if (!typeName) return undefined;
+		const genericMatch = typeName.match(/^Array<(.*)>$/);
+		if (genericMatch?.[1]) return genericMatch[1];
+		const genericMatchSpan = typeName.match(/^Span<(.*)>$/);
+		if (genericMatchSpan?.[1]) return genericMatchSpan[1];
+		const bracketMatch = typeName.match(/^(.*)\[\]$/);
+		if (bracketMatch?.[1]) return bracketMatch[1];
+		return undefined;
+	};
+
 	const toggleExpand = (key: string): void => {
 		setExpanded((prev) => {
 			const newSet = new Set(prev);
@@ -106,7 +117,10 @@ const FunctionCallViewer = ({
 			'value' in obj
 		) {
 			const key = obj.name || obj.typeName;
-			return { [key]: formatObject(obj.value) };
+			return {
+				[key]: formatObject(obj.value),
+				[`__type_${key}`]: obj.typeName
+			};
 		}
 		if (typeof obj === 'object' && obj !== null) {
 			const keys = Object.keys(obj);
@@ -115,7 +129,11 @@ const FunctionCallViewer = ({
 					const formatted = formatObject(obj[key]);
 					if (typeof formatted === 'object' && !Array.isArray(formatted)) {
 						Object.keys(formatted).forEach((formattedKey: string) => {
-							acc[`${formattedKey}_${key}`] = formatted[formattedKey];
+							if (formattedKey.startsWith('__type_')) {
+								acc[`${formattedKey}_${key}`] = formatted[formattedKey];
+							} else {
+								acc[`${formattedKey}_${key}`] = formatted[formattedKey];
+							}
 						});
 					} else {
 						acc[key] = formatted;
@@ -127,25 +145,49 @@ const FunctionCallViewer = ({
 		}
 		return obj;
 	};
-
-	const renderValue = (item: any, depth: number = 0) => {
+	const renderValue = (item: any, depth: number = 0, typeName?: string) => {
 		const isAddress = typeof item === 'string' && item.startsWith('0x');
 
 		if (isAddress) {
 			return (
-				<CopyToClipboardElement
-					value={item}
-					toastDescription="Copied!"
-					className="px-0 py-0 hover:bg-inherit inline-flex whitespace-nowrap"
-				>
-					<AddressLink address={item} customSettings={customSettings} addressClassName=" ml-3">
-						<span className="font-mono text-[11px]">{item}</span>
-					</AddressLink>
-				</CopyToClipboardElement>
+				<div className="inline-flex items-baseline">
+					{typeName && (
+						<>
+							<span className="font-mono text-xs text-typeColor mr-2">{typeName}</span> ={' '}
+						</>
+					)}
+					<CopyToClipboardElement
+						value={item}
+						toastDescription="Copied!"
+						className="px-0 py-0 hover:bg-inherit inline-flex whitespace-nowrap !mt-2"
+					>
+						<AddressLink address={item} customSettings={customSettings} addressClassName=" ml-3 ">
+							<span className="font-mono text-[11px]">{item}</span>
+						</AddressLink>
+					</CopyToClipboardElement>
+				</div>
 			);
 		}
 
-		return <span className="font-mono text-[11px] ml-3">{item?.toString() || 'null'}</span>;
+		const valueElement = (
+			<span className="font-mono text-[11px] ml-3">{item?.toString() || 'null'}</span>
+		);
+
+		if (typeName) {
+			return (
+				<div className="inline-flex items-baseline cursor-pointer mt-2">
+					{typeName && (
+						<>
+							<span className="font-mono text-xs text-typeColor mr-2">{typeName}</span> ={' '}
+						</>
+					)}
+
+					{valueElement}
+				</div>
+			);
+		}
+
+		return valueElement;
 	};
 
 	const renderData = (
@@ -153,21 +195,43 @@ const FunctionCallViewer = ({
 		name: string | number,
 		path: string,
 		skipName = false,
-		depth = 0
+		depth = 0,
+		parentObj?: any,
+		type?: string
 	) => {
 		const key = path;
 		const isExpandable = item && typeof item === 'object';
 		const isArray = Array.isArray(item);
+		let itemType: string | undefined;
+		const lookupKey = type ?? name;
+		if (parentObj) {
+			const directTypeKey = `__type_${lookupKey}`;
+			if (directTypeKey in parentObj) {
+				itemType = parentObj[directTypeKey];
+			} else if (typeof lookupKey === 'string' && lookupKey.includes('_')) {
+				const baseName = lookupKey.split('_').slice(0, -1).join('_');
+				const numericSuffix = lookupKey.split('_').pop();
+				if (numericSuffix && !isNaN(Number(numericSuffix))) {
+					const typeKeyWithSuffix = `__type_${baseName}_${numericSuffix}`;
+					if (typeKeyWithSuffix in parentObj) {
+						itemType = parentObj[typeKeyWithSuffix];
+					}
+				}
+			}
+		}
+		if (!itemType && type) itemType = type;
 
 		if (isExpandable) {
-			const entries = isArray ? item : Object.entries(item);
+			const entries = isArray
+				? item
+				: Object.entries(item).filter(([k]) => !k.startsWith('__type_'));
 
 			if (entries.length === 0) {
-				return (
+				const emptyElement = (
 					<div className={`flex items-baseline gap-1 ${depth > 0 ? 'ml-3' : ''}`}>
 						{!skipName && (
 							<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium flex-shrink-0">
-								{name}:
+								{name}: <span className="font-mono text-xs text-typeColor ">{itemType}</span> ={' '}
 							</span>
 						)}
 						<span className="font-mono text-[11px] text-muted-foreground/60 italic">
@@ -175,31 +239,55 @@ const FunctionCallViewer = ({
 						</span>
 					</div>
 				);
+
+				if (itemType) {
+					return <div className="cursor-pointer mt-2">{emptyElement}</div>;
+				}
+
+				return emptyElement;
 			}
 
 			if (isArray && entries.length === 1) {
 				const singleItem = entries[0];
 				if (typeof singleItem === 'object' && singleItem !== null) {
 					const singleItemIsArray = Array.isArray(singleItem);
-					const singleItemContent = singleItemIsArray ? singleItem : Object.entries(singleItem);
+					const singleItemContent = singleItemIsArray
+						? singleItem
+						: Object.entries(singleItem).filter(([k]) => !k.startsWith('__type_'));
 
 					if (singleItemContent.length === 0) {
 					} else if (!singleItemIsArray) {
+						const nameElement = (
+							<div className="flex items-center gap-1 mb-0.5">
+								<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium">
+									{name}: <span className="font-mono text-xs">{itemType}</span> ={' '}
+								</span>
+							</div>
+						);
+
 						return (
 							<div className={depth > 0 ? 'ml-3' : ''}>
-								{!skipName && (
-									<div className="flex items-center gap-1 mb-0.5">
-										<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium">
-											{name}:
-										</span>
-									</div>
-								)}
-								<div className="space-y-0.5">
-									{Object.entries(singleItem).map(([childKey, childVal]) => (
-										<div key={childKey}>
-											{renderData(childVal, childKey, `${key}.0.${childKey}`, false, depth + 1)}
-										</div>
+								{!skipName &&
+									(itemType ? (
+										<div className="cursor-pointer inline-block mt-2">{nameElement}</div>
+									) : (
+										nameElement
 									))}
+								<div className="space-y-0.5">
+									{Object.entries(singleItem)
+										.filter(([k]) => !k.startsWith('__type_'))
+										.map(([childKey, childVal]) => (
+											<div key={childKey}>
+												{renderData(
+													childVal,
+													childKey,
+													`${key}.0.${childKey}`,
+													false,
+													depth + 1,
+													singleItem
+												)}
+											</div>
+										))}
 								</div>
 							</div>
 						);
@@ -209,48 +297,69 @@ const FunctionCallViewer = ({
 			const shouldAutoExpand = skipName && depth === 0;
 			const isExpanded = shouldAutoExpand || expanded.has(key);
 
+			const expandableContent = (
+				<div
+					className="flex items-center gap-1 cursor-pointer hover:bg-accent/40 -mx-1 px-1 py-0.5 rounded transition-colors group"
+					onClick={() => toggleExpand(key)}
+				>
+					{isExpanded ? (
+						<ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+					) : (
+						<ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+					)}
+					{!skipName && (
+						<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium">
+							{typeof name === 'string' &&
+							name.includes('_') &&
+							/\d$/.test(name.split('_').pop() || '')
+								? name.split('_').slice(0, -1).join('_')
+								: name}
+							:{' '}
+						</span>
+					)}
+					{itemType && (
+						<span className="font-mono text-[11px] text-typeColor font-medium">{itemType} </span>
+					)}
+
+					{!isExpanded && (
+						<>
+							{itemType && <>= </>}
+
+							<span className="font-mono text-[11px] text-muted-foreground/60 italic ml-1 whitespace-nowrap">
+								{isArray
+									? `(${entries.length}) [${
+											entries.length > 0
+												? entries.length === 1 && typeof entries[0] === 'string'
+													? entries[0]
+													: '...'
+												: ''
+									  }]`
+									: `(${entries.length}) {...}`}
+							</span>
+						</>
+					)}
+				</div>
+			);
+
 			return (
 				<div className={depth > 0 ? 'ml-3' : ''}>
-					{!shouldAutoExpand && (
-						<div
-							className="flex items-center gap-1 cursor-pointer hover:bg-accent/40 -mx-1 px-1 py-0.5 rounded transition-colors group"
-							onClick={() => toggleExpand(key)}
-						>
-							{isExpanded ? (
-								<ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-							) : (
-								<ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-							)}
-							{!skipName && (
-								<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium">
-									{typeof name === 'string' &&
-									name.includes('_') &&
-									/\d$/.test(name.split('_').pop() || '')
-										? name.split('_').slice(0, -1).join('_')
-										: name}
-								</span>
-							)}
-							{!isExpanded && (
-								<span className="font-mono text-[11px] text-muted-foreground/60 italic ml-1 whitespace-nowrap">
-									{isArray
-										? `(${entries.length}) [${
-												entries.length > 0
-													? entries.length === 1 && typeof entries[0] === 'string'
-														? entries[0]
-														: '...'
-													: ''
-										  }]`
-										: `(${entries.length}) {...}`}
-								</span>
-							)}
-						</div>
-					)}
+					{!shouldAutoExpand && (itemType ? <div>{expandableContent}</div> : expandableContent)}
 
 					{isExpanded && (
 						<div className="space-y-0.5 mt-0.5">
 							{isArray
 								? entries.map((child, idx) => (
-										<div key={idx}>{renderData(child, idx, `${key}.${idx}`, false, depth + 1)}</div>
+										<div key={idx}>
+											{renderData(
+												child,
+												idx,
+												`${key}.${idx}`,
+												false,
+												depth + 1,
+												item,
+												getArrayElementType(itemType)
+											)}
+										</div>
 								  ))
 								: entries.map(([childKey, childVal]) => (
 										<div key={childKey}>
@@ -263,7 +372,9 @@ const FunctionCallViewer = ({
 													: childKey,
 												`${key}.${childKey}`,
 												false,
-												depth + 1
+												depth + 1,
+												item,
+												childKey
 											)}
 										</div>
 								  ))}
@@ -285,7 +396,7 @@ const FunctionCallViewer = ({
 						:
 					</span>
 				)}
-				<div className="flex-1 min-w-0">{renderValue(item, depth)}</div>
+				<div className="flex-1 min-w-0">{renderValue(item, depth, itemType)}</div>
 			</div>
 		);
 	};
@@ -399,7 +510,15 @@ const FunctionCallViewer = ({
 														<div className="w-full p-2">
 															{hasArgs && (
 																<div className="space-y-0.5">
-																	{renderData(formattedArgs, 'params', 'Parameters', true, 0)}
+																	{renderData(
+																		formattedArgs,
+																		'params',
+																		'Parameters',
+																		true,
+																		0,
+																		undefined,
+																		Array.isArray(data.args) ? data.typeName : undefined
+																	)}
 																</div>
 															)}
 															{!isContract && hasResults && (
@@ -447,7 +566,9 @@ const FunctionCallViewer = ({
 																	'params',
 																	hasType ? 'Parameters' : 'Value',
 																	true,
-																	0
+																	0,
+																	undefined,
+																	Array.isArray(data.args) ? data.typeName : undefined
 																)}
 															</div>
 														)}
@@ -508,7 +629,15 @@ const FunctionCallViewer = ({
 															<div className="w-full px-2 pb-2">
 																{hasArgs && (
 																	<div className="space-y-0.5">
-																		{renderData(formattedArgs, 'params', 'Value', true, 0)}
+																		{renderData(
+																			formattedArgs,
+																			'params',
+																			'Value',
+																			true,
+																			0,
+																			undefined,
+																			Array.isArray(data.args) ? data.typeName : undefined
+																		)}
 																	</div>
 																)}
 																{!isContract && hasResults && (
@@ -568,7 +697,15 @@ const FunctionCallViewer = ({
 															</div>
 														)}
 														<div className="space-y-0.5">
-															{renderData(formattedArgs, 'params', 'Parameters', true, 0)}
+															{renderData(
+																formattedArgs,
+																'params',
+																'Parameters',
+																true,
+																0,
+																undefined,
+																Array.isArray(data.args) ? data.typeName : undefined
+															)}
 														</div>
 													</div>
 												)}
