@@ -145,14 +145,16 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
 										<Table>
 											<TableHeader>
 												<TableRow>
-													<TableHead className="font-semibold px-4">Address</TableHead>
-													<TableHead className="font-semibold">Creation Date</TableHead>
+													<TableHead className="font-semibold px-4 text-xs">Address</TableHead>
+													<TableHead className="font-semibold whitespace-nowrap text-xs text-right">
+														Creation Date
+													</TableHead>
 												</TableRow>
 											</TableHeader>
 											<TableBody>
 												{group.contracts.map((contract, index) => (
 													<TableRow key={index}>
-														<TableCell className="!px-4 flex items-center gap-1">
+														<TableCell className="!px-4 flex items-center w-2/3 gap-1">
 															<CopyToClipboardElement
 																value={contract.address}
 																toastDescription={`Contract address has been copied.`}
@@ -161,14 +163,14 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
 															>
 																<AddressLink
 																	address={contract.address}
-																	addressClassName="md:hidden w-fit"
+																	addressClassName="md:hidden w-fit whitespace-nowrap"
 																>
 																	{shortenHash(contract.address)}
 																</AddressLink>
 
 																<AddressLink
 																	address={contract.address}
-																	addressClassName="md:block hidden w-fit"
+																	addressClassName="md:block hidden w-fit whitespace-nowrap text-xs"
 																>
 																	{contract.address}
 																</AddressLink>
@@ -182,7 +184,7 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
 																<ArrowTopRightOnSquareIcon className="w-3 h-3" />
 															</Link>
 														</TableCell>
-														<TableCell className="text-muted-foreground">
+														<TableCell className="text-muted-foreground w-1/3 text-xs text-right">
 															{formatDate(contract.deployment_time)}
 														</TableCell>
 													</TableRow>
