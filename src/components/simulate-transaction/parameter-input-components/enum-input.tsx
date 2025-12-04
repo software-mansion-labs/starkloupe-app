@@ -46,7 +46,7 @@ export const EnumInput = ({
 				<StructContainer>
 					<ParameterHeader name={parameter.name} type={parameter.type_name} />
 
-					<div className="space-y-3 pl-4">
+					<div className="space-y-3 pl-2 md:pl-4">
 						{parameter.value.map((item: any, idx: number) => {
 							const elementType = tupleTypes[idx] || 'felt252';
 							const itemValid = validateType(item || '', elementType);
@@ -237,7 +237,7 @@ export const EnumInput = ({
 			)}
 			{hasStructMembers && <div className="text-sm text-muted-foreground mt-3">Struct members</div>}
 			{hasStructMembers && (
-				<div className="space-y-3 pl-4">
+				<div className="space-y-3 pl-2 md:pl-4">
 					{currentVariant.struct_members.map((member: any, idx: number) => {
 						const fieldValue = parameter.value?.[idx.toString()];
 						const actualValue = fieldValue?.value ?? getDefaultValue(member.type, member);
@@ -317,7 +317,7 @@ export const EnumInput = ({
 			)}
 
 			{hasNestedEnumVariants && (
-				<div className="space-y-3 pl-4">
+				<div className="space-y-3 pl-2 md:pl-4">
 					{(() => {
 						const nestedValue =
 							typeof parameter.value === 'object' && parameter.value?.__enum_value

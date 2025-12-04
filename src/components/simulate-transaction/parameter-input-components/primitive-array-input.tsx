@@ -41,7 +41,7 @@ export const PrimitiveArrayInput = ({
 		<ParameterContainer>
 			<ParameterHeader name={parameter.name} type={parameter.type_name} />
 
-			<div className="space-y-3 pl-4">
+			<div className="space-y-3 pl-2 md:pl-4">
 				{arrayValue.map((item: any, idx: number) => (
 					<div key={idx} className="space-y-2">
 						<div className="flex items-center justify-between">

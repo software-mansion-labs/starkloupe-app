@@ -56,19 +56,19 @@ export function ContractCallFieldset({
 	return (
 		<fieldset
 			key={`${index}-${call.address}-${call.function_name}`}
-			className="border rounded-md p-4"
+			className="border rounded-md p-4 mt-4"
 		>
 			<legend className="px-2 font-medium text-sm">Call #{index + 1}</legend>
 			<div className="grid gap-4">
-				<div className="grid grid-cols-4 items-center gap-x-4 gap-y-2">
-					<Label htmlFor={`contract-address-${index}`} className="text-right">
+				<div className="grid grid-cols-1 md:grid-cols-4 md:items-center gap-x-4 gap-y-2">
+					<Label htmlFor={`contract-address-${index}`} className="md:text-right ">
 						Contract address
 					</Label>
 					<Input
 						id={`contract-address-${index}`}
 						value={call.address}
 						onChange={(e) => onContractAddressChange(index, e.target.value)}
-						className={`col-span-3 font-mono ${
+						className={`md:col-span-3 font-mono ${
 							(alert &&
 								(!call.address ||
 									!validateHexFormat(call.address) ||
@@ -79,24 +79,24 @@ export function ContractCallFieldset({
 						}`}
 					/>
 					{alert && !call.address && (
-						<p className="text-xs text-red-500 col-span-3 col-start-2">
+						<p className="text-xs text-red-500 md:col-span-3 md:col-start-2">
 							Contract address is required.
 						</p>
 					)}
 					{alert && call.address && !validateHexFormat(call.address) && (
-						<p className="text-xs text-red-500 col-span-3 col-start-2">
+						<p className="text-xs text-red-500 md:col-span-3 md:col-start-2">
 							Contract address must be a hexadecimal number.
 						</p>
 					)}
 					{hasContractError && (
-						<p className="text-xs text-red-500 col-span-3 col-start-2">{contractError}</p>
+						<p className="text-xs text-red-500 md:col-span-3 md:col-start-2">{contractError}</p>
 					)}
 					{alert &&
 						!contractCallsFunctions[call.address] &&
 						!hasContractError &&
 						call.address &&
 						validateHexFormat(call.address) && (
-							<p className="text-xs text-red-500 col-span-3 col-start-2">
+							<p className="text-xs text-red-500 md:col-span-3 md:col-start-2">
 								This contract is not deployed on {chain?.chainId}.
 							</p>
 						)}
@@ -111,8 +111,11 @@ export function ContractCallFieldset({
 					onChange={(value) => onFunctionNameChange(index, value)}
 				/>
 
-				<TabsContent value="raw" className="grid grid-cols-4 items-center gap-y-2 gap-x-4">
-					<Label htmlFor={`calldata-${index}`} className="text-right">
+				<TabsContent
+					value="raw"
+					className="grid grid-cols-1 md:grid-cols-4 md:items-center gap-y-2 gap-x-4"
+				>
+					<Label htmlFor={`calldata-${index}`} className="md:text-right">
 						Calldata
 					</Label>
 					<Textarea
@@ -120,26 +123,32 @@ export function ContractCallFieldset({
 						id={`calldata-${index}`}
 						value={call.calldata}
 						placeholder={`Enter raw calldata here. For example:\n\n0x0000000000000000000000000000000000000000000000000000000000000001\n0x014c52727fc025f10d431efafb3945a06601e3703fc06c934df177a6c30f3280\n0x02f67e6aeaad1ab7487a680eb9d3363a597afa7a3de33fa9bf3ae6edcb88435d`}
-						className={`col-span-3 font-mono h-32 ${
+						className={`md:col-span-3 font-mono h-32 ${
 							alert && call.address && hasInvalidCalldataFormat ? 'border-red-500' : ''
 						}`}
 						onChange={(e) => onCalldataChange(index, e.target.value)}
 					/>
 
 					{alert && hasInvalidCalldataFormat && (
-						<p className="text-xs text-red-500 col-span-3 col-start-2">
+						<p className="text-xs text-red-500 md:col-span-3 md:col-start-2">
 							Calldata must be a list of hexadecimal numbers, each starting with 0x on a new line.
 						</p>
 					)}
 				</TabsContent>
 			</div>
 
-			<TabsContent value="parameters" className="grid grid-cols-4 items-center gap-y-2 gap-x-4">
-				<Label htmlFor={`calldata-${index}-parameters`} className="text-right">
+			<TabsContent
+				value="parameters"
+				className="grid grid-cols-1 md:grid-cols-4 md:items-center gap-y-2 gap-x-4"
+			>
+				<Label
+					htmlFor={`calldata-${index}-parameters`}
+					className="md:text-right pb-2 border-b border-border md:border-none md:pb-0"
+				>
 					Calldata
 				</Label>
 				{decodeCalldata && decodeCalldata?.decoded_calldata[index]?.parameters?.length > 0 ? (
-					<div key={`border-${index}-parameter`} className="col-span-3 space-y-4">
+					<div key={`border-${index}-parameter`} className="md:col-span-3 space-y-4">
 						{(() => {
 							const parameters = decodeCalldata?.decoded_calldata[index]?.parameters || [];
 							const functionData = contractCallsFunctions[call.address]?.find(
@@ -169,11 +178,11 @@ export function ContractCallFieldset({
 						})()}
 					</div>
 				) : hasDecodeError ? (
-					<div className="col-span-3 border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30 rounded-lg p-4">
-						<div className="flex items-start justify-between gap-4">
+					<div className="md:col-span-3 border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/30 rounded-lg p-4">
+						<div className="flex flex-col md:flex-row items-start justify-between gap-4">
 							<div className="flex-1">
 								<div className="flex items-center gap-2 text-red-600 dark:text-red-400 mb-2">
-									<XCircleIcon className="w-5 h-5" />
+									<XCircleIcon className="w-5 h-5 flex-shrink-0" />
 									<p className="font-medium">Invalid Calldata</p>
 								</div>
 								<p className="text-sm text-red-600/80 dark:text-red-400/80">
@@ -185,14 +194,14 @@ export function ContractCallFieldset({
 								variant="outline"
 								size="sm"
 								onClick={() => onResetCalldata(index)}
-								className="border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50"
+								className="border-red-300 dark:border-red-800 text-red-600 dark:text-red-400 hover:bg-red-100 dark:hover:bg-red-900/50 w-full md:w-auto"
 							>
 								Reset
 							</Button>
 						</div>
 					</div>
 				) : (
-					<div className="text-sm text-muted-foreground col-span-3">
+					<div className="text-sm text-muted-foreground md:col-span-3">
 						{contractCallsFunctions[call.address]?.length
 							? 'Selected entrypoint does not accept any calldata.'
 							: 'No entrypoints found'}

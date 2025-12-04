@@ -63,7 +63,7 @@ export const StructInput = ({
 			<ParameterHeader name={parameter.name} type={parameter.type_name} />
 
 			<Label className="text-sm text-muted-foreground">Struct members</Label>
-			<div className="space-y-3 pl-4">
+			<div className="space-y-3 pl-2 md:pl-4">
 				{members.map((member: any) => {
 					return (
 						<ParameterInput

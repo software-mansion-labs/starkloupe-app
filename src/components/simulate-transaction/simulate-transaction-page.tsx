@@ -627,8 +627,8 @@ export function SimulateTransactionPage({
 
 						<div className="rounded-lg py-4">
 							<div className="grid gap-6">
-								<div className="grid grid-cols-4 items-center gap-4">
-									<Label htmlFor="chain-id" className="text-right">
+								<div className="grid grid-cols-1 md:grid-cols-4 md:items-center gap-2 md:gap-4">
+									<Label htmlFor="chain-id" className="md:text-right">
 										Network
 									</Label>
 									<NetworksSelect
@@ -638,34 +638,34 @@ export function SimulateTransactionPage({
 									/>
 								</div>
 
-								<div className="grid grid-cols-4 items-center gap-y-2 gap-x-4">
-									<Label htmlFor="sender-address" className="text-right">
+								<div className="grid grid-cols-1 md:grid-cols-4 md:items-center gap-2 md:gap-y-2 md:gap-x-4">
+									<Label htmlFor="sender-address" className="md:text-right">
 										Sender address
 									</Label>
 									<Input
 										id="sender-address"
 										value={_senderAddress}
 										onChange={(e) => _setSenderAddress(e.target.value)}
-										className={`col-span-3 font-mono ${
+										className={`md:col-span-3 font-mono ${
 											alert &&
 											(_senderAddress === '' || !validateHexFormat(_senderAddress)) &&
 											'border-red-500'
 										}`}
 									/>
 									{alert && _senderAddress === '' && (
-										<p className="text-xs text-muted-foreground text-red-500 col-span-3 col-start-2">
+										<p className="text-xs text-muted-foreground text-red-500 md:col-span-3 md:col-start-2">
 											Sender address is required.
 										</p>
 									)}
 									{alert && !validateHexFormat(_senderAddress) && (
-										<p className="text-xs text-muted-foreground text-red-500 col-span-3 col-start-2">
+										<p className="text-xs text-muted-foreground text-red-500 md:col-span-3 md:col-start-2">
 											Sender address must be a hexadecimal number.
 										</p>
 									)}
 								</div>
 
-								<div className="grid grid-cols-4 items-center gap-4">
-									<Label htmlFor="number-contracts" className="text-right">
+								<div className="grid grid-cols-1 md:grid-cols-4 md:items-center gap-2 md:gap-4">
+									<Label htmlFor="number-contracts" className="md:text-right">
 										Number of contract calls
 									</Label>
 									<Input
@@ -674,17 +674,17 @@ export function SimulateTransactionPage({
 										type="number"
 										min={1}
 										onChange={handleNumberOfContractsChange}
-										className={`col-span-3 font-mono ${
+										className={`md:col-span-3 font-mono ${
 											alert && _numberOfContracts < 1 && 'border-red-500'
 										}`}
 									/>
 								</div>
 
 								<Tabs defaultValue="parameters" onValueChange={handleTabChange}>
-									<div className="grid grid-cols-4 items-center gap-4">
-										<Label className="text-right">Calldata mode</Label>
+									<div className="grid grid-cols-1 md:grid-cols-4 md:items-center gap-2 md:gap-4">
+										<Label className="md:text-right">Calldata mode</Label>
 
-										<TabsList className="flex md:inline-flex col-span-3 w-fit dark:bg-card !justify-start md:justify-center flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-rounded">
+										<TabsList className="flex md:inline-flex md:col-span-3 w-fit dark:bg-card !justify-start md:justify-center flex-nowrap overflow-x-auto scrollbar-thin scrollbar-thumb-rounded">
 											<TabsTrigger value="raw">Raw</TabsTrigger>
 											<TabsTrigger value="parameters">Parameters</TabsTrigger>
 										</TabsList>
@@ -714,8 +714,8 @@ export function SimulateTransactionPage({
 									))}
 								</Tabs>
 
-								<div className="grid grid-cols-4 items-center gap-x-4 gap-y-2">
-									<Label htmlFor="block-number" className="text-right">
+								<div className="grid grid-cols-1 md:grid-cols-4 md:items-center gap-2 md:gap-x-4 md:gap-y-2">
+									<Label htmlFor="block-number" className="md:text-right">
 										Block number
 									</Label>
 									<Input
@@ -724,19 +724,19 @@ export function SimulateTransactionPage({
 										id="block-number"
 										value={_blockNumber ?? ''}
 										onChange={handleBlockNumberChange}
-										className="col-span-3 font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+										className="md:col-span-3 font-mono [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
 										placeholder="Latest"
 									/>
-									<p className="text-xs text-muted-foreground col-span-3 col-start-2">
+									<p className="text-xs text-muted-foreground md:col-span-3 md:col-start-2">
 										If you leave the field empty, the latest block will be used.
 									</p>
 								</div>
 
-								<div className="grid grid-cols-4 items-center gap-4">
-									<Label htmlFor="tx-version" className="text-right">
+								<div className="grid grid-cols-1 md:grid-cols-4 md:items-center gap-2 md:gap-4">
+									<Label htmlFor="tx-version" className="md:text-right">
 										Transaction version
 									</Label>
-									<div className="col-span-3">
+									<div className="md:col-span-3">
 										<Select
 											value={_transactionVersion.toString()}
 											onValueChange={(value) => _setTransactionVersion(parseInt(value))}

@@ -41,18 +41,18 @@ export const ArrayOfTuplesInput = ({
 		<ParameterContainer>
 			<ParameterHeader name={parameter.name} type={parameter.type_name} />
 
-			<div className="space-y-3 pl-4">
+			<div className="space-y-3 pl-2 md:pl-4">
 				{arrayValue.map((tupleItem: any, tupleIdx: number) => {
 					const tupleValue = Array.isArray(tupleItem) ? tupleItem : [];
 
 					return (
-						<div key={tupleIdx} className="space-y-2 border rounded-lg p-3">
-							<div className="flex items-center justify-between border-b pb-2">
+						<div key={tupleIdx} className="space-y-2 border md:border rounded-lg p-3">
+							<div className="flex items-center justify-between border-b md:border-b pb-2">
 								<Label className="text-sm font-medium">
 									[{tupleIdx}] {elementType}
 								</Label>
 							</div>
-							<div className="space-y-3 pl-4">
+							<div className="space-y-3 pl-2 md:pl-4">
 								{elementTupleTypes.map((tupleElementType: string, elementIdx: number) => {
 									const elementValue = tupleValue[elementIdx];
 

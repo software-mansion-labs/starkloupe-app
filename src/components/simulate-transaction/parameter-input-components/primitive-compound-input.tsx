@@ -23,7 +23,7 @@ export const PrimitiveCompoundInput = ({
 		<ParameterContainer>
 			<ParameterHeader name={parameter.name} type={functionInput.type} />
 
-			<div className="space-y-3 pl-4">
+			<div className="space-y-3 pl-2 md:pl-4">
 				{functionInput.struct_members.map((member: any, idx: number) => {
 					const fieldValue = parameter.value?.[idx.toString()];
 

@@ -22,7 +22,7 @@ export const TupleInput = ({
 		<ParameterContainer>
 			<ParameterHeader name={parameter.name} type={parameter.type_name} />
 
-			<div className="space-y-3 pl-4">
+			<div className="space-y-3 pl-2 md:pl-4">
 				{parameter.value.map((item: any, idx: number) => {
 					const elementType = tupleTypes[idx] || 'felt252';
 

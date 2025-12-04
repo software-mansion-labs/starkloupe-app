@@ -125,19 +125,19 @@ export const ArrayOfStructsInput = ({
 		<ParameterContainer>
 			<ParameterHeader name={parameter.name} type={parameter.type_name} />
 
-			<div className="space-y-3 pl-4">
+			<div className="space-y-3 pl-2 md:pl-4">
 				{arrayValue.map((item: any, idx: number) => {
 					const structMembers = getStructMembers(item);
 
 					return (
-						<div key={idx} className="space-y-2 border rounded-lg p-3">
-							<div className="flex items-center justify-between border-b pb-2">
+						<div key={idx} className="space-y-2 border md:border rounded-lg p-3">
+							<div className="flex items-center justify-between border-b md:border-b pb-2">
 								<Label className="text-sm font-medium">
 									[{idx}] {elementType}
 								</Label>
 							</div>
 							<Label className="text-sm text-muted-foreground">Struct members</Label>
-							<div className="space-y-3 pl-4">
+							<div className="space-y-3 pl-2 md:pl-4">
 								{structMembers.map((member: any, memberIdx: number) => {
 									let memberDef: any = undefined;
 									if (hasStructMembers) {

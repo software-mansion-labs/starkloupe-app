@@ -165,24 +165,28 @@ export function EntryPointSelect({
 
 	return (
 		<>
-			<div className="grid grid-cols-4 !items-center gap-x-4 gap-y-2">
-				<Label className="text-right">Entrypoint</Label>
+			<div className="grid grid-cols-1 md:grid-cols-4 text-xs md:!items-center gap-x-4 gap-y-2">
+				<Label className="md:text-right">Entrypoint</Label>
 				<Popover open={open} onOpenChange={setOpen}>
 					<PopoverTrigger asChild>
 						<Button
 							variant="outline"
 							role="combobox"
 							aria-expanded={open}
-							className={`col-span-3 justify-between font-mono ${isError && 'border-red-500'}`}
+							className={`md:col-span-3 justify-between font-mono ${
+								isError && 'border-red-500'
+							}`}
 							disabled={entryPointsOptions.length === 0}
 						>
-							{selectedOption
-								? selectedOption.label
-								: isLoading
-								? 'Loading Entrypoints...'
-								: !entryPointsOptions || entryPointsOptions.length === 0
-								? `Enter a valid contract address above`
-								: 'Select an Entrypoint'}
+							<span className="truncate text-left flex-1 min-w-0">
+								{selectedOption
+									? selectedOption.label
+									: isLoading
+									? 'Loading Entrypoints...'
+									: !entryPointsOptions || entryPointsOptions.length === 0
+									? `Enter a valid contract address above`
+									: 'Select an Entrypoint'}
+							</span>
 							<CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
 						</Button>
 					</PopoverTrigger>
@@ -234,26 +238,26 @@ export function EntryPointSelect({
 					</PopoverContent>
 				</Popover>
 				{isError && (
-					<p className="text-xs text-red-500 text-muted-foreground col-span-3 col-start-2">
+					<p className="text-xs text-red-500 text-muted-foreground md:col-span-3 md:col-start-2">
 						Entrypoint is required.
 					</p>
 				)}
 			</div>
-			<div className="grid grid-cols-4 items-center gap-y-2 gap-x-4">
-				<Label className="text-right">Entrypoint signature</Label>
+			<div className="grid grid-cols-1 md:grid-cols-4 md:items-center gap-y-2 gap-x-4">
+				<Label className="md:text-right">Entrypoint signature</Label>
 				{selectedOption?.data ? (
-					<Input value={getSignatureString() || ''} className="col-span-3 font-mono" readOnly />
+					<Input value={getSignatureString() || ''} className="md:col-span-3 font-mono" readOnly />
 				) : (
 					<>
 						<Input
 							placeholder={'Select an Entrypoint above to see the signature'}
-							className="col-span-3 font-mono"
+							className="md:col-span-3 font-mono"
 							disabled={true}
 							readOnly
 						/>
 					</>
 				)}
-				<p className="text-xs text-muted-foreground col-span-3 col-start-2">
+				<p className="text-xs text-muted-foreground md:col-span-3 md:col-start-2">
 					Automatically generated based on the selected Entrypoint.
 				</p>
 			</div>

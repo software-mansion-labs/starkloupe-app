@@ -81,9 +81,13 @@ interface ContainerProps {
 }
 
 export const ParameterContainer = ({ children, className = '' }: ContainerProps) => (
-	<div className={`space-y-3 border col-span-3 rounded-lg p-4 ${className}`}>{children}</div>
+	<div className={`space-y-3 md:border col-span-3 rounded-lg py-4 md:p-4 ${className}`}>
+		{children}
+	</div>
 );
 
 export const StructContainer = ({ children, className = '' }: ContainerProps) => (
-	<div className={`space-y-3 col-span-3 border rounded-lg p-4 ${className}`}>{children}</div>
+	<div className={`space-y-3 col-span-3 md:border rounded-lg py-4 md:p-4 ${className}`}>
+		{children}
+	</div>
 );
