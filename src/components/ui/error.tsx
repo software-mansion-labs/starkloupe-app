@@ -53,7 +53,6 @@ export function Error({
 				<div className="p-6 space-y-4">
 					{errorTitle && (
 						<div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-md bg-destructive/5 border border-destructive/20">
-							<div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
 							<span className="text-sm font-mono font-medium text-destructive">{errorTitle}</span>
 						</div>
 					)}
