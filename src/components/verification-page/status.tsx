@@ -1,13 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import {
-	Table,
-	TableBody,
-	TableCell,
-	TableHead,
-	TableHeader,
-	TableRow
-} from '@/components/ui/table';
 import { fetchVerificationStatus } from '@/lib/verification';
+import { InfoBox } from '../ui/info-box';
 import {
 	VerificationRequestRow,
 	VerificationStatus,
@@ -198,25 +191,23 @@ export function VerificationStatusPage({ verificationId }: { verificationId: str
 							{verificationRows.length === 0 &&
 								verificationRequest &&
 								verificationRequest.status === 'pending' && (
-									<div className="rounded-xl border bg-card overflow-hidden">
-										<Table>
-											<TableHeader>
-												<TableRow>
-													<TableHead>Status</TableHead>
-													<TableHead>Message</TableHead>
-												</TableRow>
-											</TableHeader>
-											<TableBody>
-												<TableRow key={verificationRequest.id}>
-													<TableCell className="text-blue-500 font-medium">
-														{verificationRequest.status}
-													</TableCell>
-													<TableCell className="text-muted-foreground">
-														Project is being processed. Please wait.
-													</TableCell>
-												</TableRow>
-											</TableBody>
-										</Table>
+									<div className="mt-4">
+										<InfoBox
+											details={[
+												{
+													name: 'Status',
+													value: (
+														<span className="text-blue-500 font-medium">
+															{verificationRequest.status}
+														</span>
+													)
+												},
+												{
+													name: 'Message',
+													value: 'Project is being processed. Please wait.'
+												}
+											]}
+										/>
 									</div>
 								)}
 
@@ -226,116 +217,58 @@ export function VerificationStatusPage({ verificationId }: { verificationId: str
 								/>
 							) : (
 								verificationRows.length > 0 && (
-									<>
-										<div className="hidden md:block rounded-xl border bg-card overflow-hidden">
-											<Table>
-												<TableHeader>
-													<TableRow>
-														<TableHead>Status</TableHead>
-														<TableHead>Class hash</TableHead>
-														<TableHead>Build profiles</TableHead>
-														<TableHead>Message</TableHead>
-													</TableRow>
-												</TableHeader>
-												<TableBody>
-													{verificationRows.map((row) => (
-														<TableRow key={row.id}>
-															<TableCell
-																className={`font-medium ${
-																	row.status === VerificationStatus.success
-																		? 'text-green-500'
-																		: row.status === VerificationStatus.failed
-																		? 'text-red-500'
-																		: 'text-blue-500'
-																}`}
-															>
-																{row.status}
-															</TableCell>
-															<TableCell>
-																{row.classHash ? (
-																	<CopyToClipboardElement
-																		value={row.classHash}
-																		toastDescription="Class hash copied."
-																		className="p-0 hover:bg-inherit"
-																	>
-																		<AddressLink address={row.classHash}>
-																			<span className="font-mono">{row.classHash}</span>
-																		</AddressLink>
-																	</CopyToClipboardElement>
-																) : (
-																	<span className="text-muted-foreground">-</span>
-																)}
-															</TableCell>
-															<TableCell className="font-mono text-muted-foreground">
-																{row.profiles?.join(', ') || '-'}
-															</TableCell>
-															<TableCell className="text-muted-foreground">
-																{row.message || '-'}
-															</TableCell>
-														</TableRow>
-													))}
-												</TableBody>
-											</Table>
-										</div>
-
-										{/* Mobile cards */}
-										<div className="md:hidden flex flex-col gap-3">
-											{verificationRows.map((row) => (
-												<div key={row.id} className="rounded-xl border bg-card p-4">
-													<div className="flex items-center justify-between mb-3">
-														<span className="text-sm text-muted-foreground">Status</span>
-														<span
-															className={`font-medium ${
-																row.status === VerificationStatus.success
-																	? 'text-green-500'
-																	: row.status === VerificationStatus.failed
-																	? 'text-red-500'
-																	: 'text-blue-500'
-															}`}
-														>
-															{row.status}
-														</span>
-													</div>
-													<div className="flex flex-col gap-2">
-														{row.classHash && (
-															<div>
-																<span className="text-sm text-muted-foreground block mb-1">
-																	Class hash
-																</span>
-																<CopyToClipboardElement
-																	value={row.classHash}
-																	toastDescription="Class hash copied."
-																	className="p-0 hover:bg-inherit"
+									<div className="flex flex-col gap-3">
+										{verificationRows.map((row) => (
+											<div className="mt-4" key={row.id}>
+												<InfoBox
+													details={[
+														{
+															name: 'Status',
+															value: (
+																<span
+																	className={`font-medium ${
+																		row.status === VerificationStatus.success
+																			? 'text-classGreen'
+																			: row.status === VerificationStatus.failed
+																			? 'text-red-500'
+																			: 'text-blue-500'
+																	}`}
 																>
-																	<AddressLink address={row.classHash}>
-																		<span className="font-mono text-sm">
-																			{shortenHash(row.classHash)}
-																		</span>
-																	</AddressLink>
-																</CopyToClipboardElement>
-															</div>
-														)}
-														{row.profiles && row.profiles.length > 0 && (
-															<div>
-																<span className="text-sm text-muted-foreground block mb-1">
-																	Build profiles
+																	{row.status}
 																</span>
-																<span className="font-mono text-sm">{row.profiles.join(', ')}</span>
-															</div>
-														)}
-														{row.message && (
-															<div>
-																<span className="text-sm text-muted-foreground block mb-1">
-																	Message
-																</span>
-																<span className="text-sm">{row.message}</span>
-															</div>
-														)}
-													</div>
-												</div>
-											))}
-										</div>
-									</>
+															)
+														},
+														...(row.classHash
+															? [
+																	{
+																		name: 'Class hash',
+																		value: row.classHash,
+																		isCopyable: true,
+																		linkHref: `/classes/${row.classHash}`
+																	}
+															  ]
+															: []),
+														...(row.profiles && row.profiles.length > 0
+															? [
+																	{
+																		name: 'Build profiles',
+																		value: row.profiles.join(', ')
+																	}
+															  ]
+															: []),
+														...(row.message
+															? [
+																	{
+																		name: 'Message',
+																		value: row.message
+																	}
+															  ]
+															: [])
+													]}
+												/>
+											</div>
+										))}
+									</div>
 								)
 							)}
 						</>
