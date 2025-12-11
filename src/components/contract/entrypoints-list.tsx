@@ -229,7 +229,10 @@ const EntryPoint = ({
 								{/* Simulate */}
 							</Link>
 						</TooltipTrigger>
-						<TooltipContent className="bg-background border-border text-black dark:text-white border">
+						<TooltipContent
+							side="left"
+							className="bg-background border-border text-black dark:text-white border"
+						>
 							Click to simulate <span className="text-function_purple">{entryPoint[1].name}</span>
 						</TooltipContent>
 					</Tooltip>
