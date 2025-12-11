@@ -424,7 +424,7 @@ const FunctionCallViewer = ({
 		<div className="px-2 py-1 min-w-[16rem]">
 			<div className="space-y-2">
 				{(data.contractCallDetails || data.function) && (
-					<div className="flex gap-1.5">
+					<div className="flex gap-1.5 flex-col md:flex-row">
 						{data.function && isContract && (
 							<div className="flex-1 flex bg-card/50 backdrop-blur-sm rounded-md border border-border/50 p-2 hover:border-border transition-colors">
 								<div>
@@ -489,7 +489,7 @@ const FunctionCallViewer = ({
 							if (blockCount === 2) {
 								return (
 									<>
-										<div className="flex gap-1.5">
+										<div className="flex gap-1.5 flex-col md:flex-row">
 											<div className="flex-1 bg-card/50 backdrop-blur-sm rounded-md border border-border/50 overflow-hidden hover:border-border transition-colors">
 												<div
 													className="flex items-center gap-1.5 p-2 cursor-pointer hover:bg-accent/20 transition-colors"

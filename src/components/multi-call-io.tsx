@@ -125,7 +125,7 @@ export function MultiCallIO() {
 								</button>
 								{isExpanded && (
 									<div className="flex flex-col dark:bg-background border-b py-2 px-4 ">
-										<div className="w-[calc(100vw-4rem)] sm:w-[calc(100vw-7rem)]">
+										<div className="md::w-[calc(100vw-7rem)]">
 											<div className="flex justify-between gap-4">
 												<div className={`w-1/2`}>
 													<DecodeDataTable
