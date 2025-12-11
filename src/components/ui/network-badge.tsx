@@ -96,7 +96,6 @@ export function NetworkBadge({
 	title?: string;
 	type?: string;
 }) {
-	console.log('network', network);
 	const [isOpen, setIsOpen] = useState(false);
 	const contentRef = useRef<HTMLDivElement | null>(null);
 	useEffect(() => {
