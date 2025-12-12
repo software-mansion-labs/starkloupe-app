@@ -1,6 +1,13 @@
 import { useEffect, useState, useCallback } from 'react';
+import {
+	Table,
+	TableBody,
+	TableCell,
+	TableHead,
+	TableHeader,
+	TableRow
+} from '@/components/ui/table';
 import { fetchVerificationStatus } from '@/lib/verification';
-import { InfoBox } from '../ui/info-box';
 import {
 	VerificationRequestRow,
 	VerificationStatus,
@@ -191,23 +198,25 @@ export function VerificationStatusPage({ verificationId }: { verificationId: str
 							{verificationRows.length === 0 &&
 								verificationRequest &&
 								verificationRequest.status === 'pending' && (
-									<div className="mt-4">
-										<InfoBox
-											details={[
-												{
-													name: 'Status',
-													value: (
-														<span className="text-blue-500 font-medium">
-															{verificationRequest.status}
-														</span>
-													)
-												},
-												{
-													name: 'Message',
-													value: 'Project is being processed. Please wait.'
-												}
-											]}
-										/>
+									<div className="mt-4 rounded-xl border bg-card overflow-x-auto">
+										<Table>
+											<TableHeader>
+												<TableRow>
+													<TableHead>Status</TableHead>
+													<TableHead>Message</TableHead>
+												</TableRow>
+											</TableHeader>
+											<TableBody>
+												<TableRow>
+													<TableCell className="text-blue-500 font-medium whitespace-nowrap">
+														{verificationRequest.status}
+													</TableCell>
+													<TableCell className="text-muted-foreground">
+														Project is being processed. Please wait.
+													</TableCell>
+												</TableRow>
+											</TableBody>
+										</Table>
 									</div>
 								)}
 
@@ -217,57 +226,64 @@ export function VerificationStatusPage({ verificationId }: { verificationId: str
 								/>
 							) : (
 								verificationRows.length > 0 && (
-									<div className="flex flex-col gap-3">
-										{verificationRows.map((row) => (
-											<div className="mt-4" key={row.id}>
-												<InfoBox
-													details={[
-														{
-															name: 'Status',
-															value: (
-																<span
-																	className={`font-medium ${
-																		row.status === VerificationStatus.success
-																			? 'text-classGreen'
-																			: row.status === VerificationStatus.failed
-																			? 'text-red-500'
-																			: 'text-blue-500'
-																	}`}
+									<div className="mt-4 rounded-xl border bg-card overflow-x-auto">
+										<Table>
+											<TableHeader>
+												<TableRow>
+													<TableHead className="whitespace-nowrap">Status</TableHead>
+													<TableHead className="whitespace-nowrap">Class hash</TableHead>
+													<TableHead className="whitespace-nowrap">Build profiles</TableHead>
+													<TableHead className="whitespace-nowrap">Message</TableHead>
+												</TableRow>
+											</TableHeader>
+											<TableBody>
+												{verificationRows.map((row) => (
+													<TableRow key={row.id}>
+														<TableCell
+															className={`font-medium whitespace-nowrap ${
+																row.status === VerificationStatus.success
+																	? 'text-classGreen'
+																	: row.status === VerificationStatus.failed
+																	? 'text-red-500'
+																	: 'text-blue-500'
+															}`}
+														>
+															{row.status}
+														</TableCell>
+														<TableCell>
+															{row.classHash ? (
+																<CopyToClipboardElement
+																	value={row.classHash}
+																	toastDescription="Class hash copied."
+																	className="p-0 hover:bg-inherit"
 																>
-																	{row.status}
-																</span>
-															)
-														},
-														...(row.classHash
-															? [
-																	{
-																		name: 'Class hash',
-																		value: row.classHash,
-																		isCopyable: true,
-																		linkHref: `/classes/${row.classHash}`
-																	}
-															  ]
-															: []),
-														...(row.profiles && row.profiles.length > 0
-															? [
-																	{
-																		name: 'Build profiles',
-																		value: row.profiles.join(', ')
-																	}
-															  ]
-															: []),
-														...(row.message
-															? [
-																	{
-																		name: 'Message',
-																		value: row.message
-																	}
-															  ]
-															: [])
-													]}
-												/>
-											</div>
-										))}
+																	<AddressLink
+																		address={row.classHash}
+																		addressClassName="whitespace-nowrap
+																	"
+																	>
+																		<span className="font-mono hidden lg:inline">
+																			{row.classHash}
+																		</span>
+																		<span className="font-mono lg:hidden">
+																			{shortenHash(row.classHash)}
+																		</span>
+																	</AddressLink>
+																</CopyToClipboardElement>
+															) : (
+																<span className="text-muted-foreground">-</span>
+															)}
+														</TableCell>
+														<TableCell className="font-mono text-muted-foreground whitespace-nowrap">
+															{row.profiles?.join(', ') || '-'}
+														</TableCell>
+														<TableCell className="text-muted-foreground">
+															{row.message || '-'}
+														</TableCell>
+													</TableRow>
+												))}
+											</TableBody>
+										</Table>
 									</div>
 								)
 							)}
