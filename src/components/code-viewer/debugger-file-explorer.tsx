@@ -9,6 +9,8 @@ import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { FilesExplorer } from './file-explorer';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { Skeleton } from '../ui/skeleton';
+import AddressLink from '../address-link';
+import { useSettings } from '@/lib/context/settings-context-provider';
 
 export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 	showTitle = true,
@@ -35,6 +37,7 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 	currentStepIndex: number;
 	loading?: boolean;
 }) {
+	const { customSettings } = useSettings();
 	const [isCallTraceExpanded, setIsCallTraceExpanded] = useState(false);
 	const { contractCallsMap } = useCallTrace();
 	const debuggerContext = useDebugger();
@@ -150,8 +153,15 @@ export const DebuggerFilesExplorer = memo(function DbFilesExplorer({
 															) : (
 																<ChevronRight className="w-4 h-4" />
 															)}
-															<span className="uppercase">
-																Contract: {contractName} (
+															<span className="">
+																<AddressLink
+																	address={contract?.entryPoint.storageAddress || ''}
+																	addressClassName="px-0.5 p-1 text-classGreen"
+																	customSettings={customSettings}
+																>
+																	{contractName}
+																</AddressLink>{' '}
+																(
 																{`${contract?.entryPoint.storageAddress.slice(
 																	0,
 																	4

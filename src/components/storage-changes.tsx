@@ -85,7 +85,7 @@ const StorageChanges = () => {
 													updateContractColor={updateContractColor}
 													updateContractSettings={updateContractSettings}
 													address={contractAddress}
-													addressClassName="px-0.5 p-1 еext-classGreen"
+													addressClassName="px-0.5 p-1 text-classGreen"
 												>
 													{contractName}
 												</AddressLink>
