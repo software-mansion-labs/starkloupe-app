@@ -159,9 +159,9 @@ const FunctionCallViewer = ({
 					<CopyToClipboardElement
 						value={item}
 						toastDescription="Copied!"
-						className="px-0 py-0 hover:bg-inherit inline-flex whitespace-nowrap !mt-2"
+						className="px-0 py-0 hover:bg-inherit inline-flex whitespace-nowrap my-1"
 					>
-						<AddressLink address={item} customSettings={customSettings} addressClassName=" ml-3 ">
+						<AddressLink address={item} customSettings={customSettings} addressClassName=" ml-1">
 							<span className="font-mono text-[11px]">{item}</span>
 						</AddressLink>
 					</CopyToClipboardElement>
@@ -170,7 +170,7 @@ const FunctionCallViewer = ({
 		}
 
 		const valueElement = (
-			<span className="font-mono text-[11px] ml-3">{item?.toString() || 'null'}</span>
+			<span className="font-mono text-[11px] ml-1 p-1 my-1">{item?.toString() || 'null'}</span>
 		);
 
 		if (typeName) {
@@ -181,7 +181,6 @@ const FunctionCallViewer = ({
 							<span className="font-mono text-xs text-typeColor mr-2">{typeName}</span> ={' '}
 						</>
 					)}
-
 					{valueElement}
 				</div>
 			);
@@ -230,8 +229,13 @@ const FunctionCallViewer = ({
 				const emptyElement = (
 					<div className={`flex items-baseline gap-1 ${depth > 0 ? 'ml-3' : ''}`}>
 						{!skipName && (
-							<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium flex-shrink-0">
-								{name}: <span className="font-mono text-xs text-typeColor ">{itemType}</span> ={' '}
+							<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium flex-shrink-0 whitespace-nowrap">
+								{name}:{' '}
+								{name !== itemType && (
+									<>
+										<span className="font-mono text-xs">{itemType}</span> ={' '}
+									</>
+								)}
 							</span>
 						)}
 						<span className="font-mono text-[11px] text-muted-foreground/60 italic">
@@ -259,8 +263,13 @@ const FunctionCallViewer = ({
 					} else if (!singleItemIsArray) {
 						const nameElement = (
 							<div className="flex items-center gap-1 mb-0.5">
-								<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium">
-									{name}: <span className="font-mono text-xs">{itemType}</span> ={' '}
+								<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium whitespace-nowrap">
+									{name}:{' '}
+									{name !== itemType && (
+										<>
+											<span className="font-mono text-xs">{itemType}</span> ={' '}
+										</>
+									)}
 								</span>
 							</div>
 						);
@@ -308,7 +317,7 @@ const FunctionCallViewer = ({
 						<ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
 					)}
 					{!skipName && (
-						<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium">
+						<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium whitespace-nowrap">
 							{typeof name === 'string' &&
 							name.includes('_') &&
 							/\d$/.test(name.split('_').pop() || '')
@@ -317,13 +326,27 @@ const FunctionCallViewer = ({
 							:{' '}
 						</span>
 					)}
-					{itemType && (
-						<span className="font-mono text-[11px] text-typeColor font-medium">{itemType} </span>
-					)}
+					{itemType &&
+						itemType !==
+							(typeof name === 'string' &&
+							name.includes('_') &&
+							/\d$/.test(name.split('_').pop() || '')
+								? name.split('_').slice(0, -1).join('_')
+								: name) && (
+							<span className="font-mono text-[11px] text-typeColor font-medium whitespace-nowrap">
+								{itemType}{' '}
+							</span>
+						)}
 
 					{!isExpanded && (
 						<>
-							{itemType && <>= </>}
+							{itemType &&
+								itemType !==
+									(typeof name === 'string' &&
+									name.includes('_') &&
+									/\d$/.test(name.split('_').pop() || '')
+										? name.split('_').slice(0, -1).join('_')
+										: name) && <>= </>}
 
 							<span className="font-mono text-[11px] text-muted-foreground/60 italic ml-1 whitespace-nowrap">
 								{isArray
@@ -387,7 +410,7 @@ const FunctionCallViewer = ({
 		return (
 			<div className={`flex items-baseline gap-1 ${depth > 0 ? 'ml-3' : ''}`}>
 				{!skipName && (
-					<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium flex-shrink-0">
+					<span className="font-mono text-[11px] text-pink-900 dark:text-keys font-medium flex-shrink-0 whitespace-nowrap">
 						{typeof name === 'string' &&
 						name.includes('_') &&
 						/\d$/.test(name.split('_').pop() || '')
@@ -396,7 +419,20 @@ const FunctionCallViewer = ({
 						:
 					</span>
 				)}
-				<div className="flex-1 min-w-0">{renderValue(item, depth, itemType)}</div>
+				<div className="flex-1 min-w-0 whitespace-nowrap">
+					{renderValue(
+						item,
+						depth,
+						itemType !==
+							(typeof name === 'string' &&
+							name.includes('_') &&
+							/\d$/.test(name.split('_').pop() || '')
+								? name.split('_').slice(0, -1).join('_')
+								: name)
+							? itemType
+							: ''
+					)}
+				</div>
 			</div>
 		);
 	};
@@ -441,7 +477,7 @@ const FunctionCallViewer = ({
 											<span
 												className={`${
 													!isContract ? 'text-function_purple' : ''
-												} font-mono text-[11px] font-semibold`}
+												} font-mono text-[11px] font-semibold whitespace-nowrap`}
 											>
 												{data.function}
 											</span>
@@ -491,14 +527,11 @@ const FunctionCallViewer = ({
 									<>
 										<div className="flex gap-1.5 flex-col md:flex-row">
 											<div className="flex-1 bg-card/50 backdrop-blur-sm rounded-md border border-border/50 overflow-hidden hover:border-border transition-colors">
-												<div
-													className="flex items-center gap-1.5 p-2 cursor-pointer hover:bg-accent/20 transition-colors"
-													onClick={() => setIsParametersExpanded(!isParametersExpanded)}
-												>
-													{isParametersExpanded ? (
-														<ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+												<div className="flex items-center gap-1.5 p-2 ">
+													{isResult ? (
+														<ArrowUpLeft className="w-3 h-3 text-blue-500" />
 													) : (
-														<ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
+														<ArrowDownRight className="w-3 h-3 text-green-500" />
 													)}
 													<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
 														{isResult ? 'Results' : 'Parameters'}
@@ -664,71 +697,50 @@ const FunctionCallViewer = ({
 					(hasArgs || (!isContract && hasResults) || data.typeName) && (
 						<div className="flex gap-1.5 min-w-[12rem]">
 							{(hasArgs || (!isContract && hasResults)) && (
-								<div className="flex-1 bg-card/50 backdrop-blur-sm rounded-md border border-border/50 overflow-hidden hover:border-border transition-colors">
-									<div
-										className="flex items-center gap-1.5 p-2 cursor-pointer hover:bg-accent transition-colors"
-										onClick={() => setIsParametersExpanded(!isParametersExpanded)}
-									>
-										{isParametersExpanded ? (
-											<ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-										) : (
-											<ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-										)}
-										<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
-											{hasArgs && !isContract && hasResults
-												? 'Parameters & Results'
-												: hasArgs
-												? 'Parameters & Results'
-												: 'Results'}
-										</span>
-									</div>
-
+								<div className="flex-1 bg-card/50 backdrop-blur-sm overflow-hidden hover:border-border transition-colors">
 									{isParametersExpanded && (
-										<ScrollArea className="overflow-auto">
-											<div className="w-full px-2 pb-2">
-												{hasArgs && (
-													<div className="space-y-1">
-														{!tooltipValue && (
-															<div className="flex items-center gap-1.5">
-																<ArrowDownRight className="w-3 h-3 text-green-500" />
-																<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
-																	Parameters
-																</span>
-															</div>
+										<div className="w-full pb-2">
+											{hasArgs && (
+												<div className="space-y-1">
+													{!tooltipValue && (
+														<div className="flex items-center gap-1.5">
+															<ArrowDownRight className="w-3 h-3 text-green-500" />
+															<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+																Parameters
+															</span>
+														</div>
+													)}
+													<div className="space-y-0.5">
+														{renderData(
+															formattedArgs,
+															'params',
+															'Parameters',
+															true,
+															0,
+															undefined,
+															Array.isArray(data.args) ? data.typeName : undefined
 														)}
+													</div>
+												</div>
+											)}
+
+											{!isContract && hasResults && (
+												<>
+													{hasArgs && <div className="border-t border-border/30 my-2" />}
+													<div className="space-y-1">
+														<div className="flex items-center gap-1.5">
+															<ArrowUpLeft className="w-3 h-3 text-blue-500" />
+															<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+																Results
+															</span>
+														</div>
 														<div className="space-y-0.5">
-															{renderData(
-																formattedArgs,
-																'params',
-																'Parameters',
-																true,
-																0,
-																undefined,
-																Array.isArray(data.args) ? data.typeName : undefined
-															)}
+															{renderData(formattedResult, 'results', 'Results', true, 0)}
 														</div>
 													</div>
-												)}
-
-												{!isContract && hasResults && (
-													<>
-														{hasArgs && <div className="border-t border-border/30 my-2" />}
-														<div className="space-y-1">
-															<div className="flex items-center gap-1.5">
-																<ArrowUpLeft className="w-3 h-3 text-blue-500" />
-																<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
-																	Results
-																</span>
-															</div>
-															<div className="space-y-0.5">
-																{renderData(formattedResult, 'results', 'Results', true, 0)}
-															</div>
-														</div>
-													</>
-												)}
-											</div>
-											<ScrollBar orientation="horizontal" />
-										</ScrollArea>
+												</>
+											)}
+										</div>
 									)}
 								</div>
 							)}
@@ -826,7 +838,7 @@ const FunctionCallViewer = ({
 										</div>
 									</div>
 									{args && args.length > 0 && (
-										<div className="pt-2 border-t border-yellow-500/20">
+										<div className="mt-2 pt-2 border-t border-yellow-500/20">
 											<div className="flex items-center gap-1.5 mb-1.5">
 												<ArrowDownRight className="w-3 h-3 text-green-500" />
 												<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
@@ -838,7 +850,7 @@ const FunctionCallViewer = ({
 									)}
 
 									{results && results.length > 0 && (
-										<div className="pt-2 border-t border-yellow-500/20">
+										<div className="mt-2 pt-2 border-t border-yellow-500/20">
 											<div className="flex items-center gap-1.5 mb-1.5">
 												<ArrowUpLeft className="w-3 h-3 text-blue-500" />
 												<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">

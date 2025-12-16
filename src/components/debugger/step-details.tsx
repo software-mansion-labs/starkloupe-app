@@ -120,6 +120,7 @@ export function StepDetails({
 						</div>
 					)}
 				</div>
+				<ScrollBar orientation="horizontal" />
 			</ScrollArea>
 		</div>
 	);
