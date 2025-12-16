@@ -9,6 +9,7 @@ import { Network, useSettings } from '@/lib/context/settings-context-provider';
 import { SimulationPayloadWithCalldata } from '@/lib/simulation';
 import { SimulationPayload } from '@/lib/utils';
 import { useEffect, useState } from 'react';
+import { SingleNetworkBadge } from './ui/network-badge';
 
 export interface Chain {
 	chainId?: string;
@@ -26,7 +27,7 @@ export function NetworksSelect({
 	selectedChain?: Chain;
 	isLoading?: boolean;
 }) {
-	const { networks } = useSettings();
+	const { networks, parseChain } = useSettings();
 
 	function extractChain(
 		networks: Network[],
@@ -92,13 +93,13 @@ export function NetworksSelect({
 			value={_chain.chainId ?? _chain.network?.networkName}
 			onValueChange={(value) => handleChainChange(value)}
 		>
-			<SelectTrigger className="col-span-3 font-mono">
+			<SelectTrigger className="col-span-3 font-mono focus:ring-0">
 				<SelectValue placeholder="Select a chain" />
 			</SelectTrigger>
 			<SelectContent>
 				{chainOptions.map((option) => (
-					<SelectItem key={option.value} value={option.value}>
-						{option.label}
+					<SelectItem key={option.value} value={option.value} className="font-mono">
+						<SingleNetworkBadge network={parseChain(option.label)} withoutChip />
 					</SelectItem>
 				))}
 			</SelectContent>
