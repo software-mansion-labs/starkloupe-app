@@ -136,7 +136,7 @@ export function DecodeDataTable({
 	return (
 		<div className="my-4">
 			<div className="flex flex-raw items-center mb-1">
-				<div className="font-medium uppercase mr-2">{type}</div>
+				<div className="font-medium uppercase mr-2 h-9 flex items-center">{type}</div>
 				{type === DataType.CALLDATA && (
 					<ToggleGroup
 						type="single"

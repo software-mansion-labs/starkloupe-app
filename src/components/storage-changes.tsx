@@ -12,7 +12,7 @@ const StorageChanges = () => {
 	const { simulationResult, contractCallsMap } = useCallTrace();
 	const { customSettings, updateContractName, updateContractColor, updateContractSettings } =
 		useSettings();
-	const [expandedCalls, setExpandedCalls] = useState<Record<number, boolean>>({});
+	const [expandedCalls, setExpandedCalls] = useState<Record<number, boolean>>({ 0: true });
 
 	const storageChanges = useMemo(() => {
 		const combined: Record<
@@ -74,7 +74,9 @@ const StorageChanges = () => {
 							<div key={contractAddress} className="flex flex-col min-h-0 bg-card">
 								<button
 									onClick={() => toggleCallExpand(index)}
-									className="w-full flex items-center justify-between border-b border-border p-3 gap-4 transition-colors hover:bg-muted/50"
+									className={`w-full flex items-center justify-between ${
+										!isExpanded && 'border-b'
+									}  border-border p-3 gap-4 transition-colors hover:bg-muted/50`}
 								>
 									<div className="flex flex-row items-center gap-2 text-xs font-mono">
 										{contractName ? (
@@ -124,7 +126,7 @@ const StorageChanges = () => {
 									)}
 								</button>
 								{isExpanded && (
-									<div className="flex flex-col dark:bg-background border-b py-3 px-4">
+									<div className="flex flex-col bg-sky-50 dark:bg-background border-y border-blue-400 py-3 px-4 ">
 										<div className="w-full flex flex-col gap-2">
 											{Object.entries(storageChanges).map(
 												([storageAddress, [before, after]], idx) => (

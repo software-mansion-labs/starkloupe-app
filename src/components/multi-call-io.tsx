@@ -19,7 +19,7 @@ interface CallData {
 }
 
 export function MultiCallIO() {
-	const [expandedCalls, setExpandedCalls] = useState<Record<number, boolean>>({});
+	const [expandedCalls, setExpandedCalls] = useState<Record<number, boolean>>({ 0: true });
 	const [displayFormat, setDisplayFormat] = useState<'auto' | 'raw'>('auto');
 
 	const { contractCallsMap } = useCallTrace();
@@ -67,6 +67,7 @@ export function MultiCallIO() {
 	const calls: CallData[] = fillCallsFromContractMap(contractCallsMap);
 
 	const toggleCallExpand = (index: number) => {
+		console.log(index);
 		setExpandedCalls((prev) => ({
 			...prev,
 			[index]: !prev[index]
@@ -83,7 +84,9 @@ export function MultiCallIO() {
 							<div key={index} className="flex flex-col min-h-0 bg-card">
 								<button
 									onClick={() => toggleCallExpand(index)}
-									className="w-full flex items-center justify-between border-b border-border p-3 gap-4 transition-colors hover:bg-muted/50"
+									className={`w-full flex items-center justify-between ${
+										!isExpanded && 'border-b'
+									} border-border p-3 gap-4 transition-colors hover:bg-muted/50`}
 								>
 									<span className="text-xs text-classGreen font-mono whitespace-nowrap">
 										{call.label || `Call ${index + 1}`}
@@ -124,26 +127,24 @@ export function MultiCallIO() {
 									)}
 								</button>
 								{isExpanded && (
-									<div className="flex flex-col dark:bg-background border-b py-2 px-4 ">
-										<div className="md::w-[calc(100vw-7rem)]">
-											<div className="flex justify-between gap-4">
-												<div className={`w-1/2`}>
-													<DecodeDataTable
-														rawData={call.rawInput}
-														decodeData={call.input}
-														type={DataType.CALLDATA}
-														displayFormat={displayFormat}
-														setDisplayFormat={setDisplayFormat}
-													/>
-												</div>
-												<div className="w-1/2">
-													<DecodeDataTable
-														decodeData={call.output}
-														type={DataType.OUTPUT}
-														displayFormat={displayFormat}
-														setDisplayFormat={setDisplayFormat}
-													/>
-												</div>
+									<div className="flex flex-col bg-sky-50 dark:bg-background border-y border-blue-400 py-1 px-4 ">
+										<div className="md:w-[calc(100vw-7rem)]">
+											<div className="">
+												<DecodeDataTable
+													rawData={call.rawInput}
+													decodeData={call.input}
+													type={DataType.CALLDATA}
+													displayFormat={displayFormat}
+													setDisplayFormat={setDisplayFormat}
+												/>
+											</div>
+											<div>
+												<DecodeDataTable
+													decodeData={call.output}
+													type={DataType.OUTPUT}
+													displayFormat={displayFormat}
+													setDisplayFormat={setDisplayFormat}
+												/>
 											</div>
 										</div>
 									</div>
