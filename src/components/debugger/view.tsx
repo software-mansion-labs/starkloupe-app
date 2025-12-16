@@ -181,7 +181,7 @@ function Controls({
 
 	return (
 		<div className="flex flex-row border-b py-1 px-3 justify-between items-center">
-			<div>
+			<div className="md:block hidden">
 				{contractCall && (
 					<ContractCallSignature
 						customSettings={customSettings}
@@ -194,7 +194,7 @@ function Controls({
 				)}
 			</div>
 			<div className="flex flex-row gap-3 items-center">
-				<div>
+				<div className="whitespace-nowrap">
 					Step {stepIndex + 1}/{totalSteps}
 				</div>
 				<TooltipProvider>

@@ -29,10 +29,10 @@ export function CodeViewer({
 	const breakpointDecorationsRef = useRef<string[]>([]);
 	const monaco = useMonaco();
 	const [hoverLine, setHoverLine] = useState<number | null>(null);
-	const [prevCodeValue, setPrevCodeValue] = useState<string | null>(null);
 	const activeFileRef = useRef<string | undefined>(undefined);
 	const classHashRef = useRef<string | undefined>(undefined);
 	const breakPointsLinesRef = useRef<number[] | undefined>(undefined);
+	const codeLocationRef = useRef<CodeLocation | undefined>(codeLocation);
 
 	const debuggerContext = useDebugger();
 	const {
@@ -57,6 +57,10 @@ export function CodeViewer({
 	}, [activeFile]);
 
 	useEffect(() => {
+		codeLocationRef.current = codeLocation;
+	}, [codeLocation]);
+
+	useEffect(() => {
 		classHashRef.current = classHash;
 	}, [classHash]);
 
@@ -79,7 +83,7 @@ export function CodeViewer({
 			codeLocation: CodeLocation,
 			editor: Editor.IStandaloneCodeEditor,
 			_monaco: Monaco,
-			isSmoothScroll: boolean
+			smooth: boolean
 		) => {
 			if (!_monaco || !editor) return;
 			const range = new _monaco.Range(
@@ -89,21 +93,9 @@ export function CodeViewer({
 				codeLocation.end.col + 1
 			);
 
-			const isHighlightOnScreen = isRangeVisible(range.startLineNumber, range.endLineNumber);
-
-			if (!isHighlightOnScreen) {
-				editor.revealRangeInCenter(
-					range.plusRange(
-						new _monaco.Range(
-							range.startLineNumber - 2,
-							range.startColumn,
-							range.endLineNumber,
-							range.endColumn
-						)
-					),
-					isSmoothScroll ? 0 : 1
-				);
-			}
+			const lineHeight = editor.getOption(_monaco.editor.EditorOption.lineHeight);
+			const targetScrollTop = (range.startLineNumber - 1) * lineHeight;
+			editor.setScrollTop(targetScrollTop, smooth ? 0 : 1);
 
 			editorDecorations?.clear();
 			setTimeout(() => {
@@ -181,12 +173,12 @@ export function CodeViewer({
 					}
 				}
 			});
-
-			if (codeLocation) {
-				highlightCodeLocation(codeLocation, editor, monaco, false);
+			const loc = codeLocationRef.current;
+			if (loc && activeFileRef.current && loc.filePath === activeFileRef.current) {
+				highlightCodeLocation(loc, editor, monaco, false);
 			}
 		},
-		[codeLocation, hoverLine, toggleBreakpoint, highlightCodeLocation, args, results]
+		[hoverLine, toggleBreakpoint, highlightCodeLocation]
 	);
 
 	const updateBreakpointDecorations = useCallback(
@@ -234,12 +226,11 @@ export function CodeViewer({
 
 	useEffect(() => {
 		if (editorRef.current && monaco) {
-			if (codeLocation) {
-				highlightCodeLocation(codeLocation, editorRef.current, monaco, content === prevCodeValue);
+			if (codeLocation && activeFile && codeLocation.filePath === activeFile) {
+				highlightCodeLocation(codeLocation, editorRef.current, monaco, true);
 			} else {
 				editorRef.current.revealLineNearTop(0, 1);
 			}
-			setPrevCodeValue(content);
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [codeLocation, args, results, isExpressionHover]);
@@ -266,18 +257,6 @@ export function CodeViewer({
 			document.head.appendChild(style);
 		}
 	}, []);
-
-	const isRangeVisible = (startLine: number, endLine: number) => {
-		const editor = editorRef.current;
-		if (editor) {
-			const visibleRanges = editor.getVisibleRanges();
-			return visibleRanges.some(
-				(visibleRange) =>
-					visibleRange.startLineNumber <= endLine && visibleRange.endLineNumber >= startLine
-			);
-		}
-		return false;
-	};
 
 	return (
 		<MonacoEditor
