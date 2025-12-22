@@ -74,7 +74,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 	}
 
 	if (!debuggerContext) return null;
-	const { debugContractCall, currentStep } = debuggerContext;
+	const { debugFunctionCall, currentStep } = debuggerContext;
 	return (
 		<React.Fragment key={functionCallId}>
 			<TraceLine
@@ -82,8 +82,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 				className={`py-0.5 ${
 					previewMode
 						? isDebuggable
-							? currentStep?.withLocation?.functionCallId === functionCallId ||
-							  currentStep?.withContractCall?.contractCallId
+							? currentStep?.withLocation?.functionCallId === functionCallId
 								? 'bg-accent hover:bg-accent'
 								: 'hover:!bg-accent'
 							: ''
@@ -92,7 +91,8 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 				isActive={!previewMode && expandedCalls[functionCallId]}
 				onClick={() => {
 					if (previewMode) {
-						debugContractCall(functionCall.contractCallId);
+						debugFunctionCall(functionCallId);
+						//setActiveTab('debugger');
 					} else {
 						toggleCallExpand(functionCallId);
 					}
@@ -105,7 +105,7 @@ export const FunctionCallTrace = memo(function FunctionCallTrace({
 				{!previewMode && (
 					<DebugButton
 						onDebugClick={() => {
-							debugContractCall(functionCall.contractCallId);
+							debugFunctionCall(functionCallId);
 							setActiveTab('debugger');
 						}}
 						isDebuggable={isDebuggable}

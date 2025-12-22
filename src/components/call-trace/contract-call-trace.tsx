@@ -224,6 +224,7 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 				onClick={() => {
 					if (previewMode) {
 						debugContractCall(call.callId);
+						// setActiveTab('debugger');
 					} else {
 						toggleCallExpand(call.callId);
 					}
