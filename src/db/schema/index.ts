@@ -1,6 +1,6 @@
 import { pgSchema, text, timestamp, boolean, integer, uuid } from 'drizzle-orm/pg-core';
 
-const schema = pgSchema('walnut');
+const schema = pgSchema('walnut-starknet');
 
 export const tenant = schema.table('tenant', {
 	id: uuid().primaryKey().defaultRandom(),
