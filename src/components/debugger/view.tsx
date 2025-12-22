@@ -11,11 +11,10 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { ContractCallSignature } from '../ui/signature';
 import { ContractCall, DebuggerExecutionTraceEntry } from '@/lib/simulation';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import Link from 'next/link';
 import Sidebar from '../code-viewer/sidebar';
-import { WALNUT_VERIFY_DOCS_URL } from '@/lib/config';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { useSettings } from '@/lib/context/settings-context-provider';
+import { NoCodeLocationMessage, NoCodeMessage } from '../call-trace/debugger-message';
 
 export function DebuggerView() {
 	const debuggerContext = useDebugger();
@@ -118,16 +117,7 @@ export function DebuggerView() {
 								contractCall.callDebuggerDataAvailable &&
 								contractCall.debuggerTraceStepIndex == null ? (
 									<p>
-										There are no code locations present for this call. It might be a bug; Please{' '}
-										<a
-											href="https://t.me/walnuthq"
-											target="_blank"
-											className="text-blue-500 cursor-pointer underline"
-											rel="noreferrer"
-										>
-											contact us
-										</a>{' '}
-										to resolve it.
+										<NoCodeLocationMessage />
 									</p>
 								) : (
 									<>
@@ -139,15 +129,7 @@ export function DebuggerView() {
 										)}
 
 										<p>
-											The source code for this contract is missing. To enable the step-by-step
-											debugger, verify the contract on Walnut by following{' '}
-											<Link
-												className="underline-offset-4 hover:underline text-blue-500"
-												href={WALNUT_VERIFY_DOCS_URL}
-											>
-												this guide
-											</Link>
-											.
+											<NoCodeMessage />
 										</p>
 									</>
 								)}
