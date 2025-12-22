@@ -106,26 +106,51 @@ export function DebuggerView() {
 					) : (
 						<Alert className="m-4 w-fit">
 							<ExclamationTriangleIcon className="h-5 w-5" />
-							<AlertTitle>No Source Code Available.</AlertTitle>
+							<AlertTitle>
+								{contractCall &&
+								contractCall.callDebuggerDataAvailable &&
+								contractCall.debuggerTraceStepIndex == null
+									? 'No Code Locations Available'
+									: 'No Source Code Available.'}
+							</AlertTitle>
 							<AlertDescription>
-								{!hasDebuggableContract && (
-									<p className="mt-2 mb-1">
-										Contract Address:{' '}
-										<span className="font-mono">{contractCall?.entryPoint.storageAddress}</span>
+								{contractCall &&
+								contractCall.callDebuggerDataAvailable &&
+								contractCall.debuggerTraceStepIndex == null ? (
+									<p>
+										There are no code locations present for this call. It might be a bug; Please{' '}
+										<a
+											href="https://t.me/walnuthq"
+											target="_blank"
+											className="text-blue-500 cursor-pointer underline"
+											rel="noreferrer"
+										>
+											contact us
+										</a>{' '}
+										to resolve it.
 									</p>
-								)}
+								) : (
+									<>
+										{!hasDebuggableContract && (
+											<p className="mt-2 mb-1">
+												Contract Address:{' '}
+												<span className="font-mono">{contractCall?.entryPoint.storageAddress}</span>
+											</p>
+										)}
 
-								<p>
-									The source code for this contract is missing. To enable the step-by-step debugger,
-									verify the contract on Walnut by following{' '}
-									<Link
-										className="underline-offset-4 hover:underline text-blue-500"
-										href={WALNUT_VERIFY_DOCS_URL}
-									>
-										this guide
-									</Link>
-									.
-								</p>
+										<p>
+											The source code for this contract is missing. To enable the step-by-step
+											debugger, verify the contract on Walnut by following{' '}
+											<Link
+												className="underline-offset-4 hover:underline text-blue-500"
+												href={WALNUT_VERIFY_DOCS_URL}
+											>
+												this guide
+											</Link>
+											.
+										</p>
+									</>
+								)}
 							</AlertDescription>
 						</Alert>
 					)}

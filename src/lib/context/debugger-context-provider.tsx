@@ -199,11 +199,11 @@ export const DebuggerContextProvider = ({
 				setActiveFile(activeFile);
 				setCodeLocation(codeLocation);
 			} else {
-				// Contract might not be verified
+				// Function not found in debugger trace - contract might not be verified or no code locations
 				const callTraceFc = callTraceFunctionCalls[pendingFunctionCallId];
 				if (callTraceFc) {
 					const cc = callTraceContractCalls[callTraceFc.contractCallId];
-					if (cc && !cc.callDebuggerDataAvailable) {
+					if (cc) {
 						setContractCall(cc);
 						_setCurrentStep(undefined);
 					}
@@ -230,9 +230,9 @@ export const DebuggerContextProvider = ({
 				setActiveFile(activeFile);
 				setCodeLocation(codeLocation);
 			} else {
-				// Contract might not be verified
+				// Contract not found in debugger trace - might not be verified or no code locations
 				const callTraceCc = callTraceContractCalls[pendingContractCallId];
-				if (callTraceCc && !callTraceCc.callDebuggerDataAvailable) {
+				if (callTraceCc) {
 					setContractCall(callTraceCc);
 					_setCurrentStep(undefined);
 				}
