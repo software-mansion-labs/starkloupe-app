@@ -11,11 +11,10 @@ import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { ContractCallSignature } from '../ui/signature';
 import { ContractCall, DebuggerExecutionTraceEntry } from '@/lib/simulation';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip';
-import Link from 'next/link';
 import Sidebar from '../code-viewer/sidebar';
-import { WALNUT_VERIFY_DOCS_URL } from '@/lib/config';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { useSettings } from '@/lib/context/settings-context-provider';
+import { NoCodeLocationMessage, NoCodeMessage } from '../call-trace/debugger-message';
 
 export function DebuggerView() {
 	const debuggerContext = useDebugger();
@@ -106,26 +105,34 @@ export function DebuggerView() {
 					) : (
 						<Alert className="m-4 w-fit">
 							<ExclamationTriangleIcon className="h-5 w-5" />
-							<AlertTitle>No Source Code Available.</AlertTitle>
+							<AlertTitle>
+								{contractCall &&
+								contractCall.callDebuggerDataAvailable &&
+								contractCall.debuggerTraceStepIndex == null
+									? 'No Code Locations Available'
+									: 'No Source Code Available.'}
+							</AlertTitle>
 							<AlertDescription>
-								{!hasDebuggableContract && (
-									<p className="mt-2 mb-1">
-										Contract Address:{' '}
-										<span className="font-mono">{contractCall?.entryPoint.storageAddress}</span>
+								{contractCall &&
+								contractCall.callDebuggerDataAvailable &&
+								contractCall.debuggerTraceStepIndex == null ? (
+									<p>
+										<NoCodeLocationMessage />
 									</p>
-								)}
+								) : (
+									<>
+										{!hasDebuggableContract && (
+											<p className="mt-2 mb-1">
+												Contract Address:{' '}
+												<span className="font-mono">{contractCall?.entryPoint.storageAddress}</span>
+											</p>
+										)}
 
-								<p>
-									The source code for this contract is missing. To enable the step-by-step debugger,
-									verify the contract on Walnut by following{' '}
-									<Link
-										className="underline-offset-4 hover:underline text-blue-500"
-										href={WALNUT_VERIFY_DOCS_URL}
-									>
-										this guide
-									</Link>
-									.
-								</p>
+										<p>
+											<NoCodeMessage />
+										</p>
+									</>
+								)}
 							</AlertDescription>
 						</Alert>
 					)}

@@ -1,4 +1,12 @@
-import { createContext, useContext, useEffect, useMemo, useState, PropsWithChildren } from 'react';
+import {
+	createContext,
+	useContext,
+	useEffect,
+	useMemo,
+	useState,
+	useRef,
+	PropsWithChildren
+} from 'react';
 import {
 	ClassDebuggerData,
 	CodeLocation,
@@ -9,7 +17,6 @@ import {
 } from '@/lib/simulation';
 import { CallTraceContext } from './call-trace-context-provider';
 import { debugTransactionByData, DebuggerPayload, DebuggerInfo } from '@/lib/debugger';
-import { toast } from '@/components/hooks/use-toast';
 
 interface DebuggerContextProps {
 	functionCallsMap: { [key: number]: FunctionCall };
@@ -76,6 +83,11 @@ export const DebuggerContextProvider = ({
 	const [hasDebuggableContract, setHasDebuggableContract] = useState(false);
 	const [clickedDebuggerTab, setIsClickedDebuggerTab] = useState(false);
 
+	// Pending navigation - when user clicks debug before data is loaded
+	const [pendingFunctionCallId, setPendingFunctionCallId] = useState<number | null>(null);
+	const [pendingContractCallId, setPendingContractCallId] = useState<number | null>(null);
+	const hasPendingNavigationRef = useRef(false);
+
 	const { contractCallsMap: callTraceContractCalls, functionCallsMap: callTraceFunctionCalls } =
 		useContext(CallTraceContext);
 
@@ -99,7 +111,7 @@ export const DebuggerContextProvider = ({
 					const result = await debugTransactionByData(debuggerPayload);
 					setDebuggerInfo(result);
 
-					if (result?.simulationDebuggerData?.debuggerTrace) {
+					if (result?.simulationDebuggerData?.debuggerTrace && !hasPendingNavigationRef.current) {
 						const i = findInitialIndex(result.simulationDebuggerData.debuggerTrace);
 						_setCurrentStepIndex(i);
 						_setCurrentStep(result.simulationDebuggerData.debuggerTrace[i]);
@@ -116,11 +128,139 @@ export const DebuggerContextProvider = ({
 	}, [debuggerPayload, clickedDebuggerTab]);
 
 	const simulationDebuggerData = debuggerInfo?.simulationDebuggerData;
-	const contractCallsMap = debuggerInfo?.contractCallsMap || {};
-	const functionCallsMap = debuggerInfo?.functionCallsMap || {};
+	const contractCallsMap = useMemo(
+		() => debuggerInfo?.contractCallsMap || {},
+		[debuggerInfo?.contractCallsMap]
+	);
+	const functionCallsMap = useMemo(
+		() => debuggerInfo?.functionCallsMap || {},
+		[debuggerInfo?.functionCallsMap]
+	);
+
+	// Create mapping from call trace (simulation) function IDs to debugger function IDs
+	// Uses contractCallId + fnName since these are consistent across both traces
+	const callTraceToDebuggerFunctionIdMap = useMemo(() => {
+		const mapping: Record<number, number> = {};
+
+		if (
+			!functionCallsMap ||
+			!callTraceFunctionCalls ||
+			Object.keys(functionCallsMap).length === 0 ||
+			Object.keys(callTraceFunctionCalls).length === 0
+		) {
+			return mapping;
+		}
+
+		// Build a lookup map for debugger functions
+		// contractCallId is the same in both traces, fnName identifies the function
+		const debuggerFunctionsByKey: Record<string, number> = {};
+		for (const [id, fc] of Object.entries(functionCallsMap)) {
+			if (fc.contractCallId != null && fc.fnName) {
+				const key = `${fc.contractCallId}_${fc.fnName}`;
+				debuggerFunctionsByKey[key] = Number(id);
+			}
+		}
+
+		// Map call trace function IDs to debugger function IDs
+		for (const [id, fc] of Object.entries(callTraceFunctionCalls)) {
+			if (fc.contractCallId != null && fc.fnName) {
+				const key = `${fc.contractCallId}_${fc.fnName}`;
+				const debuggerId = debuggerFunctionsByKey[key];
+				if (debuggerId != null) {
+					mapping[Number(id)] = debuggerId;
+				}
+			}
+		}
+
+		return mapping;
+	}, [functionCallsMap, callTraceFunctionCalls]);
+
+	// Handle pending navigation after debugger data is loaded
+	useEffect(() => {
+		if (!debuggerInfo || loading) return;
+
+		if (pendingFunctionCallId != null) {
+			const debuggerId = callTraceToDebuggerFunctionIdMap[pendingFunctionCallId];
+			const lookupId = debuggerId ?? pendingFunctionCallId;
+			const fc = functionCallsMap[lookupId];
+
+			if (fc?.debuggerTraceStepIndex != null) {
+				_setCurrentStepIndex(fc.debuggerTraceStepIndex);
+				const newStep = simulationDebuggerData?.debuggerTrace[fc.debuggerTraceStepIndex];
+				_setCurrentStep(newStep);
+
+				const { contractCall, classSourceCode, activeFile, codeLocation } = getDebuggerDataForStep(
+					contractCallsMap,
+					simulationDebuggerData || null,
+					newStep || null
+				);
+				setContractCall(contractCall);
+				setSourceCode(classSourceCode);
+				setActiveFile(activeFile);
+				setCodeLocation(codeLocation);
+			} else {
+				// Function not found in debugger trace - contract might not be verified or no code locations
+				const callTraceFc = callTraceFunctionCalls[pendingFunctionCallId];
+				if (callTraceFc) {
+					const cc = callTraceContractCalls[callTraceFc.contractCallId];
+					if (cc) {
+						setContractCall(cc);
+						_setCurrentStep(undefined);
+					}
+				}
+			}
+			setPendingFunctionCallId(null);
+		}
+
+		// Handle pending contract call navigation
+		if (pendingContractCallId != null) {
+			const cc = contractCallsMap[pendingContractCallId];
+			if (cc?.debuggerTraceStepIndex != null) {
+				_setCurrentStepIndex(cc.debuggerTraceStepIndex);
+				const newStep = simulationDebuggerData?.debuggerTrace[cc.debuggerTraceStepIndex];
+				_setCurrentStep(newStep);
+
+				const { contractCall, classSourceCode, activeFile, codeLocation } = getDebuggerDataForStep(
+					contractCallsMap,
+					simulationDebuggerData || null,
+					newStep || null
+				);
+				setContractCall(contractCall);
+				setSourceCode(classSourceCode);
+				setActiveFile(activeFile);
+				setCodeLocation(codeLocation);
+			} else {
+				// Contract not found in debugger trace - might not be verified or no code locations
+				const callTraceCc = callTraceContractCalls[pendingContractCallId];
+				if (callTraceCc) {
+					setContractCall(callTraceCc);
+					_setCurrentStep(undefined);
+				}
+			}
+			setPendingContractCallId(null);
+		}
+	}, [
+		debuggerInfo,
+		loading,
+		pendingFunctionCallId,
+		pendingContractCallId,
+		callTraceToDebuggerFunctionIdMap,
+		functionCallsMap,
+		contractCallsMap,
+		simulationDebuggerData,
+		callTraceFunctionCalls,
+		callTraceContractCalls
+	]);
 
 	useEffect(() => {
-		if (!simulationDebuggerData) return;
+		// Skip if there's pending navigation and clear the ref
+		if (!simulationDebuggerData || hasPendingNavigationRef.current) {
+			if (hasPendingNavigationRef.current) {
+				hasPendingNavigationRef.current = false;
+			}
+			return;
+		}
+
 		const step = simulationDebuggerData.debuggerTrace[currentStepIndex];
 		_setCurrentStep(step);
 
@@ -225,16 +365,53 @@ export const DebuggerContextProvider = ({
 	};
 
 	const debugFunctionCall = (functionCallId: number) => {
-		const fc = functionCallsMap[functionCallId];
+		// If debugger data not loaded yet, store pending navigation and trigger load
+		if (!debuggerInfo) {
+			hasPendingNavigationRef.current = true;
+			setPendingFunctionCallId(functionCallId);
+			setIsClickedDebuggerTab(true);
+			return;
+		}
+
+		const debuggerId = callTraceToDebuggerFunctionIdMap[functionCallId];
+
+		const lookupId = debuggerId ?? functionCallId;
+		const fc = functionCallsMap[lookupId];
+
 		if (fc?.debuggerTraceStepIndex != null) {
 			setCurrentStepIndex(fc.debuggerTraceStepIndex);
+		} else {
+			// Function not found in debugger trace - contract might not be verified
+			const callTraceFc = callTraceFunctionCalls[functionCallId];
+			if (callTraceFc) {
+				const cc = callTraceContractCalls[callTraceFc.contractCallId];
+				if (cc) {
+					setContractCall(cc);
+					_setCurrentStep(undefined);
+				}
+			}
 		}
 	};
 
 	const debugContractCall = (contractCallId: number) => {
+		// If debugger data not loaded yet, store pending navigation and trigger load
+		if (!debuggerInfo) {
+			hasPendingNavigationRef.current = true;
+			setPendingContractCallId(contractCallId);
+			setIsClickedDebuggerTab(true);
+			return;
+		}
+
 		const cc = contractCallsMap[contractCallId];
 		if (cc?.debuggerTraceStepIndex != null) {
 			setCurrentStepIndex(cc.debuggerTraceStepIndex as number);
+		} else {
+			// Contract not found in debugger trace - might not be verified
+			const callTraceCc = callTraceContractCalls[contractCallId];
+			if (callTraceCc) {
+				setContractCall(callTraceCc);
+				_setCurrentStep(undefined);
+			}
 		}
 	};
 
@@ -303,11 +480,17 @@ export const DebuggerContextProvider = ({
 	const isContractCallDebuggable = (id: number) =>
 		contractCallsMap[id]?.debuggerTraceStepIndex != null;
 
-	const isFunctionCallDebuggable = (id: number) =>
-		functionCallsMap[id]?.debuggerTraceStepIndex != null;
+	const isFunctionCallDebuggable = (id: number) => {
+		const debuggerId = callTraceToDebuggerFunctionIdMap[id];
+		const lookupId = debuggerId ?? id;
+		const fc = functionCallsMap[lookupId];
+		return fc?.debuggerTraceStepIndex != null;
+	};
 
 	const getStepForFunctionCall = (functionCallId: number) => {
-		const fc = functionCallsMap[functionCallId];
+		const debuggerId = callTraceToDebuggerFunctionIdMap[functionCallId];
+		const lookupId = debuggerId ?? functionCallId;
+		const fc = functionCallsMap[lookupId];
 		if (fc?.debuggerTraceStepIndex != null) {
 			return simulationDebuggerData?.debuggerTrace[fc.debuggerTraceStepIndex];
 		}
