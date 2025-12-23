@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
 	Table,
 	TableBody,
@@ -16,27 +16,17 @@ import { useSettings } from '@/lib/context/settings-context-provider';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { ArrowTopRightOnSquareIcon } from '@heroicons/react/24/outline';
+import { ArrowTopRightOnSquareIcon, ExclamationTriangleIcon } from '@heroicons/react/24/outline';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 interface ContractsTableProps {
 	contracts: ContractItem[];
+	isLoading?: boolean;
 }
 
-export function ContractsTable({ contracts }: ContractsTableProps) {
+export function ContractsTable({ contracts, isLoading }: ContractsTableProps) {
 	const { parseChain } = useSettings();
 	const [expandedNetworks, setExpandedNetworks] = useState<Set<string>>(new Set());
-
-	const formatDate = (dateString: string) => {
-		const date = new Date(dateString);
-		return date.toLocaleDateString('en-US', {
-			year: 'numeric',
-			month: 'short',
-			day: 'numeric',
-			hour: '2-digit',
-			minute: '2-digit'
-		});
-	};
-
 	const parseNetworks = (contractNetworks: { ChainId?: string; RpcUrl?: string }[]): Network[] => {
 		return contractNetworks
 			.map((network) => {
@@ -50,15 +40,9 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
 			})
 			.filter((network): network is Network => network !== null);
 	};
-
-	const getNetworkName = (network: Network): string => {
-		return network.customNetworkName || network.chain || network.stack || 'Unknown';
-	};
-
 	const getNetworkKey = (network: Network): string => {
 		return network.customNetworkName || network.chain || network.stack || 'unknown';
 	};
-
 	const groupContractsByNetwork = () => {
 		const grouped = new Map<string, { network: Network; contracts: ContractItem[] }>();
 
@@ -86,6 +70,29 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
 
 		return Array.from(grouped.values());
 	};
+	const groupedContracts = groupContractsByNetwork();
+
+	useEffect(() => {
+		if (groupedContracts.length === 1) {
+			const networkKey = getNetworkKey(groupedContracts[0].network);
+			setExpandedNetworks(new Set([networkKey]));
+		}
+	}, [contracts]);
+
+	const formatDate = (dateString: string) => {
+		const date = new Date(dateString);
+		return date.toLocaleDateString('en-US', {
+			year: 'numeric',
+			month: 'short',
+			day: 'numeric',
+			hour: '2-digit',
+			minute: '2-digit'
+		});
+	};
+
+	const getNetworkName = (network: Network): string => {
+		return network.customNetworkName || network.chain || network.stack || 'Unknown';
+	};
 
 	const toggleNetwork = (networkKey: string) => {
 		setExpandedNetworks((prev) => {
@@ -99,29 +106,48 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
 		});
 	};
 
-	if (contracts.length === 0) {
+	if (isLoading) {
 		return (
-			<div className="rounded-xl border dark:bg-card p-8">
-				<div className="text-center text-muted-foreground">
-					<p>No contracts found for this class</p>
-				</div>
+			<div className="rounded-xl border flex h-full flex-col flex-1 min-h-0 text-xs dark:bg-card">
+				<ScrollArea className="h-full w-full">
+					<Alert className="m-4 py-4 w-fit min-w-[2rem] flex items-center gap-4">
+						<span className="h-6 w-6 block rounded-full border-4 dark:border-t-accent_2 border-t-gray-800 animate-spin" />
+						<div className="flex flex-col">
+							<AlertTitle>Loading</AlertTitle>
+							<AlertDescription>Please wait, contracts are loading</AlertDescription>
+						</div>
+					</Alert>
+				</ScrollArea>
 			</div>
 		);
 	}
 
-	const groupedContracts = groupContractsByNetwork();
+	if (contracts.length === 0) {
+		return (
+			<div className="rounded-xl border flex h-full flex-col flex-1 min-h-0 text-xs dark:bg-card">
+				<ScrollArea className="h-full w-full">
+					<Alert className="m-4 w-fit">
+						<ExclamationTriangleIcon className="h-5 w-5" />
+						<AlertTitle>No contracts found</AlertTitle>
+						<AlertDescription>No contracts found for this class.</AlertDescription>
+					</Alert>
+				</ScrollArea>
+			</div>
+		);
+	}
 
 	return (
 		<div className="rounded-xl border flex h-full flex-col flex-1 min-h-0 text-xs dark:bg-card">
 			<ScrollArea className="h-full w-full">
-				<div className="p-4 space-y-2">
+				<div className="">
 					{groupedContracts.map((group) => {
 						const networkKey = getNetworkKey(group.network);
-						const networkName = getNetworkName(group.network);
 						const isExpanded = expandedNetworks.has(networkKey);
-
 						return (
-							<div key={networkKey} className="border rounded-lg overflow-hidden">
+							<div
+								key={networkKey}
+								className={`border-b overflow-hidden ${isExpanded ? 'last:border-none' : ''}`}
+							>
 								<button
 									onClick={() => toggleNetwork(networkKey)}
 									className="w-full flex items-center justify-between p-4 hover:bg-accent/50 transition-colors"
@@ -146,7 +172,7 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
 											<TableHeader>
 												<TableRow>
 													<TableHead className="font-semibold px-4 text-xs">Address</TableHead>
-													<TableHead className="font-semibold whitespace-nowrap text-xs text-right">
+													<TableHead className="font-semibold whitespace-nowrap text-xs text-right px-4">
 														Creation Date
 													</TableHead>
 												</TableRow>
@@ -184,7 +210,7 @@ export function ContractsTable({ contracts }: ContractsTableProps) {
 																<ArrowTopRightOnSquareIcon className="w-3 h-3" />
 															</Link>
 														</TableCell>
-														<TableCell className="text-muted-foreground w-1/3 text-xs text-right">
+														<TableCell className="text-muted-foreground w-1/3 text-xs text-right px-4">
 															{formatDate(contract.deployment_time)}
 														</TableCell>
 													</TableRow>

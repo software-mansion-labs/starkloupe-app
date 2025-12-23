@@ -23,6 +23,7 @@ export function ClassRoot({
 }) {
 	const [activeTab, setActiveTab] = useState('source-code');
 	const [contracts, setContracts] = useState<ContractItem[]>([]);
+	const [isLoadingContracts, setIsLoadingContracts] = useState(true);
 
 	const onValueChange = (tab: string) => {
 		setActiveTab(tab);
@@ -30,17 +31,19 @@ export function ClassRoot({
 
 	useEffect(() => {
 		const fetchContracts = async () => {
+			setIsLoadingContracts(true);
 			try {
 				const response = await fetchClassContracts(classHash);
 				setContracts(response);
 			} catch (error) {
 				console.error('Error fetching contracts:', error);
-				// Опционально: setError(error) или показать уведомление
+			} finally {
+				setIsLoadingContracts(false);
 			}
 		};
 
 		fetchContracts();
-	}, [classHash]); // Добавлен classHash в зависимости
+	}, [classHash]);
 
 	return (
 		<>
@@ -77,7 +80,7 @@ export function ClassRoot({
 							activeTab !== 'contracts' ? 'hidden' : ''
 						}`}
 					>
-						<ContractsTable contracts={contracts} />
+						<ContractsTable contracts={contracts} isLoading={isLoadingContracts} />
 					</TabsContent>
 					<TabsContent
 						value="class-details"
