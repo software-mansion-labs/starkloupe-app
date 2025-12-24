@@ -1,3 +1,5 @@
+CREATE SCHEMA IF NOT EXISTS "walnut-starknet";
+--> statement-breakpoint
 CREATE TABLE "walnut-starknet"."account" (
 	"id" text PRIMARY KEY NOT NULL,
 	"createdAt" timestamp DEFAULT now() NOT NULL,
