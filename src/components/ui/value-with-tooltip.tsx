@@ -2,7 +2,8 @@ import React, { memo, useMemo } from 'react';
 import {
 	DropdownMenu,
 	DropdownMenuTrigger,
-	DropdownMenuContent
+	DropdownMenuContent,
+	DropdownMenuArrow
 } from '@/components/ui/dropdown-menu';
 import { Tooltip, TooltipProvider, TooltipTrigger, TooltipContent } from '@/components/ui/tooltip';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -127,6 +128,7 @@ const ValueWithTooltip: React.FC<ValueWithTooltipProps> = memo(function VWT({
 					onWheel={(e) => e.stopPropagation()}
 					onScroll={(e) => e.stopPropagation()}
 				>
+					<DropdownMenuArrow className="fill-[#3b82f6]" />
 					<div className="relative">
 						<CopyToClipboardElement
 							value={JSON.stringify(fullObject ?? value, null, 2)}
@@ -147,7 +149,6 @@ const ValueWithTooltip: React.FC<ValueWithTooltipProps> = memo(function VWT({
 										args: value?.value !== undefined ? value.value : value,
 										typeName
 									}}
-									isResult={isResult}
 									tooltipValue
 									isContract={isContract}
 								/>

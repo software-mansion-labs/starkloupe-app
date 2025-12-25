@@ -248,7 +248,6 @@ export function DecodeDataTable({
 								}}
 								tooltipValue
 								isContract={true}
-								isResult={type === DataType.OUTPUT}
 							/>
 						</Card>
 					))}
