@@ -142,7 +142,7 @@ const ValueWithTooltip: React.FC<ValueWithTooltipProps> = memo(function VWT({
 							className="md:w-[40rem] h-40 px-3 overflow-auto [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-accent [&::-webkit-scrollbar-thumb]:rounded-full"
 							onScroll={(e) => e.stopPropagation()}
 						>
-							<div className="pt-2">
+							<div className="p-2">
 								<FunctionCallViewer
 									data={{
 										function: functionName,

@@ -100,7 +100,9 @@ export function StepDetails({
 					{loading ? (
 						<StepDetailsSkeleton />
 					) : step && stepWithLocation ? (
-						<FunctionCallViewer data={filteredStepInfo} />
+						<div className="px-2 py-1">
+							<FunctionCallViewer data={filteredStepInfo} />
+						</div>
 					) : (
 						<div className="flex flex-col items-center justify-center h-40 text-muted-foreground m-2">
 							<svg
@@ -139,17 +141,6 @@ const StepDetailsSkeleton = () => {
 				<div className="ml-4 space-y-1">
 					<Skeleton className="h-3 w-full" />
 					<Skeleton className="h-3 w-4/5 ml-2" />
-					<Skeleton className="h-3 w-3/4 ml-2" />
-				</div>
-			</div>
-
-			<div className="bg-card/50 backdrop-blur-sm rounded-md border border-border/50 p-2">
-				<div className="flex items-center gap-1.5 mb-1">
-					<div className="w-1.5 h-1.5 rounded-full bg-orange-500/60" />
-					<Skeleton className="h-2.5 w-12" />
-				</div>
-				<div className="ml-4 space-y-1">
-					<Skeleton className="h-3 w-full" />
 					<Skeleton className="h-3 w-3/4 ml-2" />
 				</div>
 			</div>

@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { ChevronRight, ChevronDown, Box, Code2, ArrowDownRight, ArrowUpLeft } from 'lucide-react';
+import React, { useState } from 'react';
+import { ChevronRight, ChevronDown, Box, ArrowDownRight, ArrowUpLeft } from 'lucide-react';
 import { useDebugger } from '@/lib/context/debugger-context-provider';
 import CopyToClipboardElement from './copy-to-clipboard';
 import AddressLink from '../address-link';
-import { ContractCall, DecodedItem, InternalFnCallIO, TextPosition } from '@/lib/simulation';
+import { ContractCall, DecodedItem, InternalFnCallIO } from '@/lib/simulation';
 import { useSettings } from '@/lib/context/settings-context-provider';
-import { toast } from '@/components/hooks/use-toast';
+import { ExclamationTriangleIcon, InfoCircledIcon } from '@radix-ui/react-icons';
 
-const INDENT_SIZE = 9;
-const INDEX_INDENT_SIZE = 7;
+export const INDENT_SIZE = 9;
+export const INDEX_INDENT_SIZE = 7;
 
-const getIndentStyle = (depth: number, parentIsIndex = false): React.CSSProperties => ({
+export const getIndentStyle = (depth: number, parentIsIndex = false): React.CSSProperties => ({
 	paddingLeft: parentIsIndex ? depth * INDEX_INDENT_SIZE : depth * INDENT_SIZE
 });
 
@@ -33,60 +33,8 @@ const FunctionCallViewer = ({
 }) => {
 	const [expanded, setExpanded] = useState<Set<string>>(new Set());
 	const [isParametersExpanded, setIsParametersExpanded] = useState<boolean>(true);
-	const [isExpressionExpanded, setIsExpressionExpanded] = useState<boolean>(true);
-	const [expression, setExpression] = useState<string>('');
-	const [results, setResults] = useState<InternalFnCallIO[] | undefined>(undefined);
-	const [args, setArgs] = useState<InternalFnCallIO[] | undefined>(undefined);
 	const debuggerContext = useDebugger();
 	const { customSettings } = useSettings();
-	useEffect(() => {
-		if (!debuggerContext) return;
-		setResults(debuggerContext.currentStep?.withLocation?.resultsDecoded);
-		setArgs(debuggerContext.currentStep?.withLocation?.argumentsDecoded);
-	}, [debuggerContext]);
-
-	useEffect(() => {
-		if (
-			!debuggerContext?.activeFile ||
-			!debuggerContext?.codeLocation?.start ||
-			!debuggerContext?.codeLocation?.end
-		)
-			return;
-		setExpression(
-			truncateString(
-				extractCodeFragment(
-					debuggerContext.sourceCode[debuggerContext.codeLocation.filePath],
-					debuggerContext.codeLocation.start,
-					debuggerContext.codeLocation.end
-				),
-				50
-			)
-		);
-	}, [debuggerContext]);
-
-	function extractCodeFragment(sourceCode: string, start: TextPosition, end: TextPosition): string {
-		const lines = sourceCode.split('\n');
-		const startLine = start.line;
-		const endLine = end.line;
-		if (startLine === endLine) {
-			return lines[startLine]?.substring(start.col, end.col);
-		}
-
-		let fragment = [];
-		fragment.push(lines[startLine]?.substring(start.col));
-		for (let i = startLine + 1; i < endLine; i++) {
-			fragment.push(lines[i]);
-		}
-		fragment.push(lines[endLine]?.substring(0, end.col));
-		return fragment.join('\n');
-	}
-
-	function truncateString(str: string | undefined, maxLength: number): string {
-		if (!str) return '';
-		const cleanedStr = str.replace(/\s+/g, ' ').trim();
-		if (cleanedStr.length <= maxLength) return cleanedStr;
-		return cleanedStr.substring(0, maxLength) + '...';
-	}
 
 	const getArrayElementType = (typeName?: string): string | undefined => {
 		if (!typeName) return undefined;
@@ -464,9 +412,6 @@ const FunctionCallViewer = ({
 		return null;
 	}
 
-	const { codeLocation, setExpressionHover, setActiveFile, activeFile, setContractCall } =
-		debuggerContext;
-
 	const hasArgs =
 		typeof data.args === 'boolean' ||
 		(Array.isArray(data.args)
@@ -477,7 +422,7 @@ const FunctionCallViewer = ({
 	const hasResults = data.result && data.result.length > 0;
 
 	return (
-		<div className="px-2 py-1 min-w-[16rem]">
+		<div className=" min-w-[16rem]">
 			<div className="space-y-2">
 				{tooltipValue ? (
 					<div className="space-y-2">
@@ -686,163 +631,64 @@ const FunctionCallViewer = ({
 							);
 						})()}
 					</div>
-				) : (
-					(hasArgs || (!isContract && hasResults) || data.typeName) && (
-						<div className="flex gap-1.5 min-w-[12rem]">
-							{(hasArgs || (!isContract && hasResults)) && (
-								<div className="flex-1 bg-card/50 backdrop-blur-sm overflow-hidden hover:border-border transition-colors">
-									{isParametersExpanded && (
-										<div className="w-full pb-2 space-y-3">
-											{hasArgs && (
-												<div>
-													<div className="flex items-center gap-1  mb-1">
-														<ArrowDownRight className="w-3 h-3 text-green-500" />
-														<div className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
-															Parameters
-														</div>
+				) : hasArgs || (!isContract && hasResults) || data.typeName ? (
+					<div className="flex gap-1.5 min-w-[12rem]">
+						{(hasArgs || (!isContract && hasResults)) && (
+							<div className="flex-1 bg-card/50 backdrop-blur-sm overflow-hidden hover:border-border transition-colors">
+								{isParametersExpanded && (
+									<div className="w-full pb-2 space-y-3">
+										{hasArgs && (
+											<div>
+												<div className="flex items-center gap-1  mb-1">
+													<ArrowDownRight className="w-3 h-3 text-green-500" />
+													<div className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+														Parameters
 													</div>
-
-													{renderData(
-														formattedArgs,
-														'params',
-														'params',
-														true,
-														0,
-														undefined,
-														Array.isArray(data.args) ? data.typeName : undefined
-													)}
 												</div>
-											)}
 
-											{!isContract && hasResults && (
-												<div>
-													<div className="flex items-center gap-1  mb-1">
-														<ArrowUpLeft className="w-3 h-3 text-blue-500" />
-														<div className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
-															Result
-														</div>
-													</div>
-													{renderData(formattedResult, 'results', 'results', true, 0)}
-												</div>
-											)}
-										</div>
-									)}
-								</div>
-							)}
-							{data.typeName && (
-								<div className="flex-1 bg-card/50 backdrop-blur-sm rounded-md p-2 transition-colors">
-									<div className="flex items-center gap-1.5 mb-1">
-										<Box className="w-3 h-3 text-cyan-500" />
-									</div>
-									<div className="ml-4">
-										<span className="text-typeColor font-mono text-[11px]">{data.typeName}</span>
-									</div>
-								</div>
-							)}
-						</div>
-					)
-				)}
-				{!tooltipValue && expression && (
-					<div className="bg-gradient-to-br from-yellow-500/5 to-orange-500/5 backdrop-blur-sm rounded-md overflow-hidden transition-colors">
-						<div
-							className="flex items-center gap-1.5 p-2 cursor-pointer hover:bg-yellow-500/10 transition-colors"
-							onClick={() => setIsExpressionExpanded(!isExpressionExpanded)}
-						>
-							{isExpressionExpanded ? (
-								<ChevronDown className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-							) : (
-								<ChevronRight className="w-3 h-3 text-muted-foreground flex-shrink-0" />
-							)}
-							<Code2 className="w-3 h-3 text-yellow-600 dark:text-yellow-500" />
-							<span className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
-								Expression
-							</span>
-						</div>
-
-						{isExpressionExpanded && (
-							<div className="px-3 py-3">
-								<div className="flex flex-wrap items-center gap-2">
-									<div
-										className="inline-block bg-yellow-400/20 hover:bg-yellow-400/30 px-2 py-1 rounded cursor-pointer transition-colors"
-										onMouseEnter={() => {
-											setExpressionHover(true);
-											if (
-												debuggerContext?.codeLocation &&
-												activeFile !== debuggerContext?.codeLocation?.filePath
-											) {
-												if (data.contractCallDetails) setContractCall(data.contractCallDetails);
-												setActiveFile(debuggerContext?.codeLocation?.filePath);
-												toast({
-													title: 'Active file changed',
-													description: `Opened ${debuggerContext?.codeLocation?.filePath}`
-												});
-											}
-										}}
-										onMouseLeave={() => setExpressionHover(false)}
-									>
-										<code className="font-mono text-[11px] text-yellow-900 dark:text-yellow-100 whitespace-nowrap">
-											{expression}
-										</code>
-									</div>
-									<div className="flex items-center gap-2 text-[10px] text-muted-foreground font-mono">
-										<span className="flex items-center gap-1 whitespace-nowrap">
-											Line{' '}
-											{codeLocation?.start.line &&
-												(codeLocation?.start.line === codeLocation?.end.line
-													? `${codeLocation?.start.line + 1}`
-													: `${codeLocation?.start.line + 1}-${codeLocation?.end.line + 1}`)}
-										</span>
-										{debuggerContext?.codeLocation?.filePath && (
-											<>
-												<span className="text-muted-foreground/50">•</span>
-												<span
-													onClick={() => {
-														if (
-															debuggerContext?.codeLocation &&
-															activeFile !== debuggerContext?.codeLocation?.filePath
-														) {
-															if (data.contractCallDetails)
-																setContractCall(data.contractCallDetails);
-															setActiveFile(debuggerContext?.codeLocation?.filePath);
-															toast({
-																title: 'Active file changed',
-																description: `Opened ${debuggerContext?.codeLocation?.filePath}`
-															});
-														}
-													}}
-													className="hover:underline cursor-pointer hover:text-foreground transition-colors truncate max-w-[200px]"
-												>
-													{debuggerContext?.codeLocation?.filePath}
-												</span>
-											</>
+												{renderData(
+													formattedArgs,
+													'params',
+													'params',
+													true,
+													0,
+													undefined,
+													Array.isArray(data.args) ? data.typeName : undefined
+												)}
+											</div>
 										)}
-									</div>
-								</div>
-								{args && args.length > 0 && (
-									<div className="mt-2 pt-2">
-										<div className="flex items-center gap-1  mb-1">
-											<ArrowDownRight className="w-3 h-3 text-green-500" />
-											<div className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
-												Parameters
-											</div>
-										</div>
-										{renderData(formatObject(args), 'params', 'expr_args', true, 0)}
-									</div>
-								)}
 
-								{results && results.length > 0 && (
-									<div className="mt-2 pt-2">
-										<div className="flex items-center gap-1  mb-1">
-											<ArrowUpLeft className="w-3 h-3 text-blue-500" />
-											<div className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
-												Result
+										{!isContract && hasResults && (
+											<div>
+												<div className="flex items-center gap-1  mb-1">
+													<ArrowUpLeft className="w-3 h-3 text-blue-500" />
+													<div className="text-[10px] uppercase font-semibold text-muted-foreground tracking-wide">
+														Result
+													</div>
+												</div>
+												{renderData(formattedResult, 'results', 'results', true, 0)}
 											</div>
-										</div>
-										{renderData(formatObject(results), 'results', 'expr_result', true, 0)}
+										)}
 									</div>
 								)}
 							</div>
 						)}
+						{data.typeName && (
+							<div className="flex-1 bg-card/50 backdrop-blur-sm rounded-md p-2 transition-colors">
+								<div className="flex items-center gap-1.5 mb-1">
+									<Box className="w-3 h-3 text-cyan-500" />
+								</div>
+								<div className="ml-4">
+									<span className="text-typeColor font-mono text-[11px]">{data.typeName}</span>
+								</div>
+							</div>
+						)}
+					</div>
+				) : (
+					<div className="flex flex-col items-center justify-center py-6 ">
+						<ExclamationTriangleIcon className="h-5 w-5 mb-2" />
+						<span className="font-semibold text-sm">No function call details.</span>
+						<span>This step includes no function call details.</span>
 					</div>
 				)}
 			</div>

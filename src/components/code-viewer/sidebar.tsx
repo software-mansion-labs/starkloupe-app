@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { ResizablePanelGroup, ResizableHandle, ResizablePanel } from '../ui/resizable-panel';
 import { StepDetails } from '../debugger/step-details';
+import { ExpressionDetails } from '../debugger/expression-details';
 import CallTracePreview from './call-trace-preview';
 import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { DebuggerFilesExplorer } from './debugger-file-explorer';
 import { ContractCall } from '@/lib/simulation';
+import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 
 interface PanelHandle {
 	collapse: () => void;
@@ -21,40 +23,57 @@ export default function Sidebar({
 	handleFileClick: (filePath: string) => void;
 }) {
 	const debuggerContext = useDebugger();
+	const { contractCallsMap } = useCallTrace();
 	const inspectorFilePanelRef = useRef<PanelHandle>(null);
 	const inspectorCallTracePanelRef = useRef<PanelHandle>(null);
 	const inspectorStepDetailsPanelRef = useRef<PanelHandle>(null);
+	const inspectorExpressionPanelRef = useRef<PanelHandle>(null);
 	const [isFilesExpanded, setFilesExpanded] = useState(false);
 	const [isCallTraceExpanded, setCallTraceExpanded] = useState(true);
 	const [isStepDetailsExpanded, setStepDetailsExpanded] = useState(true);
+	const [isExpressionExpanded, setExpressionExpanded] = useState(true);
 
 	useEffect(() => {
 		if (!debuggerContext) return;
 
-		const expandedPanels = [isFilesExpanded, isCallTraceExpanded, isStepDetailsExpanded].filter(
+		const expandedPanels = [isFilesExpanded, isCallTraceExpanded, isStepDetailsExpanded, isExpressionExpanded].filter(
 			Boolean
 		).length;
 
-		let sizes = [5, 47.5, 47.5];
-		if (expandedPanels === 1)
+		let sizes = [5, 5, 45, 45];
+		if (expandedPanels === 0) sizes = [5, 5, 5, 85];
+		else if (expandedPanels === 1) {
 			sizes = [
-				isStepDetailsExpanded ? 90 : 5,
-				isCallTraceExpanded ? 90 : 5,
-				isFilesExpanded ? 90 : 5
+				isStepDetailsExpanded ? 85 : 5,
+				isExpressionExpanded ? 85 : 5,
+				isCallTraceExpanded ? 85 : 5,
+				isFilesExpanded ? 85 : 5
 			];
-		if (expandedPanels === 2)
+		} else if (expandedPanels === 2) {
+			const expandedSize = 45;
 			sizes = [
-				isStepDetailsExpanded ? 47.5 : 5,
-				isCallTraceExpanded ? 47.5 : 5,
-				isFilesExpanded ? 47.5 : 5
+				isStepDetailsExpanded ? expandedSize : 5,
+				isExpressionExpanded ? expandedSize : 5,
+				isCallTraceExpanded ? expandedSize : 5,
+				isFilesExpanded ? expandedSize : 5
 			];
-		if (expandedPanels === 3) sizes = [33, 33, 33];
-		if (expandedPanels === 0) sizes = [5, 5, 90];
+		} else if (expandedPanels === 3) {
+			const expandedSize = 30;
+			sizes = [
+				isStepDetailsExpanded ? expandedSize : 5,
+				isExpressionExpanded ? expandedSize : 5,
+				isCallTraceExpanded ? expandedSize : 5,
+				isFilesExpanded ? expandedSize : 5
+			];
+		} else {
+			sizes = [25, 25, 25, 25];
+		}
 
 		inspectorStepDetailsPanelRef.current?.resize(sizes[0]);
-		inspectorCallTracePanelRef.current?.resize(sizes[1]);
-		inspectorFilePanelRef.current?.resize(sizes[2]);
-	}, [isFilesExpanded, isCallTraceExpanded, isStepDetailsExpanded, debuggerContext]);
+		inspectorExpressionPanelRef.current?.resize(sizes[1]);
+		inspectorCallTracePanelRef.current?.resize(sizes[2]);
+		inspectorFilePanelRef.current?.resize(sizes[3]);
+	}, [isFilesExpanded, isCallTraceExpanded, isStepDetailsExpanded, isExpressionExpanded, debuggerContext]);
 
 	if (!debuggerContext) {
 		return null;
@@ -74,11 +93,16 @@ export default function Sidebar({
 		setState((prev: boolean) => !prev);
 	};
 
+	const stepWithLocation = currentStep?.withLocation;
+	const contractCallDetails = stepWithLocation?.contractCallId
+		? contractCallsMap[stepWithLocation?.contractCallId]
+		: undefined;
+
 	return (
 		<ResizablePanelGroup direction="vertical" className="h-full w-full">
 			<ResizablePanel
 				ref={inspectorStepDetailsPanelRef}
-				defaultSize={47.5}
+				defaultSize={30}
 				minSize={5}
 				collapsedSize={5}
 				className="min-h-[32px]"
@@ -92,13 +116,32 @@ export default function Sidebar({
 				/>
 			</ResizablePanel>
 			<ResizableHandle
-				disabled={!(isCallTraceExpanded && isStepDetailsExpanded)}
+				disabled={!(isExpressionExpanded && isStepDetailsExpanded)}
+				className="w-[1px]"
+			/>
+
+			<ResizablePanel
+				ref={inspectorExpressionPanelRef}
+				defaultSize={30}
+				minSize={5}
+				collapsedSize={5}
+				className="min-h-[32px]"
+				maxSize={isExpressionExpanded ? 90 : 5}
+			>
+				<ExpressionDetails
+					loading={loading}
+					toggleExpand={() => toggleExpand(setExpressionExpanded)}
+					contractCallDetails={contractCallDetails}
+				/>
+			</ResizablePanel>
+			<ResizableHandle
+				disabled={!(isCallTraceExpanded && isExpressionExpanded)}
 				className="w-[1px]"
 			/>
 
 			<ResizablePanel
 				ref={inspectorCallTracePanelRef}
-				defaultSize={47.5}
+				defaultSize={30}
 				minSize={5}
 				collapsedSize={5}
 				className="min-h-[32px]"
@@ -107,7 +150,7 @@ export default function Sidebar({
 				<CallTracePreview toggleExpand={() => toggleExpand(setCallTraceExpanded)} />
 			</ResizablePanel>
 			<ResizableHandle
-				disabled={!(isFilesExpanded && (isCallTraceExpanded || isStepDetailsExpanded))}
+				disabled={!(isFilesExpanded && (isCallTraceExpanded || isExpressionExpanded || isStepDetailsExpanded))}
 			/>
 			<ResizablePanel
 				className="min-h-[32px]"
