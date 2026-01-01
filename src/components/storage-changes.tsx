@@ -126,19 +126,19 @@ const StorageChanges = () => {
 									)}
 								</button>
 								{isExpanded && (
-									<div className="flex flex-col bg-sky-50 dark:bg-background border-y border-blue-400 py-3 px-4 ">
+									<div className="flex flex-col bg-background border-y border-blue-400">
 										<div className="w-full flex flex-col gap-2">
 											{Object.entries(storageChanges).map(
 												([storageAddress, [before, after]], idx) => (
 													<div
 														key={storageAddress}
-														className="relative rounded-lg border border-border bg-card/50 p-3 hover:bg-card transition-colors group"
+														className="relative group  border-b border-border/50 py-3 px-4"
 													>
-														<div className="flex items-center gap-2 mb-3 pb-2 border-b border-border/50">
+														<div className="flex items-center gap-2 mb-3   ">
 															<div className="flex items-center justify-center px-2 py-1 rounded-md bg-primary/10 text-primary text-xs">
 																{idx + 1}
 															</div>
-															<div className="">
+															<div>
 																<span className="p-1">Key: </span>
 																<CopyToClipboardElement
 																	className="font-mono text-xs p-0 hover:bg-inherit w-full text-left hidden md:block"
@@ -168,8 +168,8 @@ const StorageChanges = () => {
 																</CopyToClipboardElement>
 															</div>
 														</div>
-														<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-															<div className="flex flex-col gap-1.5 rounded-md bg-destructive/5 border border-red-900 p-2.5">
+														<div className="grid grid-cols-1 md:grid-cols-2 gap-3 pb-2">
+															<div className="flex gap-1.5 rounded-md  ">
 																<div className="flex items-center gap-1.5">
 																	<span className="text-xs font-semibold text-red-600">Before</span>
 																</div>
@@ -187,7 +187,7 @@ const StorageChanges = () => {
 																	</AddressLink>
 																</CopyToClipboardElement>
 															</div>
-															<div className="flex flex-col gap-1.5 rounded-md bg-green-500/5 border border-green-500/20 p-2.5">
+															<div className="flex gap-1.5 rounded-md ">
 																<div className="flex items-center gap-1.5">
 																	<span className="text-xs font-semibold text-green-500">
 																		After
