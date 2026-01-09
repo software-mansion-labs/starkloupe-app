@@ -32,6 +32,7 @@ import {
 import { AddNetwork, Network, useSettings } from '@/lib/context/settings-context-provider';
 import { Label } from '../ui/label';
 import { toast } from '@/components/hooks/use-toast';
+import { normalizeUrl } from '@/lib/utils';
 
 export const columns = (removeNetwork: (network: Network) => void): ColumnDef<Network>[] => [
 	{
@@ -88,10 +89,10 @@ export function NetworksList() {
 	});
 
 	const handleAddNetwork = () => {
-		if (networks.find((n) => n.rpcUrl === newNetwork.rpcUrl)) {
+		if (networks.find((n) => normalizeUrl(n.rpcUrl) === normalizeUrl(newNetwork.rpcUrl))) {
 			toast({
 				title: 'Network already exists!',
-				description: 'This network is already added.',
+				description: 'This network is already added.'
 			});
 			return;
 		}
@@ -110,8 +111,8 @@ export function NetworksList() {
 			toast({
 				title: 'Add network failed!',
 				description: 'Is the network URL correct?',
-				className: 'text-red-500',
-			})
+				className: 'text-red-500'
+			});
 		}
 	};
 
@@ -139,7 +140,12 @@ export function NetworksList() {
 					/>
 				</div>
 				<div className="flex justify-end">
-					<Button onClick={handleAddNetwork} disabled={!newNetwork.rpcUrl || !newNetwork.networkName}>Add Network</Button>
+					<Button
+						onClick={handleAddNetwork}
+						disabled={!newNetwork.rpcUrl || !newNetwork.networkName}
+					>
+						Add Network
+					</Button>
 				</div>
 			</div>
 			<div className="rounded-md border">

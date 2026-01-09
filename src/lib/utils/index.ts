@@ -274,3 +274,7 @@ export const unknownPrefixesAsStarknet = (prefix: string): boolean => {
 	const knownPrefixes = Object.keys(stackMapping).map((k) => k.toLowerCase());
 	return !knownPrefixes.includes(prefix.toLowerCase());
 };
+
+export function normalizeUrl(url: string): string {
+	return url.replace(/\/+$/, '');
+}

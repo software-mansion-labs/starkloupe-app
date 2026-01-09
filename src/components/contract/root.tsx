@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { InfoBox, InfoBoxItem } from '../ui/info-box';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { ABIList } from './abi-list';
+import { normalizeUrl } from '@/lib/utils';
 
 export function ContractRoot({
 	isClassVerified,
@@ -166,7 +167,7 @@ function ContractDetails({ contractData }: { contractData: GetContractResponse }
 				deployedOnNetworks.push(parseChain(source.chainId));
 			} else {
 				const networkInSettings = (networks ?? []).find(
-					(network) => network.rpcUrl === source.rpcUrl
+					(network) => normalizeUrl(network.rpcUrl) === normalizeUrl(source.rpcUrl ?? '')
 				);
 				if (networkInSettings) {
 					deployedOnNetworks.push(parseChain(networkInSettings.networkName));

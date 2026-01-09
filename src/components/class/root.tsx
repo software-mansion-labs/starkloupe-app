@@ -7,6 +7,7 @@ import { InfoBox, InfoBoxItem } from '../ui/info-box';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { ContractsTable } from './contracts-table';
 import { fetchClassContracts } from '@/lib/api';
+import { normalizeUrl } from '@/lib/utils';
 
 export function ClassRoot({
 	isClassVerified,
@@ -113,7 +114,7 @@ function ClassDetails({ classData }: { classData: GetClassResponse }) {
 				declaredOnNetworks.push(parseChain(source.chainId));
 			} else {
 				const networkInSettings = (networks ?? []).find(
-					(network) => network.rpcUrl === source.rpcUrl
+					(network) => normalizeUrl(network.rpcUrl) === normalizeUrl(source.rpcUrl ?? '')
 				);
 				if (networkInSettings) {
 					declaredOnNetworks.push(parseChain(networkInSettings.networkName));

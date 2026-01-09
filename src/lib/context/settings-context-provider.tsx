@@ -19,7 +19,7 @@ import {
 } from '@/app/api/monitoring-api-service';
 import { isTrackingActive } from '@/app/api/tracking-service';
 import { loadCustomSettingsFromStorage, saveCustomSettingsToStorage } from '../utils/cache-utils';
-import { chainMapping, stackMapping, unknownPrefixesAsStarknet } from '../utils';
+import { chainMapping, normalizeUrl, stackMapping, unknownPrefixesAsStarknet } from '../utils';
 
 export interface Network {
 	rpcUrl: string;
@@ -266,7 +266,7 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 	};
 
 	const getNetworkByRpcUrl = (rpcUrl: string): Network | undefined => {
-		return networks.find((network) => network.rpcUrl === rpcUrl);
+		return networks.find((network) => normalizeUrl(network.rpcUrl) === normalizeUrl(rpcUrl));
 	};
 
 	return (

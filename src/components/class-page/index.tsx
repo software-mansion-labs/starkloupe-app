@@ -9,7 +9,7 @@ import { InfoBoxItem, InfoBox } from '../ui/info-box';
 import { Error } from '../ui/error';
 import { fetchClassDataByHash, GetClassResponse } from '@/lib/classes';
 import { useSettings } from '@/lib/context/settings-context-provider';
-import { shortenHash } from '@/lib/utils';
+import { normalizeUrl, shortenHash } from '@/lib/utils';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import AddressLink from '../address-link';
 import { NetworkBadge } from '../ui/network-badge';
@@ -160,7 +160,7 @@ function ClassDetails({ classData }: { classData: GetClassResponse }) {
 				declaredOnNetworks.push(parseChain(source.chainId));
 			} else {
 				const networkInSettings = (networks ?? []).find(
-					(network) => network.rpcUrl === source.rpcUrl
+					(network) => normalizeUrl(network.rpcUrl) === normalizeUrl(source.rpcUrl ?? '')
 				);
 				if (networkInSettings) {
 					declaredOnNetworks.push(parseChain(networkInSettings.networkName));

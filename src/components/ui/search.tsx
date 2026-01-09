@@ -11,7 +11,7 @@ import {
 	CommandItem,
 	CommandList
 } from './command';
-import { cn } from '@/lib/utils';
+import { cn, normalizeUrl } from '@/lib/utils';
 import { fetchSearchData } from '@/lib/api';
 import { SearchDataResponse, SearchData } from '@/lib/types';
 import { Badge } from './badge';
@@ -186,7 +186,7 @@ export function Search({
 						/>
 					);
 				}
-				const network = networks.find((n) => n.rpcUrl === networkId);
+				const network = networks.find((n) => normalizeUrl(n.rpcUrl) === normalizeUrl(networkId));
 				if (network) {
 					chainData = parseChain(network.networkName);
 					if (chainData) {
@@ -389,7 +389,7 @@ const SearchItem = ({
 	}, [data, type]);
 
 	const network = data.source.rpcUrl
-		? networks.find((n) => n.rpcUrl === data.source.rpcUrl)
+		? networks.find((n) => normalizeUrl(n.rpcUrl) === normalizeUrl(data.source.rpcUrl ?? ''))
 		: undefined;
 	const networkChainData =
 		parseChain && network?.networkName ? parseChain(network?.networkName) : '';

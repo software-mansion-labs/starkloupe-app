@@ -15,7 +15,7 @@ import {
 } from '@/lib/contracts';
 import { ClassSourceCode } from '@/components/class-source-code';
 import { useSettings } from '@/lib/context/settings-context-provider';
-import { shortenHash } from '@/lib/utils';
+import { normalizeUrl, shortenHash } from '@/lib/utils';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import AddressLink from '../address-link';
 import { ContractRoot } from '../contract/root';
@@ -209,7 +209,7 @@ function ContractDetails({ contractData }: { contractData: GetContractResponse }
 				deployedOnNetworks.push(parseChain(source.chainId));
 			} else {
 				const networkInSettings = (networks ?? []).find(
-					(network) => network.rpcUrl === source.rpcUrl
+					(network) => normalizeUrl(network.rpcUrl) === normalizeUrl(source.rpcUrl ?? '')
 				);
 				if (networkInSettings) {
 					deployedOnNetworks.push(parseChain(networkInSettings.networkName));
