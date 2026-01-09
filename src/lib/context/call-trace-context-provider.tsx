@@ -151,7 +151,7 @@ export const CallTraceContextProvider: React.FC<
 	const errorMessage =
 		simulationResult.executionResult.executionStatus === 'REVERTED'
 			? simulationResult.executionResult.revertReason
-			: undefined;
+			: '';
 
 	const scrollToTraceLineElement = (callId: number) => {
 		const element = traceLineElementRefs.current[callId]?.current;
@@ -180,7 +180,7 @@ export const CallTraceContextProvider: React.FC<
 			});
 		}
 
-		if (isExecutionFailed && errorMessage) {
+		if (isExecutionFailed) {
 			const errorCall =
 				Object.values(simulationResult.contractCallsMap).find(
 					(item) => item.errorMessage === errorMessage

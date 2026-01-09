@@ -55,13 +55,32 @@ const ErrorAlert = ({ callError }: { callError: ContractCall | FunctionCall | un
 	const ErrorContent = () => (
 		<div className="!font-light">
 			<span className="whitespace-pre-wrap">
-				<span className={`${!isLongError ? 'text-red-600' : ''}`}>
-					{errorDescription && parseErrorDescription(errorDescription)}
-				</span>
-
-				{!isLongError && (
-					<span className="inline-flex items-center my-1">
-						<span className="mx-1"> in </span>
+				{errorDescription !== '' ? (
+					<>
+						{' '}
+						<span className={`${!isLongError ? 'text-red-600' : ''}`}>
+							{errorDescription && parseErrorDescription(errorDescription)}
+						</span>
+						{!isLongError && (
+							<span className="inline-flex items-center my-1">
+								<span className="mx-1"> in </span>
+								{callError && 'classHash' in callError ? (
+									<ContractCallSignature
+										contractCall={callError}
+										customSettings={customSettings}
+										updateContractColor={updateContractColor}
+										updateContractName={updateContractName}
+										updateContractSettings={updateContractSettings}
+									/>
+								) : (
+									callError?.fnName && <FnName fnName={callError?.fnName} />
+								)}
+							</span>
+						)}
+					</>
+				) : (
+					<div className="w-full">
+						<span className="text-sm">Error occurred in </span>
 						{callError && 'classHash' in callError ? (
 							<ContractCallSignature
 								contractCall={callError}
@@ -73,7 +92,7 @@ const ErrorAlert = ({ callError }: { callError: ContractCall | FunctionCall | un
 						) : (
 							callError?.fnName && <FnName fnName={callError?.fnName} />
 						)}
-					</span>
+					</div>
 				)}
 			</span>
 		</div>
@@ -125,14 +144,16 @@ const ErrorAlert = ({ callError }: { callError: ContractCall | FunctionCall | un
 							)}
 						</div>
 
-						<div className="w-full">
-							<span className="text-xs text-gray-600 dark:text-gray-400 block mb-1.5">
-								Error message:
-							</span>
-							<div className="max-h-80 overflow-y-auto w-full border border-gray-200 dark:border-gray-700 rounded-md p-3 bg-gray-50 dark:bg-gray-800/50 text-sm">
-								<ErrorContent />
+						{errorDescription !== '' && (
+							<div className="w-full">
+								<span className="text-xs text-gray-600 dark:text-gray-400 block mb-1.5">
+									Error message:
+								</span>
+								<div className="max-h-80 overflow-y-auto w-full border border-gray-200 dark:border-gray-700 rounded-md p-3 bg-gray-50 dark:bg-gray-800/50 text-sm">
+									<ErrorContent />
+								</div>
 							</div>
-						</div>
+						)}
 					</div>
 					<div className="flex justify-end p-3 border-t border-gray-200 dark:border-gray-700">
 						<button
@@ -225,10 +246,16 @@ const ErrorAlert = ({ callError }: { callError: ContractCall | FunctionCall | un
 					<Alert variant="compact" className="border-red-600 dark:text-white my-2">
 						<ExclamationTriangleIcon className="h-5 w-5 !text-red-600" />
 						<div>
-							<AlertTitle className="!font-light mt-2">Error message:</AlertTitle>
-							<AlertDescription>
-								<ErrorContent />
-							</AlertDescription>
+							<AlertTitle
+								className={`!font-light ${errorDescription !== '' ? 'mt-2' : '!mb-0 mt-[5px]'}`}
+							>
+								{errorDescription !== '' ? 'Error message:' : <ErrorContent />}
+							</AlertTitle>
+							{errorDescription !== '' && (
+								<AlertDescription>
+									<ErrorContent />
+								</AlertDescription>
+							)}
 						</div>
 					</Alert>
 				)}

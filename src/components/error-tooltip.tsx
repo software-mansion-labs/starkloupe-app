@@ -20,7 +20,7 @@ export function ErrorTooltip({ errorMessage }: { errorMessage: string }) {
 					</div>
 				</TooltipTrigger>
 				<TooltipContent>
-					<p>This call resulted in an error: {errorMessage}</p>
+					<p>This call resulted in an error{errorMessage !== '' && `: ${errorMessage}`}</p>
 				</TooltipContent>
 			</Tooltip>
 		</TooltipProvider>

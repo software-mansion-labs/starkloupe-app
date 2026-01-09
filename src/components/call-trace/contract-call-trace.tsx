@@ -113,7 +113,9 @@ export const ContractCallTrace = memo(function ContractCallTrace({
 	if (isExecutionFailed) {
 		errorColumn = (
 			<div className="w-5 mr-0.5">
-				{!!call.errorMessage && <ErrorTooltip errorMessage={call.errorMessage} />}
+				{(!!call.errorMessage || call.errorMessage === '') && (
+					<ErrorTooltip errorMessage={call.errorMessage} />
+				)}
 			</div>
 		);
 	}
