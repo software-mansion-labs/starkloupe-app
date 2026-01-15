@@ -27,6 +27,46 @@ export const ArrayOfStructsInput = ({
 	onValueChange,
 	onChildValidationChange
 }: ArrayOfStructsInputProps) => {
+	const hasEnumVariants =
+		functionInput?.enum_variants && functionInput.enum_variants.length > 0;
+
+	const detectEnumVariantFromItem = (item: any): string | null => {
+		if (!hasEnumVariants || typeof item !== 'object' || item === null) {
+			return null;
+		}
+
+		if ('__enum_variant' in item) {
+			return item.__enum_variant;
+		}
+
+		const itemFieldNames = Object.keys(item)
+			.filter((key) => /^\d+$/.test(key))
+			.sort((a, b) => parseInt(a) - parseInt(b))
+			.map((key) => item[key]?.name)
+			.filter(Boolean);
+
+		if (itemFieldNames.length === 0) {
+			return null;
+		}
+
+		for (const variant of functionInput.enum_variants) {
+			if (!variant.struct_members || variant.struct_members.length === 0) {
+				continue;
+			}
+
+			const variantFieldNames = variant.struct_members.map((m: any) => m.name);
+
+			if (
+				variantFieldNames.length === itemFieldNames.length &&
+				variantFieldNames.every((name: string, idx: number) => name === itemFieldNames[idx])
+			) {
+				return variant.name;
+			}
+		}
+
+		return null;
+	};
+
 	const getStructMembers = (item: any) => {
 		let structMembers: any[] = [];
 
@@ -77,11 +117,27 @@ export const ArrayOfStructsInput = ({
 	};
 
 	const handleAdd = () => {
-		let newStructItem: any = {};
+		let newItem: any = {};
 
-		if (functionInput?.struct_members && functionInput.struct_members.length > 0) {
+		if (hasEnumVariants) {
+			const firstVariant = functionInput.enum_variants[0];
+			newItem = {
+				__enum_variant: firstVariant.name
+			};
+			if (firstVariant.struct_members && firstVariant.struct_members.length > 0) {
+				firstVariant.struct_members.forEach((member: any, idx: number) => {
+					newItem[idx.toString()] = {
+						name: member.name,
+						type_name: member.type,
+						value: getDefaultValue(member.type, member)
+					};
+				});
+			} else if (firstVariant.type && firstVariant.type !== '') {
+				newItem.__enum_value = getDefaultValue(firstVariant.type);
+			}
+		} else if (functionInput?.struct_members && functionInput.struct_members.length > 0) {
 			functionInput.struct_members.forEach((member: any, idx: number) => {
-				newStructItem[idx.toString()] = {
+				newItem[idx.toString()] = {
 					name: member.name,
 					type_name: member.type,
 					value: getDefaultValue(member.type, member)
@@ -100,7 +156,7 @@ export const ArrayOfStructsInput = ({
 					.forEach((key) => {
 						const existingMember = firstElement[key];
 						if (existingMember && typeof existingMember === 'object' && 'name' in existingMember) {
-							newStructItem[key] = {
+							newItem[key] = {
 								name: existingMember.name,
 								type_name: existingMember.type_name,
 								value: getDefaultValue(existingMember.type_name)
@@ -109,10 +165,10 @@ export const ArrayOfStructsInput = ({
 					});
 			}
 		} else {
-			newStructItem = getDefaultValue(elementType, functionInput);
+			newItem = getDefaultValue(elementType, functionInput);
 		}
 
-		const newArray = [...arrayValue, newStructItem];
+		const newArray = [...arrayValue, newItem];
 		onValueChange(newArray);
 	};
 
@@ -120,6 +176,62 @@ export const ArrayOfStructsInput = ({
 		const newArray = arrayValue.slice(0, -1);
 		onValueChange(newArray);
 	};
+
+	if (hasEnumVariants) {
+		return (
+			<ParameterContainer>
+				<ParameterHeader name={parameter.name} type={parameter.type_name} />
+
+				<div className="space-y-3 pl-2 md:pl-4">
+					{arrayValue.map((item: any, idx: number) => {
+						const detectedVariant = detectEnumVariantFromItem(item);
+						const enumVariant = detectedVariant || functionInput.enum_variants[0]?.name || '';
+
+						const itemTypeName = enumVariant
+							? `${elementType}::${enumVariant}`
+							: elementType;
+
+						const itemWithVariant =
+							detectedVariant && !('__enum_variant' in item)
+								? { ...item, __enum_variant: detectedVariant }
+								: item;
+
+						return (
+							<div key={idx} className="space-y-2 border md:border rounded-lg p-3">
+								<div className="flex items-center justify-between border-b md:border-b pb-2">
+									<Label className="text-sm font-medium">
+										[{idx}] {elementType}
+									</Label>
+								</div>
+								<ParameterInput
+									parameter={{
+										name: '',
+										type_name: itemTypeName,
+										value: itemWithVariant
+									}}
+									functionInput={functionInput}
+									onValueChange={(newValue) => {
+										const newArray = [...arrayValue];
+										newArray[idx] = newValue;
+										onValueChange(newArray);
+									}}
+									onValidationChange={(valid) => {
+										onChildValidationChange(`array-enum-${idx}`, valid);
+									}}
+								/>
+							</div>
+						);
+					})}
+
+					<ArrayControls
+						onAdd={handleAdd}
+						onRemove={handleRemove}
+						hasElements={arrayValue.length > 0}
+					/>
+				</div>
+			</ParameterContainer>
+		);
+	}
 
 	return (
 		<ParameterContainer>

@@ -185,7 +185,7 @@ export const EnumInput = ({
 
 	return (
 		<StructContainer>
-			<ParameterHeader name={parameter.name} type={functionInput.type} />
+			{parameter.name && <ParameterHeader name={parameter.name} type={functionInput.type} />}
 
 			<div className="space-y-2">
 				<Label className="text-xs">Variant</Label>

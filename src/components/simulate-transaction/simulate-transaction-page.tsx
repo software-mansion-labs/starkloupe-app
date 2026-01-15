@@ -567,7 +567,8 @@ export function SimulateTransactionPage({
 				_transactionVersion,
 				_chain,
 				setIsSimulating,
-				setAlert
+				setAlert,
+				contractCallsFunctions
 			);
 		} else {
 			await handleRawSubmission(

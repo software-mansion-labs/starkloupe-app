@@ -100,6 +100,8 @@ export const ParameterInput = ({
 	if (elementType) {
 		const hasStructMembers =
 			functionInput?.struct_members && functionInput.struct_members.length > 0;
+		const hasEnumVariants =
+			functionInput?.enum_variants && functionInput.enum_variants.length > 0;
 		const arrayValue = Array.isArray(parameter.value) ? parameter.value : [];
 		const _hasComplexElements = hasComplexArrayElements(arrayValue);
 		const elementTupleTypes = parseTupleType(elementType);
@@ -119,7 +121,7 @@ export const ParameterInput = ({
 			);
 		}
 
-		if (_hasComplexElements || hasStructMembers) {
+		if (_hasComplexElements || hasStructMembers || hasEnumVariants) {
 			return (
 				<ArrayOfStructsInput
 					parameter={parameter}

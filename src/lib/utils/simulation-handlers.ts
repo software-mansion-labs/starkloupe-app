@@ -40,14 +40,103 @@ function cleanEnumValue(value: any): any {
 	return cleaned;
 }
 
-function cleanDecodedCalldata(decodedCalldata: any[]): any[] {
-	return decodedCalldata.map((call) => ({
-		...call,
-		parameters: call.parameters.map((param: any) => ({
-			...param,
-			value: cleanEnumValue(param.value)
-		}))
-	}));
+function detectEnumVariantByFieldNames(
+	value: any,
+	enumVariants: any[]
+): string | null {
+	if (typeof value !== 'object' || value === null || Array.isArray(value)) {
+		return null;
+	}
+
+	const fieldNames = Object.keys(value)
+		.filter((key) => /^\d+$/.test(key))
+		.sort((a, b) => parseInt(a) - parseInt(b))
+		.map((key) => value[key]?.name)
+		.filter(Boolean);
+
+	if (fieldNames.length === 0) {
+		return null;
+	}
+
+	for (const variant of enumVariants) {
+		if (!variant.struct_members || variant.struct_members.length === 0) {
+			continue;
+		}
+
+		const variantFieldNames = variant.struct_members.map((m: any) => m.name);
+
+		if (
+			variantFieldNames.length === fieldNames.length &&
+			variantFieldNames.every((name: string, idx: number) => name === fieldNames[idx])
+		) {
+			return variant.name;
+		}
+	}
+
+	return null;
+}
+
+function normalizeEnumTypeName(
+	param: any,
+	functionInput: any
+): { type_name: string; value: any } {
+	if (!functionInput?.enum_variants || functionInput.enum_variants.length === 0) {
+		return { type_name: param.type_name, value: param.value };
+	}
+
+	if (param.type_name.includes('::')) {
+		return { type_name: param.type_name, value: param.value };
+	}
+
+	const enumBase = functionInput.type || param.type_name;
+
+	if (
+		typeof param.value === 'object' &&
+		param.value !== null &&
+		'__enum_variant' in param.value
+	) {
+		return {
+			type_name: `${enumBase}::${param.value.__enum_variant}`,
+			value: param.value
+		};
+	}
+
+	const detectedVariant = detectEnumVariantByFieldNames(param.value, functionInput.enum_variants);
+	if (detectedVariant) {
+		return {
+			type_name: `${enumBase}::${detectedVariant}`,
+			value: param.value
+		};
+	}
+
+	return { type_name: param.type_name, value: param.value };
+}
+
+function cleanDecodedCalldata(decodedCalldata: any[], contractCallsFunctions?: any): any[] {
+	return decodedCalldata.map((call) => {
+		const functions = contractCallsFunctions?.[call.contract_address];
+		const functionData = functions?.find(
+			(fn: any) =>
+				fn[0] === call.function_name ||
+				fn[0] === call.function_selector ||
+				fn[1]?.name === call.function_name
+		);
+		const inputs = functionData?.[1]?.inputs || [];
+
+		return {
+			...call,
+			parameters: call.parameters.map((param: any, idx: number) => {
+				const functionInput = inputs[idx];
+				const { type_name, value } = normalizeEnumTypeName(param, functionInput);
+
+				return {
+					...param,
+					type_name,
+					value: cleanEnumValue(value)
+				};
+			})
+		};
+	});
 }
 
 export async function handleParameterSubmission(
@@ -57,9 +146,13 @@ export async function handleParameterSubmission(
 	_transactionVersion: number,
 	_chain: Chain | undefined,
 	setIsSimulating: (value: boolean) => void,
-	setAlert: (value: boolean) => void
+	setAlert: (value: boolean) => void,
+	contractCallsFunctions?: { [key: string]: any }
 ) {
-	const cleanedCalldata = cleanDecodedCalldata(decodeCalldata.decoded_calldata);
+	const cleanedCalldata = cleanDecodedCalldata(
+		decodeCalldata.decoded_calldata,
+		contractCallsFunctions
+	);
 
 	const simulationPayload = {
 		senderAddress: _senderAddress,
@@ -90,6 +183,7 @@ export async function handleParameterSubmission(
 		} else {
 			throw new Error('Chain is not defined');
 		}
+
 		openSimulationPage(simulationPagePayload);
 
 		setIsSimulating(false);
