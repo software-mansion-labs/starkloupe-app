@@ -202,6 +202,12 @@ export function normalizeValue(val: any): any {
 							}
 						});
 				}
+				if ('name' in val && val.name) {
+					return {
+						__enum_variant: val.name,
+						...structValue
+					};
+				}
 				return structValue;
 			}
 			if (val.type === 'array') {
@@ -255,7 +261,7 @@ export function normalizeDecodedCalldata(decodeCalldataResult: any): any {
 					};
 				}
 				
-				if (param.type === 'array' && Array.isArray(param.value)) {
+				if ((param.type === 'array' || param.type === 'array-enum') && Array.isArray(param.value)) {
 					const normalizedArray = param.value.map((item: any) => {
 						if (item && typeof item === 'object' && 'name' in item && 'type' in item) {
 							const variantName = item.name;
@@ -357,6 +363,10 @@ export function normalizeDecodedCalldata(decodeCalldataResult: any): any {
 							}
 						}
 						
+						if (item && typeof item === 'object' && '__enum_variant' in item) {
+							return normalizeValue(item);
+						}
+						
 						return normalizeValue(item);
 					});
 					
@@ -368,9 +378,9 @@ export function normalizeDecodedCalldata(decodeCalldataResult: any): any {
 				}
 				
 				return {
-					name: param.name,
-					type_name: param.type_name || param.typeName,
-					value: normalizeValue(param.value)
+				name: param.name,
+				type_name: param.type_name || param.typeName,
+				value: normalizeValue(param.value)
 				};
 			})
 		}))

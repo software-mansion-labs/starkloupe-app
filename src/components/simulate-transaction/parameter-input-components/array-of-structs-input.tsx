@@ -30,41 +30,16 @@ export const ArrayOfStructsInput = ({
 	const hasEnumVariants =
 		functionInput?.enum_variants && functionInput.enum_variants.length > 0;
 
-	const detectEnumVariantFromItem = (item: any): string | null => {
-		if (!hasEnumVariants || typeof item !== 'object' || item === null) {
-			return null;
+	const getEnumVariantFromItem = (item: any): string => {
+		if (!hasEnumVariants) {
+			return '';
 		}
 
-		if ('__enum_variant' in item) {
+		if (typeof item === 'object' && item !== null && '__enum_variant' in item) {
 			return item.__enum_variant;
 		}
 
-		const itemFieldNames = Object.keys(item)
-			.filter((key) => /^\d+$/.test(key))
-			.sort((a, b) => parseInt(a) - parseInt(b))
-			.map((key) => item[key]?.name)
-			.filter(Boolean);
-
-		if (itemFieldNames.length === 0) {
-			return null;
-		}
-
-		for (const variant of functionInput.enum_variants) {
-			if (!variant.struct_members || variant.struct_members.length === 0) {
-				continue;
-			}
-
-			const variantFieldNames = variant.struct_members.map((m: any) => m.name);
-
-			if (
-				variantFieldNames.length === itemFieldNames.length &&
-				variantFieldNames.every((name: string, idx: number) => name === itemFieldNames[idx])
-			) {
-				return variant.name;
-			}
-		}
-
-		return null;
+		return functionInput.enum_variants[0]?.name || '';
 	};
 
 	const getStructMembers = (item: any) => {
@@ -200,17 +175,14 @@ export const ArrayOfStructsInput = ({
 
 				<div className="space-y-3 pl-2 md:pl-4">
 					{arrayValue.map((item: any, idx: number) => {
-						const detectedVariant = detectEnumVariantFromItem(item);
-						const enumVariant = detectedVariant || functionInput.enum_variants[0]?.name || '';
-
+						const enumVariant = getEnumVariantFromItem(item);
 						const itemTypeName = enumVariant
 							? `${elementType}::${enumVariant}`
 							: elementType;
 
-						const itemWithVariant =
-							detectedVariant && !('__enum_variant' in item)
-								? { ...item, __enum_variant: detectedVariant }
-								: item;
+						const itemWithVariant = typeof item === 'object' && item !== null && '__enum_variant' in item
+							? item
+							: { ...item, __enum_variant: enumVariant };
 
 						return (
 							<div key={idx} className="space-y-2 border md:border rounded-lg p-3">
