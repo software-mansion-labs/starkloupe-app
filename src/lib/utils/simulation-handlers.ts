@@ -17,23 +17,48 @@ function formatErrorMessage(error: unknown): string {
 	return errorStr;
 }
 
-function cleanEnumValue(value: any): any {
+function cleanEnumValue(value: any, isUnitEnum: boolean = false): any {
+	if (isUnitEnum) {
+		return {};
+	}
+
 	if (typeof value !== 'object' || value === null) {
 		return value;
 	}
 
 	if (Array.isArray(value)) {
-		return value.map(cleanEnumValue);
+		return value.map((item) => cleanEnumValue(item, false));
 	}
 
-	if ('__enum_value' in value && typeof value.__enum_value === 'object') {
-		return cleanEnumValue(value.__enum_value);
+	if ('__enum_variant' in value) {
+		const keys = Object.keys(value).filter(k => k !== '__enum_variant');
+		if (keys.length === 0) {
+			return {};
+		}
+		
+		const cleaned: any = {};
+		for (const key in value) {
+			if (key !== '__enum_variant' && key !== '__enum_value') {
+				const fieldValue = value[key];
+				if (fieldValue && typeof fieldValue === 'object' && 'value' in fieldValue) {
+					cleaned[key] = cleanEnumValue(fieldValue.value, false);
+				} else {
+					cleaned[key] = cleanEnumValue(fieldValue, false);
+				}
+			} else if (key === '__enum_value') {
+				cleaned[key] = cleanEnumValue(value[key], false);
+			}
+		}
+		return cleaned;
 	}
 
 	const cleaned: any = {};
 	for (const key in value) {
-		if (key !== '__enum_variant') {
-			cleaned[key] = cleanEnumValue(value[key]);
+		if (value[key] && typeof value[key] === 'object' && 'name' in value[key] && 'type_name' in value[key] && 'value' in value[key]) {
+
+			cleaned[key] = cleanEnumValue(value[key].value, false);
+		} else {
+			cleaned[key] = cleanEnumValue(value[key], false);
 		}
 	}
 
@@ -129,10 +154,29 @@ function cleanDecodedCalldata(decodedCalldata: any[], contractCallsFunctions?: a
 				const functionInput = inputs[idx];
 				const { type_name, value } = normalizeEnumTypeName(param, functionInput);
 
+				const isEnum = type_name.includes('::');
+				let cleanedValue = value;
+				
+				if (isEnum) {
+					const variantName = type_name.split('::')[1];
+					const isUnitEnum = 
+						typeof value === 'string' ||
+						(typeof value === 'object' && value !== null && 
+						 Object.keys(value).filter(k => k !== '__enum_variant').length === 0);
+					
+					if (isUnitEnum) {
+						cleanedValue = {};
+					} else {
+						cleanedValue = cleanEnumValue(value, false);
+					}
+				} else {
+					cleanedValue = cleanEnumValue(value, false);
+				}
+
 				return {
 					...param,
 					type_name,
-					value: cleanEnumValue(value)
+					value: cleanedValue
 				};
 			})
 		};

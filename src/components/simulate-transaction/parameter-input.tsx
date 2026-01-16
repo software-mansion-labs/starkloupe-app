@@ -157,7 +157,13 @@ export const ParameterInput = ({
 		);
 	}
 
-	if (functionInput?.enum_variants && functionInput.enum_variants.length > 0) {
+	const isEnum = 
+		(functionInput?.enum_variants && functionInput.enum_variants.length > 0) ||
+		(parameter.type_name && parameter.type_name.includes('::')) ||
+		(typeof parameter.value === 'object' && parameter.value !== null && '__enum_variant' in parameter.value) ||
+		(typeof parameter.value === 'string' && functionInput?.enum_variants?.some((v: any) => v.name === parameter.value));
+	
+	if (isEnum) {
 		return (
 			<EnumInput
 				parameter={parameter}

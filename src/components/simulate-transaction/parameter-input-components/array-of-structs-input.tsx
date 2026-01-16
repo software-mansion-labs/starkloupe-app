@@ -78,6 +78,8 @@ export const ArrayOfStructsInput = ({
 					const itemMember = item[memberIdx.toString()];
 					if (itemMember && typeof itemMember === 'object' && 'value' in itemMember) {
 						existingValue = itemMember.value;
+					} else if (itemMember !== undefined && itemMember !== null) {
+						existingValue = itemMember;
 					}
 				}
 
@@ -88,28 +90,42 @@ export const ArrayOfStructsInput = ({
 				};
 			});
 		} else if (typeof item === 'object' && item !== null && !Array.isArray(item)) {
-			const hasServerFormat = Object.keys(item).some(
-				(key) =>
-					item[key] &&
-					typeof item[key] === 'object' &&
-					'name' in item[key] &&
-					'type_name' in item[key] &&
-					'value' in item[key]
-			);
-
-			if (hasServerFormat) {
+			if ('__enum_variant' in item) {
 				structMembers = Object.keys(item)
 					.filter((key) => /^\d+$/.test(key))
 					.sort((a, b) => parseInt(a) - parseInt(b))
-					.map((key) => item[key])
-					.filter(
-						(member) =>
-							member &&
-							typeof member === 'object' &&
-							'name' in member &&
-							'type_name' in member &&
-							'value' in member
-					);
+					.map((key) => {
+						const field = item[key];
+						if (field && typeof field === 'object' && 'name' in field && 'type_name' in field && 'value' in field) {
+							return field;
+						}
+						return null;
+					})
+					.filter(Boolean);
+			} else {
+				const hasServerFormat = Object.keys(item).some(
+					(key) =>
+						item[key] &&
+						typeof item[key] === 'object' &&
+						'name' in item[key] &&
+						'type_name' in item[key] &&
+						'value' in item[key]
+				);
+
+				if (hasServerFormat) {
+					structMembers = Object.keys(item)
+						.filter((key) => /^\d+$/.test(key))
+						.sort((a, b) => parseInt(a) - parseInt(b))
+						.map((key) => item[key])
+						.filter(
+							(member) =>
+								member &&
+								typeof member === 'object' &&
+								'name' in member &&
+								'type_name' in member &&
+								'value' in member
+						);
+				}
 			}
 		}
 
@@ -264,30 +280,39 @@ export const ArrayOfStructsInput = ({
 										}
 									}
 
+									let actualMemberValue = member.value;
+									if (member && typeof member === 'object' && 'value' in member) {
+										actualMemberValue = member.value;
+									}
+
 									return (
 										<ParameterInput
 											key={memberIdx}
 											parameter={{
 												name: member.name,
 												type_name: member.type_name,
-												value: member.value
+												value: actualMemberValue
 											}}
 											functionInput={memberDef}
 											onValueChange={(newFieldValue) => {
 												const newArray = [...arrayValue];
 												const currentItem = newArray[idx];
-												const newItem: any = {};
+												
+												const isEnumVariant = typeof currentItem === 'object' && currentItem !== null && '__enum_variant' in currentItem;
+												const newItem: any = isEnumVariant ? { __enum_variant: currentItem.__enum_variant } : {};
 
 												structMembers.forEach((m: any, mIdx: number) => {
 													const existingField =
 														typeof currentItem === 'object' && currentItem?.[mIdx.toString()];
-													newItem[mIdx.toString()] = existingField
-														? { ...existingField }
-														: {
-																name: m.name,
-																type_name: m.type_name,
-																value: getDefaultValue(m.type_name)
-														  };
+													if (existingField && typeof existingField === 'object' && 'name' in existingField) {
+														newItem[mIdx.toString()] = { ...existingField };
+													} else {
+														newItem[mIdx.toString()] = {
+															name: m.name,
+															type_name: m.type_name,
+															value: getDefaultValue(m.type_name)
+														};
+													}
 												});
 
 												let newTypeName = member.type_name;

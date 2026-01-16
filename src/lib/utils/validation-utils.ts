@@ -147,6 +147,69 @@ export function normalizeValue(val: any): any {
 		return val.map(normalizeValue);
 	}
 	if (typeof val === 'object') {
+		if ('type' in val) {
+			if (val.type === 'enum') {
+				if (typeof val.value === 'string') {
+					return val.value;
+				}
+				if (val.value && typeof val.value === 'object' && 'name' in val.value) {
+					const variantName = val.value.name;
+					const variantType = val.value.type;
+					const variantValue = val.value.value;
+					
+					if (variantType === 'struct') {
+						const structValue: any = {};
+						if (variantValue && typeof variantValue === 'object') {
+							Object.keys(variantValue)
+								.sort((a, b) => parseInt(a) - parseInt(b))
+								.forEach((key) => {
+									const field = variantValue[key];
+									if (field && typeof field === 'object' && 'name' in field && 'type_name' in field && 'value' in field) {
+										structValue[key] = {
+											name: field.name,
+											type_name: field.type_name,
+											value: normalizeValue(field.value)
+										};
+									}
+								});
+						}
+						return {
+							__enum_variant: variantName,
+							...structValue
+						};
+					} else {
+						return {
+							__enum_variant: variantName,
+							__enum_value: normalizeValue(variantValue)
+						};
+					}
+				}
+				return normalizeValue(val.value);
+			}
+			if (val.type === 'struct') {
+				const structValue: any = {};
+				if (val.value && typeof val.value === 'object') {
+					Object.keys(val.value)
+						.sort((a, b) => parseInt(a) - parseInt(b))
+						.forEach((key) => {
+							const field = val.value[key];
+							if (field && typeof field === 'object' && 'name' in field && 'type_name' in field && 'value' in field) {
+								structValue[key] = {
+									name: field.name,
+									type_name: field.type_name,
+									value: normalizeValue(field.value)
+								};
+							}
+						});
+				}
+				return structValue;
+			}
+			if (val.type === 'array') {
+				return val.value ? normalizeValue(val.value) : [];
+			}
+			return normalizeValue(val.value);
+		}
+		
 		const normalized: any = {};
 		Object.entries(val).forEach(([key, fieldValue]: [string, any]) => {
 			if (
@@ -173,11 +236,143 @@ export function normalizeDecodedCalldata(decodeCalldataResult: any): any {
 		...decodeCalldataResult,
 		decoded_calldata: decodeCalldataResult.decoded_calldata.map((call: any) => ({
 			...call,
-			parameters: call.parameters.map((param: any) => ({
-				name: param.name,
-				type_name: param.type_name || param.typeName,
-				value: normalizeValue(param.value)
-			}))
+			parameters: call.parameters.map((param: any) => {
+				if (param.type === 'enum') {
+					let type_name = param.type_name || param.typeName;
+					
+					if (typeof param.value === 'string') {
+						// Unit enum
+						type_name = `${param.type_name || param.typeName}::${param.value}`;
+					} else if (param.value && typeof param.value === 'object' && 'name' in param.value) {
+						// Enum with structure
+						type_name = `${param.type_name || param.typeName}::${param.value.name}`;
+					}
+					
+					return {
+						name: param.name,
+						type_name: type_name,
+						value: normalizeValue(param.value)
+					};
+				}
+				
+				if (param.type === 'array' && Array.isArray(param.value)) {
+					const normalizedArray = param.value.map((item: any) => {
+						if (item && typeof item === 'object' && 'name' in item && 'type' in item) {
+							const variantName = item.name;
+							const itemType = item.type;
+							const itemValue = item.value;
+							
+							if (itemType === 'enum') {
+								if (typeof itemValue === 'string') {
+									return itemValue;
+								} else if (itemValue && typeof itemValue === 'object' && 'name' in itemValue) {
+									const nestedVariantName = itemValue.name;
+									const nestedVariantType = itemValue.type;
+									const nestedVariantValue = itemValue.value;
+									
+									if (nestedVariantType === 'struct') {
+										const structValue: any = {};
+										if (nestedVariantValue && typeof nestedVariantValue === 'object') {
+											Object.keys(nestedVariantValue)
+												.sort((a, b) => parseInt(a) - parseInt(b))
+												.forEach((key) => {
+													const field = nestedVariantValue[key];
+													if (field && typeof field === 'object' && 'name' in field && 'type_name' in field && 'value' in field) {
+														structValue[key] = {
+															name: field.name,
+															type_name: field.type_name,
+															value: normalizeValue(field.value)
+														};
+													}
+												});
+										}
+										return {
+											__enum_variant: nestedVariantName,
+											...structValue
+										};
+									} else {
+										return {
+											__enum_variant: nestedVariantName,
+											__enum_value: normalizeValue(nestedVariantValue)
+										};
+									}
+								}
+							} else if (itemType === 'struct') {
+								const structValue: any = {};
+								if (itemValue && typeof itemValue === 'object') {
+									Object.keys(itemValue)
+										.sort((a, b) => parseInt(a) - parseInt(b))
+										.forEach((key) => {
+											const field = itemValue[key];
+											if (field && typeof field === 'object' && 'name' in field && 'type_name' in field && 'value' in field) {
+												structValue[key] = {
+													name: field.name,
+													type_name: field.type_name,
+													value: normalizeValue(field.value)
+												};
+											}
+										});
+								}
+								return {
+									__enum_variant: variantName,
+									...structValue
+								};
+							}
+						}
+						
+						if (item && typeof item === 'object' && 'type' in item && item.type === 'enum') {
+							if (typeof item.value === 'string') {
+								return item.value;
+							} else if (item.value && typeof item.value === 'object' && 'name' in item.value) {
+								const variantName = item.value.name;
+								const variantType = item.value.type;
+								const variantValue = item.value.value;
+								
+								if (variantType === 'struct') {
+									const structValue: any = {};
+									if (variantValue && typeof variantValue === 'object') {
+										Object.keys(variantValue)
+											.sort((a, b) => parseInt(a) - parseInt(b))
+											.forEach((key) => {
+												const field = variantValue[key];
+												if (field && typeof field === 'object' && 'name' in field && 'type_name' in field && 'value' in field) {
+													structValue[key] = {
+														name: field.name,
+														type_name: field.type_name,
+														value: normalizeValue(field.value)
+													};
+												}
+											});
+									}
+									return {
+										__enum_variant: variantName,
+										...structValue
+									};
+								} else {
+									return {
+										__enum_variant: variantName,
+										__enum_value: normalizeValue(variantValue)
+									};
+								}
+							}
+						}
+						
+						return normalizeValue(item);
+					});
+					
+					return {
+						name: param.name,
+						type_name: param.type_name || param.typeName,
+						value: normalizedArray
+					};
+				}
+				
+				return {
+					name: param.name,
+					type_name: param.type_name || param.typeName,
+					value: normalizeValue(param.value)
+				};
+			})
 		}))
 	};
 }
