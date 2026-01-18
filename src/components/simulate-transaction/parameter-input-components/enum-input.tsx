@@ -94,8 +94,9 @@ export const EnumInput = ({
 	const hasNestedEnumVariants =
 		currentVariant?.enum_variants && currentVariant.enum_variants.length > 0;
 	const needsValueInput = hasType && !hasStructMembers && !hasNestedEnumVariants;
-	
-	const isUnitEnumValue = typeof parameter.value === 'string' && 
+
+	const isUnitEnumValue =
+		typeof parameter.value === 'string' &&
 		functionInput?.enum_variants?.some((v: any) => v.name === parameter.value);
 
 	let actualValue = parameter.value;
@@ -172,10 +173,10 @@ export const EnumInput = ({
 									};
 								});
 								return structValue;
-						  })()
+							})()
 						: firstNestedVariant.type && firstNestedVariant.type !== ''
-						? { __enum_value: nestedValue }
-						: {})
+							? { __enum_value: nestedValue }
+							: {})
 				}
 			});
 			return;
@@ -204,7 +205,7 @@ export const EnumInput = ({
 			{parameter.name && <ParameterHeader name={parameter.name} type={functionInput.type} />}
 
 			<div className="space-y-2">
-				<Label className="text-xs">Variant</Label>
+				<Label className="text-xs">Enum Variant</Label>
 				<Select value={enumVariant} onValueChange={handleVariantChange}>
 					<SelectTrigger>
 						<SelectValue />
@@ -251,13 +252,17 @@ export const EnumInput = ({
 					</span>
 				</div>
 			)}
-			{hasStructMembers && <div className="text-sm text-muted-foreground mt-3">Struct members</div>}
+			{hasStructMembers && (
+				<div className="text-sm text-muted-foreground mt-3 flex items-center justify-between">
+					<div>Struct members</div> <div className="text-xs">{currentVariant.type}</div>
+				</div>
+			)}
 			{hasStructMembers && (
 				<div className="space-y-3 pl-2 md:pl-4">
 					{currentVariant.struct_members.map((member: any, idx: number) => {
 						let fieldValue = parameter.value?.[idx.toString()];
 						let actualValue: any;
-						
+
 						if (fieldValue && typeof fieldValue === 'object' && 'value' in fieldValue) {
 							actualValue = fieldValue.value;
 						} else if (fieldValue !== undefined && fieldValue !== null) {
