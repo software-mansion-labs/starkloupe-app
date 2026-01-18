@@ -29,10 +29,20 @@ export const StructInput = ({
 		if (isFromFunctionInput) {
 			return functionInput.struct_members.map((member: any, idx: number) => {
 				const fieldValue = parameter.value?.[idx.toString()];
+				let actualValue: any;
+				
+				if (fieldValue && typeof fieldValue === 'object' && 'value' in fieldValue) {
+					actualValue = fieldValue.value;
+				} else if (fieldValue !== undefined && fieldValue !== null) {
+					actualValue = fieldValue;
+				} else {
+					actualValue = getDefaultValue(member.type, member);
+				}
+				
 				return {
 					name: member.name,
 					type_name: member.type,
-					value: fieldValue?.value ?? getDefaultValue(member.type),
+					value: actualValue,
 					index: idx,
 					definition: member
 				};
@@ -45,10 +55,16 @@ export const StructInput = ({
 						(m: any) => m.name === member.name
 					);
 				}
+				
+				let actualValue = member.value;
+				if (member && typeof member === 'object' && 'value' in member) {
+					actualValue = member.value;
+				}
+				
 				return {
 					name: member.name,
 					type_name: member.type_name,
-					value: member.value,
+					value: actualValue,
 					index: idx,
 					definition: memberFunctionInput
 				};

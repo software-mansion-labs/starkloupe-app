@@ -87,13 +87,17 @@ export const EnumInput = ({
 		}
 	}
 
-	const currentVariant = functionInput.enum_variants.find((v: any) => v.name === enumVariant);
+	const currentVariant = functionInput?.enum_variants?.find((v: any) => v.name === enumVariant);
 	const hasStructMembers =
 		currentVariant?.struct_members && currentVariant.struct_members.length > 0;
 	const hasType = currentVariant?.type && currentVariant.type !== '';
 	const hasNestedEnumVariants =
 		currentVariant?.enum_variants && currentVariant.enum_variants.length > 0;
 	const needsValueInput = hasType && !hasStructMembers && !hasNestedEnumVariants;
+
+	const isUnitEnumValue =
+		typeof parameter.value === 'string' &&
+		functionInput?.enum_variants?.some((v: any) => v.name === parameter.value);
 
 	let actualValue = parameter.value;
 	if (needsValueInput) {
@@ -104,17 +108,30 @@ export const EnumInput = ({
 		) {
 			actualValue = parameter.value.__enum_value;
 		} else if (typeof parameter.value === 'string') {
-			const isJustVariantName = functionInput.enum_variants.some(
+			const isJustVariantName = functionInput?.enum_variants?.some(
 				(v: any) => v.name === parameter.value
 			);
 			if (isJustVariantName) {
-				actualValue = '0';
-				setTimeout(() => {
-					onValueChange({
-						__enum_variant: enumVariant,
-						__enum_value: '0'
-					});
-				}, 0);
+				const variant = functionInput.enum_variants.find((v: any) => v.name === parameter.value);
+				if (variant?.type) {
+					actualValue = getDefaultValue(variant.type);
+					setTimeout(() => {
+						onValueChange({
+							__enum_variant: enumVariant,
+							__enum_value: actualValue
+						});
+					}, 0);
+				} else {
+					actualValue = '0';
+					setTimeout(() => {
+						onValueChange({
+							__enum_variant: enumVariant,
+							__enum_value: '0'
+						});
+					}, 0);
+				}
+			} else {
+				actualValue = parameter.value;
 			}
 		}
 	}
@@ -156,10 +173,10 @@ export const EnumInput = ({
 									};
 								});
 								return structValue;
-						  })()
+							})()
 						: firstNestedVariant.type && firstNestedVariant.type !== ''
-						? { __enum_value: nestedValue }
-						: {})
+							? { __enum_value: nestedValue }
+							: {})
 				}
 			});
 			return;
@@ -185,10 +202,10 @@ export const EnumInput = ({
 
 	return (
 		<StructContainer>
-			<ParameterHeader name={parameter.name} type={functionInput.type} />
+			{parameter.name && <ParameterHeader name={parameter.name} type={functionInput.type} />}
 
 			<div className="space-y-2">
-				<Label className="text-xs">Variant</Label>
+				<Label className="text-xs">Enum Variant</Label>
 				<Select value={enumVariant} onValueChange={handleVariantChange}>
 					<SelectTrigger>
 						<SelectValue />
@@ -235,12 +252,24 @@ export const EnumInput = ({
 					</span>
 				</div>
 			)}
-			{hasStructMembers && <div className="text-sm text-muted-foreground mt-3">Struct members</div>}
+			{hasStructMembers && (
+				<div className="text-sm text-muted-foreground mt-3 flex items-center justify-between">
+					<div>Struct members</div> <div className="text-xs">{currentVariant.type}</div>
+				</div>
+			)}
 			{hasStructMembers && (
 				<div className="space-y-3 pl-2 md:pl-4">
 					{currentVariant.struct_members.map((member: any, idx: number) => {
-						const fieldValue = parameter.value?.[idx.toString()];
-						const actualValue = fieldValue?.value ?? getDefaultValue(member.type, member);
+						let fieldValue = parameter.value?.[idx.toString()];
+						let actualValue: any;
+
+						if (fieldValue && typeof fieldValue === 'object' && 'value' in fieldValue) {
+							actualValue = fieldValue.value;
+						} else if (fieldValue !== undefined && fieldValue !== null) {
+							actualValue = fieldValue;
+						} else {
+							actualValue = getDefaultValue(member.type, member);
+						}
 
 						return (
 							<ParameterInput
