@@ -61,13 +61,16 @@ export function ExpressionDetails({
 		if (
 			!debuggerContext?.activeFile ||
 			!debuggerContext?.codeLocation?.start ||
-			!debuggerContext?.codeLocation?.end
+			!debuggerContext?.codeLocation?.end ||
+			!debuggerContext?.codeLocation?.filePath
 		)
 			return;
+		const sourceCode = debuggerContext.sourceCode[debuggerContext.codeLocation.filePath];
+		if (!sourceCode) return;
 		setExpression(
 			truncateString(
 				extractCodeFragment(
-					debuggerContext.sourceCode[debuggerContext.codeLocation.filePath],
+					sourceCode,
 					debuggerContext.codeLocation.start,
 					debuggerContext.codeLocation.end
 				),
