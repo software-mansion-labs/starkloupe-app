@@ -18,12 +18,14 @@ export interface FunctionInput {
 	type: string;
 	struct_members?: FunctionInput[];
 	enum_variants?: FunctionInput[];
+	circular_reference_to?: string;
 }
 export interface FunctionOutput {
 	type: string;
 	name?: string;
 	struct_members?: FunctionInput[];
 	enum_variants?: FunctionInput[];
+	circular_reference_to?: string;
 }
 
 export interface FunctionData {

@@ -20,12 +20,48 @@ const TypeMembersViewer = ({
 		});
 	};
 
+	const findDefinition = (
+		root: FunctionInput | FunctionOutput,
+		typeName: string
+	): FunctionInput | FunctionOutput | undefined => {
+		if (root.type === typeName && (root.struct_members?.length || root.enum_variants?.length)) {
+			return root;
+		}
+
+		if (root.struct_members) {
+			for (const m of root.struct_members) {
+				const found = findDefinition(m, typeName);
+				if (found) return found;
+			}
+		}
+		if (root.enum_variants) {
+			for (const v of root.enum_variants) {
+				const found = findDefinition(v, typeName);
+				if (found) return found;
+			}
+		}
+		return undefined;
+	};
+
 	const renderMember = (
-		member: FunctionInput | FunctionOutput,
+		inputMember: FunctionInput | FunctionOutput,
 		path: string,
 		isRoot = false,
 		isVariant = false
 	) => {
+		let member = inputMember;
+		if (member.circular_reference_to) {
+			const definition = findDefinition(data, member.circular_reference_to);
+			if (definition) {
+				member = {
+					...member,
+					struct_members: definition.struct_members,
+					enum_variants: definition.enum_variants,
+					circular_reference_to: undefined
+				};
+			}
+		}
+
 		const key = path;
 		const hasMembers = member.struct_members && member.struct_members.length > 0;
 		const hasVariants = member.enum_variants && member.enum_variants.length > 0;
@@ -66,7 +102,12 @@ const TypeMembersViewer = ({
 
 							{childItems.map((childMember, idx) => (
 								<div key={idx} className="whitespace-pre mb-1.5">
-									{renderMember(childMember, `${key}.${childMember.name}`, false, hasVariants)}
+									{renderMember(
+										childMember,
+										`${key}.${childMember.name}`,
+										false,
+										hasVariants
+									)}
 								</div>
 							))}
 						</div>
