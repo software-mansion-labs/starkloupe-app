@@ -25,12 +25,35 @@ export const StructInput = ({
 	const isFromFunctionInput =
 		functionInput?.struct_members && functionInput.struct_members.length > 0;
 
+	const resolveDefinition = (def: any) => {
+		if (def?.circular_reference_to && functionInput?.struct_members) {
+			let target = functionInput.struct_members.find(
+				(m: any) =>
+					m.type === def.circular_reference_to &&
+					(m.struct_members?.length > 0 || m.enum_variants?.length > 0)
+			);
+			if (!target && functionInput.type === def.circular_reference_to) {
+				target = functionInput;
+			}
+
+			if (target) {
+				return {
+					...def,
+					struct_members: target.struct_members,
+					enum_variants: target.enum_variants,
+					circular_reference_to: undefined
+				};
+			}
+		}
+		return def;
+	};
+
 	const getMembersToRender = () => {
 		if (isFromFunctionInput) {
 			return functionInput.struct_members.map((member: any, idx: number) => {
 				const fieldValue = parameter.value?.[idx.toString()];
 				let actualValue: any;
-				
+
 				if (fieldValue && typeof fieldValue === 'object' && 'value' in fieldValue) {
 					actualValue = fieldValue.value;
 				} else if (fieldValue !== undefined && fieldValue !== null) {
@@ -38,13 +61,13 @@ export const StructInput = ({
 				} else {
 					actualValue = getDefaultValue(member.type, member);
 				}
-				
+
 				return {
 					name: member.name,
 					type_name: member.type,
 					value: actualValue,
 					index: idx,
-					definition: member
+					definition: resolveDefinition(member)
 				};
 			});
 		} else {
@@ -55,18 +78,18 @@ export const StructInput = ({
 						(m: any) => m.name === member.name
 					);
 				}
-				
+
 				let actualValue = member.value;
 				if (member && typeof member === 'object' && 'value' in member) {
 					actualValue = member.value;
 				}
-				
+
 				return {
 					name: member.name,
 					type_name: member.type_name,
 					value: actualValue,
 					index: idx,
-					definition: memberFunctionInput
+					definition: resolveDefinition(memberFunctionInput)
 				};
 			});
 		}
