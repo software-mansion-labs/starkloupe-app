@@ -155,7 +155,7 @@ function ContractDetails({ contractData }: { contractData: GetContractResponse }
 		},
 
 		{
-			name: 'Verified on Walnut',
+			name: `Verified on ${contractData.source ? contractData.source.toString().charAt(0).toUpperCase() + contractData.source.toString().slice(1) : 'Walnut'}`,
 			value: contractData.verified.toString()
 		}
 	];

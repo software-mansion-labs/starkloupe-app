@@ -83,8 +83,8 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 		const chainDetails = network?.networkName
 			? parseChain(network?.networkName)
 			: item?.chainId
-			? parseChain(item?.chainId)
-			: undefined;
+				? parseChain(item?.chainId)
+				: undefined;
 		return chainDetails;
 	});
 
@@ -148,14 +148,37 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 									<div className="hidden md:flex  gap-2 ">
 										{networkBadge}
 										{contractData &&
-											(contractData?.verified ? <VerifiedBadge /> : <NonVerifiedBadge />)}
+											(contractData?.verified ? (
+												<VerifiedBadge
+													source={
+														contractData.source
+															? contractData.source.toString().charAt(0).toUpperCase() +
+																contractData.source.toString().slice(1)
+															: 'Walnut'
+													}
+												/>
+											) : (
+												<NonVerifiedBadge />
+											))}
 									</div>
 								</div>
 							</h1>
 						</div>
 						<div className="flex md:hidden gap-2 justify-between">
 							{networkBadge}
-							{contractData && (contractData?.verified ? <VerifiedBadge /> : <NonVerifiedBadge />)}
+							{contractData &&
+								(contractData?.verified ? (
+									<VerifiedBadge
+										source={
+											contractData.source
+												? contractData.source.toString().charAt(0).toUpperCase() +
+													contractData.source.toString().slice(1)
+												: 'Walnut'
+										}
+									/>
+								) : (
+									<NonVerifiedBadge />
+								))}
 						</div>
 					</div>
 					<div className="hidden md:block">
@@ -197,7 +220,7 @@ function ContractDetails({ contractData }: { contractData: GetContractResponse }
 		},
 
 		{
-			name: 'Verified on Walnut',
+			name: `Verified on ${contractData.source ? contractData.source.toString().charAt(0).toUpperCase() + contractData.source.toString().slice(1) : 'Walnut'}`,
 			value: contractData.verified.toString()
 		}
 	];

@@ -56,8 +56,8 @@ export function ClassPage({ classHash }: { classHash: string }) {
 		const chainDetails = network?.networkName
 			? parseChain(network?.networkName)
 			: item?.chainId
-			? parseChain(item?.chainId)
-			: undefined;
+				? parseChain(item?.chainId)
+				: undefined;
 		return chainDetails;
 	});
 
@@ -120,14 +120,38 @@ export function ClassPage({ classHash }: { classHash: string }) {
 
 									<div className="hidden md:flex  gap-2 ">
 										{networkBadge}
-										{classData && (classData?.verified ? <VerifiedBadge /> : <NonVerifiedBadge />)}
+										{classData &&
+											(classData?.verified ? (
+												<VerifiedBadge
+													source={
+														classData.source
+															? classData.source.toString().charAt(0).toUpperCase() +
+																classData.source.toString().slice(1)
+															: 'Walnut'
+													}
+												/>
+											) : (
+												<NonVerifiedBadge />
+											))}
 									</div>
 								</div>
 							</h1>
 						</div>
 						<div className="flex md:hidden gap-2 justify-between">
 							{networkBadge}
-							{classData && (classData?.verified ? <VerifiedBadge /> : <NonVerifiedBadge />)}
+							{classData &&
+								(classData?.verified ? (
+									<VerifiedBadge
+										source={
+											classData.source
+												? classData.source.toString().charAt(0).toUpperCase() +
+													classData.source.toString().slice(1)
+												: 'Walnut'
+										}
+									/>
+								) : (
+									<NonVerifiedBadge />
+								))}
 						</div>
 					</div>
 					<div className="hidden md:block">
@@ -146,9 +170,10 @@ export function ClassPage({ classHash }: { classHash: string }) {
 function ClassDetails({ classData }: { classData: GetClassResponse }) {
 	const { networks, parseChain } = useSettings();
 
+	console.log(classData);
 	const details: InfoBoxItem[] = [
 		{
-			name: 'Verified on Walnut',
+			name: `Verified on ${classData.source ? classData.source.toString().charAt(0).toUpperCase() + classData.source.toString().slice(1) : 'Walnut'}`,
 			value: classData.verified.toString()
 		}
 	];
