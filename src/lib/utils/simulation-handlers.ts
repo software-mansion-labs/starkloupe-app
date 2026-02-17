@@ -40,7 +40,12 @@ function cleanEnumValue(value: any, isUnitEnum: boolean = false): any {
 		for (const key in value) {
 			if (key !== '__enum_variant' && key !== '__enum_value') {
 				const fieldValue = value[key];
-				if (fieldValue && typeof fieldValue === 'object' && 'value' in fieldValue) {
+				if (fieldValue && typeof fieldValue === 'object' && 'name' in fieldValue && 'type_name' in fieldValue && 'value' in fieldValue) {
+					cleaned[key] = {
+						...fieldValue,
+						value: cleanEnumValue(fieldValue.value, false)
+					};
+				} else if (fieldValue && typeof fieldValue === 'object' && 'value' in fieldValue) {
 					cleaned[key] = cleanEnumValue(fieldValue.value, false);
 				} else {
 					cleaned[key] = cleanEnumValue(fieldValue, false);
@@ -55,8 +60,10 @@ function cleanEnumValue(value: any, isUnitEnum: boolean = false): any {
 	const cleaned: any = {};
 	for (const key in value) {
 		if (value[key] && typeof value[key] === 'object' && 'name' in value[key] && 'type_name' in value[key] && 'value' in value[key]) {
-
-			cleaned[key] = cleanEnumValue(value[key].value, false);
+			cleaned[key] = {
+				...value[key],
+				value: cleanEnumValue(value[key].value, false)
+			};
 		} else {
 			cleaned[key] = cleanEnumValue(value[key], false);
 		}
