@@ -4,7 +4,8 @@ import {
 	ResizablePanel,
 	ResizablePanelGroup
 } from '@/components/ui/resizable-panel';
-import { CodeViewer } from '../code-viewer/code-viewer';
+import dynamic from 'next/dynamic';
+const CodeViewer = dynamic(() => import('../code-viewer/code-viewer').then(mod => ({ default: mod.CodeViewer })), { ssr: false });
 import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';

@@ -1,10 +1,11 @@
 'use client';
 
+export const runtime = 'edge';
+
 import { SimulateTransactionPage } from '@/components/simulate-transaction/simulate-transaction-page';
 import { SimulationPayload, parseContractCalls } from '@/lib/utils';
 import { useEffect, useState } from 'react';
 
-export const runtime = 'edge';
 
 export default function Page({
 	searchParams

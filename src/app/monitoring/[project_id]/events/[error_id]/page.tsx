@@ -1,5 +1,7 @@
 'use client';
-import React, { useEffect, useRef, useState } from 'react';
+
+export const runtime = 'edge';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { HeaderNav } from '@/components/header';
 import {
 	getMonitoringErrorEventsOverviewApi,
@@ -14,9 +16,15 @@ import { EventsTable } from '@/components/monitoring/events-table';
 import { Button } from '@/components/ui/button';
 import { ArrowUturnLeftIcon } from '@heroicons/react/16/solid';
 
-export const runtime = 'edge';
-
 const EventsPage = ({ params }: { params: { project_id: string; error_id: string } }) => {
+	return (
+		<Suspense>
+			<EventsContent params={params} />
+		</Suspense>
+	);
+};
+
+const EventsContent = ({ params }: { params: { project_id: string; error_id: string } }) => {
 	const [page, setPage] = useState<number>(1);
 	const [totalPages, setTotalPages] = useState<number>(1);
 	const [monitoringEventsOverview, setMonitoringEventsOverview] = useState<

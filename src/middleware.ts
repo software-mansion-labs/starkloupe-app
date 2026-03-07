@@ -5,21 +5,16 @@ import { NextResponse } from 'next/server';
  * Router middleware. Configure here URLs to which user has/not have access (logged/not logged).
  */
 export async function middleware(request: NextRequest) {
+	const isSecure = request.url.startsWith('https://');
 	const sessionCookie = request.cookies.get(
-		`${process.env.NODE_ENV === 'production' ? '__Secure-' : ''}better-auth.session_token`
+		`${isSecure ? '__Secure-' : ''}better-auth.session_token`
 	);
 	const isLogged = !!sessionCookie;
 
 	const openPageOrGoToLoginIfNotLogged = async (url: URL) => {
 		return isLogged
 			? NextResponse.next()
-			: NextResponse.redirect(
-					`${
-						process.env.NODE_ENV === 'production'
-							? 'https://app.walnut.dev'
-							: 'http://localhost:5173'
-					}/login`
-			  );
+			: NextResponse.redirect(new URL('/login', request.url));
 	};
 	const url = new URL(request.url);
 	switch (url.pathname) {

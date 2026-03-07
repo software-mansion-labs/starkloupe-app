@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { CodeLocation } from '@/lib/simulation';
-import { CodeViewer } from '@/components/code-viewer/code-viewer';
+import dynamic from 'next/dynamic';
+const CodeViewer = dynamic(() => import('@/components/code-viewer/code-viewer').then(mod => ({ default: mod.CodeViewer })), { ssr: false });
 import { Loader } from '@/components/ui/loader';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';

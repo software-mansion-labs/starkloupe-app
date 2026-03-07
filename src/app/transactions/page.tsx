@@ -1,12 +1,13 @@
 'use client';
 
+export const runtime = 'edge';
+
+import { Suspense } from 'react';
 import { TransactionPage } from '@/components/transaction-page';
 import { extractChainId } from '@/lib/utils';
 import { useSearchParams } from 'next/navigation';
 
-export const runtime = 'edge';
-
-export default function Page() {
+function TransactionsContent() {
 	const searchParams = useSearchParams();
 
 	const txHash = searchParams.get('txHash');
@@ -26,6 +27,14 @@ export default function Page() {
 	} else {
 		return <div>Page not found</div>;
 	}
+}
+
+export default function Page() {
+	return (
+		<Suspense>
+			<TransactionsContent />
+		</Suspense>
+	);
 }
 
 const isValidUrl = (urlString: string) => {
