@@ -40,9 +40,9 @@ function LoginContent() {
 		}
 	}, [searchParams]);
 	useEffect(() => {
-		if (isLogged) {
-			router.push('/');
-		}
+		// if (isLogged) {
+		// 	router.push('/');
+		// }
 	}, [isLogged, router]);
 	return (
 		<>
