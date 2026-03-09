@@ -1,5 +1,4 @@
 import { betterAuth } from 'better-auth';
-import { nextCookies } from 'better-auth/next-js';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from '../db';
 
@@ -44,7 +43,7 @@ export const auth = betterAuth({
 				: {})
 		}
 	},
-	plugins: [nextCookies()],
+	plugins: [],
 	logger: {
 		level: 'debug',
 		log: (level: string, message: string, ...args: any[]) => {
