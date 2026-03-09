@@ -4,13 +4,18 @@ export const runtime = 'edge';
 
 const COOKIE_NAME = 'auth_preview_origin';
 
+const ALLOWED_PAGES_DEV_PROJECT = 'walnut-webapp.pages.dev';
+
 function isOriginAllowed(origin: string): boolean {
 	const proxyUrl = process.env.NEXT_PUBLIC_PREVIEW_AUTH_PROXY_URL;
 	if (!proxyUrl) return false;
 	const proxyHostname = new URL(proxyUrl).hostname;
 	try {
 		const { hostname } = new URL(origin);
-		return hostname === 'localhost' || hostname === proxyHostname || hostname.endsWith(`.${proxyHostname}`);
+		if (hostname === 'localhost' || hostname === proxyHostname) return true;
+		if (hostname.endsWith(`.${proxyHostname}`)) return true;
+		if (hostname.endsWith(`.${ALLOWED_PAGES_DEV_PROJECT}`)) return true;
+		return false;
 	} catch {
 		return false;
 	}

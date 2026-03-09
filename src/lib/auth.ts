@@ -11,7 +11,7 @@ export const auth = betterAuth({
 	secret: process.env.BETTER_AUTH_SECRET || 'fallback-secret-key-change-in-production',
 	baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5173',
 	trustedOrigins: useProxy
-		? [`*.${new URL(previewAuthProxyUrl!).hostname}`, 'http://localhost:*']
+		? [`*.${new URL(previewAuthProxyUrl!).hostname}`, '*.walnut-webapp.pages.dev', 'http://localhost:*']
 		: isProduction
 			? ['*.walnut.dev']
 			: [],
