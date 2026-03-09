@@ -10,7 +10,7 @@ function isOriginAllowed(origin: string): boolean {
 	const proxyHostname = new URL(proxyUrl).hostname;
 	try {
 		const { hostname } = new URL(origin);
-		return hostname === 'localhost' || hostname.endsWith(`.${proxyHostname}`);
+		return hostname === 'localhost' || hostname === proxyHostname || hostname.endsWith(`.${proxyHostname}`);
 	} catch {
 		return false;
 	}
