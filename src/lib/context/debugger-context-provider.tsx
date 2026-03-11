@@ -112,7 +112,8 @@ export const DebuggerContextProvider = ({
 					setDebuggerInfo(result);
 
 					if (result?.simulationDebuggerData?.debuggerTrace && !hasPendingNavigationRef.current) {
-						const i = findInitialIndex(result.simulationDebuggerData.debuggerTrace);
+						const i = result.simulationDebuggerData.initialStepIndex
+							?? findInitialIndex(result.simulationDebuggerData.debuggerTrace);
 						_setCurrentStepIndex(i);
 						_setCurrentStep(result.simulationDebuggerData.debuggerTrace[i]);
 					}
