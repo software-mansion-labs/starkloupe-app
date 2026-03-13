@@ -108,6 +108,7 @@ export interface SimulationDebuggerData {
 		[key: string]: ClassDebuggerData;
 	};
 	debuggerTrace: DebuggerExecutionTraceEntry[];
+	initialStepIndex?: number | null;
 }
 export interface DebuggerInfo {
 	contractCallsMap: { [key: string]: ContractCall };
