@@ -8,7 +8,8 @@ import EntryPointsSearch from '../ui/entrypoints-search';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { InfoBox, InfoBoxItem } from '../ui/info-box';
 import { useSettings } from '@/lib/context/settings-context-provider';
-import { ABIList } from './abi-list';
+import dynamic from 'next/dynamic';
+const ABIList = dynamic(() => import('./abi-list').then(mod => ({ default: mod.ABIList })), { ssr: false });
 import { normalizeUrl } from '@/lib/utils';
 
 export function ContractRoot({

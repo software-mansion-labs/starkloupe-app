@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { CodeLocation } from '@/lib/simulation';
 import { FilesExplorer } from '../code-viewer/file-explorer';
-import { CodeViewer } from '../code-viewer/code-viewer';
+import dynamic from 'next/dynamic';
+const CodeViewer = dynamic(() => import('../code-viewer/code-viewer').then(mod => ({ default: mod.CodeViewer })), { ssr: false });
 import { ChevronRight, ChevronDown, File, Folder } from 'lucide-react';
 import { Loader } from '@/components/ui/loader';
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '../ui/resizable-panel';

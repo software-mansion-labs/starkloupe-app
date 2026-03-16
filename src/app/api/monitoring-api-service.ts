@@ -1,6 +1,5 @@
 'use server';
-import { getAccessToken } from '@logto/next/server-actions';
-import { logtoClientNextConfig } from '@/app/api/logto-config';
+import { getServerSession } from '@/lib/auth-server';
 import { Network } from '@/lib/context/settings-context-provider';
 
 export const inviteToOrganization = async (
@@ -161,17 +160,15 @@ const callMonitoringApi = async (url: string, method: string, body?: any) => {
 			body: body ? JSON.stringify(body) : undefined
 		});
 	} else {
-		const accessToken = await getAccessToken(
-			logtoClientNextConfig,
-			process.env.WALNUT_MAIN_API_URL
-		);
+		const session = await getServerSession();
+		const accessToken = session?.session?.token;
 		return await fetch(url, {
 			method: method,
 			headers: {
 				Authorization: `Bearer ${accessToken}`,
 				'Content-Type': 'application/json'
 			},
-			body: JSON.stringify(body)
+			body: body ? JSON.stringify(body) : undefined
 		});
 	}
 };

@@ -1,5 +1,7 @@
 'use client';
-import React, { useEffect, useState, useRef } from 'react';
+
+export const runtime = 'edge';
+import React, { Suspense, useEffect, useState, useRef } from 'react';
 import { HeaderNav } from '@/components/header';
 import {
 	getMonitoringErrorsApi,
@@ -12,9 +14,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ErrorsTable } from '@/components/monitoring/errors-table';
 import { Footer } from '@/components/footer';
 
-export const runtime = 'edge';
-
 const Dashboard = ({ params }: { params: { project_id: string } }) => {
+	return (
+		<Suspense>
+			<DashboardContent params={params} />
+		</Suspense>
+	);
+};
+
+const DashboardContent = ({ params }: { params: { project_id: string } }) => {
 	const [page, setPage] = useState<number>(1);
 	const [totalPages, setTotalPages] = useState<number>(1);
 	const [monitoringErrorsOverview, setMonitoringErrorsOverview] = useState<MonitoringErrorsOverview | undefined>(undefined);

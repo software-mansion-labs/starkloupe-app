@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useEffect } from 'react';
+export const runtime = 'edge';
+
+import React, { Suspense, useEffect } from 'react';
 import Image from 'next/image';
 import logoWalnutWhite from '@/assets/walnut-white.svg';
 import logoWalnut from '@/assets/walnut.svg';
@@ -11,9 +13,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
 
-export const runtime = 'edge';
-
 export default function Page() {
+	return (
+		<Suspense>
+			<LoginContent />
+		</Suspense>
+	);
+}
+
+function LoginContent() {
 	const { isLogged } = useUserContext();
 	const router = useRouter();
 	const { theme, setTheme } = useTheme();

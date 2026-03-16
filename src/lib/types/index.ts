@@ -1,3 +1,5 @@
+import { auth } from '../auth';
+
 export enum ChainId {
 	SN_MAINNET = 'SN_MAINNET',
 	SN_SEPOLIA = 'SN_SEPOLIA',
@@ -184,3 +186,26 @@ export const systemsTypeNames = [
 	'Poseidon',
 	'PanicResult'
 ];
+
+export interface TenantNetwork {
+	tenantId: string;
+	tenantName: string;
+	rpcUrl: string;
+	chainId: number;
+	displayName: string;
+}
+
+export interface CustomSession {
+	tenantNetworks?: TenantNetwork[];
+}
+
+declare module 'better-auth' {
+	interface CustomSession {
+		tenantNetworks?: TenantNetwork[];
+	}
+}
+
+export type AuthType = {
+	user: typeof auth.$Infer.Session.user | null;
+	session: (typeof auth.$Infer.Session.session & CustomSession) | null;
+};

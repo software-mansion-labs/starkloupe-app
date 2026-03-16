@@ -1,5 +1,7 @@
 'use client';
 
+export const runtime = 'edge';
+
 import { Footer } from '@/components/footer';
 import Image from 'next/image';
 import logoWalnut from '@/assets/walnut-logo-beta.svg';
@@ -17,7 +19,6 @@ import {
 	DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 
-export const runtime = 'edge';
 
 export default function Page() {
 	const router = useRouter();

@@ -9,25 +9,27 @@ import {
 	DropdownMenuTrigger
 } from '../ui/dropdown-menu';
 import { ArrowRightEndOnRectangleIcon } from '@heroicons/react/24/solid';
-import { githubSignOut } from '@/components/auth/sign-out-server-action';
+import { performLogout } from '@/lib/utils/auth-utils';
+import starknetLogo from '@/assets/network-logos/strk.svg';
 import {
 	Cog6ToothIcon,
 	PlayIcon,
 	MoonIcon,
 	SunIcon,
 	DevicePhoneMobileIcon,
-	ArrowTopRightOnSquareIcon
+	CheckBadgeIcon,
+	DocumentMagnifyingGlassIcon
 } from '@heroicons/react/24/outline';
-import ethLogo from '@/assets/network-logos/eth-purple.svg';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { navigation } from '../footer';
+import { REPO_URL } from '@/lib/config';
 import Image from 'next/image';
+import { navigation } from '../footer';
 
 const UserAvatarDropdown = ({ avatarSrc, userName }: { avatarSrc?: string; userName: string }) => {
 	const { theme, setTheme } = useTheme();
 	return (
-		<div className="text-left flex w-full">
+		<div className=" text-left flex w-full">
 			<DropdownMenu modal={false}>
 				<DropdownMenuTrigger>
 					<Avatar className="h-8 w-8">
@@ -36,26 +38,32 @@ const UserAvatarDropdown = ({ avatarSrc, userName }: { avatarSrc?: string; userN
 					</Avatar>
 				</DropdownMenuTrigger>
 
-				<DropdownMenuContent className="w-56 mr-4 sm:mr-6 lg:mr-8">
+				<DropdownMenuContent className="w-fit mr-4 sm:mr-6 lg:mr-8">
 					<div className="px-2 py-1.5">
 						<p className="text-xs font-medium text-gray-500 uppercase tracking-wide">Actions</p>
 					</div>
 					<Link href={`/simulate-transaction`}>
 						<DropdownMenuItem className="cursor-pointer">
-							<PlayIcon className="mr-2 h-4 w-4" />
+							<PlayIcon className="mr-1 h-4 w-4" />
 							<span>Simulate transaction</span>
 						</DropdownMenuItem>
 					</Link>
+					<a href={REPO_URL} target="_blank" rel="noreferrer noopener">
+						<DropdownMenuItem className="cursor-pointer">
+							<DocumentMagnifyingGlassIcon className="mr-1 h-4 w-4" />
+							<span>Contract Viewer</span>
+						</DropdownMenuItem>
+					</a>
 					<Link href="/settings">
 						<DropdownMenuItem className="cursor-pointer">
-							<Cog6ToothIcon className="mr-2 h-4 w-4" />
+							<Cog6ToothIcon className="mr-1 h-4 w-4" />
 							<span>Settings</span>
 						</DropdownMenuItem>
 					</Link>
-					<Link href="https://evm.walnut.dev" target="_blank">
+					<Link href="https://app.walnut.dev" target="_blank">
 						<DropdownMenuItem className="cursor-pointer">
-							<Image src={ethLogo} alt="Ethereum" className="mr-2 h-4 w-4" />
-							<span>Switch to Ethereum (EVM)</span>
+							<Image src={starknetLogo} alt="straknet" className="mr-2 h-4 w-4" />
+							<span>Switch to Starknet</span>
 						</DropdownMenuItem>
 					</Link>
 
@@ -82,23 +90,22 @@ const UserAvatarDropdown = ({ avatarSrc, userName }: { avatarSrc?: string; userN
 						className="cursor-pointer"
 					>
 						{theme === 'dark' ? (
-							<SunIcon className="mr-2 h-4 w-4" />
+							<SunIcon className="mr-1 h-4 w-4" />
 						) : (
-							<MoonIcon className="mr-2 h-4 w-4" />
+							<MoonIcon className="mr-1 h-4 w-4" />
 						)}
-						<span>{theme === 'dark' ? 'Light theme' : 'Dark theme'}</span>
+						<div>{theme === 'dark' ? 'Light theme' : 'Dark theme'}</div>
 					</DropdownMenuItem>
-					<DropdownMenuItem onClick={() => setTheme('system')} className="cursor-pointer">
-						<DevicePhoneMobileIcon className="mr-2 h-4 w-4" />
-						<span>System theme</span>
+					<DropdownMenuItem
+						onClick={() => setTheme('system')}
+						className="cursor-pointer flex items-center"
+					>
+						<DevicePhoneMobileIcon className="mr-1 h-4 w-4" />
+						<div>System theme</div>
 					</DropdownMenuItem>
 
-					<DropdownMenuSeparator />
-					<DropdownMenuItem
-						onClick={() => githubSignOut()}
-						className="cursor-pointer text-red-600 focus:text-red-600"
-					>
-						<ArrowRightEndOnRectangleIcon className="mr-2 h-4 w-4" />
+					<DropdownMenuItem onClick={performLogout} className="cursor-pointer">
+						<ArrowRightEndOnRectangleIcon className="mr-1 h-4 w-4"></ArrowRightEndOnRectangleIcon>
 						<span>Log out</span>
 					</DropdownMenuItem>
 				</DropdownMenuContent>

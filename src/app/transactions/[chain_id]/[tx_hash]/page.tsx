@@ -1,8 +1,9 @@
 'use client';
 
+export const runtime = 'edge';
+
 import { useEffect } from 'react';
 
-export const runtime = 'edge';
 
 export default function Page({ params }: { params: { chain_id: string; tx_hash: string } }) {
 	useEffect(() => {

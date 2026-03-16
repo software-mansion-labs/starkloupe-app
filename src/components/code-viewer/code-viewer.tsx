@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/named
 import { Editor as MonacoEditor, Monaco, useMonaco } from '@monaco-editor/react';
 import { editor as Editor } from 'monaco-editor';
+import 'monaco-editor/esm/vs/basic-languages/rust/rust.contribution.js';
 import { cn } from '@/lib/utils';
 import { registerCairoLanguageSupport } from './cairo-lang-config';
 import { useCallback, useContext, useEffect, useRef, useState } from 'react';

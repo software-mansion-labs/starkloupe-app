@@ -1,10 +1,15 @@
 import { API_URL } from '@/lib/config';
-import { getSessionToken } from '@/lib/auth';
+import { authClient } from '@/lib/auth-client';
 import camelcaseKeys from 'camelcase-keys';
 
 const CLASS_HASH_REGEX = /^0x[0-9a-fA-F]{64}$/;
 const DOTS_SLASH_REGEX = /[./]/;
 const CAMELCASE_EXCLUDE = [CLASS_HASH_REGEX, DOTS_SLASH_REGEX];
+
+export interface FetchError {
+	status?: number;
+	message: string;
+}
 
 interface FetchApiParams {
 	init?: RequestInit | undefined;
@@ -14,12 +19,14 @@ interface FetchApiParams {
 	renameToCamelCase?: boolean;
 }
 
-function makeApiRequest(input: string, params?: FetchApiParams) {
+async function makeApiRequest(input: string, params?: FetchApiParams) {
 	input = API_URL + input;
 	const body = params?.data ? JSON.stringify(params?.data) : params?.init?.body;
 	const method = params?.method ?? params?.init?.method ?? 'GET';
 	let headers: HeadersInit = { 'Content-Type': 'application/json', ...params?.init?.headers };
-	const authToken = getSessionToken();
+	// Get session token from Better Auth
+	const session = await authClient.getSession();
+	const authToken = session.data?.session?.token;
 	if (authToken)
 		headers = {
 			Authorization: `Bearer ${authToken}`,
@@ -45,22 +52,32 @@ export async function fetchApi<ResponseDataType>(
 	params?: FetchApiParams
 ): Promise<ResponseDataType> {
 	const response = await makeApiRequest(input, params);
-
 	if (!response.ok) {
-		const message = await response.text();
-		throw { status: response.status, message };
+		let errorMsg = await response.text();
+		try {
+			const json = JSON.parse(errorMsg);
+			// Prefer context.originalMessage (complete error message from soldb), then details, then error field
+			if (json.context?.originalMessage) {
+				errorMsg = json.context.originalMessage;
+			} else if (json.details) {
+				errorMsg = json.details;
+			} else if (json.error) {
+				errorMsg = json.error;
+			}
+		} catch {}
+
+		// Create error with status code for better error handling
+		const error = new Error(errorMsg);
+		(error as any).status = response.status;
+		throw error;
+	} else {
+		if (params?.renameToCamelCase)
+			return camelcaseKeys(await response.json(), {
+				deep: true,
+				exclude: CAMELCASE_EXCLUDE
+			}) as ResponseDataType;
+		else return response.json() as Promise<ResponseDataType>;
 	}
-
-	const data = await response.json();
-
-	if (params?.renameToCamelCase) {
-		return camelcaseKeys(data, {
-			deep: true,
-			exclude: CAMELCASE_EXCLUDE
-		}) as ResponseDataType;
-	}
-
-	return data as ResponseDataType;
 }
 
 export async function safeFetchApi<ResponseDataType>(

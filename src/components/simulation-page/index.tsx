@@ -93,12 +93,19 @@ export function SimulationPage({
 	let content = null;
 	if (isLoading) {
 		content = <Loader />;
-	} else if (error && error.status && JSON.parse(error.message).error) {
+	} else if (error) {
+		let errorMessage = error.message;
+		try {
+			const parsed = JSON.parse(error.message);
+			if (parsed.error) errorMessage = parsed.error;
+		} catch {
+			// error.message is not JSON, use as-is
+		}
 		content =
-			error.status >= 500 && error.status < 600 ? (
-				<ServerError message={JSON.parse(error.message).error} />
+			error.status && error.status >= 500 && error.status < 600 ? (
+				<ServerError message={errorMessage} />
 			) : (
-				<Error message={JSON.parse(error.message).error} />
+				<Error message={errorMessage} />
 			);
 	} else if (l2TransactionData) {
 		content = (
