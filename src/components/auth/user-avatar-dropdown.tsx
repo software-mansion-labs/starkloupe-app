@@ -22,7 +22,7 @@ import {
 } from '@heroicons/react/24/outline';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { VERIFY_URL, REPO_URL } from '@/lib/config';
+import { REPO_URL } from '@/lib/config';
 import Image from 'next/image';
 import { navigation } from '../footer';
 
@@ -48,12 +48,6 @@ const UserAvatarDropdown = ({ avatarSrc, userName }: { avatarSrc?: string; userN
 							<span>Simulate transaction</span>
 						</DropdownMenuItem>
 					</Link>
-					<a href={VERIFY_URL} target="_blank" rel="noreferrer noopener">
-						<DropdownMenuItem className="cursor-pointer">
-							<CheckBadgeIcon className="mr-1 h-4 w-4" />
-							<span>Verify contracts</span>
-						</DropdownMenuItem>
-					</a>
 					<a href={REPO_URL} target="_blank" rel="noreferrer noopener">
 						<DropdownMenuItem className="cursor-pointer">
 							<DocumentMagnifyingGlassIcon className="mr-1 h-4 w-4" />
