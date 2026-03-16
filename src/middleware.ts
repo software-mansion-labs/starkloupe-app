@@ -5,6 +5,10 @@ import { NextResponse } from 'next/server';
  * Router middleware. Configure here URLs to which user has/not have access (logged/not logged).
  */
 export async function middleware(request: NextRequest) {
+	if (process.env.TEST_USER) {
+		return NextResponse.next();
+	}
+
 	const isSecure = request.url.startsWith('https://');
 	const sessionCookie = request.cookies.get(
 		`${isSecure ? '__Secure-' : ''}better-auth.session_token`

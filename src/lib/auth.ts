@@ -2,18 +2,12 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from '../db';
 
-const previewAuthProxyUrl = process.env.NEXT_PUBLIC_PREVIEW_AUTH_PROXY_URL; // e.g. https://walnut-webapp-testnet.pages.dev
-const useProxy = !!previewAuthProxyUrl;
-const isProduction = !useProxy && !!process.env.BETTER_AUTH_URL?.includes('app.walnut.dev');
+const isProduction = !!process.env.BETTER_AUTH_URL?.includes('app.walnut.dev');
 
 export const auth = betterAuth({
 	secret: process.env.BETTER_AUTH_SECRET || 'fallback-secret-key-change-in-production',
-	...(useProxy ? {} : { baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5173' }),
-	trustedOrigins: useProxy
-		? [`*.${new URL(previewAuthProxyUrl!).hostname}`, '*.walnut-webapp.pages.dev', 'http://localhost:*']
-		: isProduction
-			? ['*.walnut.dev']
-			: [],
+	baseURL: process.env.BETTER_AUTH_URL || 'http://localhost:5173',
+	trustedOrigins: isProduction ? ['*.walnut.dev'] : [],
 	advanced: {
 		crossSubDomainCookies: {
 			enabled: isProduction,
@@ -35,12 +29,7 @@ export const auth = betterAuth({
 	socialProviders: {
 		github: {
 			clientId: process.env.GITHUB_CLIENT_ID!,
-			clientSecret: process.env.GITHUB_CLIENT_SECRET!,
-			...(useProxy
-				? {
-						redirectURI: `${previewAuthProxyUrl}/api/auth-proxy/callback`
-					}
-				: {})
+			clientSecret: process.env.GITHUB_CLIENT_SECRET!
 		}
 	},
 	plugins: [],

@@ -8,11 +8,10 @@ import logoWalnutWhite from '@/assets/walnut-white.svg';
 import logoWalnut from '@/assets/walnut.svg';
 import { SignUpWithGithubButton } from '@/components/auth/sign-up-with-github-button';
 import { useUserContext } from '@/lib/context/user-context-provider';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
 import { useTheme } from 'next-themes';
-import { authClient } from '@/lib/auth-client';
 
 export default function Page() {
 	return (
@@ -25,7 +24,6 @@ export default function Page() {
 function LoginContent() {
 	const { isLogged } = useUserContext();
 	const router = useRouter();
-	const searchParams = useSearchParams();
 	const { theme, setTheme } = useTheme();
 	const currentTheme = theme;
 	useEffect(() => {
@@ -34,11 +32,6 @@ function LoginContent() {
 			if (currentTheme) setTheme(currentTheme);
 		};
 	}, []);
-	useEffect(() => {
-		if (searchParams.get('auto_signin') === 'github') {
-			authClient.signIn.social({ provider: 'github' });
-		}
-	}, [searchParams]);
 	useEffect(() => {
 		// if (isLogged) {
 		// 	router.push('/');
