@@ -1,19 +1,19 @@
 import React from 'react';
 import UserAvatarDropdown from '@/components/auth/user-avatar-dropdown';
 import { SignUpWithGithubButton } from '@/components/auth/sign-up-with-github-button';
-import { authClient } from '@/lib/auth-client';
+import { useUserContext } from '@/lib/context/user-context-provider';
 
 export function UserSection() {
-	const { data: session, isPending } = authClient.useSession();
+	const { isLoaded, isLogged, avatarSrc, name } = useUserContext();
 
 	return (
 		<div>
-			{isPending ? (
+			{!isLoaded ? (
 				<div></div>
-			) : session ? (
+			) : isLogged ? (
 				<UserAvatarDropdown
-					avatarSrc={session.user.image || ''}
-					userName={session.user.name || ''}
+					avatarSrc={avatarSrc || ''}
+					userName={name}
 				/>
 			) : (
 				<SignUpWithGithubButton />

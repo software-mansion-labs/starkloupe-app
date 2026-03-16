@@ -5,7 +5,7 @@ import { NextResponse } from 'next/server';
  * Router middleware. Configure here URLs to which user has/not have access (logged/not logged).
  */
 export async function middleware(request: NextRequest) {
-	if (process.env.TEST_USER) {
+	if (process.env.TEST_USER || process.env.NEXT_PUBLIC_TEST_USER) {
 		return NextResponse.next();
 	}
 

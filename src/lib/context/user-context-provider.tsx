@@ -40,10 +40,11 @@ export const UserContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
 		}
 	}, [session]);
 
-	const isLoaded = !isPending;
-	const isLogged = !!session;
-	const avatarSrc = session?.user?.image || undefined;
-	const name = session?.user?.name || '';
+	const testUser = process.env.NEXT_PUBLIC_TEST_USER;
+	const isLoaded = testUser ? true : !isPending;
+	const isLogged = testUser ? true : !!session;
+	const avatarSrc = testUser ? undefined : (session?.user?.image || undefined);
+	const name = testUser || session?.user?.name || '';
 
 	return (
 		<UserContext.Provider
