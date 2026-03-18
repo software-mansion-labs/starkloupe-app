@@ -155,7 +155,7 @@ export default function Sidebar({
 			<ResizablePanel
 				className="min-h-[32px]"
 				ref={inspectorFilePanelRef}
-				defaultSize={5}
+				defaultSize={10}
 				minSize={5}
 				collapsedSize={5}
 			>

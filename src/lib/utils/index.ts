@@ -2,6 +2,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { usePathname } from 'next/navigation';
 import { twMerge } from 'tailwind-merge';
 import { ChainId } from '../types';
+import { logger } from './logger';
 export * from './fetch';
 
 import { ContractCall, SimulationPayloadWithCalldata } from '../simulation';
@@ -30,10 +31,10 @@ export function cn(...inputs: ClassValue[]) {
 export function copyToClipboard(text: string): void {
 	navigator.clipboard.writeText(text).then(
 		function () {
-			console.log('Copying to clipboard was successful!');
+			logger.debug('Copying to clipboard was successful!');
 		},
 		function (err) {
-			console.error('Could not copy text: ', err);
+			logger.error('Could not copy text:', err);
 		}
 	);
 }

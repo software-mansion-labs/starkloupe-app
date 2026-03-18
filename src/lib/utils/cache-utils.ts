@@ -1,3 +1,5 @@
+import { logger } from './logger';
+
 export const CACHE_TTL_MS = 15 * 60 * 1000; //cache time
 
 export const CUSTOM_SETTINGS_KEY = 'contract_custom_settings';
@@ -9,7 +11,7 @@ export const compressData = (data: any): string => {
 		const jsonString = JSON.stringify(data);
 		return btoa(encodeURIComponent(jsonString));
 	} catch (error) {
-		console.error('Error:', error);
+		logger.error('Compression error:', error);
 		return '';
 	}
 };
@@ -24,7 +26,7 @@ export const decompressData = (compressedData: string): any => {
 		const jsonString = decodeURIComponent(atob(compressedData));
 		return JSON.parse(jsonString);
 	} catch (error) {
-		console.error('Error:', error);
+		logger.error('Decompression error:', error);
 		return {};
 	}
 };
@@ -48,7 +50,7 @@ const cleanupCustomSettings = (currentData: {
 	const keepCount = Math.floor(entries.length * 0.7);
 	const keptEntries = entries.slice(-keepCount);
 
-	console.warn(`Custom settings cleanup: removed ${entries.length - keepCount} old entries`);
+	logger.warn(`Custom settings cleanup: removed ${entries.length - keepCount} old entries`);
 
 	return Object.fromEntries(keptEntries);
 };
@@ -68,7 +70,7 @@ export const loadCustomSettingsFromStorage = (): {
 			return settings;
 		}
 	} catch (error) {
-		console.error('Error loading custom settings:', error);
+		logger.error('Error loading custom settings:', error);
 		resetStorage(CUSTOM_SETTINGS_KEY);
 	}
 	return {};
@@ -86,7 +88,7 @@ export const saveCustomSettingsToStorage = (settings: {
 		const dataSize = getCustomSettingsSize(settings);
 
 		if (dataSize > MAX_STORAGE_SIZE) {
-			console.warn('Custom settings data too large, cleaning up...');
+			logger.warn('Custom settings data too large, cleaning up...');
 
 			const cleanedSettings = cleanupCustomSettings(settings);
 
@@ -108,7 +110,7 @@ export const saveCustomSettingsToStorage = (settings: {
 					return;
 				}
 
-				console.warn(`Critical cleanup: kept only ${keepCount} entries`);
+				logger.warn(`Critical cleanup: kept only ${keepCount} entries`);
 				localStorage.setItem(CUSTOM_SETTINGS_KEY, compressData(finalSettings));
 			} else {
 				localStorage.setItem(CUSTOM_SETTINGS_KEY, compressData(cleanedSettings));
@@ -118,7 +120,7 @@ export const saveCustomSettingsToStorage = (settings: {
 		}
 	} catch (error) {
 		if ((error as Error).name === 'QuotaExceededError') {
-			console.error('localStorage quota exceeded, emergency cleanup...');
+			logger.error('localStorage quota exceeded, emergency cleanup...');
 
 			const entries = Object.entries(settings);
 			const emergencySettings = Object.fromEntries(entries.slice(-20));
@@ -130,13 +132,13 @@ export const saveCustomSettingsToStorage = (settings: {
 
 			try {
 				localStorage.setItem(CUSTOM_SETTINGS_KEY, compressData(emergencySettings));
-				console.warn('Emergency cleanup completed, kept 20 entries');
+				logger.warn('Emergency cleanup completed, kept 20 entries');
 			} catch (finalError) {
-				console.error('Failed to save after emergency cleanup:', finalError);
+				logger.error('Failed to save after emergency cleanup:', finalError);
 				resetStorage(CUSTOM_SETTINGS_KEY);
 			}
 		} else {
-			console.error('Error saving custom settings:', error);
+			logger.error('Error saving custom settings:', error);
 		}
 	}
 };
