@@ -310,7 +310,7 @@ export const DebuggerContextProvider = ({
 
 	const toggleBreakpoint = (lineNumber: number, activeFile: string, classHash: string) => {
 		setFileBreakpoints((prev) => {
-			const newFileBreakpoints = JSON.parse(JSON.stringify(prev));
+			const newFileBreakpoints = structuredClone(prev);
 
 			if (!newFileBreakpoints[classHash]) {
 				newFileBreakpoints[classHash] = {};
