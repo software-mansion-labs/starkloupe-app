@@ -43,7 +43,7 @@ export const UserContextProvider: React.FC<{ children: React.ReactNode }> = ({ c
 	const testUser = process.env.NEXT_PUBLIC_TEST_USER;
 	const isLoaded = testUser ? true : !isPending;
 	const isLogged = testUser ? true : !!session;
-	const avatarSrc = testUser ? undefined : (session?.user?.image || undefined);
+	const avatarSrc = testUser ? undefined : session?.user?.image || undefined;
 	const name = testUser || session?.user?.name || '';
 
 	return (
@@ -79,7 +79,6 @@ export const useSetGlobalOrganizationIdInUserContext = () => {
 	}
 
 	return (organizationId: string) => {
-		//todo remove when Logto introduces refreshToken on demand
 		localStorage.setItem('organizationId', organizationId);
 		context.setOrganizationId(organizationId);
 		context.setIsGlobalOrg(true);
