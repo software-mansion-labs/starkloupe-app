@@ -66,6 +66,7 @@
 		"js-cookie": "^3.0.5",
 		"js-md5": "^0.8.3",
 		"lodash": "^4.17.21",
+		"loglevel": "^1.9.2",
 		"lucide-react": "^0.436.0",
 		"lz-string": "^1.5.0",
 		"monaco-editor": "^0.44.0",
