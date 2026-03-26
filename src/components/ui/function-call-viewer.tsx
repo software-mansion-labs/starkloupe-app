@@ -17,7 +17,7 @@ export const getIndentStyle = (depth: number, parentIsIndex = false): React.CSSP
 interface FilteredStepInfo {
 	function?: string | undefined;
 	args: InternalFnCallIO[] | string | string[] | DecodedItem[] | boolean;
-	result?: InternalFnCallIO[];
+	result?: InternalFnCallIO[] | DecodedItem[];
 	typeName?: string;
 	contractCallDetails?: ContractCall | undefined;
 }

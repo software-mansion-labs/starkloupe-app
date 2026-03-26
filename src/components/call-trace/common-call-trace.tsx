@@ -51,7 +51,6 @@ export const CommonCallTrace = memo(function CommonCallTrace({
 				callType="contract"
 			/>
 		));
-		return null;
 	}, [contractCallsMap, nestingLevel, callId, previewMode]);
 
 	const functionCallIdsList = useMemo(() => {

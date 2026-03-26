@@ -1,6 +1,6 @@
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { cn } from '@/lib/utils';
-import { DebuggerExecutionTraceEntry, FunctionCall, InternalFnCallIO } from '@/lib/simulation';
+import { DecodedItem, DebuggerExecutionTraceEntry, FunctionCall, InternalFnCallIO } from '@/lib/simulation';
 import { ScrollArea, ScrollBar } from '../ui/scroll-area';
 import FunctionCallViewer from '../ui/function-call-viewer';
 import { useCallback, useEffect, useState } from 'react';
@@ -50,8 +50,8 @@ export function StepDetails({
 	const stepWithLocation = step?.withLocation || undefined;
 
 	let functionName: string | undefined = undefined;
-	let args: InternalFnCallIO[] = [];
-	let result: InternalFnCallIO[] = [];
+	let args: InternalFnCallIO[] | DecodedItem[] = [];
+	let result: InternalFnCallIO[] | DecodedItem[] = [];
 
 	const contractCallDetails = stepWithLocation?.contractCallId
 		? contractCallsMap[stepWithLocation?.contractCallId]
@@ -70,9 +70,7 @@ export function StepDetails({
 						.split('::')
 						.pop()
 				: fullFnName || '';
-		//@ts-ignore
 		args = functionCallDetails?.argumentsDecoded || [];
-		//@ts-ignore
 		result = functionCallDetails?.resultsDecoded || [];
 	}
 
