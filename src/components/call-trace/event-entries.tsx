@@ -129,7 +129,7 @@ const EventDetails = memo(function EventCallDetails({ call }: { call: ContractCa
 	);
 
 	return (
-		<div className="flex flex-col bg-sky-50 border-y dark:bg-background border-blue-400 py-2 px-4 ">
+		<div className="flex flex-col bg-sky-50 dark:bg-background border-y border-blue-400 py-1 px-4">
 			<div className="md:w-[calc(100vw-7rem)]">
 				<div className=""></div>
 				<InfoBox details={details} />
