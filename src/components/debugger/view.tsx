@@ -175,6 +175,8 @@ function Controls({
 				nextStep();
 			} else if (event.key.toLowerCase() === 'o') {
 				stepOver();
+			} else if (event.key.toLowerCase() === 'r') {
+				runToBreakpoint();
 			}
 		};
 
@@ -182,7 +184,7 @@ function Controls({
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown);
 		};
-	}, [previousStep, nextStep, stepOver]);
+	}, [previousStep, nextStep, stepOver, runToBreakpoint]);
 	const { contractCallsMap, functionCallsMap } = useCallTrace();
 
 	let call = contractCall?.callId && contractCallsMap[contractCall?.callId];
@@ -326,7 +328,7 @@ function Controls({
 								</div>
 							</TooltipTrigger>
 							<TooltipContent className="bg-background border-border text-black dark:text-white border">
-								Run
+								Run (r)
 							</TooltipContent>
 						</Tooltip>
 					</div>
