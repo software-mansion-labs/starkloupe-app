@@ -126,7 +126,7 @@ const StorageChanges = () => {
 									)}
 								</button>
 								{isExpanded && (
-									<div className="flex flex-col bg-background border-y border-blue-400">
+									<div className="flex flex-col bg-sky-50 dark:bg-background border-y border-blue-400">
 										<div className="w-full flex flex-col gap-2">
 											{Object.entries(storageChanges).map(
 												([storageAddress, [before, after]], idx) => (
