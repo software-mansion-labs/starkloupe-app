@@ -9,6 +9,7 @@ export interface GetClassResponse {
 	declaredSources: Source[];
 	source?: string;
 	sourceCode?: Record<string, string>;
+	className?: string;
 }
 
 export interface ContractNetwork {
