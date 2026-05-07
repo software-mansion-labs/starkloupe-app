@@ -35,6 +35,8 @@ interface DebuggerContextProps {
 	prevStep: () => void;
 	stepOver: () => void;
 	runToBreakpoint: () => void;
+	resetToInitialStep: () => void;
+	initialStepIndex: number;
 	setActiveFile: (filePath: string) => void;
 	setCurrentContractCall: (contractCall: ContractCall) => void;
 	isFunctionCallDebuggable: (functionCallId: number) => boolean;
@@ -478,6 +480,15 @@ export const DebuggerContextProvider = ({
 		setCurrentStepIndex(simulationDebuggerData.debuggerTrace.length - 1);
 	};
 
+	const initialStepIndex = simulationDebuggerData
+		? simulationDebuggerData.initialStepIndex ?? findInitialIndex(simulationDebuggerData.debuggerTrace)
+		: 0;
+
+	const resetToInitialStep = () => {
+		if (!simulationDebuggerData) return;
+		setCurrentStepIndex(initialStepIndex);
+	};
+
 	const isContractCallDebuggable = (id: number) =>
 		contractCallsMap[id]?.debuggerTraceStepIndex != null;
 
@@ -526,6 +537,8 @@ export const DebuggerContextProvider = ({
 				prevStep,
 				stepOver,
 				runToBreakpoint,
+				resetToInitialStep,
+				initialStepIndex,
 				setActiveFile,
 				setCurrentContractCall,
 				isContractCallDebuggable,

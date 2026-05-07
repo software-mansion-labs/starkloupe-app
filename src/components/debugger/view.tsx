@@ -5,7 +5,10 @@ import {
 	ResizablePanelGroup
 } from '@/components/ui/resizable-panel';
 import dynamic from 'next/dynamic';
-const CodeViewer = dynamic(() => import('../code-viewer/code-viewer').then(mod => ({ default: mod.CodeViewer })), { ssr: false });
+const CodeViewer = dynamic(
+	() => import('../code-viewer/code-viewer').then((mod) => ({ default: mod.CodeViewer })),
+	{ ssr: false }
+);
 import { useDebugger } from '@/lib/context/debugger-context-provider';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
@@ -37,6 +40,8 @@ export function DebuggerView() {
 		prevStep,
 		stepOver,
 		runToBreakpoint,
+		resetToInitialStep,
+		initialStepIndex,
 		loading,
 		hasDebuggableContract,
 		error,
@@ -80,6 +85,8 @@ export function DebuggerView() {
 						totalSteps={totalSteps}
 						contractCall={contractCall}
 						runToBreakpoint={runToBreakpoint}
+						resetToInitialStep={resetToInitialStep}
+						initialStepIndex={initialStepIndex}
 						functionName={functionName}
 					/>
 				)}
@@ -151,6 +158,8 @@ function Controls({
 	totalSteps,
 	contractCall,
 	runToBreakpoint,
+	resetToInitialStep,
+	initialStepIndex,
 	functionName
 }: {
 	nextStep: () => void;
@@ -160,6 +169,8 @@ function Controls({
 	totalSteps: number;
 	contractCall?: ContractCall;
 	runToBreakpoint: () => void;
+	resetToInitialStep: () => void;
+	initialStepIndex: number;
 	functionName?: string | undefined;
 }) {
 	const { customSettings, updateContractName, updateContractColor, updateContractSettings } =
@@ -175,6 +186,8 @@ function Controls({
 				nextStep();
 			} else if (event.key.toLowerCase() === 'o') {
 				stepOver();
+			} else if (event.key === 'R' && event.shiftKey) {
+				resetToInitialStep();
 			} else if (event.key.toLowerCase() === 'r') {
 				runToBreakpoint();
 			}
@@ -184,7 +197,7 @@ function Controls({
 		return () => {
 			window.removeEventListener('keydown', handleKeyDown);
 		};
-	}, [previousStep, nextStep, stepOver, runToBreakpoint]);
+	}, [previousStep, nextStep, stepOver, runToBreakpoint, resetToInitialStep]);
 	const { contractCallsMap, functionCallsMap } = useCallTrace();
 
 	let call = contractCall?.callId && contractCallsMap[contractCall?.callId];
@@ -329,6 +342,36 @@ function Controls({
 							</TooltipTrigger>
 							<TooltipContent className="bg-background border-border text-black dark:text-white border">
 								Run (r)
+							</TooltipContent>
+						</Tooltip>
+						<Tooltip delayDuration={100}>
+							<TooltipTrigger>
+								<div
+									onClick={() => resetToInitialStep()}
+									className={`w-5 h-5 p-0.5 rounded-sm select-none ${
+										stepIndex === initialStepIndex
+											? 'cursor-not-allowed opacity-60'
+											: 'cursor-pointer hover:bg-accent'
+									}`}
+								>
+									<div className="icon">
+										<svg
+											className=" w-4 h-4 text-blue-500"
+											viewBox="0 0 16 16"
+											xmlns="http://www.w3.org/2000/svg"
+											fill="#3b82f6"
+										>
+											<path
+												fillRule="evenodd"
+												clipRule="evenodd"
+												d="M4.681 3H2V2h3.5l.5.5V6H5V4a5 5 0 1 0 4.53-.761l.302-.954A6 6 0 1 1 4.681 3z"
+											/>
+										</svg>
+									</div>
+								</div>
+							</TooltipTrigger>
+							<TooltipContent className="bg-background border-border text-black dark:text-white border">
+								Restart (Shift+R)
 							</TooltipContent>
 						</Tooltip>
 					</div>
