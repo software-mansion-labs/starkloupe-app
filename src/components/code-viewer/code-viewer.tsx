@@ -41,14 +41,20 @@ export function CodeViewer({
 		contractCall,
 		availableBreakpoints = {},
 		fileBreakpoints = {},
+		disabledBreakpoints = {},
 		toggleBreakpoint,
-		isExpressionHover
+		isExpressionHover,
+		scrollTarget,
+		setScrollTarget
 	} = debuggerContext ?? {};
 
 	const classAvailableBreakpoints = contractCall
 		? availableBreakpoints[contractCall.classHash]
 		: undefined;
 	const classFileBreakpoints = contractCall ? fileBreakpoints[contractCall.classHash] : undefined;
+	const classDisabledBreakpoints = contractCall
+		? disabledBreakpoints[contractCall.classHash]
+		: undefined;
 	const classHash = contractCall ? contractCall.classHash : undefined;
 
 	if (!highlightClass) highlightClass = '';
@@ -78,6 +84,12 @@ export function CodeViewer({
 
 		return fileEntry ? fileEntry.map((bp) => bp + 1) : [];
 	}, [classFileBreakpoints]);
+
+	const getCurrentDisabledLines = useCallback((): number[] => {
+		if (!activeFileRef.current) return [];
+		const fileEntry = classDisabledBreakpoints && classDisabledBreakpoints[activeFileRef.current];
+		return fileEntry ? fileEntry.map((bp) => bp + 1) : [];
+	}, [classDisabledBreakpoints]);
 
 	const highlightCodeLocation = useCallback(
 		(
@@ -187,15 +199,21 @@ export function CodeViewer({
 			if (!editorRef.current || !monaco || !activeFileRef.current) return;
 
 			const currentFileBreakpoints = getCurrentFileBreakpoints();
+			const currentDisabledLines = getCurrentDisabledLines();
 			const decorations = [
-				...currentFileBreakpoints.map((line) => ({
-					range: new monaco.Range(line, 1, line, 1),
-					options: {
-						isWholeLine: false,
-						glyphMarginClassName: 'breakpoint-active',
-						glyphMarginHoverMessage: { value: 'Delete breakpoint' }
-					}
-				})),
+				...currentFileBreakpoints.map((line) => {
+					const isDisabled = currentDisabledLines.includes(line);
+					return {
+						range: new monaco.Range(line, 1, line, 1),
+						options: {
+							isWholeLine: false,
+							glyphMarginClassName: isDisabled ? 'breakpoint-disabled' : 'breakpoint-active',
+							glyphMarginHoverMessage: {
+								value: isDisabled ? 'Disabled breakpoint' : 'Delete breakpoint'
+							}
+						}
+					};
+				}),
 				...(currentHoverLine &&
 				!currentFileBreakpoints.includes(currentHoverLine) &&
 				breakPointsLinesRef.current &&
@@ -218,12 +236,18 @@ export function CodeViewer({
 				decorations
 			);
 		},
-		[monaco, getCurrentFileBreakpoints]
+		[monaco, getCurrentFileBreakpoints, getCurrentDisabledLines]
 	);
 
 	useEffect(() => {
 		updateBreakpointDecorations(hoverLine);
-	}, [classFileBreakpoints, hoverLine, updateBreakpointDecorations, activeFile]);
+	}, [
+		classFileBreakpoints,
+		classDisabledBreakpoints,
+		hoverLine,
+		updateBreakpointDecorations,
+		activeFile
+	]);
 
 	useEffect(() => {
 		if (editorRef.current && monaco) {
@@ -237,6 +261,20 @@ export function CodeViewer({
 	}, [codeLocation, args, results, isExpressionHover]);
 
 	useEffect(() => {
+		if (!scrollTarget || !monaco || !editorRef.current) return;
+		if (scrollTarget.filePath !== activeFile) return;
+		if (!content) return;
+		const targetLine = scrollTarget.line + 1;
+		const t = setTimeout(() => {
+			if (!editorRef.current) return;
+			editorRef.current.revealLineInCenter(targetLine, 0);
+			editorRef.current.setPosition({ lineNumber: targetLine, column: 1 });
+			setScrollTarget?.(null);
+		}, 50);
+		return () => clearTimeout(t);
+	}, [scrollTarget, activeFile, content, monaco, setScrollTarget]);
+
+	useEffect(() => {
 		const styleId = 'breakpoint-style';
 		if (!document.getElementById(styleId)) {
 			const style = document.createElement('style');
@@ -245,6 +283,11 @@ export function CodeViewer({
 				.breakpoint-active {
 					background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle fill='%23E51400' cx='8' cy='8' r='4'/%3E%3C/svg%3E") center center no-repeat;
 					cursor: pointer;
+				}
+				.breakpoint-disabled {
+					background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle fill='none' stroke='%23E51400' stroke-width='1.5' cx='8' cy='8' r='3.25'/%3E%3C/svg%3E") center center no-repeat;
+					cursor: pointer;
+					opacity: 0.7;
 				}
 				.breakpoint-hover:hover {
 					background: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Ccircle fill='%23888888' cx='8' cy='8' r='4'/%3E%3C/svg%3E") center center no-repeat;

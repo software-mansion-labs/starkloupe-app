@@ -43,6 +43,11 @@ interface DebuggerContextProps {
 	isContractCallDebuggable: (contractCallId: number) => boolean;
 	fileBreakpoints: Record<string, Record<string, number[]>>;
 	toggleBreakpoint: (lineNumber: number, activeFile: string, classHash: string) => void;
+	disabledBreakpoints: Record<string, Record<string, number[]>>;
+	toggleBreakpointEnabled: (lineNumber: number, activeFile: string, classHash: string) => void;
+	clearAllBreakpoints: () => void;
+	scrollTarget: { filePath: string; line: number } | null;
+	setScrollTarget: (target: { filePath: string; line: number } | null) => void;
 	isExpressionHover: boolean;
 	setExpressionHover: (isHover: boolean) => void;
 	loading: boolean;
@@ -78,12 +83,16 @@ export const DebuggerContextProvider = ({
 	const [fileBreakpoints, setFileBreakpoints] = useState<Record<string, Record<string, number[]>>>(
 		{}
 	);
+	const [disabledBreakpoints, setDisabledBreakpoints] = useState<
+		Record<string, Record<string, number[]>>
+	>({});
 	const [contractCall, setContractCall] = useState<ContractCall>();
 	const [codeLocation, setCodeLocation] = useState<CodeLocation>();
 	const [sourceCode, setSourceCode] = useState<Record<string, string>>({});
 	const [isExpressionHover, setExpressionHover] = useState(false);
 	const [hasDebuggableContract, setHasDebuggableContract] = useState(false);
 	const [clickedDebuggerTab, setIsClickedDebuggerTab] = useState(false);
+	const [scrollTarget, setScrollTarget] = useState<{ filePath: string; line: number } | null>(null);
 
 	// Pending navigation - when user clicks debug before data is loaded
 	const [pendingFunctionCallId, setPendingFunctionCallId] = useState<number | null>(null);
@@ -346,6 +355,69 @@ export const DebuggerContextProvider = ({
 		});
 	};
 
+	const clearAllBreakpoints = () => {
+		setFileBreakpoints({});
+		setDisabledBreakpoints({});
+	};
+
+	const toggleBreakpointEnabled = (
+		lineNumber: number,
+		activeFile: string,
+		classHash: string
+	) => {
+		setDisabledBreakpoints((prev) => {
+			const next = structuredClone(prev);
+			if (!next[classHash]) next[classHash] = {};
+			if (!next[classHash][activeFile]) next[classHash][activeFile] = [];
+
+			const idx = next[classHash][activeFile].indexOf(lineNumber);
+			if (idx !== -1) {
+				next[classHash][activeFile] = next[classHash][activeFile].filter(
+					(l: number) => l !== lineNumber
+				);
+			} else {
+				next[classHash][activeFile] = [...next[classHash][activeFile], lineNumber];
+			}
+
+			if (next[classHash][activeFile].length === 0) {
+				delete next[classHash][activeFile];
+				if (Object.keys(next[classHash]).length === 0) {
+					delete next[classHash];
+				}
+			}
+			return next;
+		});
+	};
+
+	useEffect(() => {
+		setDisabledBreakpoints((prev) => {
+			if (Object.keys(prev).length === 0) return prev;
+			let changed = false;
+			const next: Record<string, Record<string, number[]>> = {};
+			for (const [cls, files] of Object.entries(prev)) {
+				const fbCls = fileBreakpoints[cls];
+				if (!fbCls) {
+					changed = true;
+					continue;
+				}
+				const newFiles: Record<string, number[]> = {};
+				for (const [file, lines] of Object.entries(files)) {
+					const fbLines = fbCls[file];
+					if (!fbLines) {
+						changed = true;
+						continue;
+					}
+					const filtered = lines.filter((l) => fbLines.includes(l));
+					if (filtered.length !== lines.length) changed = true;
+					if (filtered.length > 0) newFiles[file] = filtered;
+				}
+				if (Object.keys(newFiles).length > 0) next[cls] = newFiles;
+				else changed = true;
+			}
+			return changed ? next : prev;
+		});
+	}, [fileBreakpoints]);
+
 	function setCurrentStepIndex(index: number) {
 		_setCurrentStepIndex(index);
 		const newStep = simulationDebuggerData?.debuggerTrace[index];
@@ -470,7 +542,11 @@ export const DebuggerContextProvider = ({
 				if (
 					fileBreakpoints[classHash] &&
 					fileBreakpoints[classHash][location.filePath] &&
-					fileBreakpoints[classHash][location.filePath].some((line) => linesRange.includes(line))
+					fileBreakpoints[classHash][location.filePath].some(
+						(line) =>
+							linesRange.includes(line) &&
+							!disabledBreakpoints[classHash]?.[location.filePath]?.includes(line)
+					)
 				) {
 					setCurrentStepIndex(i);
 					return;
@@ -545,6 +621,11 @@ export const DebuggerContextProvider = ({
 				isFunctionCallDebuggable,
 				fileBreakpoints,
 				toggleBreakpoint,
+				disabledBreakpoints,
+				toggleBreakpointEnabled,
+				clearAllBreakpoints,
+				scrollTarget,
+				setScrollTarget,
 				isExpressionHover,
 				setExpressionHover,
 				loading,

@@ -19,6 +19,7 @@ import Sidebar from '../code-viewer/sidebar';
 import { useCallTrace } from '@/lib/context/call-trace-context-provider';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { NoCodeLocationMessage, NoCodeMessage } from '../call-trace/debugger-message';
+import { BreakpointsList } from './breakpoints-list';
 
 export function DebuggerView() {
 	const debuggerContext = useDebugger();
@@ -88,6 +89,7 @@ export function DebuggerView() {
 						resetToInitialStep={resetToInitialStep}
 						initialStepIndex={initialStepIndex}
 						functionName={functionName}
+						setActiveFile={setActiveFile}
 					/>
 				)}
 
@@ -160,7 +162,8 @@ function Controls({
 	runToBreakpoint,
 	resetToInitialStep,
 	initialStepIndex,
-	functionName
+	functionName,
+	setActiveFile
 }: {
 	nextStep: () => void;
 	previousStep: () => void;
@@ -172,6 +175,7 @@ function Controls({
 	resetToInitialStep: () => void;
 	initialStepIndex: number;
 	functionName?: string | undefined;
+	setActiveFile: (filePath: string) => void;
 }) {
 	const { customSettings, updateContractName, updateContractColor, updateContractSettings } =
 		useSettings();
@@ -374,6 +378,8 @@ function Controls({
 								Restart (Shift+R)
 							</TooltipContent>
 						</Tooltip>
+						<div className="w-px h-4 mx-1 bg-border self-center" />
+						<BreakpointsList handleFileClick={setActiveFile} />
 					</div>
 				</TooltipProvider>
 			</div>
