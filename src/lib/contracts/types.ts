@@ -12,6 +12,8 @@ export interface GetContractResponse {
 	source?: string;
 	sourceCode?: Record<string, string>;
 	abi: string;
+	contractName?: string;
+	className?: string;
 }
 
 export interface FunctionInput {

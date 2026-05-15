@@ -171,12 +171,19 @@ function ClassDetails({ classData }: { classData: GetClassResponse }) {
 	const { networks, parseChain } = useSettings();
 
 	console.log(classData);
-	const details: InfoBoxItem[] = [
-		{
-			name: `Verified on ${classData.source ? classData.source.toString().charAt(0).toUpperCase() + classData.source.toString().slice(1) : 'Walnut'}`,
-			value: classData.verified.toString()
-		}
-	];
+	const details: InfoBoxItem[] = [];
+
+	if (classData.className) {
+		details.push({
+			name: 'Class name',
+			value: classData.className
+		});
+	}
+
+	details.push({
+		name: `Verified on ${classData.source ? classData.source.toString().charAt(0).toUpperCase() + classData.source.toString().slice(1) : 'Walnut'}`,
+		value: classData.verified.toString()
+	});
 
 	if (classData.declaredSources.length > 0) {
 		const declaredOnNetworks = [];

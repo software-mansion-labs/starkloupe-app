@@ -143,7 +143,16 @@ function ContractRootContent({
 function ContractDetails({ contractData }: { contractData: GetContractResponse }) {
 	const { networks, parseChain } = useSettings();
 
-	const details: InfoBoxItem[] = [
+	const details: InfoBoxItem[] = [];
+
+	if (contractData.contractName) {
+		details.push({
+			name: 'Contract name',
+			value: contractData.contractName
+		});
+	}
+
+	details.push(
 		{
 			name: 'Class hash',
 			value: contractData.classHash,
@@ -154,12 +163,11 @@ function ContractDetails({ contractData }: { contractData: GetContractResponse }
 			name: 'Cairo version',
 			value: contractData.cairoVersion
 		},
-
 		{
 			name: `Verified on ${contractData.source ? contractData.source.toString().charAt(0).toUpperCase() + contractData.source.toString().slice(1) : 'Walnut'}`,
 			value: contractData.verified.toString()
 		}
-	];
+	);
 
 	if (contractData.deployedSources.length > 0) {
 		const deployedOnNetworks = [];
