@@ -84,7 +84,11 @@ export function TransactionPage({
 						skipTracking
 					});
 				} else {
-					simulation = {};
+					setError({
+						message: 'Unsupported or missing network for this transaction link.',
+						status: 400
+					});
+					return;
 				}
 
 				setTransactionSimulation(simulation);

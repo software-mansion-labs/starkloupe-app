@@ -109,7 +109,9 @@ export function useStarknetChain(): { chainId: ChainId; chainName: string } {
 }
 
 export function extractChainId(chainIdStr: string): ChainId | undefined {
-	switch (chainIdStr) {
+	// chainId from the URL is matched without case sensitivity, so links like
+	// `sn_sepolia` or `SN_SEPOLIA` both work.
+	switch (chainIdStr.toUpperCase()) {
 		case ChainId.SN_MAINNET:
 			return ChainId.SN_MAINNET;
 		case ChainId.SN_SEPOLIA:
