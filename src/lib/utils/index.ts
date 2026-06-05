@@ -46,6 +46,13 @@ export function shortenHash(hash: string, length = 13) {
 	return hash.substring(0, length + 2) + '...' + hash.substring(hash.length - length);
 }
 
+// Turns a verification sources list into a human label, e.g. ["walnut","voyager"]
+// -> "Walnut, Voyager". Empty when nothing is provided.
+export function formatSources(sources?: string[]): string {
+	if (!sources || sources.length === 0) return '';
+	return sources.map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(', ');
+}
+
 export function hexToNumber(hexString: string): number {
 	return parseInt(hexString, 16);
 }

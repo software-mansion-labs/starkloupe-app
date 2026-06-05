@@ -9,7 +9,7 @@ import { InfoBoxItem, InfoBox } from '../ui/info-box';
 import { Error } from '../ui/error';
 import { fetchClassDataByHash, GetClassResponse } from '@/lib/classes';
 import { useSettings } from '@/lib/context/settings-context-provider';
-import { normalizeUrl, shortenHash } from '@/lib/utils';
+import { formatSources, normalizeUrl, shortenHash } from '@/lib/utils';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import AddressLink from '../address-link';
 import { NetworkBadge } from '../ui/network-badge';
@@ -122,14 +122,7 @@ export function ClassPage({ classHash }: { classHash: string }) {
 										{networkBadge}
 										{classData &&
 											(classData?.verified ? (
-												<VerifiedBadge
-													source={
-														classData.source
-															? classData.source.toString().charAt(0).toUpperCase() +
-																classData.source.toString().slice(1)
-															: 'Walnut'
-													}
-												/>
+												<VerifiedBadge sources={classData.sources} />
 											) : (
 												<NonVerifiedBadge />
 											))}
@@ -141,14 +134,7 @@ export function ClassPage({ classHash }: { classHash: string }) {
 							{networkBadge}
 							{classData &&
 								(classData?.verified ? (
-									<VerifiedBadge
-										source={
-											classData.source
-												? classData.source.toString().charAt(0).toUpperCase() +
-													classData.source.toString().slice(1)
-												: 'Walnut'
-										}
-									/>
+									<VerifiedBadge sources={classData.sources} />
 								) : (
 									<NonVerifiedBadge />
 								))}
@@ -180,10 +166,12 @@ function ClassDetails({ classData }: { classData: GetClassResponse }) {
 		});
 	}
 
-	details.push({
-		name: `Verified on ${classData.source ? classData.source.toString().charAt(0).toUpperCase() + classData.source.toString().slice(1) : 'Walnut'}`,
-		value: classData.verified.toString()
-	});
+	if (classData.verified) {
+		details.push({
+			name: 'Verified on',
+			value: formatSources(classData.sources)
+		});
+	}
 
 	if (classData.declaredSources.length > 0) {
 		const declaredOnNetworks = [];

@@ -7,7 +7,7 @@ export interface Source {
 export interface GetClassResponse {
 	verified: boolean;
 	declaredSources: Source[];
-	source?: string;
+	sources?: string[];
 	sourceCode?: Record<string, string>;
 	className?: string;
 }

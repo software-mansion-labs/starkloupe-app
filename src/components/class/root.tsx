@@ -7,7 +7,7 @@ import { InfoBox, InfoBoxItem } from '../ui/info-box';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import { ContractsTable } from './contracts-table';
 import { fetchClassContracts } from '@/lib/api';
-import { normalizeUrl } from '@/lib/utils';
+import { formatSources, normalizeUrl } from '@/lib/utils';
 
 export function ClassRoot({
 	isClassVerified,
@@ -109,10 +109,12 @@ function ClassDetails({ classData }: { classData: GetClassResponse }) {
 		});
 	}
 
-	details.push({
-		name: 'Verified on Walnut',
-		value: classData.verified.toString()
-	});
+	if (classData.verified) {
+		details.push({
+			name: 'Verified on',
+			value: formatSources(classData.sources)
+		});
+	}
 
 	if (classData.declaredSources.length > 0) {
 		const declaredOnNetworks = [];

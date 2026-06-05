@@ -10,7 +10,7 @@ import { InfoBox, InfoBoxItem } from '../ui/info-box';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import dynamic from 'next/dynamic';
 const ABIList = dynamic(() => import('./abi-list').then(mod => ({ default: mod.ABIList })), { ssr: false });
-import { normalizeUrl } from '@/lib/utils';
+import { formatSources, normalizeUrl } from '@/lib/utils';
 
 export function ContractRoot({
 	isClassVerified,
@@ -162,12 +162,15 @@ function ContractDetails({ contractData }: { contractData: GetContractResponse }
 		{
 			name: 'Cairo version',
 			value: contractData.cairoVersion
-		},
-		{
-			name: `Verified on ${contractData.source ? contractData.source.toString().charAt(0).toUpperCase() + contractData.source.toString().slice(1) : 'Walnut'}`,
-			value: contractData.verified.toString()
 		}
 	);
+
+	if (contractData.verified) {
+		details.push({
+			name: 'Verified on',
+			value: formatSources(contractData.sources)
+		});
+	}
 
 	if (contractData.deployedSources.length > 0) {
 		const deployedOnNetworks = [];

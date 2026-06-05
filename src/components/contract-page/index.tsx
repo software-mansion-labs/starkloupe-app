@@ -15,7 +15,7 @@ import {
 } from '@/lib/contracts';
 import { ClassSourceCode } from '@/components/class-source-code';
 import { useSettings } from '@/lib/context/settings-context-provider';
-import { normalizeUrl, shortenHash } from '@/lib/utils';
+import { formatSources, normalizeUrl, shortenHash } from '@/lib/utils';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
 import AddressLink from '../address-link';
 import { ContractRoot } from '../contract/root';
@@ -149,14 +149,7 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 										{networkBadge}
 										{contractData &&
 											(contractData?.verified ? (
-												<VerifiedBadge
-													source={
-														contractData.source
-															? contractData.source.toString().charAt(0).toUpperCase() +
-																contractData.source.toString().slice(1)
-															: 'Walnut'
-													}
-												/>
+												<VerifiedBadge sources={contractData.sources} />
 											) : (
 												<NonVerifiedBadge />
 											))}
@@ -168,14 +161,7 @@ export function ContractPage({ contractAddress }: { contractAddress: string }) {
 							{networkBadge}
 							{contractData &&
 								(contractData?.verified ? (
-									<VerifiedBadge
-										source={
-											contractData.source
-												? contractData.source.toString().charAt(0).toUpperCase() +
-													contractData.source.toString().slice(1)
-												: 'Walnut'
-										}
-									/>
+									<VerifiedBadge sources={contractData.sources} />
 								) : (
 									<NonVerifiedBadge />
 								))}
@@ -226,12 +212,15 @@ function ContractDetails({ contractData }: { contractData: GetContractResponse }
 		{
 			name: 'Cairo version',
 			value: contractData.cairoVersion
-		},
-		{
-			name: `Verified on ${contractData.source ? contractData.source.toString().charAt(0).toUpperCase() + contractData.source.toString().slice(1) : 'Walnut'}`,
-			value: contractData.verified.toString()
 		}
 	);
+
+	if (contractData.verified) {
+		details.push({
+			name: 'Verified on',
+			value: formatSources(contractData.sources)
+		});
+	}
 
 	if (contractData.deployedSources.length > 0) {
 		const deployedOnNetworks = [];

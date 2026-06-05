@@ -9,7 +9,7 @@ export interface GetContractResponse {
 	deployedSources: Source[];
 	cairoVersion: string;
 	classHash: string;
-	source?: string;
+	sources?: string[];
 	sourceCode?: Record<string, string>;
 	abi: string;
 	contractName?: string;
