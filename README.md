@@ -1,42 +1,67 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# walnut-webapp
 
-## Getting Started
+The Walnut web app: a debugger and transaction explorer for Starknet and Cairo developers, running in production at [app.walnut.dev](https://app.walnut.dev).
 
-First, run the development server:
+Next.js 14 (App Router), React 18, TypeScript, Tailwind + shadcn/ui, Monaco for the source view and step debugger.
+
+The app renders; it does not compute. Transaction simulation, the debugger trace, source verification and search all come over HTTP from the Walnut backend, so a reachable backend is required for anything beyond the login screen.
+
+## Requirements
+
+- **Node v22.8.0** — pinned in `.nvmrc`, use `nvm`
+- **npm** — the lockfile is `package-lock.json`, do not mix in yarn or pnpm
+- **Postgres** — production uses [Neon](https://neon.tech); locally a free Neon dev branch is the least trouble, since the app talks to the database over Neon's HTTP driver
+- **A GitHub OAuth app** — for signing in
+- **A Walnut backend** — [walnuthq/walnut-server](https://github.com/walnuthq/walnut-server); `https://api.walnut.dev` by default, or your own instance via `NEXT_PUBLIC_API_URL`
+
+## Getting started
 
 ```bash
 nvm use
-npm i
+npm install
+
+cp .env.example .env
+# fill in the values
+
+npm run db:push        # create the schema in your database
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
 ```
 
-## Sentry
-Sentry is used for client monitoring purposes - like user session replay.
-Sentry is disabled by default for local development. To enable it, set `NEXT_PUBLIC_USE_TRACKING=true` environment variable and set `NEXT_PUBLIC_SENTRY_DSN_URL`
-with dsn value for Sentry project (can be found in Sentry dashboard).
-If you want to use Sentry for local development, but disable it for particular browser - set `skip_tracking_pls=true` cookie in your browser.
+Open [http://localhost:5173](http://localhost:5173).
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+The port is not arbitrary: it has to match `BETTER_AUTH_URL` and the callback URL registered in your GitHub OAuth app, or sign-in will bounce you back to `/login`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### GitHub OAuth app
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+Create one at [github.com/settings/developers](https://github.com/settings/developers):
 
-## Learn More
+- Homepage URL: `http://localhost:5173`
+- Authorization callback URL: `http://localhost:5173/api/auth/callback/github`
 
-To learn more about Next.js, take a look at the following resources:
+Put the client id and secret into `GITHUB_CLIENT_ID` and `GITHUB_CLIENT_SECRET`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Database
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+A [Neon](https://neon.tech) Postgres database, used only for the sign-in flow — the Better Auth tables. Nothing else is stored here, so an empty database is a fine starting point: `npm run db:push` creates the schema.
 
-## Deploy on Vercel
+## Layout
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```
+src/
+  app/          routes (App Router) and the Better Auth handler
+  components/   UI, call trace, code viewer, step debugger, forms
+  db/           Drizzle client and schema
+  lib/          API clients, auth, contexts, shared types and utilities
+  middleware.ts route protection
+drizzle/        generated SQL migrations
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+Files are `kebab-case.tsx`, components are `PascalCase`, and each feature gets its own folder under `src/components/`.
+
+## Contributing
+
+Issues and pull requests are welcome. Run `npm run lint` before opening one; it covers both the ESLint rules and the Cloudflare edge-compatibility checks that the build enforces. If you change anything under `src/db/schema/`, run `npm run db:generate` and commit the generated migration alongside it.
+
+## License
+
+Apache License 2.0 — see [LICENSE](LICENSE) and [NOTICE](NOTICE).
