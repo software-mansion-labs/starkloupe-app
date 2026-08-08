@@ -1,11 +1,4 @@
-import {
-	CommonError,
-	Project,
-	SimulationResponse,
-	SimulationsResponse,
-	Transaction,
-	SearchDataResponse
-} from '@/lib/types';
+import { SimulationResponse, Transaction, SearchDataResponse } from '@/lib/types';
 import { fetchApi } from '@/lib/utils';
 import { API_URL } from '@/lib/config';
 import { ContractItem, GetClassContractsResponse } from './classes';
@@ -24,28 +17,6 @@ export async function fetchSearchData({
 		renameToCamelCase: true
 	});
 	return searchDataResponse;
-}
-
-export function fetchCommonErrors({ projectSlug }: { projectSlug: string }) {
-	return fetchApi<{ project: Project; common_errors: CommonError[] }>(
-		'/v1/simulations/common-errors',
-		{
-			queryParams: { project_slug: projectSlug }
-		}
-	);
-}
-
-export function fetchSimulations({
-	projectSlug,
-	errorHash
-}: {
-	projectSlug?: string;
-	errorHash?: string;
-}) {
-	const queryParams: { project_slug?: string; error_hash?: string } = {};
-	if (projectSlug) queryParams.project_slug = projectSlug;
-	if (errorHash) queryParams.error_hash = errorHash;
-	return fetchApi<SimulationsResponse | null>('/v1/simulations', { queryParams });
 }
 
 export async function fetchClassContracts(classHash: string): Promise<ContractItem[]> {

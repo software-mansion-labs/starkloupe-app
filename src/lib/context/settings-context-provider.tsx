@@ -4,29 +4,49 @@ import React, {
 	createContext,
 	MutableRefObject,
 	RefObject,
-	useCallback,
 	useContext,
 	useEffect,
 	useRef,
 	useState
 } from 'react';
-import { useUserContext } from '@/lib/context/user-context-provider';
 import { toast } from '@/components/hooks/use-toast';
-import {
-	createNetworkApi,
-	deleteNetworkApi,
-	getNetworksApi
-} from '@/app/api/monitoring-api-service';
 import { isTrackingActive } from '@/app/api/tracking-service';
 import { loadCustomSettingsFromStorage, saveCustomSettingsToStorage } from '../utils/cache-utils';
+import { logger } from '../utils/logger';
 import { chainMapping, normalizeUrl, stackMapping, unknownPrefixesAsStarknet } from '../utils';
 
 export interface Network {
 	rpcUrl: string;
 	networkName: string;
 	id?: string;
-	organizationId?: string;
 }
+
+const CUSTOM_NETWORKS_KEY = 'custom_networks';
+
+const loadNetworksFromStorage = (): Network[] => {
+	try {
+		const stored = localStorage.getItem(CUSTOM_NETWORKS_KEY);
+		return stored ? JSON.parse(stored) : [];
+	} catch {
+		return [];
+	}
+};
+
+const saveNetworksToStorage = (networks: Network[]) => {
+	try {
+		localStorage.setItem(CUSTOM_NETWORKS_KEY, JSON.stringify(networks));
+	} catch (error) {
+		logger.error('Error saving custom networks:', error);
+		throw error;
+	}
+};
+
+const generateNetworkId = (): string => {
+	if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+		return crypto.randomUUID();
+	}
+	return `network-${Math.random().toString(36).slice(2)}${Math.random().toString(36).slice(2)}`;
+};
 
 export interface AddNetwork {
 	rpcUrl: string;
@@ -62,7 +82,6 @@ const SettingsContext = createContext<SettingsContextType | undefined>(undefined
 
 export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 	const [networks, setNetworks] = useState<Network[]>([]);
-	const { isLogged, organizationId } = useUserContext();
 	const [trackingActive, setTrackingActive] = useState<boolean>(true);
 	const [trackingFlagLoaded, setTrackingFlagLoaded] = useState<boolean>(false);
 	const contractEntrypointsElementRefs = useRef<{
@@ -210,59 +229,52 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 		setTrackingFlagLoaded(true);
 	}, []);
 
-	const getNetworks = useCallback(async () => {
-		const networks = await getNetworksApi(organizationId);
-		if (networks) {
-			setNetworks(networks);
-		}
-	}, [organizationId]);
-
 	useEffect(() => {
-		if (isLogged) {
-			getNetworks();
-		}
-	}, [getNetworks, isLogged, organizationId]);
+		setNetworks(loadNetworksFromStorage());
+	}, []);
 
-	const addNetwork = async (network: AddNetwork) => {
-		const created = await createNetworkApi(network.networkName, network.rpcUrl, organizationId);
-		if (created) {
+	const addNetwork = (network: AddNetwork) => {
+		const created: Network = { ...network, id: generateNetworkId() };
+		setNetworks((prev) => {
+			const updated = [...prev, created];
+			try {
+				saveNetworksToStorage(updated);
+			} catch {
+				toast({
+					title: 'Failed to add network',
+					description:
+						'Could not save the network. Your browser storage may be full or unavailable.',
+					className: 'text-red-500'
+				});
+				return prev;
+			}
 			toast({
 				title: `Network ${network.networkName} added!`,
 				description: 'Network added successfully.'
 			});
-			await getNetworks();
-		} else {
-			toast({
-				title: 'Add network failed!',
-				description: 'There was an error while adding the network.',
-				className: 'text-red-500'
-			});
-		}
+			return updated;
+		});
 	};
 
-	const removeNetwork = async (network: Network) => {
-		const deletedRes = await deleteNetworkApi(network.id ?? '', organizationId);
-		if (deletedRes.succeed) {
+	const removeNetwork = (network: Network) => {
+		setNetworks((prev) => {
+			const updated = prev.filter((n) => n.id !== network.id);
+			try {
+				saveNetworksToStorage(updated);
+			} catch {
+				toast({
+					title: 'Failed to remove network',
+					description: 'Could not update local storage. Please try again.',
+					className: 'text-red-500'
+				});
+				return prev;
+			}
 			toast({
 				title: `Network ${network.networkName} removed!`,
 				description: 'Network removed successfully.'
 			});
-			await getNetworks();
-		} else {
-			if (deletedRes.responseCode === 400) {
-				toast({
-					title: 'Remove network failed!',
-					description: 'This network is used by monitoring.',
-					className: 'text-red-500'
-				});
-			} else {
-				toast({
-					title: 'Remove network failed!',
-					description: 'There was an error while removing the network.',
-					className: 'text-red-500'
-				});
-			}
-		}
+			return updated;
+		});
 	};
 
 	const getNetworkByRpcUrl = (rpcUrl: string): Network | undefined => {

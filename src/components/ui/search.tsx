@@ -18,8 +18,6 @@ import { Badge } from './badge';
 import { Network, useSettings } from '@/lib/context/settings-context-provider';
 import Link from 'next/link';
 import debounce from 'lodash/debounce';
-import { useUserContext } from '@/lib/context/user-context-provider';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { NetworkBadge } from './network-badge';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
 
@@ -37,7 +35,6 @@ export function Search({
 	const [open, setOpen] = useState(false);
 	const [isMac, setIsMac] = useState(true);
 	const { networks } = useSettings();
-	const { isLogged } = useUserContext();
 	const [tooltipOpen, setTooltipOpen] = useState(false);
 
 	const { parseChain } = useSettings();
@@ -221,27 +218,21 @@ export function Search({
 				Search
 			</label>
 
-			<TooltipProvider>
-				<Tooltip delayDuration={50}>
-					<TooltipTrigger className={`relative flex-1`}>
-						<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-							<MagnifyingGlassIcon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
-						</div>
-						<Input
-							disabled={!isLogged}
-							className="pl-10 flex-1"
-							placeholder={placeholder}
-							type="search"
-							name="search"
-							onFocus={() => setOpen(true)}
-						/>
-						<div className="pointer-events-none border border-border text-neutral-600 rounded-sm text-sm absolute right-0 inset-y-1.5 mr-1.5 p-1 hidden md:flex items-center">
-							{isMac ? '⌘K' : 'Ctrl+K'}
-						</div>
-					</TooltipTrigger>
-					<TooltipContent hidden={isLogged}>Please sign up to use this feature.</TooltipContent>
-				</Tooltip>
-			</TooltipProvider>
+			<div className="relative flex-1">
+				<div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+					<MagnifyingGlassIcon className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
+				</div>
+				<Input
+					className="pl-10 flex-1"
+					placeholder={placeholder}
+					type="search"
+					name="search"
+					onFocus={() => setOpen(true)}
+				/>
+				<div className="pointer-events-none border border-border text-neutral-600 rounded-sm text-sm absolute right-0 inset-y-1.5 mr-1.5 p-1 hidden md:flex items-center">
+					{isMac ? '⌘K' : 'Ctrl+K'}
+				</div>
+			</div>
 
 			<CommandDialog open={open} onOpenChange={setOpen} shouldFilter={false}>
 				<CommandInput

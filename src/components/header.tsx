@@ -11,10 +11,7 @@ import logoWalnutWhite from '@/assets/walnut-logo-beta-white.svg';
 import starknetLogo from '@/assets/network-logos/strk.svg';
 import ethLogo from '@/assets/network-logos/eth-purple.svg';
 import { Container } from '@/components/ui/container';
-import { UserSection } from '@/components/auth/user-section';
-import { useUserContext } from '@/lib/context/user-context-provider';
 import { useSettings } from '@/lib/context/settings-context-provider';
-import { isAuthorizationRequiredFeatureActive } from '@/app/api/feature-flag-service';
 import { useTheme } from 'next-themes';
 import {
 	DropdownMenu,
@@ -24,14 +21,7 @@ import {
 } from './ui/dropdown-menu';
 import { useEffect, useState } from 'react';
 
-export function HeaderNav({
-	isMainPage = false,
-	hideUserSection = false
-}: {
-	isMainPage?: boolean;
-	hideUserSection?: boolean;
-}) {
-	const { isLogged } = useUserContext();
+export function HeaderNav({ isMainPage = false }: { isMainPage?: boolean }) {
 	const { trackingActive } = useSettings();
 	const { setTheme, resolvedTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
@@ -155,41 +145,17 @@ export function HeaderNav({
 							)}
 
 							<div className="flex flex-1 justify-end space-x-2 lg:space-x-4 mx-4 md:mr-0">
-								{!isMainPage && isLogged && (
+								{!isMainPage && (
 									<div className="w-auto max-w-xs md:w-80">
 										<Search className="w-full" placeholder="Search"></Search>
 									</div>
 								)}
 								<div className="hidden md:block">
-									{isLogged ? (
-										<Link href={`/simulate-transaction`}>
-											<Button variant="outline">
-												<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
-											</Button>
-										</Link>
-									) : (
-										<Link href="/login">
-											<Button variant="outline">
-												<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
-											</Button>
-										</Link>
-									)}
-								</div>
-							</div>
-							{!hideUserSection && isAuthorizationRequiredFeatureActive() && (
-								<div className="hidden md:block">
-									<div className="flex items-center">
-										<div className="flex flex-row items-center ml-3">
-											<UserSection />
-										</div>
-									</div>
-								</div>
-							)}
-							<div className="flex md:hidden">
-								<div className="flex items-center">
-									<div className="flex flex-row items-center">
-										<UserSection />
-									</div>
+									<Link href={`/simulate-transaction`}>
+										<Button variant="outline">
+											<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
+										</Button>
+									</Link>
 								</div>
 							</div>
 							<DropdownMenu>
