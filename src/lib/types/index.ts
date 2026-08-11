@@ -1,44 +1,8 @@
-import { auth } from '../auth';
-
 export enum ChainId {
 	SN_MAINNET = 'SN_MAINNET',
 	SN_SEPOLIA = 'SN_SEPOLIA',
 	ETH_MAINNET = 'ETH_MAINNET',
 	ETH_SEPOLIA = 'ETH_SEPOLIA'
-}
-
-export interface CommonError {
-	error_message: string;
-	error_count: number;
-	error_contract_address: string;
-}
-
-export interface SimulationListItem {
-	wallet_address: string;
-	created_at: number;
-	chain_id: string;
-	id: string;
-	status: 'success' | 'failure' | 'simulating';
-	error_message: string;
-}
-
-export interface Stats {
-	failure_simulations: number;
-	total_simulations: number;
-	unique_wallet_count: number;
-	common_errors: CommonError[];
-}
-
-export interface Project {
-	id: number;
-	name: string;
-	slug: string;
-}
-
-export interface SimulationsResponse {
-	simulations: SimulationListItem[];
-	stats: Stats;
-	project: Project;
 }
 
 export interface Simulation {
@@ -186,26 +150,3 @@ export const systemsTypeNames = [
 	'Poseidon',
 	'PanicResult'
 ];
-
-export interface TenantNetwork {
-	tenantId: string;
-	tenantName: string;
-	rpcUrl: string;
-	chainId: number;
-	displayName: string;
-}
-
-export interface CustomSession {
-	tenantNetworks?: TenantNetwork[];
-}
-
-declare module 'better-auth' {
-	interface CustomSession {
-		tenantNetworks?: TenantNetwork[];
-	}
-}
-
-export type AuthType = {
-	user: typeof auth.$Infer.Session.user | null;
-	session: (typeof auth.$Infer.Session.session & CustomSession) | null;
-};

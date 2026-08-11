@@ -96,24 +96,28 @@ export function NetworksList() {
 			});
 			return;
 		}
+		if (!newNetwork.networkName || !newNetwork.rpcUrl) {
+			return;
+		}
+
+		const invalidUrls = ['localhost', '127.0.0.0', '0.0.0.0'];
+		let url: URL;
 		try {
-			const invalidUrls = ['localhost', '127.0.0.0', '0.0.0.0'];
-			if (newNetwork.networkName && newNetwork.rpcUrl) {
-				const url = new URL(newNetwork.rpcUrl);
-				if (invalidUrls.includes(url.hostname)) {
-					alert('Error: Only hosted networks are supported.');
-					return;
-				}
-				addNetwork({ ...newNetwork });
-				setNewNetwork({ rpcUrl: '', networkName: '' });
-			}
-		} catch (err) {
+			url = new URL(newNetwork.rpcUrl);
+		} catch {
 			toast({
 				title: 'Add network failed!',
 				description: 'Is the network URL correct?',
 				className: 'text-red-500'
 			});
+			return;
 		}
+		if (invalidUrls.includes(url.hostname)) {
+			alert('Error: Only hosted networks are supported.');
+			return;
+		}
+		addNetwork({ ...newNetwork });
+		setNewNetwork({ rpcUrl: '', networkName: '' });
 	};
 
 	return (

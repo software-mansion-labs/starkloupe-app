@@ -16,5 +16,3 @@ their license terms. Notable components:
   * Monaco Editor and monaco-editor-core — MIT, Microsoft
   * d3 and d3-flame-graph — ISC / Apache-2.0
   * Radix UI primitives and shadcn/ui — MIT
-  * Drizzle ORM and drizzle-kit — Apache-2.0
-  * Better Auth — MIT

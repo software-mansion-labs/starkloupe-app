@@ -23,8 +23,6 @@ import { PlayIcon, LinkIcon } from '@heroicons/react/24/outline';
 import { Error } from '../ui/error';
 import { useSettings } from '@/lib/context/settings-context-provider';
 import CopyToClipboardElement from '../ui/copy-to-clipboard';
-import { useUserContext } from '@/lib/context/user-context-provider';
-import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import AddressLink from '../address-link';
 import { NetworkBadge } from '../ui/network-badge';
@@ -44,7 +42,6 @@ export function TransactionPage({
 	const [l1TransactionData, setL1TransactionData] = useState<L1TransactionData>();
 	const [l2TransactionData, setL2TransactionData] = useState<L2TransactionData>();
 	const [debuggerPayload, setDebuggerPayload] = useState<DebuggerPayload | null>(null);
-	const { isLogged } = useUserContext();
 	const [error, setError] = useState<{ message: string; status: number } | undefined>();
 	const { trackingActive, trackingFlagLoaded } = useSettings();
 	const [l2TxHash, setL2TxHash] = useState<string>();
@@ -222,42 +219,25 @@ export function TransactionPage({
 									)}
 								</div>
 								<div className="hidden md:block">
-									{isLogged ? (
-										<Button
-											onClick={handleReSimulateClick}
-											variant="outline"
-											disabled={l2TransactionData.transactionType !== 'INVOKE'}
-										>
-											<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
-										</Button>
-									) : (
-										<Link href="/login">
-											<Button variant="outline">
-												<PlayIcon className="mr-2 h-4 w-4" /> Re-simulate
-											</Button>
-										</Link>
-									)}
+									<Button
+										onClick={handleReSimulateClick}
+										variant="outline"
+										disabled={l2TransactionData.transactionType !== 'INVOKE'}
+									>
+										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+									</Button>
 								</div>
 
 								<div className="flex md:hidden gap-2 justify-between">
 									{chainDetails && <NetworkBadge network={chainDetails} />}
-									{isLogged ? (
-										<Button
-											onClick={handleReSimulateClick}
-											variant="outline"
-											disabled={l2TransactionData.transactionType !== 'INVOKE'}
-										>
-											<PlayIcon className="h-4 w-4 mr-2" />
-											Re-simulate
-										</Button>
-									) : (
-										<Link href="/login">
-											<Button variant="outline">
-												<PlayIcon className="h-4 w-4 mr-2" />
-												Re-simulate
-											</Button>
-										</Link>
-									)}
+									<Button
+										onClick={handleReSimulateClick}
+										variant="outline"
+										disabled={l2TransactionData.transactionType !== 'INVOKE'}
+									>
+										<PlayIcon className="h-4 w-4 mr-2" />
+										Re-simulate
+									</Button>
 								</div>
 							</div>
 							<div className="hidden md:block">
@@ -301,17 +281,9 @@ export function TransactionPage({
 										</h1>
 									)}
 								</div>
-								{isLogged ? (
-									<Button onClick={handleReSimulateClick} variant="outline" disabled>
-										<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
-									</Button>
-								) : (
-									<Link href="/login">
-										<Button variant="outline">
-											<PlayIcon className="mr-2 h-4 w-4" /> Re-simulate
-										</Button>
-									</Link>
-								)}
+								<Button onClick={handleReSimulateClick} variant="outline" disabled>
+									<PlayIcon className="h-4 w-4 mr-2" /> Re-simulate
+								</Button>
 							</div>
 							<L1TransactionDetails
 								transactionData={l1TransactionData}

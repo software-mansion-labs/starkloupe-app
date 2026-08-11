@@ -5,16 +5,13 @@ import Link from 'next/link';
 import { Disclosure } from '@headlessui/react';
 import { Search } from '@/components/ui/search';
 import { Button } from '@/components/ui/button';
-import { PlayIcon, MoonIcon, SunIcon } from '@heroicons/react/24/outline';
+import { PlayIcon, MoonIcon, SunIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import logoWalnut from '@/assets/walnut-logo-beta.svg';
 import logoWalnutWhite from '@/assets/walnut-logo-beta-white.svg';
 import starknetLogo from '@/assets/network-logos/strk.svg';
 import ethLogo from '@/assets/network-logos/eth-purple.svg';
 import { Container } from '@/components/ui/container';
-import { UserSection } from '@/components/auth/user-section';
-import { useUserContext } from '@/lib/context/user-context-provider';
 import { useSettings } from '@/lib/context/settings-context-provider';
-import { isAuthorizationRequiredFeatureActive } from '@/app/api/feature-flag-service';
 import { useTheme } from 'next-themes';
 import {
 	DropdownMenu,
@@ -24,14 +21,7 @@ import {
 } from './ui/dropdown-menu';
 import { useEffect, useState } from 'react';
 
-export function HeaderNav({
-	isMainPage = false,
-	hideUserSection = false
-}: {
-	isMainPage?: boolean;
-	hideUserSection?: boolean;
-}) {
-	const { isLogged } = useUserContext();
+export function HeaderNav({ isMainPage = false }: { isMainPage?: boolean }) {
 	const { trackingActive } = useSettings();
 	const { setTheme, resolvedTheme } = useTheme();
 	const [mounted, setMounted] = useState(false);
@@ -40,7 +30,7 @@ export function HeaderNav({
 
 	return (
 		<Disclosure as="nav" className={`${!isMainPage && 'bg-background  border-b border-border'}`}>
-			{() => (
+			{({ open }) => (
 				<>
 					{!trackingActive && (
 						<div className=" top-0 left-0 w-full h-5 bg-green-500 text-white flex items-center justify-between px-4 shadow-md z-50">
@@ -155,41 +145,17 @@ export function HeaderNav({
 							)}
 
 							<div className="flex flex-1 justify-end space-x-2 lg:space-x-4 mx-4 md:mr-0">
-								{!isMainPage && isLogged && (
+								{!isMainPage && (
 									<div className="w-auto max-w-xs md:w-80">
 										<Search className="w-full" placeholder="Search"></Search>
 									</div>
 								)}
 								<div className="hidden md:block">
-									{isLogged ? (
-										<Link href={`/simulate-transaction`}>
-											<Button variant="outline">
-												<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
-											</Button>
-										</Link>
-									) : (
-										<Link href="/login">
-											<Button variant="outline">
-												<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
-											</Button>
-										</Link>
-									)}
-								</div>
-							</div>
-							{!hideUserSection && isAuthorizationRequiredFeatureActive() && (
-								<div className="hidden md:block">
-									<div className="flex items-center">
-										<div className="flex flex-row items-center ml-3">
-											<UserSection />
-										</div>
-									</div>
-								</div>
-							)}
-							<div className="flex md:hidden">
-								<div className="flex items-center">
-									<div className="flex flex-row items-center">
-										<UserSection />
-									</div>
+									<Link href={`/simulate-transaction`}>
+										<Button variant="outline">
+											<PlayIcon className="mr-2 h-4 w-4" /> Simulate transaction
+										</Button>
+									</Link>
 								</div>
 							</div>
 							<DropdownMenu>
@@ -197,7 +163,7 @@ export function HeaderNav({
 									{mounted && (
 										<button
 											className="
-											p-2 hover:bg-accent rounded-sm ml-3 hidden md:block
+											p-2 hover:bg-accent rounded-sm ml-3
 											focus:outline-none focus:ring-0
 											focus-visible:outline-none focus-visible:ring-0
 										"
@@ -212,18 +178,22 @@ export function HeaderNav({
 									<DropdownMenuItem onClick={() => setTheme('system')}>System</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
+
+							<div className="-mr-2 flex md:hidden">
+								{/* Mobile menu button */}
+								<Disclosure.Button>
+									{open ? (
+										<XMarkIcon className="block h-6 w-6" aria-hidden="true" />
+									) : (
+										<Bars3Icon className="block h-6 w-6" aria-hidden="true" />
+									)}
+								</Disclosure.Button>
+							</div>
 						</div>
 					</Container>
 
 					<Disclosure.Panel className="md:hidden fixed bg-neutral-50 inset-x-0 z-50 border-b border-t shadow-md border-neutral-200">
 						<div className="space-y-1 px-2 pb-3 pt-2 sm:px-3">
-							{/* {session.status === 'authenticated' ? (
-								<Link href="/monitoring">
-									<Button variant="ghost">Monitoring</Button>
-								</Link>
-							) : (
-								<></>
-							)} */}
 							<div>
 								<Link href={`/simulate-transaction`}>
 									<Button variant="ghost"> Simulate transaction</Button>
@@ -235,38 +205,6 @@ export function HeaderNav({
 								</a>
 							</div>
 						</div>
-						{/* <div className="border-t border-neutral-100 pb-3 pt-4">
-							{session.status === 'authenticated' ? (
-								<div className="flex items-center px-5 justify-between">
-									<div className="flex flex-row items-center">
-										<div className="flex-shrink-0">
-											<Avatar>
-												{session.data.user?.image && <AvatarImage src={session.data.user.image} />}
-												<AvatarFallback>AA</AvatarFallback>
-											</Avatar>
-										</div>
-										<div className="ml-3">
-											<div className="text-base font-medium">{session.data.user?.name}</div>
-											<div className="text-sm font-medium text-secondary-foreground/80">
-												{session.data.user?.email}
-											</div>
-										</div>
-									</div>
-									<Disclosure.Button className="ml-2">
-										<Button variant="outline" onClick={() => signOut()}>
-											Log out
-										</Button>
-									</Disclosure.Button>
-								</div>
-							) : session.status === 'unauthenticated' ? (
-								// <Button onClick={() => signIn('cognito')} className="mx-5">
-								// 	Log in
-								// </Button>
-								<></>
-							) : (
-								<></>
-							)}
-						</div> */}
 					</Disclosure.Panel>
 				</>
 			)}
