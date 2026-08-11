@@ -26,7 +26,11 @@ const CUSTOM_NETWORKS_KEY = 'custom_networks';
 const loadNetworksFromStorage = (): Network[] => {
 	try {
 		const stored = localStorage.getItem(CUSTOM_NETWORKS_KEY);
-		return stored ? JSON.parse(stored) : [];
+		if (!stored) return [];
+		const parsed = JSON.parse(stored);
+		// A non-array payload would parse fine and then blow up in every
+		// `networks.map(...)` consumer, so treat it as empty.
+		return Array.isArray(parsed) ? parsed : [];
 	} catch {
 		return [];
 	}
@@ -235,45 +239,42 @@ export const SettingsContextProvider: React.FC<{ children: React.ReactNode }> = 
 
 	const addNetwork = (network: AddNetwork) => {
 		const created: Network = { ...network, id: generateNetworkId() };
-		setNetworks((prev) => {
-			const updated = [...prev, created];
-			try {
-				saveNetworksToStorage(updated);
-			} catch {
-				toast({
-					title: 'Failed to add network',
-					description:
-						'Could not save the network. Your browser storage may be full or unavailable.',
-					className: 'text-red-500'
-				});
-				return prev;
-			}
+		const updated = [...networks, created];
+		try {
+			saveNetworksToStorage(updated);
+		} catch {
 			toast({
-				title: `Network ${network.networkName} added!`,
-				description: 'Network added successfully.'
+				title: 'Failed to add network',
+				description: 'Could not save the network. Your browser storage may be full or unavailable.',
+				className: 'text-red-500'
 			});
-			return updated;
+			return;
+		}
+		setNetworks(updated);
+		toast({
+			title: `Network ${network.networkName} added!`,
+			description: 'Network added successfully.'
 		});
 	};
 
 	const removeNetwork = (network: Network) => {
-		setNetworks((prev) => {
-			const updated = prev.filter((n) => n.id !== network.id);
-			try {
-				saveNetworksToStorage(updated);
-			} catch {
-				toast({
-					title: 'Failed to remove network',
-					description: 'Could not update local storage. Please try again.',
-					className: 'text-red-500'
-				});
-				return prev;
-			}
+		// `id` is optional, so matching on it would drop every id-less entry at
+		// once. `rpcUrl` is the key the rest of the app treats as unique.
+		const updated = networks.filter((n) => normalizeUrl(n.rpcUrl) !== normalizeUrl(network.rpcUrl));
+		try {
+			saveNetworksToStorage(updated);
+		} catch {
 			toast({
-				title: `Network ${network.networkName} removed!`,
-				description: 'Network removed successfully.'
+				title: 'Failed to remove network',
+				description: 'Could not update local storage. Please try again.',
+				className: 'text-red-500'
 			});
-			return updated;
+			return;
+		}
+		setNetworks(updated);
+		toast({
+			title: `Network ${network.networkName} removed!`,
+			description: 'Network removed successfully.'
 		});
 	};
 
