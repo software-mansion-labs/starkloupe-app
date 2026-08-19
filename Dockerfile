@@ -19,12 +19,12 @@ COPY . .
 # `??` (src/lib/config.ts:1, src/lib/utils/logger.ts:3), which treats an empty
 # string as a real value rather than falling back - passing an unset build arg
 # through would set the log level to "" and fail the build during prerender.
-# The backend is the self-hosted walnut-server instance, plain http on port 80
-# (no TLS - it is a bare IP with no certificate). A page served over https
-# cannot call it: the browser blocks the mixed content. Serve this image over
-# http, or put the backend behind a hostname with a certificate and pass that
-# here instead.
-ARG NEXT_PUBLIC_API_URL=http://35.222.107.110
+# The backend is the self-hosted walnut-server instance, reached through the
+# load balancer that terminates TLS for it (walnut-infra loadbalancer.tf). It
+# has to be the https hostname and not the load balancer's bare IP: this image
+# is served over https at app.starkloupe.co, and a page on https calling http
+# is blocked by the browser as mixed content.
+ARG NEXT_PUBLIC_API_URL=https://api.starkloupe.co
 ARG NEXT_PUBLIC_LOG_LEVEL=warn
 ARG NEXT_PUBLIC_USE_TRACKING=false
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
