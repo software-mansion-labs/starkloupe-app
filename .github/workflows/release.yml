@@ -1,10 +1,12 @@
 name: Release
 
 # Builds the image and pushes it to Artifact Registry. It does NOT deploy.
+#
+# Deploying is a deliberate, separate step performed from walnut-infra.
 
 on:
   push:
-    tags: ["v*"]
+    tags: ["v[0-9]+.*"]
   workflow_dispatch:
 
 concurrency:
@@ -26,6 +28,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # No service account key: the provider is locked to this repository in
+      # walnut-infra/iam.tf. Both variables come from `terraform output`.
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
@@ -80,7 +84,7 @@ jobs:
           build-args: |
             NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL || 'https://api.starkloupe.co' }}
             NEXT_PUBLIC_LOG_LEVEL=${{ vars.NEXT_PUBLIC_LOG_LEVEL || 'warn' }}
-            NEXT_PUBLIC_USE_TRACKING=${{ vars.NEXT_PUBLIC_USE_TRACKING || 'false' }}
+            NEXT_PUBLIC_USE_TRACKING=${{ vars.NEXT_PUBLIC_USE_TRACKING || 'true' }}
 
       - name: How to deploy this image
         run: |
