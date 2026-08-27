@@ -46,7 +46,7 @@ export function ServerError({
 								</div>
 								<div className="flex-1 min-w-0">
 									<h2 className="text-xl font-bold text-destructive leading-tight">
-										{title ?? 'Walnut Server Error'}
+										{title ?? 'Starkloupe Server Error'}
 									</h2>
 									<p className="text-xs text-muted-foreground mt-0.5">
 										The server encountered an error
@@ -105,7 +105,7 @@ export function ServerError({
 							This is a server-side error. If this error persists, please copy the error details and
 							report it in the{' '}
 							<Link
-								href={'https://t.me/walnuthq'}
+								href={'https://t.me/starkloupe'}
 								target="_blank"
 								className="text-variable hover:underline font-medium underline-offset-2 transition-colors"
 							>

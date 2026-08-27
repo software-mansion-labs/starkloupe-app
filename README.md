@@ -1,16 +1,14 @@
-# walnut-webapp
+# starkloupe-app
 
-The Walnut web app: a debugger and transaction explorer for Starknet and Cairo developers, running in production at [app.walnut.dev](https://app.walnut.dev).
+The Starkloupe web app: a debugger and transaction explorer for Starknet and Cairo developers, running in production at [app.starkloupe.co](https://app.starkloupe.co).
 
-Next.js 14 (App Router), React 18, TypeScript, Tailwind + shadcn/ui, Monaco for the source view and step debugger.
-
-The app renders; it does not compute. Transaction simulation, the debugger trace, source verification and search all come over HTTP from the Walnut backend, so a reachable backend is required for anything beyond the landing page.
+The app renders; it does not compute. Transaction simulation, the debugger trace, source verification and search all come over HTTP from the Starkloupe backend, so a reachable backend is required for anything beyond the landing page.
 
 ## Requirements
 
 - **Node v22.8.0** — pinned in `.nvmrc`, use `nvm`
 - **npm** — the lockfile is `package-lock.json`, do not mix in yarn or pnpm
-- **A Walnut backend** — [walnuthq/walnut-server](https://github.com/walnuthq/walnut-server); `https://api.walnut.dev` by default, or your own instance via `NEXT_PUBLIC_API_URL`
+- **A Starkloupe backend** — [software-mansion-labs/starkloupe-server](https://github.com/software-mansion-labs/starkloupe-server); `https://api.starkloupe.co` by default, or your own instance via `NEXT_PUBLIC_API_URL`
 
 ## Getting started
 

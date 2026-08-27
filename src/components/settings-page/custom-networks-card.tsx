@@ -10,7 +10,7 @@ export function CustomNetworksCard() {
 			<CardHeader>
 				<CardTitle>Custom networks</CardTitle>
 				<CardDescription>
-					By default, Walnut supports <strong>sn_mainnet</strong> and <strong>sn_sepolia</strong>.
+					By default, Starkloupe supports <strong>sn_mainnet</strong> and <strong>sn_sepolia</strong>.
 					You can add custom networks to expand transaction search, debugging, and simulation
 					functionality to those networks.
 				</CardDescription>

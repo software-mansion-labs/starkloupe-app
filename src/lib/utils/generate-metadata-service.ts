@@ -20,7 +20,7 @@ export const generateMetadata = (title: string, description: string, pageUrl: st
 					url: 'https://walnut.dev/seo.png',
 					width: 520,
 					height: 160,
-					alt: 'Walnut logo'
+					alt: 'Starkloupe logo'
 				}
 			],
 			locale: 'en_US',

@@ -22,13 +22,13 @@ export default function Page() {
 				<div className="flex items-center gap-3">
 					<Image
 						src={logoWalnut}
-						alt="Walnut logo"
+						alt="Starkloupe logo"
 						unoptimized
 						className="h-7 w-auto dark:hidden"
 					/>
 					<Image
 						src={logoWalnutWhite}
-						alt="Walnut logo"
+						alt="Starkloupe logo"
 						unoptimized
 						className="h-7 w-auto hidden dark:block"
 					/>

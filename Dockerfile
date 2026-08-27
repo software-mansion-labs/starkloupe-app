@@ -19,7 +19,7 @@ COPY . .
 # `??` (src/lib/config.ts:1, src/lib/utils/logger.ts:3), which treats an empty
 # string as a real value rather than falling back - passing an unset build arg
 # through would set the log level to "" and fail the build during prerender.
-# The backend is the self-hosted walnut-server instance, reached through the
+# The backend is the self-hosted starkloupe-server instance, reached through the
 # load balancer that terminates TLS for it (walnut-infra loadbalancer.tf). It
 # has to be the https hostname and not the load balancer's bare IP: this image
 # is served over https at app.starkloupe.co, and a page on https calling http

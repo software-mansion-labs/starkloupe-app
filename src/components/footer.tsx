@@ -5,7 +5,7 @@ import { Separator } from '@/components/ui/separator';
 export const navigation = [
 	{
 		name: 'Telegram',
-		href: 'https://t.me/walnuthq', // Replace with your actual Telegram link
+		href: 'https://t.me/starkloupe',
 		icon: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 			<svg fill="currentColor" viewBox="0 0 24 24" {...props}>
 				<path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z" />
@@ -14,7 +14,7 @@ export const navigation = [
 	},
 	{
 		name: 'Twitter',
-		href: 'https://twitter.com/walnut_dev',
+		href: 'https://x.com/swmansionxyz',
 		icon: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 			<svg fill="currentColor" viewBox="0 0 24 24" {...props}>
 				<path d="M8.29 20.251c7.547 0 11.675-6.253 11.675-11.675 0-.178 0-.355-.012-.53A8.348 8.348 0 0022 5.92a8.19 8.19 0 01-2.357.646 4.118 4.118 0 001.804-2.27 8.224 8.224 0 01-2.605.996 4.107 4.107 0 00-6.993 3.743 11.65 11.65 0 01-8.457-4.287 4.106 4.106 0 001.27 5.477A4.072 4.072 0 012.8 9.713v.052a4.105 4.105 0 003.292 4.022 4.095 4.095 0 01-1.853.07 4.108 4.108 0 003.834 2.85A8.233 8.233 0 012 18.407a11.616 11.616 0 006.29 1.84" />
@@ -23,7 +23,7 @@ export const navigation = [
 	},
 	{
 		name: 'GitHub',
-		href: 'https://github.com/walnuthq',
+		href: 'https://github.com/software-mansion-labs/starkloupe-app',
 		icon: (props: JSX.IntrinsicAttributes & SVGProps<SVGSVGElement>) => (
 			<svg fill="currentColor" viewBox="0 0 24 24" {...props}>
 				<path
