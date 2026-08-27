@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1244 1244" width="1244" height="1244" role="img" aria-label="Starkloupe">
+  <title>Starkloupe — mark for grey / black backgrounds</title>
+
+  <!-- Palette:
+       paper  #FFFFFF  (main mark)
+       coral  #F2705C  (accent, lifted slightly so it holds up on dark)
+
+       DELETE the rect below to get a transparent mark for placing on
+       your own grey/black surface. Keep it for a self-contained badge. -->
+  <!-- <rect id="backing-plate" width="1244" height="1244" fill="#16181D"/> -->
+
+  <g fill="none">
+
+    <!-- Handle: outer body + coral inlay -->
+    <g transform="rotate(135 310 965)">
+      <rect x="145" y="887.5" width="330" height="155" rx="55" fill="#FFFFFF"/>
+      <rect x="176" y="916" width="268" height="98" rx="30" fill="#F2705C"/>
+    </g>
+
+    <!-- Stem connecting handle to lens -->
+    <path d="M462 793 L398 857" stroke="#FFFFFF" stroke-width="54"/>
+
+    <!-- Lens ring -->
+    <circle cx="704" cy="546" r="337.5" stroke="#FFFFFF" stroke-width="55"/>
+
+    <!-- Eye body with pupil knocked out -->
+    <path fill="#FFFFFF" fill-rule="evenodd"
+          d="M388 548 Q704 218 1020 548 Q704 1002 388 548 Z
+             M704 420 A128 128 0 1 0 704 676 A128 128 0 1 0 704 420 Z"/>
+
+    <!-- Lower lid accent -->
+    <path fill="#F2705C"
+          d="M388 548 C 560 800, 884 660, 1020 548 Q704 1002 388 548 Z"/>
+
+    <!-- Sparkle pupil -->
+    <path fill="#FFFFFF"
+          d="M704 458 C 710 510, 722 542, 786 548 C 722 554, 710 586, 704 638
+             C 698 586, 686 554, 622 548 C 686 542, 698 510, 704 458 Z"/>
+  </g>
+</svg>

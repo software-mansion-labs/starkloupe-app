@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1244 1244" width="1244" height="1244" role="img" aria-label="Starkloupe">
+  <title>Starkloupe — mark for light backgrounds</title>
+
+  <!-- Palette:
+       ink    #101B3F  (main mark)
+       coral  #E8604E  (accent)
+       pupil is transparent so the background shows through -->
+
+  <g fill="none">
+
+    <!-- Handle: outer body -->
+    <g transform="rotate(135 310 965)">
+      <rect x="145" y="887.5" width="330" height="155" rx="55" fill="#101B3F"/>
+      <rect x="176" y="916" width="268" height="98" rx="30" fill="#E8604E"/>
+    </g>
+
+    <!-- Stem connecting handle to lens -->
+    <path d="M462 793 L398 857" stroke="#101B3F" stroke-width="54" stroke-linecap="butt"/>
+
+    <!-- Lens ring -->
+    <circle cx="704" cy="546" r="337.5" stroke="#101B3F" stroke-width="55"/>
+
+    <!-- Eye body with pupil knocked out -->
+    <path fill="#101B3F" fill-rule="evenodd"
+          d="M388 548 Q704 218 1020 548 Q704 1002 388 548 Z
+             M704 420 A128 128 0 1 0 704 676 A128 128 0 1 0 704 420 Z"/>
+
+    <!-- Lower lid accent -->
+    <path fill="#E8604E"
+          d="M388 548 C 560 800, 884 660, 1020 548 Q704 1002 388 548 Z"/>
+
+    <!-- Sparkle pupil -->
+    <path fill="#101B3F"
+          d="M704 458 C 710 510, 722 542, 786 548 C 722 554, 710 586, 704 638
+             C 698 586, 686 554, 622 548 C 686 542, 698 510, 704 458 Z"/>
+  </g>
+</svg>
