@@ -6,8 +6,8 @@ import { Disclosure } from '@headlessui/react';
 import { Search } from '@/components/ui/search';
 import { Button } from '@/components/ui/button';
 import { PlayIcon, MoonIcon, SunIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
-import logoWalnut from '@/assets/walnut-logo-beta.svg';
-import logoWalnutWhite from '@/assets/walnut-logo-beta-white.svg';
+import logoLightBg from '@/assets/starkloupe-logo-light-bg.svg';
+import logoDarkBg from '@/assets/starkloupe-logo-dark-bg.svg';
 import starknetLogo from '@/assets/network-logos/strk.svg';
 import { Container } from '@/components/ui/container';
 import { useSettings } from '@/lib/context/settings-context-provider';
@@ -43,16 +43,16 @@ export function HeaderNav({ isMainPage = false }: { isMainPage?: boolean }) {
 									<div className="flex-shrink-0">
 										<Link href="/">
 											<Image
-												src={logoWalnut}
+												src={logoLightBg}
 												alt="Starkloupe logo"
 												unoptimized
-												className="h-6 w-auto cursor-pointer dark:hidden"
+												className="h-14 w-auto cursor-pointer dark:hidden"
 											/>
 											<Image
-												src={logoWalnutWhite}
+												src={logoDarkBg}
 												alt="Starkloupe logo"
 												unoptimized
-												className="h-6 w-auto cursor-pointer hidden dark:block"
+												className="h-14 w-auto cursor-pointer hidden dark:block"
 											/>
 										</Link>
 									</div>

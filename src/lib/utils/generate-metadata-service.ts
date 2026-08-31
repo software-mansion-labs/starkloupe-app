@@ -23,11 +23,6 @@ export const generateMetadata = (title: string, description: string, pageUrl: st
 			card: 'summary_large_image',
 			title: title,
 			description: description
-		},
-		icons: {
-			icon: '/favicon/favicon.ico',
-			shortcut: '/favicon/favicon.ico',
-			apple: '/favicon/apple-touch-icon.png'
 		}
 	};
 };
