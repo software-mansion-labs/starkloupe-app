@@ -1,16 +1,16 @@
 import { useEffect, useState, forwardRef, HTMLAttributes } from 'react';
 
 const Quotes = [
-	'Debugging transactions one walnut at a time.\nPatience, Cairo master!',
-	'Just cracking open your transactions like a walnut on a cryptographic mission.',
-	'Loading transactions one walnut at a time.',
-	"Hold tight! We're peeling back the layers of your simulations.",
-	'Simulating transactions faster than a squirrel finds a walnut.',
-	"From block to walnut, we're debugging your transactions with a touch of nutty genius.",
-	'Just a few more walnuts to crack before we get to the bottom of this transaction.',
-	'Cracking blocks and simulating transactions, one walnut at a time.',
-	"Hold tight! We're debugging your transactions with a touch of nutty genius.",
-	'Breaking down blocks and cracking open transactions, walnut style!'
+  'Debugging transactions one lens at a time.\nPatience, Cairo master!',
+  'Just holding your transactions up to the light, loupe in hand.',
+  'Loading transactions one magnification at a time.',
+  "Hold tight! We're focusing the lens on your simulations.",
+  'Simulating transactions faster than a jeweler spots a flaw.',
+  "From block to lens, we're debugging your transactions with a touch of sharp-eyed genius.",
+  'Just a few more facets to inspect before we get to the bottom of this transaction.',
+  'Zooming into blocks and simulating transactions, one close-up at a time.',
+  "Hold tight! We're debugging your transactions at 10x magnification.",
+  'Breaking down blocks and inspecting transactions, loupe style!'
 ];
 
 const Loader = forwardRef<

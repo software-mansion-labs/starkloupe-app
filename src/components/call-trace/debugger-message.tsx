@@ -5,7 +5,7 @@ export const NoCodeLocationMessage = () => (
 	<>
 		There are no code locations present for this call. It might be a bug; Please{' '}
 		<a
-			href="https://t.me/walnuthq"
+			href="https://t.me/starkloupe"
 			target="_blank"
 			className="text-blue-500 cursor-pointer underline"
 			rel="noreferrer"

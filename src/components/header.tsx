@@ -44,13 +44,13 @@ export function HeaderNav({ isMainPage = false }: { isMainPage?: boolean }) {
 										<Link href="/">
 											<Image
 												src={logoWalnut}
-												alt="Walnut logo"
+												alt="Starkloupe logo"
 												unoptimized
 												className="h-6 w-auto cursor-pointer dark:hidden"
 											/>
 											<Image
 												src={logoWalnutWhite}
-												alt="Walnut logo"
+												alt="Starkloupe logo"
 												unoptimized
 												className="h-6 w-auto cursor-pointer hidden dark:block"
 											/>
