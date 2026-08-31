@@ -11,18 +11,10 @@ export const generateMetadata = (title: string, description: string, pageUrl: st
 			'Stack trace',
 			'Debugging'
 		],
-		metadataBase: new URL('https://walnut.dev/'),
+		metadataBase: new URL('https://starkloupe.co/'),
 		openGraph: {
 			title: title,
 			description: description,
-			images: [
-				{
-					url: 'https://walnut.dev/seo.png',
-					width: 520,
-					height: 160,
-					alt: 'Starkloupe logo'
-				}
-			],
 			locale: 'en_US',
 			type: 'website',
 			url: pageUrl
@@ -30,8 +22,7 @@ export const generateMetadata = (title: string, description: string, pageUrl: st
 		twitter: {
 			card: 'summary_large_image',
 			title: title,
-			description: description,
-			images: ['https://walnut.dev/seo.png']
+			description: description
 		},
 		icons: {
 			icon: '/favicon/favicon.ico',
