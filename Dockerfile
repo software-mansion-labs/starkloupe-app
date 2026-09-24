@@ -20,7 +20,7 @@ COPY . .
 # string as a real value rather than falling back - passing an unset build arg
 # through would set the log level to "" and fail the build during prerender.
 # The backend is the self-hosted starkloupe-server instance, reached through the
-# load balancer that terminates TLS for it (walnut-infra loadbalancer.tf). It
+# load balancer that terminates TLS for it (starkloupe-infra loadbalancer.tf). It
 # has to be the https hostname and not the load balancer's bare IP: this image
 # is served over https at app.starkloupe.co, and a page on https calling http
 # is blocked by the browser as mixed content.

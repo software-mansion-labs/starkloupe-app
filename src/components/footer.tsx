@@ -45,7 +45,7 @@ export function Footer() {
 					<div className="flex justify-end space-x-4 items-center">
 						<div className="flex justify-end mb-4 md:mb-0">
 							<a
-								href="https://docs.walnut.dev"
+								href="https://docs.starkloupe.co"
 								target="_blank"
 								rel="noopener noreferrer"
 								className="text-gray-500 hover:underline text-xs"

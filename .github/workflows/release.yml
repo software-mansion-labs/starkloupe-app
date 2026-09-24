@@ -2,7 +2,7 @@ name: Release
 
 # Builds the image and pushes it to Artifact Registry. It does NOT deploy.
 #
-# Deploying is a deliberate, separate step performed from walnut-infra.
+# Deploying is a deliberate, separate step performed from starkloupe-infra.
 
 on:
   push:
@@ -29,7 +29,7 @@ jobs:
       - uses: actions/checkout@v4
 
       # No service account key: the provider is locked to this repository in
-      # walnut-infra/iam.tf. Both variables come from `terraform output`.
+      # starkloupe-infra/iam.tf. Both variables come from `terraform output`.
       - name: Authenticate to Google Cloud
         uses: google-github-actions/auth@v2
         with:
@@ -46,7 +46,7 @@ jobs:
       # On a tag push github.ref_name is the tag (v1.2.3), but on a manual
       # dispatch it is the branch name - and a branch name may contain "/",
       # which is not a legal character in a Docker tag. Manual runs are tagged
-      # with the commit SHA instead, which is also how walnut-infra pins the
+      # with the commit SHA instead, which is also how starkloupe-infra pins the
       # image it deploys.
       #
       # "latest" is only moved by a real release. A dispatch from a branch must
