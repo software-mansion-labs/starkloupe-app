@@ -6,7 +6,7 @@ import { Loader } from '@/components/ui/loader';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { ExclamationTriangleIcon } from '@heroicons/react/24/outline';
 import { FilesExplorer } from '@/components/code-viewer/file-explorer';
-import { WALNUT_VERIFY_DOCS_URL } from '@/lib/config';
+import { STARKLOUPE_VERIFY_DOCS_URL } from '@/lib/config';
 import { ScrollArea } from '../ui/scroll-area';
 
 export function SourceFiles({
@@ -60,7 +60,7 @@ export function SourceFiles({
 							<p>
 								<span>Follow </span>
 								<a
-									href={WALNUT_VERIFY_DOCS_URL}
+									href={STARKLOUPE_VERIFY_DOCS_URL}
 									className="text-blue-500 cursor-pointer"
 									target="_blank"
 									rel="noopener noreferrer"

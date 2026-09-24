@@ -1,5 +1,5 @@
 import React from 'react';
-import { WALNUT_VERIFY_DOCS_URL } from '@/lib/config';
+import { STARKLOUPE_VERIFY_DOCS_URL } from '@/lib/config';
 
 export const NoCodeLocationMessage = () => (
 	<>
@@ -21,7 +21,7 @@ export const NoCodeMessage = () => (
 		This contract source code is not verified. To run the debugger, first verify the source code by
 		following{' '}
 		<a
-			href={WALNUT_VERIFY_DOCS_URL}
+			href={STARKLOUPE_VERIFY_DOCS_URL}
 			target="_blank"
 			className="text-blue-500 cursor-pointer"
 			rel="noreferrer"
