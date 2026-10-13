@@ -5,7 +5,14 @@ import Link from 'next/link';
 import { Disclosure } from '@headlessui/react';
 import { Search } from '@/components/ui/search';
 import { Button } from '@/components/ui/button';
-import { PlayIcon, MoonIcon, SunIcon, Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
+import {
+	PlayIcon,
+	MoonIcon,
+	SunIcon,
+	Bars3Icon,
+	XMarkIcon,
+	Cog6ToothIcon
+} from '@heroicons/react/24/outline';
 import logoLightBg from '@/assets/starkloupe-logo-light-bg.svg';
 import logoDarkBg from '@/assets/starkloupe-logo-dark-bg.svg';
 import starknetLogo from '@/assets/network-logos/strk.svg';
@@ -116,6 +123,12 @@ export function HeaderNav({ isMainPage = false }: { isMainPage?: boolean }) {
 									</Link>
 								</div>
 							</div>
+							<Link
+								href="/settings"
+								className="p-2 hover:bg-accent rounded-sm ml-3"
+							>
+								<Cog6ToothIcon className="w-[1.2rem] h-[1.2rem]" />
+							</Link>
 							<DropdownMenu>
 								<DropdownMenuTrigger asChild>
 									{mounted && (

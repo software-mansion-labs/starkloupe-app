@@ -205,13 +205,22 @@ export async function handleParameterSubmission(
 		contractCallsFunctions
 	);
 
-	const simulationPayload = {
+	const simulationPayload: Partial<SimulationPayloadWithParameters> = {
 		senderAddress: _senderAddress,
 		decoded_calldata: cleanedCalldata,
 		blockNumber: _blockNumber === '' ? undefined : _blockNumber,
-		transactionVersion: _transactionVersion,
-		chainId: _chain?.chainId
+		transactionVersion: _transactionVersion
 	};
+
+	if (_chain) {
+		if (_chain.chainId) {
+			simulationPayload.chainId = _chain.chainId;
+		} else if (_chain.network) {
+			simulationPayload.rpcUrl = _chain.network.rpcUrl;
+		}
+	} else {
+		throw new Error('Chain is not defined');
+	}
 
 	try {
 		setIsSimulating(true);
@@ -241,31 +250,35 @@ export async function handleParameterSubmission(
 	} catch (e: any) {
 		setIsSimulating(false);
 
-		if (JSON.parse(e.message).simulation_args.WithCalldata) {
-			const simulation_args: SimulationPayloadWithCalldata = JSON.parse(e.message).simulation_args
-				.WithCalldata;
-			if (simulation_args) {
-				const simulationPagePayload: SimulationPayload = {
-					senderAddress: _senderAddress,
-					calldata: simulation_args.calldata,
-					blockNumber: _blockNumber === '' ? undefined : _blockNumber,
-					transactionVersion: _transactionVersion
-				};
+		// fetchApi usually unwraps the server error into a plain message, so it may not be JSON
+		let parsed: any;
+		try {
+			parsed = JSON.parse(e?.message);
+		} catch {
+			parsed = undefined;
+		}
 
-				if (_chain) {
-					if (_chain.chainId) {
-						simulationPagePayload.chainId = _chain.chainId;
-					} else if (_chain.network) {
-						simulationPagePayload.rpcUrl = _chain.network.rpcUrl;
-					}
-				} else {
-					throw new Error('Chain is not defined');
-				}
-				openSimulationPage(simulationPagePayload);
+		const simulation_args: SimulationPayloadWithCalldata | undefined =
+			parsed?.simulation_args?.WithCalldata;
+		if (simulation_args) {
+			const simulationPagePayload: SimulationPayload = {
+				senderAddress: _senderAddress,
+				calldata: simulation_args.calldata,
+				blockNumber: _blockNumber === '' ? undefined : _blockNumber,
+				transactionVersion: _transactionVersion
+			};
+
+			if (_chain.chainId) {
+				simulationPagePayload.chainId = _chain.chainId;
+			} else if (_chain.network) {
+				simulationPagePayload.rpcUrl = _chain.network.rpcUrl;
 			}
+			openSimulationPage(simulationPagePayload);
 		} else {
 			toast({
-				description: formatErrorMessage(JSON.parse(e.message).error)
+				variant: 'destructive',
+				title: 'Simulation failed',
+				description: formatErrorMessage(parsed?.error ?? e?.message ?? e)
 			});
 			setAlert(true);
 		}

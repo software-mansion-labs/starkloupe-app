@@ -18,8 +18,6 @@ export function SettingsPage() {
 							// eslint-disable-next-line react/no-unknown-property
 							x-chunk="dashboard-04-chunk-0"
 						>
-							<span className="text-primary font-semibold">Custom networks</span>
-							<span>More settings coming soon...</span>
 						</nav>
 						<div className="grid gap-6">
 							<CustomNetworksCard />
