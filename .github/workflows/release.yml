@@ -19,6 +19,7 @@ concurrency:
 permissions:
   contents: read
   id-token: write
+  attestations: write # sign the image's build provenance
 
 env:
   REGION: us-central1
@@ -79,20 +80,13 @@ jobs:
       # and not on the Cloud Run service. Changing one requires a rebuild.
       # Every value is passed explicitly: several call sites use `??`, which
       # treats an empty string as a real value instead of falling back.
-      # starkloupe-infra checks the labels and the provenance before
-      # it records a digest. Single platform on purpose: it reads the labels
-      # with `imagetools inspect`, which returns none for a multi-platform index.
       - name: Build and push
         id: build
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          platforms: linux/amd64
-          labels: |
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.source=https://github.com/${{ github.repository }}
-          provenance: mode=max
+          provenance: false
           tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -100,6 +94,16 @@ jobs:
             NEXT_PUBLIC_API_URL=${{ vars.NEXT_PUBLIC_API_URL || 'https://api.starkloupe.co' }}
             NEXT_PUBLIC_LOG_LEVEL=${{ vars.NEXT_PUBLIC_LOG_LEVEL || 'warn' }}
             NEXT_PUBLIC_USE_TRACKING=${{ vars.NEXT_PUBLIC_USE_TRACKING || 'true' }}
+
+      # starkloupe-infra will only promote this digest if GitHub has signed
+      # provenance for it from this repository's release workflow. A workflow in
+      # another repository can push under this image name, but cannot produce
+      # that signature.
+      - name: Attest build provenance
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.build.outputs.digest }}
 
       - name: How to deploy this image
         run: |
