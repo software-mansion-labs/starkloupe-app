@@ -77,7 +77,7 @@ jobs:
       # and not on the Cloud Run service. Changing one requires a rebuild.
       # Every value is passed explicitly: several call sites use `??`, which
       # treats an empty string as a real value instead of falling back.
-      # starkloupe-infra checks the labels, the provenance and the SBOM before
+      # starkloupe-infra checks the labels and the provenance before
       # it records a digest. Single platform on purpose: it reads the labels
       # with `imagetools inspect`, which returns none for a multi-platform index.
       - name: Build and push
@@ -91,7 +91,6 @@ jobs:
             org.opencontainers.image.revision=${{ github.sha }}
             org.opencontainers.image.source=https://github.com/${{ github.repository }}
           provenance: mode=max
-          sbom: true
           tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
