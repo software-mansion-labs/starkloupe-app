@@ -2,7 +2,10 @@ name: Release
 
 # Builds the image and pushes it to Artifact Registry. It does NOT deploy.
 #
-# Deploying is a deliberate, separate step performed from starkloupe-infra.
+# A release (a tag push, or a manual run on main) then asks starkloupe-infra to
+# promote the image: a repository_dispatch there records its digest in a pull
+# request against releases/starkloupe-app.json. Merging that and running
+# starkloupe-infra's Terraform Apply workflow is what deploys it.
 
 on:
   push:
@@ -46,8 +49,10 @@ jobs:
       # On a tag push github.ref_name is the tag (v1.2.3), but on a manual
       # dispatch it is the branch name - and a branch name may contain "/",
       # which is not a legal character in a Docker tag. Manual runs are tagged
-      # with the commit SHA instead, which is also how starkloupe-infra pins the
-      # image it deploys.
+      # with the commit SHA instead.
+      #
+      # Every build also carries git-<sha>, the tag starkloupe-infra's promotion
+      # cross-checks against the digest it is sent.
       #
       # "latest" is only moved by a real release. A dispatch from a branch must
       # not repoint the tag that releases track.
@@ -56,9 +61,9 @@ jobs:
         run: |
           if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
             primary="${IMAGE}:${GITHUB_REF_NAME}"
-            tags="${primary}"$'\n'"${IMAGE}:latest"
+            tags="${primary}"$'\n'"${IMAGE}:latest"$'\n'"${IMAGE}:git-${GITHUB_SHA}"
           else
-            primary="${IMAGE}:${GITHUB_SHA}"
+            primary="${IMAGE}:git-${GITHUB_SHA}"
             tags="${primary}"
           fi
           echo "primary=${primary}" >> "$GITHUB_OUTPUT"
@@ -72,12 +77,21 @@ jobs:
       # and not on the Cloud Run service. Changing one requires a rebuild.
       # Every value is passed explicitly: several call sites use `??`, which
       # treats an empty string as a real value instead of falling back.
+      # starkloupe-infra checks the labels, the provenance and the SBOM before
+      # it records a digest. Single platform on purpose: it reads the labels
+      # with `imagetools inspect`, which returns none for a multi-platform index.
       - name: Build and push
+        id: build
         uses: docker/build-push-action@v6
         with:
           context: .
           push: true
-          provenance: false
+          platforms: linux/amd64
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+          provenance: mode=max
+          sbom: true
           tags: ${{ steps.tags.outputs.tags }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
@@ -96,3 +110,29 @@ jobs:
             echo '```'
             echo
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # Only releases are promoted: a manual run from a branch still builds and
+      # pushes, but asks for nothing.
+      - name: Create starkloupe-infra dispatch token
+        id: infra-token
+        if: github.ref_type == 'tag' || github.ref == 'refs/heads/main'
+        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        with:
+          app-id: ${{ vars.INFRA_APP_ID }}
+          private-key: ${{ secrets.INFRA_APP_PRIVATE_KEY }}
+          owner: software-mansion
+          repositories: starkloupe-infra
+          permission-contents: write
+
+      - name: Request promotion in starkloupe-infra
+        if: steps.infra-token.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ steps.infra-token.outputs.token }}
+          DIGEST: ${{ steps.build.outputs.digest }}
+        run: |
+          gh api \
+            --method POST \
+            repos/software-mansion/starkloupe-infra/dispatches \
+            --field event_type=starkloupe-app-release \
+            --field "client_payload[source_commit]=${GITHUB_SHA}" \
+            --field "client_payload[digest]=${DIGEST}"
